@@ -41,7 +41,6 @@
     flex-shrink: 0;
   }
 
-  /* MARCADOR PERSONALIZADO */
   .marcador-wrapper {
     display: flex;
     flex-direction: column;
@@ -101,7 +100,6 @@
     margin-top: -1px;
   }
 
-  /* POPUP */
   .popup-titulo { font-weight: bold; font-size: 14px; margin-bottom: 4px; color: #1a3a5c; }
   .popup-zona { font-size: 11px; color: #888; margin-bottom: 8px; }
   .popup-dato {
@@ -142,7 +140,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const JSON_URL = 'https://TU_USUARIO.github.io/temperaturas-mar-espana/datos.json';
+const JSON_URL = 'https://DavidBebow.github.io/temperaturas-mar-espana/datos.json';
 
 const mapa = L.map('mapa', {
   center: [39.8, -3.0],
@@ -166,7 +164,6 @@ function crearIconoEtiqueta(punto) {
   const temp = punto.temperatura_actual !== null ? punto.temperatura_actual + '°C' : '—';
   const anterior = punto.temperatura_anio_anterior !== null ? punto.temperatura_anio_anterior + '°C' : '—';
   const anomalia = punto.anomalia !== null ? signo(punto.anomalia) : '—';
-  const claseSigmno = punto.anomalia > 0 ? '+' : '';
 
   const html = `
     <div class="marcador-wrapper">
@@ -240,9 +237,13 @@ fetch(JSON_URL + '?t=' + Date.now())
         </div>
       `;
 
-      L.marker([p.lat, p.lon], { icon: icono })
+      const marker = L.marker([p.lat, p.lon], { icon: icono })
         .addTo(mapa)
         .bindPopup(popup, { maxWidth: 250 });
+
+      if (p.id === 'barcelona') {
+        setTimeout(() => marker.openPopup(), 800);
+      }
     });
   })
   .catch(err => {
