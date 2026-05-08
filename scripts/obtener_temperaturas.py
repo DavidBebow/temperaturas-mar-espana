@@ -29,6 +29,9 @@ PUNTOS = [
     {"id": "lanzarote",        "lat": 29.04, "lon": -13.60, "nombre": "Lanzarote",          "zona": "Canarias"},
     {"id": "ceuta",            "lat": 35.89, "lon": -5.31,  "nombre": "Ceuta",              "zona": "Estrecho"},
     {"id": "melilla",          "lat": 35.29, "lon": -2.94,  "nombre": "Melilla",            "zona": "Mediterráneo Sur"},
+    {"id": "tarragona",        "lat": 41.12, "lon":  1.25,  "nombre": "Tarragona",          "zona": "Mediterráneo Norte"},
+    {"id": "costa_brava",      "lat": 41.98, "lon":  3.21,  "nombre": "Costa Brava",         "zona": "Mediterráneo Norte"},
+    {"id": "sitges",           "lat": 41.23, "lon":  1.81,  "nombre": "Sitges",              "zona": "Mediterráneo Norte"},
 ]
 
 # ============================================================
