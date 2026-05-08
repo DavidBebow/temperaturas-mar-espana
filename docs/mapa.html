@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temperaturas del Mar - España</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; background: #f0f4f8; }
+  #mapa { width: 100%; height: 520px; }
+  #cabecera {
+    background: #1a3a5c;
+    color: white;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #cabecera h2 { font-size: 16px; font-weight: 600; }
+  #ultima-actualizacion { font-size: 12px; opacity: 0.8; }
+  #leyenda {
+    background: white;
+    padding: 10px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 12px;
+  }
+  .leyenda-item { display: flex; align-items: center; gap: 5px; }
+  .leyenda-punto {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,0,0,0.3);
+    flex-shrink: 0;
+  }
+  .popup-titulo { font-weight: bold; font-size: 15px; margin-bottom: 8px; color: #1a3a5c; }
+  .popup-zona { font-size: 11px; color: #666; margin-bottom: 10px; }
+  .popup-dato { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  .popup-dato:last-child { border-bottom: none; }
+  .popup-dato span:last-child { font-weight: 600; }
+  .anomalia-etiqueta {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    margin-top: 8px;
+  }
+  .signo-pos { color: #cc3300; }
+  .signo-neg { color: #0055aa; }
+</style>
+</head>
+<body>
+
+<div id="cabecera">
+  <h2>🌊 Temperatura del Mar en España</h2>
+  <span id="ultima-actualizacion">Cargando datos...</span>
+</div>
+
+<div id="leyenda">
+  <strong style="font-size:12px">Anomalía:</strong>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#0066CC"></div> &lt; −2°C</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#4499DD"></div> −2 a −1°C</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#88BBEE"></div> −1 a −0.3°C</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#44AA66"></div> Normal</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FFCC44"></div> +0.3 a +1°C</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FF8822"></div> +1 a +2°C</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#CC2200"></div> &gt; +2°C</div>
+</div>
+
+<div id="mapa"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// URL del JSON — CAMBIA TU_USUARIO por tu usuario de GitHub
+const JSON_URL = 'https://TU_USUARIO.github.io/temperaturas-mar-espana/datos.json';
+
+const mapa = L.map('mapa', {
+  center: [39.5, -3.5],
+  zoom: 5,
+  zoomControl: true
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap | Datos: Open-Meteo Marine API',
+  maxZoom: 10
+}).addTo(mapa);
+
+function crearIcono(color) {
+  return L.divIcon({
+    html: `<div style="
+      width: 36px; height: 36px;
+      background: ${color};
+      border: 2.5px solid rgba(255,255,255,0.9);
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: bold; color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    "></div>`,
+    className: '',
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -20]
+  });
+}
+
+function formatearDiferencia(valor) {
+  if (valor === null || valor === undefined) return '—';
+  const signo = valor > 0 ? '+' : '';
+  const clase = valor > 0 ? 'signo-pos' : valor < 0 ? 'signo-neg' : '';
+  return `<span class="${clase}">${signo}${valor}°C</span>`;
+}
+
+fetch(JSON_URL)
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('ultima-actualizacion').textContent =
+      'Última actualización: ' + data.fecha_legible;
+
+    data.puntos.forEach(p => {
+      if (!p.temperatura_actual) return;
+
+      const icono = crearIcono(p.color);
+      
+      const popup = `
+        <div style="min-width: 220px">
+          <div class="popup-titulo">${p.nombre}</div>
+          <div class="popup-zona">📍 ${p.zona}</div>
+          <div class="popup-dato">
+            <span>Temperatura actual</span>
+            <span>${p.temperatura_actual}°C</span>
+          </div>
+          <div class="popup-dato">
+            <span>Mismo día año anterior</span>
+            <span>${p.temperatura_anio_anterior !== null ? p.temperatura_anio_anterior + '°C' : '—'}</span>
+          </div>
+          <div class="popup-dato">
+            <span>Diferencia vs año anterior</span>
+            <span>${formatearDiferencia(p.diferencia_anual)}</span>
+          </div>
+          <div class="popup-dato">
+            <span>Media histórica (mes)</span>
+            <span>${p.media_historica_mes !== null ? p.media_historica_mes + '°C' : '—'}</span>
+          </div>
+          <div class="popup-dato">
+            <span>Anomalía histórica</span>
+            <span>${formatearDiferencia(p.anomalia)}</span>
+          </div>
+          <div>
+            <span class="anomalia-etiqueta" style="background:${p.color}">
+              ${p.etiqueta_anomalia}
+            </span>
+          </div>
+        </div>
+      `;
+
+      L.marker([p.lat, p.lon], { icon: icono })
+        .addTo(mapa)
+        .bindPopup(popup, { maxWidth: 260 });
+    });
+  })
+  .catch(err => {
+    console.error('Error cargando datos:', err);
+    document.getElementById('ultima-actualizacion').textContent = 'Error al cargar datos';
+  });
+</script>
+</body>
+</html>
