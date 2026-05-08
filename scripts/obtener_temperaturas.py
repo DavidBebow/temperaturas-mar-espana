@@ -33,6 +33,7 @@ PUNTOS = [
     {"id": "costa_brava",      "lat": 41.98, "lon":  3.21,  "nombre": "Costa Brava",         "zona": "Mediterráneo Norte"},
     {"id": "sitges",           "lat": 41.23, "lon":  1.81,  "nombre": "Sitges",              "zona": "Mediterráneo Norte"},
     {"id": "mar_menor", "lat": 37.64, "lon": -0.72, "nombre": "La Manga / Mar Menor", "zona": "Mar Menor (Murcia)"},
+    {"id": "cartagena", "lat": 37.60, "lon": -0.98, "nombre": "Cartagena", "zona": "Mediterráneo"},
 ]
 
 # ============================================================
@@ -65,6 +66,7 @@ MEDIAS_HISTORICAS = {
     "costa_brava":    [12.5, 12.5, 13.5, 15.0, 17.5, 21.5, 24.5, 25.5, 24.0, 20.5, 16.5, 13.5],
     "sitges":         [13.0, 13.0, 14.0, 15.5, 18.0, 22.0, 25.0, 26.0, 24.5, 21.0, 17.0, 14.0],
     "mar_menor":      [13.5, 13.0, 14.5, 17.0, 20.5, 24.5, 27.5, 28.5, 26.5, 23.0, 18.5, 14.5],
+    {"id": "cartagena", "lat": 37.60, "lon": -0.98, "nombre": "Cartagena / Mar Menor", "zona": "Mediterráneo (Murcia)"},
 }
 
 def obtener_temperatura_actual(lat, lon):
