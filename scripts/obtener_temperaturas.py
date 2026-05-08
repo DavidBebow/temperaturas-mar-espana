@@ -33,7 +33,7 @@ PUNTOS = [
     {"id": "costa_brava",      "lat": 41.98, "lon":  3.21,  "nombre": "Costa Brava",         "zona": "Mediterráneo Norte"},
     {"id": "sitges",           "lat": 41.23, "lon":  1.81,  "nombre": "Sitges",              "zona": "Mediterráneo Norte"},
     {"id": "mar_menor", "lat": 37.64, "lon": -0.72, "nombre": "La Manga / Mar Menor", "zona": "Mar Menor (Murcia)"},
-   {"id": "cartagena", "lat": 37.60, "lon": -0.98, "nombre": "Cartagena / Mar Menor", "zona": "Mediterráneo (Murcia)"},
+   {"id": "cartagena", "lat": 37.50, "lon": -0.85, "nombre": "Cartagena / Mar Menor", "zona": "Mediterráneo (Murcia)"},
 ]
 
 # ============================================================
