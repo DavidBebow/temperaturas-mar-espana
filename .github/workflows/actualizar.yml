@@ -1,0 +1,40 @@
+name: Actualizar temperaturas del mar
+
+on:
+  schedule:
+    # Ejecutar a las 8:00 hora española (UTC+2 en verano = 6:00 UTC)
+    - cron: '0 6 * * *'
+    # Ejecutar a las 14:00 hora española (UTC+2 en verano = 12:00 UTC)
+    - cron: '0 12 * * *'
+  # Permite ejecutarlo manualmente desde GitHub
+  workflow_dispatch:
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Ejecutar script de temperaturas
+        run: python scripts/obtener_temperaturas.py
+
+      - name: Guardar cambios en el repositorio
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add docs/datos.json
+          git diff --staged --quiet || git commit -m "Temperaturas actualizadas: $(date +'%d/%m/%Y %H:%M')"
+          git push
