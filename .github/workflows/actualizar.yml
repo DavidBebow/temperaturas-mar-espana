@@ -2,20 +2,22 @@ name: Actualizar temperaturas del mar
 
 on:
   schedule:
-    # Ejecutar a las 8:00 hora española (UTC+2 en verano = 6:00 UTC)
-    - cron: '0 6 * * *'
-    # Ejecutar a las 14:00 hora española (UTC+2 en verano = 12:00 UTC)
+    - cron: '1 22 * * *'
+    - cron: '1 23 * * *'
+    - cron: '0 7 * * *'
+    - cron: '0 8 * * *'
     - cron: '0 12 * * *'
-  # Permite ejecutarlo manualmente desde GitHub
+    - cron: '0 13 * * *'
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    
     permissions:
       contents: write
-    
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
