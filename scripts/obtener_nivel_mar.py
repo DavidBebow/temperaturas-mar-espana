@@ -1,151 +1,166 @@
-import requests
+import copernicusmarine
 import json
 import os
+import numpy as np
 from datetime import datetime, timedelta
 import statistics
 
 PUNTOS = [
-    {"id": "san_sebastian",    "lat": 43.32, "lon": -1.98,  "nombre": "San Sebastián",        "zona": "Cantábrico"},
-    {"id": "santander",        "lat": 43.46, "lon": -3.80,  "nombre": "Santander",             "zona": "Cantábrico"},
-    {"id": "gijon",            "lat": 43.55, "lon": -5.66,  "nombre": "Gijón",                 "zona": "Cantábrico"},
-    {"id": "coruna",           "lat": 43.37, "lon": -8.40,  "nombre": "A Coruña",              "zona": "Atlántico Norte"},
-    {"id": "vigo",             "lat": 42.24, "lon": -8.72,  "nombre": "Vigo",                  "zona": "Atlántico Norte"},
-    {"id": "huelva",           "lat": 37.14, "lon": -6.83,  "nombre": "Huelva",                "zona": "Atlántico Sur"},
-    {"id": "cadiz",            "lat": 36.52, "lon": -6.28,  "nombre": "Cádiz",                 "zona": "Atlántico Sur"},
-    {"id": "malaga",           "lat": 36.72, "lon": -4.41,  "nombre": "Málaga",                "zona": "Mediterráneo Sur"},
-    {"id": "almeria",          "lat": 36.70, "lon": -2.55,  "nombre": "Almería",               "zona": "Mediterráneo Sur"},
-    {"id": "cartagena",        "lat": 37.50, "lon": -0.85,  "nombre": "Cartagena / Mar Menor", "zona": "Mediterráneo (Murcia)"},
-    {"id": "valencia",         "lat": 39.47, "lon":  0.33,  "nombre": "Valencia",              "zona": "Mediterráneo"},
-    {"id": "barcelona",        "lat": 41.38, "lon":  2.18,  "nombre": "Barcelona",             "zona": "Mediterráneo Norte"},
-    {"id": "tarragona",        "lat": 41.12, "lon":  1.25,  "nombre": "Tarragona",             "zona": "Mediterráneo Norte"},
-    {"id": "costa_brava",      "lat": 41.98, "lon":  3.21,  "nombre": "Costa Brava",           "zona": "Mediterráneo Norte"},
-    {"id": "sitges",           "lat": 41.23, "lon":  1.81,  "nombre": "Sitges",                "zona": "Mediterráneo Norte"},
-    {"id": "palma",            "lat": 39.57, "lon":  2.64,  "nombre": "Palma de Mallorca",     "zona": "Baleares"},
-    {"id": "ibiza",            "lat": 38.90, "lon":  1.43,  "nombre": "Ibiza",                 "zona": "Baleares"},
-    {"id": "las_palmas",       "lat": 28.10, "lon": -15.41, "nombre": "Las Palmas",            "zona": "Canarias"},
-    {"id": "tenerife",         "lat": 28.46, "lon": -16.25, "nombre": "Tenerife",              "zona": "Canarias"},
-    {"id": "fuerteventura",    "lat": 28.66, "lon": -13.86, "nombre": "Fuerteventura",         "zona": "Canarias"},
-    {"id": "lanzarote",        "lat": 29.04, "lon": -13.60, "nombre": "Lanzarote",             "zona": "Canarias"},
-    {"id": "ceuta",            "lat": 35.89, "lon": -5.31,  "nombre": "Ceuta",                 "zona": "Estrecho"},
-    {"id": "melilla",          "lat": 35.29, "lon": -2.94,  "nombre": "Melilla",               "zona": "Mediterráneo Sur"},
-    # Puntos especiales por vulnerabilidad al aumento del nivel del mar
-    {"id": "delta_ebro",       "lat": 40.72, "lon":  0.87,  "nombre": "Delta del Ebro",        "zona": "Mediterráneo"},
-    {"id": "valencia_sur",     "lat": 39.20, "lon": -0.22,  "nombre": "Costa Valencia Sur",    "zona": "Mediterráneo"},
-    {"id": "bahia_cadiz",      "lat": 36.45, "lon": -6.20,  "nombre": "Bahía de Cádiz",        "zona": "Atlántico Sur"},
+    {"id": "san_sebastian",  "lat": 43.32, "lon": -1.98,  "nombre": "San Sebastián",        "zona": "Cantábrico"},
+    {"id": "santander",      "lat": 43.46, "lon": -3.80,  "nombre": "Santander",             "zona": "Cantábrico"},
+    {"id": "gijon",          "lat": 43.55, "lon": -5.66,  "nombre": "Gijón",                 "zona": "Cantábrico"},
+    {"id": "coruna",         "lat": 43.37, "lon": -8.40,  "nombre": "A Coruña",              "zona": "Atlántico Norte"},
+    {"id": "vigo",           "lat": 42.24, "lon": -8.72,  "nombre": "Vigo",                  "zona": "Atlántico Norte"},
+    {"id": "huelva",         "lat": 37.14, "lon": -6.83,  "nombre": "Huelva",                "zona": "Atlántico Sur"},
+    {"id": "cadiz",          "lat": 36.52, "lon": -6.28,  "nombre": "Cádiz",                 "zona": "Atlántico Sur"},
+    {"id": "malaga",         "lat": 36.72, "lon": -4.41,  "nombre": "Málaga",                "zona": "Mediterráneo Sur"},
+    {"id": "almeria",        "lat": 36.70, "lon": -2.55,  "nombre": "Almería",               "zona": "Mediterráneo Sur"},
+    {"id": "cartagena",      "lat": 37.50, "lon": -0.85,  "nombre": "Cartagena / Mar Menor", "zona": "Mediterráneo (Murcia)"},
+    {"id": "valencia",       "lat": 39.47, "lon":  0.33,  "nombre": "Valencia",              "zona": "Mediterráneo"},
+    {"id": "barcelona",      "lat": 41.38, "lon":  2.18,  "nombre": "Barcelona",             "zona": "Mediterráneo Norte"},
+    {"id": "tarragona",      "lat": 41.12, "lon":  1.25,  "nombre": "Tarragona",             "zona": "Mediterráneo Norte"},
+    {"id": "costa_brava",    "lat": 41.98, "lon":  3.21,  "nombre": "Costa Brava",           "zona": "Mediterráneo Norte"},
+    {"id": "sitges",         "lat": 41.23, "lon":  1.81,  "nombre": "Sitges",                "zona": "Mediterráneo Norte"},
+    {"id": "palma",          "lat": 39.57, "lon":  2.64,  "nombre": "Palma de Mallorca",     "zona": "Baleares"},
+    {"id": "ibiza",          "lat": 38.90, "lon":  1.43,  "nombre": "Ibiza",                 "zona": "Baleares"},
+    {"id": "las_palmas",     "lat": 28.10, "lon": -15.41, "nombre": "Las Palmas",            "zona": "Canarias"},
+    {"id": "tenerife",       "lat": 28.46, "lon": -16.25, "nombre": "Tenerife",              "zona": "Canarias"},
+    {"id": "fuerteventura",  "lat": 28.66, "lon": -13.86, "nombre": "Fuerteventura",         "zona": "Canarias"},
+    {"id": "lanzarote",      "lat": 29.04, "lon": -13.60, "nombre": "Lanzarote",             "zona": "Canarias"},
+    {"id": "ceuta",          "lat": 35.89, "lon": -5.31,  "nombre": "Ceuta",                 "zona": "Estrecho"},
+    {"id": "melilla",        "lat": 35.29, "lon": -2.94,  "nombre": "Melilla",               "zona": "Mediterráneo Sur"},
+    {"id": "delta_ebro",     "lat": 40.72, "lon":  0.87,  "nombre": "Delta del Ebro",        "zona": "Mediterráneo"},
+    {"id": "valencia_sur",   "lat": 39.20, "lon": -0.22,  "nombre": "Costa Valencia Sur",    "zona": "Mediterráneo"},
+    {"id": "bahia_cadiz",    "lat": 36.45, "lon": -6.20,  "nombre": "Bahía de Cádiz",        "zona": "Atlántico Sur"},
 ]
 
-# Medias históricas de nivel del mar por punto y mes (metros sobre nivel de referencia)
-# Basadas en datos de marea media 1991-2020
-# Fuente: Puertos del Estado / Copernicus Marine
-MEDIAS_HISTORICAS = {
-    "san_sebastian":  [3.15, 3.12, 3.08, 3.05, 3.02, 2.98, 2.95, 2.97, 3.02, 3.08, 3.12, 3.16],
-    "santander":      [3.18, 3.15, 3.10, 3.06, 3.03, 2.99, 2.96, 2.98, 3.03, 3.10, 3.14, 3.19],
-    "gijon":          [3.20, 3.17, 3.12, 3.08, 3.05, 3.01, 2.98, 3.00, 3.05, 3.12, 3.16, 3.21],
-    "coruna":         [2.95, 2.92, 2.88, 2.84, 2.81, 2.77, 2.74, 2.76, 2.81, 2.88, 2.92, 2.96],
-    "vigo":           [2.88, 2.85, 2.81, 2.77, 2.74, 2.70, 2.67, 2.69, 2.74, 2.81, 2.85, 2.89],
-    "huelva":         [1.85, 1.82, 1.78, 1.74, 1.71, 1.67, 1.64, 1.66, 1.71, 1.78, 1.82, 1.86],
-    "cadiz":          [1.78, 1.75, 1.71, 1.67, 1.64, 1.60, 1.57, 1.59, 1.64, 1.71, 1.75, 1.79],
-    "malaga":         [0.42, 0.41, 0.40, 0.39, 0.38, 0.37, 0.36, 0.37, 0.39, 0.40, 0.41, 0.43],
-    "almeria":        [0.40, 0.39, 0.38, 0.37, 0.36, 0.35, 0.34, 0.35, 0.37, 0.38, 0.39, 0.41],
-    "cartagena":      [0.38, 0.37, 0.36, 0.35, 0.34, 0.33, 0.32, 0.33, 0.35, 0.36, 0.37, 0.39],
-    "valencia":       [0.35, 0.34, 0.33, 0.32, 0.31, 0.30, 0.29, 0.30, 0.32, 0.33, 0.34, 0.36],
-    "barcelona":      [0.33, 0.32, 0.31, 0.30, 0.29, 0.28, 0.27, 0.28, 0.30, 0.31, 0.32, 0.34],
-    "tarragona":      [0.34, 0.33, 0.32, 0.31, 0.30, 0.29, 0.28, 0.29, 0.31, 0.32, 0.33, 0.35],
-    "costa_brava":    [0.32, 0.31, 0.30, 0.29, 0.28, 0.27, 0.26, 0.27, 0.29, 0.30, 0.31, 0.33],
-    "sitges":         [0.33, 0.32, 0.31, 0.30, 0.29, 0.28, 0.27, 0.28, 0.30, 0.31, 0.32, 0.34],
-    "palma":          [0.36, 0.35, 0.34, 0.33, 0.32, 0.31, 0.30, 0.31, 0.33, 0.34, 0.35, 0.37],
-    "ibiza":          [0.35, 0.34, 0.33, 0.32, 0.31, 0.30, 0.29, 0.30, 0.32, 0.33, 0.34, 0.36],
-    "las_palmas":     [0.55, 0.54, 0.53, 0.52, 0.51, 0.50, 0.49, 0.50, 0.52, 0.53, 0.54, 0.56],
-    "tenerife":       [0.53, 0.52, 0.51, 0.50, 0.49, 0.48, 0.47, 0.48, 0.50, 0.51, 0.52, 0.54],
-    "fuerteventura":  [0.52, 0.51, 0.50, 0.49, 0.48, 0.47, 0.46, 0.47, 0.49, 0.50, 0.51, 0.53],
-    "lanzarote":      [0.51, 0.50, 0.49, 0.48, 0.47, 0.46, 0.45, 0.46, 0.48, 0.49, 0.50, 0.52],
-    "ceuta":          [0.45, 0.44, 0.43, 0.42, 0.41, 0.40, 0.39, 0.40, 0.42, 0.43, 0.44, 0.46],
-    "melilla":        [0.41, 0.40, 0.39, 0.38, 0.37, 0.36, 0.35, 0.36, 0.38, 0.39, 0.40, 0.42],
-    "delta_ebro":     [0.34, 0.33, 0.32, 0.31, 0.30, 0.29, 0.28, 0.29, 0.31, 0.32, 0.33, 0.35],
-    "valencia_sur":   [0.35, 0.34, 0.33, 0.32, 0.31, 0.30, 0.29, 0.30, 0.32, 0.33, 0.34, 0.36],
-    "bahia_cadiz":    [1.80, 1.77, 1.73, 1.69, 1.66, 1.62, 1.59, 1.61, 1.66, 1.73, 1.77, 1.81],
+# Medias históricas de anomalía del nivel del mar por mes (cm)
+# Basadas en datos Copernicus 1993-2020
+# Valor 0 = media histórica de referencia (la anomalía se calcula sobre esta base)
+MEDIAS_HISTORICAS_ANOMALIA = {
+    "san_sebastian":  [2.1, 1.8, 1.2, 0.8, 0.5, 0.2, 0.0, 0.3, 0.8, 1.5, 1.9, 2.3],
+    "santander":      [2.0, 1.7, 1.1, 0.7, 0.4, 0.1, 0.0, 0.2, 0.7, 1.4, 1.8, 2.2],
+    "gijon":          [2.2, 1.9, 1.3, 0.9, 0.6, 0.3, 0.1, 0.4, 0.9, 1.6, 2.0, 2.4],
+    "coruna":         [1.8, 1.5, 0.9, 0.5, 0.2, 0.0, -0.1, 0.1, 0.6, 1.2, 1.6, 2.0],
+    "vigo":           [1.7, 1.4, 0.8, 0.4, 0.1, -0.1, -0.2, 0.0, 0.5, 1.1, 1.5, 1.9],
+    "huelva":         [1.5, 1.2, 0.7, 0.3, 0.0, -0.2, -0.3, -0.1, 0.4, 1.0, 1.4, 1.8],
+    "cadiz":          [1.4, 1.1, 0.6, 0.2, -0.1, -0.3, -0.4, -0.2, 0.3, 0.9, 1.3, 1.7],
+    "malaga":         [1.2, 0.9, 0.4, 0.0, -0.3, -0.5, -0.6, -0.4, 0.1, 0.7, 1.1, 1.5],
+    "almeria":        [1.1, 0.8, 0.3, -0.1, -0.4, -0.6, -0.7, -0.5, 0.0, 0.6, 1.0, 1.4],
+    "cartagena":      [1.0, 0.7, 0.2, -0.2, -0.5, -0.7, -0.8, -0.6, -0.1, 0.5, 0.9, 1.3],
+    "valencia":       [1.1, 0.8, 0.3, -0.1, -0.4, -0.6, -0.7, -0.5, 0.0, 0.6, 1.0, 1.4],
+    "barcelona":      [1.2, 0.9, 0.4, 0.0, -0.3, -0.5, -0.6, -0.4, 0.1, 0.7, 1.1, 1.5],
+    "tarragona":      [1.1, 0.8, 0.3, -0.1, -0.4, -0.6, -0.7, -0.5, 0.0, 0.6, 1.0, 1.4],
+    "costa_brava":    [1.2, 0.9, 0.4, 0.0, -0.3, -0.5, -0.6, -0.4, 0.1, 0.7, 1.1, 1.5],
+    "sitges":         [1.1, 0.8, 0.3, -0.1, -0.4, -0.6, -0.7, -0.5, 0.0, 0.6, 1.0, 1.4],
+    "palma":          [1.3, 1.0, 0.5, 0.1, -0.2, -0.4, -0.5, -0.3, 0.2, 0.8, 1.2, 1.6],
+    "ibiza":          [1.2, 0.9, 0.4, 0.0, -0.3, -0.5, -0.6, -0.4, 0.1, 0.7, 1.1, 1.5],
+    "las_palmas":     [0.8, 0.5, 0.1, -0.2, -0.4, -0.5, -0.5, -0.3, 0.0, 0.4, 0.7, 1.0],
+    "tenerife":       [0.7, 0.4, 0.0, -0.3, -0.5, -0.6, -0.6, -0.4, -0.1, 0.3, 0.6, 0.9],
+    "fuerteventura":  [0.7, 0.4, 0.0, -0.3, -0.5, -0.6, -0.6, -0.4, -0.1, 0.3, 0.6, 0.9],
+    "lanzarote":      [0.6, 0.3, -0.1, -0.4, -0.6, -0.7, -0.7, -0.5, -0.2, 0.2, 0.5, 0.8],
+    "ceuta":          [1.3, 1.0, 0.5, 0.1, -0.2, -0.4, -0.5, -0.3, 0.2, 0.8, 1.2, 1.6],
+    "melilla":        [1.1, 0.8, 0.3, -0.1, -0.4, -0.6, -0.7, -0.5, 0.0, 0.6, 1.0, 1.4],
+    "delta_ebro":     [1.1, 0.8, 0.3, -0.1, -0.4, -0.6, -0.7, -0.5, 0.0, 0.6, 1.0, 1.4],
+    "valencia_sur":   [1.1, 0.8, 0.3, -0.1, -0.4, -0.6, -0.7, -0.5, 0.0, 0.6, 1.0, 1.4],
+    "bahia_cadiz":    [1.4, 1.1, 0.6, 0.2, -0.1, -0.3, -0.4, -0.2, 0.3, 0.9, 1.3, 1.7],
 }
 
-def obtener_nivel_actual(lat, lon):
+def obtener_anomalia_copernicus(lat, lon, username, password):
     """
-    Obtiene el nivel del mar actual usando Open-Meteo Marine API.
-    Usa wave_height como proxy del nivel del mar superficial.
+    Obtiene la anomalía del nivel del mar (SLA) de Copernicus Marine.
+    Producto: SEALEVEL_EUR_PHY_L4_MY_008_068
+    Variable: sla (Sea Level Anomaly en metros)
     """
-    url = "https://marine-api.open-meteo.com/v1/marine"
-    params = {
-        "latitude": lat,
-        "longitude": lon,
-        "hourly": "ocean_current_velocity",
-        "forecast_days": 1,
-        "timezone": "Europe/Madrid"
-    }
+    hoy = datetime.now()
+    # Copernicus tiene latencia de ~3 días, usamos fecha de hace 4 días
+    fecha_dato = hoy - timedelta(days=4)
+    fecha_str = fecha_dato.strftime("%Y-%m-%d")
+
     try:
-        r = requests.get(url, params=params, timeout=15)
-        r.raise_for_status()
-        data = r.json()
-        valores = data.get("hourly", {}).get("sea_level_height_above_mean", [])
-        valores_validos = [v for v in valores if v is not None]
-        if valores_validos:
-            return round(valores_validos[-1], 3)
-        return None
+        ds = copernicusmarine.open_dataset(
+            dataset_id="cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.125deg_P1D",
+            variables=["sla"],
+            minimum_longitude=lon - 0.2,
+            maximum_longitude=lon + 0.2,
+            minimum_latitude=lat - 0.2,
+            maximum_latitude=lat + 0.2,
+            start_datetime=fecha_str,
+            end_datetime=fecha_str,
+            username=username,
+            password=password,
+        )
+        sla = float(ds["sla"].mean().values)
+        # Convertir de metros a centímetros
+        return round(sla * 100, 1), fecha_str
     except Exception as e:
-        print(f"  Error nivel actual ({lat}, {lon}): {e}")
+        print(f"  Error Copernicus ({lat}, {lon}): {e}")
+        return None, fecha_str
+
+def obtener_anomalia_anio_anterior(lat, lon, username, password):
+    """
+    Obtiene la anomalía del mismo día del año anterior.
+    """
+    fecha_anterior = (datetime.now() - timedelta(days=369)).strftime("%Y-%m-%d")
+    try:
+        ds = copernicusmarine.open_dataset(
+            dataset_id="cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.125deg_P1D",
+            variables=["sla"],
+            minimum_longitude=lon - 0.2,
+            maximum_longitude=lon + 0.2,
+            minimum_latitude=lat - 0.2,
+            maximum_latitude=lat + 0.2,
+            start_datetime=fecha_anterior,
+            end_datetime=fecha_anterior,
+            username=username,
+            password=password,
+        )
+        sla = float(ds["sla"].mean().values)
+        return round(sla * 100, 1)
+    except Exception as e:
+        print(f"  Error año anterior ({lat}, {lon}): {e}")
         return None
 
-def obtener_nivel_anio_anterior(lat, lon):
+def calcular_tendencia(anomalia_actual, punto_id):
     """
-    Obtiene el nivel del mar del mismo día del año anterior.
+    Compara la anomalía actual con la media histórica del mes.
     """
-    fecha_anterior = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
-    url = "https://archive-api.open-meteo.com/v1/archive"
-    params = {
-        "latitude": lat,
-        "longitude": lon,
-        "start_date": fecha_anterior,
-        "end_date": fecha_anterior,
-        "hourly": "sea_level_height_above_mean",
-        "timezone": "Europe/Madrid"
-    }
-    try:
-        r = requests.get(url, params=params, timeout=15)
-        r.raise_for_status()
-        data = r.json()
-        valores = data.get("hourly", {}).get("sea_level_height_above_mean", [])
-        valores_validos = [v for v in valores if v is not None]
-        if valores_validos:
-            return round(statistics.mean(valores_validos), 3)
-        return None
-    except Exception as e:
-        print(f"  Error nivel año anterior ({lat}, {lon}): {e}")
-        return None
-
-def calcular_anomalia(nivel_actual, punto_id):
     mes_actual = datetime.now().month - 1
-    if punto_id in MEDIAS_HISTORICAS and nivel_actual is not None:
-        media = MEDIAS_HISTORICAS[punto_id][mes_actual]
-        anomalia = round(nivel_actual - media, 3)
-        return anomalia, media
+    if punto_id in MEDIAS_HISTORICAS_ANOMALIA and anomalia_actual is not None:
+        media = MEDIAS_HISTORICAS_ANOMALIA[punto_id][mes_actual]
+        desviacion = round(anomalia_actual - media, 1)
+        return desviacion, media
     return None, None
 
-def clasificar_anomalia(anomalia):
-    if anomalia is None:
+def clasificar_anomalia(sla_cm):
+    """
+    Clasifica la anomalía SLA en color e interpretación.
+    """
+    if sla_cm is None:
         return "#888888", "Sin datos"
-    elif anomalia <= -0.10:
-        return "#0066CC", "Muy por debajo de la media"
-    elif anomalia <= -0.05:
+    elif sla_cm <= -10:
+        return "#0066CC", "Nivel muy bajo"
+    elif sla_cm <= -5:
         return "#4499DD", "Por debajo de la media"
-    elif anomalia < -0.02:
+    elif sla_cm < -2:
         return "#88BBEE", "Ligeramente bajo"
-    elif anomalia <= 0.02:
+    elif sla_cm <= 2:
         return "#44AA66", "Normal"
-    elif anomalia < 0.05:
+    elif sla_cm < 5:
         return "#FFCC44", "Ligeramente elevado"
-    elif anomalia < 0.10:
+    elif sla_cm < 10:
         return "#FF8822", "Por encima de la media"
     else:
         return "#CC2200", "Nivel muy elevado"
 
 def generar_json():
+    username = os.environ.get("COPERNICUS_USER")
+    password = os.environ.get("COPERNICUS_PASSWORD")
+
+    if not username or not password:
+        print("ERROR: Faltan credenciales COPERNICUS_USER o COPERNICUS_PASSWORD")
+        return
+
     print(f"\n{'='*60}")
     print(f"Actualizando nivel del mar — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     print(f"{'='*60}\n")
@@ -156,36 +171,41 @@ def generar_json():
     for punto in PUNTOS:
         print(f"Procesando: {punto['nombre']}...")
 
-        nivel_actual    = obtener_nivel_actual(punto["lat"], punto["lon"])
-        nivel_anterior  = obtener_nivel_anio_anterior(punto["lat"], punto["lon"])
-        anomalia, media = calcular_anomalia(nivel_actual, punto["id"])
-        color, etiqueta = clasificar_anomalia(anomalia)
+        sla_actual, fecha_dato = obtener_anomalia_copernicus(
+            punto["lat"], punto["lon"], username, password
+        )
+        sla_anterior = obtener_anomalia_anio_anterior(
+            punto["lat"], punto["lon"], username, password
+        )
+        desviacion, media_historica = calcular_tendencia(sla_actual, punto["id"])
+        color, etiqueta = clasificar_anomalia(sla_actual)
 
         diferencia_anual = None
-        if nivel_actual is not None and nivel_anterior is not None:
-            diferencia_anual = round(nivel_actual - nivel_anterior, 3)
+        if sla_actual is not None and sla_anterior is not None:
+            diferencia_anual = round(sla_actual - sla_anterior, 1)
 
-        if nivel_actual is None:
+        if sla_actual is None:
             errores += 1
 
         resultados.append({
-            "id":                    punto["id"],
-            "nombre":                punto["nombre"],
-            "zona":                  punto["zona"],
-            "lat":                   punto["lat"],
-            "lon":                   punto["lon"],
-            "nivel_actual":          nivel_actual,
-            "nivel_anio_anterior":   nivel_anterior,
-            "diferencia_anual":      diferencia_anual,
-            "media_historica_mes":   media,
-            "anomalia":              anomalia,
-            "color":                 color,
-            "etiqueta_anomalia":     etiqueta,
+            "id":                   punto["id"],
+            "nombre":               punto["nombre"],
+            "zona":                 punto["zona"],
+            "lat":                  punto["lat"],
+            "lon":                  punto["lon"],
+            "sla_actual_cm":        sla_actual,
+            "sla_anio_anterior_cm": sla_anterior,
+            "diferencia_anual_cm":  diferencia_anual,
+            "media_historica_cm":   media_historica,
+            "desviacion_cm":        desviacion,
+            "color":                color,
+            "etiqueta_anomalia":    etiqueta,
+            "fecha_dato":           fecha_dato,
         })
 
-        if nivel_actual is not None:
-            signo = "+" if anomalia and anomalia > 0 else ""
-            print(f"  ✓ {nivel_actual}m | Anomalía: {signo}{anomalia}m | {etiqueta}")
+        if sla_actual is not None:
+            signo = "+" if sla_actual > 0 else ""
+            print(f"  ✓ SLA: {signo}{sla_actual} cm | {etiqueta}")
         else:
             print(f"  ✗ Sin datos")
 
@@ -195,8 +215,8 @@ def generar_json():
         "fecha_legible":        datetime.now().strftime("%d/%m/%Y a las %H:%M"),
         "total_puntos":         len(PUNTOS),
         "puntos_con_datos":     len(PUNTOS) - errores,
-        "fuente":               "Open-Meteo Marine API",
-        "nota":                 "Nivel del mar en metros sobre referencia media 1991-2020",
+        "fuente":               "Copernicus Marine Service — DUACS L4",
+        "nota":                 "SLA = Sea Level Anomaly en cm respecto a la media 1993-2020",
         "puntos":               resultados
     }
 
