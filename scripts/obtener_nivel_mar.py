@@ -79,7 +79,7 @@ def obtener_anomalia_copernicus(lat, lon, username, password):
 
     try:
         ds = copernicusmarine.open_dataset(
-            dataset_id="cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.125deg_P1D",
+            dataset_id="cmems_obs-sl_glo_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D",
             variables=["sla"],
             minimum_longitude=lon - 0.2,
             maximum_longitude=lon + 0.2,
@@ -104,7 +104,7 @@ def obtener_anomalia_anio_anterior(lat, lon, username, password):
     fecha_anterior = (datetime.now() - timedelta(days=369)).strftime("%Y-%m-%d")
     try:
         ds = copernicusmarine.open_dataset(
-            dataset_id="cmems_obs-sl_eur_phy-ssh_my_allsat-l4-duacs-0.125deg_P1D",
+            dataset_id="cmems_obs-sl_glo_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D",
             variables=["sla"],
             minimum_longitude=lon - 0.2,
             maximum_longitude=lon + 0.2,
