@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Temperatura del Mar en España</title>
+<title>Nivel del Mar en España — Anomalía en Tiempo Real</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,10 +47,7 @@
     font-size: 11px;
     color: #7aaabb;
   }
-  #leyenda strong {
-    color: #9bbccc;
-    font-weight: 500;
-  }
+  #leyenda strong { color: #9bbccc; font-weight: 500; }
   .leyenda-item { display: flex; align-items: center; gap: 4px; color: #7aaabb; }
   .leyenda-punto {
     width: 10px; height: 10px;
@@ -74,30 +71,26 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 64px;
+    min-width: 68px;
     white-space: nowrap;
     backdrop-filter: blur(2px);
   }
   .marcador-nombre {
-    font-size: 9px;
-    font-weight: 700;
+    font-size: 9px; font-weight: 700;
     color: rgba(255,255,255,0.9);
     text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     letter-spacing: 0.2px;
     line-height: 1.2;
   }
-  .marcador-temp {
-    font-size: 13px;
-    font-weight: 800;
+  .marcador-nivel {
+    font-size: 13px; font-weight: 800;
     color: white;
     text-shadow: 0 1px 4px rgba(0,0,0,0.8);
     line-height: 1.2;
   }
   .marcador-fila {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    margin-top: 1px;
+    display: flex; gap: 5px;
+    align-items: center; margin-top: 1px;
   }
   .marcador-anterior {
     font-size: 9px;
@@ -105,12 +98,9 @@
     text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   }
   .marcador-anomalia {
-    font-size: 9px;
-    font-weight: 700;
-    color: white;
+    font-size: 9px; font-weight: 700; color: white;
     background: rgba(0,0,0,0.35);
-    border-radius: 4px;
-    padding: 0 3px;
+    border-radius: 4px; padding: 0 3px;
     text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   }
   .marcador-punta {
@@ -121,7 +111,7 @@
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
   }
 
-  /* POPUP */
+  /* POPUP OSCURO */
   .leaflet-popup-content-wrapper {
     background: #0d1f35 !important;
     border: 1px solid #1e4060 !important;
@@ -129,15 +119,9 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.7) !important;
     color: #e0eef8 !important;
   }
-  .leaflet-popup-tip {
-    background: #0d1f35 !important;
-  }
-  .leaflet-popup-close-button {
-    color: #4a7a9b !important;
-  }
-  .leaflet-popup-close-button:hover {
-    color: #e0eef8 !important;
-  }
+  .leaflet-popup-tip { background: #0d1f35 !important; }
+  .leaflet-popup-close-button { color: #4a7a9b !important; }
+  .leaflet-popup-close-button:hover { color: #e0eef8 !important; }
 
   .popup-titulo { font-weight: 700; font-size: 14px; margin-bottom: 3px; color: #e8f4ff; }
   .popup-zona { font-size: 11px; color: #4a7a9b; margin-bottom: 10px; }
@@ -156,10 +140,14 @@
     font-size: 10px; font-weight: 700; color: white;
     letter-spacing: 0.03em;
   }
+  .popup-nota {
+    font-size: 10px; color: #4a7a9b;
+    margin-top: 8px; font-style: italic;
+  }
   .pos { color: #ff6644; }
   .neg { color: #44aaff; }
 
-  /* Leaflet zoom control dark */
+  /* Controles dark */
   .leaflet-control-zoom a {
     background: #0d1f35 !important;
     color: #7aaabb !important;
@@ -169,34 +157,30 @@
     background: #1a3a5c !important;
     color: #e0eef8 !important;
   }
-
-  /* Attribution dark */
   .leaflet-control-attribution {
     background: rgba(6,14,26,0.85) !important;
     color: #4a7a9b !important;
     font-size: 10px !important;
   }
-  .leaflet-control-attribution a {
-    color: #4a9aab !important;
-  }
+  .leaflet-control-attribution a { color: #4a9aab !important; }
 </style>
 </head>
 <body>
 
 <div id="cabecera">
-  <h2>🌊 Temperatura del Mar en España</h2>
+  <h2>🌊 Nivel del Mar en España — Anomalía en Tiempo Real</h2>
   <span id="ultima-actualizacion">Cargando...</span>
 </div>
 
 <div id="leyenda">
   <strong>Anomalía:</strong>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#0066CC"></div> &lt; −2°C</div>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#4499DD"></div> −2 a −1°C</div>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#88BBEE"></div> −1 a −0.3°C</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#0066CC"></div> &lt; −10cm</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#4499DD"></div> −10 a −5cm</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#88BBEE"></div> −5 a −2cm</div>
   <div class="leyenda-item"><div class="leyenda-punto" style="background:#44AA66"></div> Normal</div>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FFCC44"></div> +0.3 a +1°C</div>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FF8822"></div> +1 a +2°C</div>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#CC2200"></div> &gt; +2°C</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FFCC44"></div> +2 a +5cm</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FF8822"></div> +5 a +10cm</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#CC2200"></div> &gt; +10cm</div>
   <span style="margin-left:auto;font-size:10px;color:#4a7a9b">Clic en un punto para más detalles</span>
 </div>
 
@@ -204,7 +188,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const JSON_URL = 'https://DavidBebow.github.io/temperaturas-mar-espana/datos.json';
+const JSON_URL = 'https://DavidBebow.github.io/temperaturas-mar-espana/nivel_mar.json';
 
 const mapa = L.map('mapa', {
   center: [39.8, -3.0],
@@ -212,38 +196,44 @@ const mapa = L.map('mapa', {
   zoomControl: true
 });
 
-// Capa oscura estilo Portus — Esri Dark Gray
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '© Esri | Datos: Open-Meteo Marine API',
+  attribution: '© Esri | Datos: Copernicus Marine Service',
   maxZoom: 16
 }).addTo(mapa);
 
-// Capa de referencia con nombres de lugares
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
   attribution: '',
   maxZoom: 16,
   opacity: 0.7
 }).addTo(mapa);
 
-function signo(v) {
+function slaStr(v) {
   if (v === null || v === undefined) return '—';
-  return (v > 0 ? '+' : '') + v + '°C';
+  return (v > 0 ? '+' : '') + v + ' cm';
 }
 
-function crearIconoEtiqueta(punto) {
-  const color = punto.color;
-  const temp  = punto.temperatura_actual !== null ? punto.temperatura_actual + '°C' : '—';
-  const ant   = punto.temperatura_anio_anterior !== null ? punto.temperatura_anio_anterior + '°C' : '—';
-  const anom  = punto.anomalia !== null ? signo(punto.anomalia) : '—';
+function formatDif(valor) {
+  if (valor === null || valor === undefined) return '—';
+  const cls = valor > 0 ? 'pos' : valor < 0 ? 'neg' : '';
+  return `<span class="${cls}">${slaStr(valor)}</span>`;
+}
+
+function crearIcono(punto) {
+  const color    = punto.color;
+  const sla      = punto.sla_actual_cm !== null ? slaStr(punto.sla_actual_cm) : '—';
+  const anterior = punto.sla_anio_anterior_cm !== null ? slaStr(punto.sla_anio_anterior_cm) : '—';
+  const desv     = punto.desviacion_cm !== null
+    ? (punto.desviacion_cm > 0 ? '+' : '') + punto.desviacion_cm
+    : '—';
 
   const html = `
     <div class="marcador-wrapper">
       <div class="marcador-burbuja" style="background:${color}cc">
         <div class="marcador-nombre">${punto.nombre}</div>
-        <div class="marcador-temp">${temp}</div>
+        <div class="marcador-nivel">${sla}</div>
         <div class="marcador-fila">
-          <span class="marcador-anterior">Ant: ${ant}</span>
-          <span class="marcador-anomalia">${anom}</span>
+          <span class="marcador-anterior">Ant: ${anterior}</span>
+          <span class="marcador-anomalia">${desv}</span>
         </div>
       </div>
       <div class="marcador-punta" style="border-top:8px solid ${color}cc"></div>
@@ -253,15 +243,9 @@ function crearIconoEtiqueta(punto) {
     html,
     className: '',
     iconSize: null,
-    iconAnchor: [40, 52],
-    popupAnchor: [0, -55]
+    iconAnchor: [42, 54],
+    popupAnchor: [0, -57]
   });
-}
-
-function formatDif(valor) {
-  if (valor === null || valor === undefined) return '—';
-  const cls = valor > 0 ? 'pos' : valor < 0 ? 'neg' : '';
-  return `<span class="${cls}">${signo(valor)}</span>`;
 }
 
 fetch(JSON_URL + '?t=' + Date.now())
@@ -271,38 +255,45 @@ fetch(JSON_URL + '?t=' + Date.now())
       'Actualizado: ' + data.fecha_legible;
 
     data.puntos.forEach(p => {
-      if (!p.temperatura_actual) return;
+      if (p.sla_actual_cm === null || p.sla_actual_cm === undefined) return;
 
-      const icono = crearIconoEtiqueta(p);
+      const icono = crearIcono(p);
 
       const popup = `
-        <div style="min-width:210px">
+        <div style="min-width:220px">
           <div class="popup-titulo">${p.nombre}</div>
           <div class="popup-zona">📍 ${p.zona}</div>
           <div class="popup-dato">
-            <span>Temperatura actual</span>
-            <span>${p.temperatura_actual}°C</span>
+            <span>Anomalía actual (SLA)</span>
+            <span>${slaStr(p.sla_actual_cm)}</span>
           </div>
           <div class="popup-dato">
             <span>Mismo día año anterior</span>
-            <span>${p.temperatura_anio_anterior !== null ? p.temperatura_anio_anterior + '°C' : '—'}</span>
+            <span>${slaStr(p.sla_anio_anterior_cm)}</span>
           </div>
           <div class="popup-dato">
             <span>Diferencia vs año anterior</span>
-            <span>${formatDif(p.diferencia_anual)}</span>
+            <span>${formatDif(p.diferencia_anual_cm)}</span>
           </div>
           <div class="popup-dato">
             <span>Media histórica del mes</span>
-            <span>${p.media_historica_mes !== null ? p.media_historica_mes + '°C' : '—'}</span>
+            <span>${p.media_historica_cm !== null ? slaStr(p.media_historica_cm) : '—'}</span>
           </div>
           <div class="popup-dato">
-            <span>Anomalía histórica</span>
-            <span>${formatDif(p.anomalia)}</span>
+            <span>Desviación sobre histórico</span>
+            <span>${formatDif(p.desviacion_cm)}</span>
+          </div>
+          <div class="popup-dato">
+            <span>Fecha del dato</span>
+            <span>${p.fecha_dato || '—'}</span>
           </div>
           <div>
             <span class="popup-tag" style="background:${p.color}99;border:1px solid ${p.color}">
               ${p.etiqueta_anomalia}
             </span>
+          </div>
+          <div class="popup-nota">
+            Fuente: Copernicus Marine DUACS L4 · Referencia 1993-2012
           </div>
         </div>`;
 
