@@ -2,7 +2,11 @@ name: Actualizar nivel del mar
 
 on:
   schedule:
+    - cron: '1 22 * * *'
+    - cron: '1 23 * * *'
     - cron: '0 7 * * *'
+    - cron: '0 8 * * *'
+    - cron: '0 12 * * *'
     - cron: '0 13 * * *'
   workflow_dispatch:
 
@@ -15,14 +19,23 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Instalar dependencias
-        run: pip install requests
+        run: pip install copernicusmarine numpy
+
       - name: Ejecutar script
+        env:
+          COPERNICUS_USER: ${{ secrets.COPERNICUS_USER }}
+          COPERNICUS_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
         run: python scripts/obtener_nivel_mar.py
+
       - name: Guardar cambios
         run: |
           git config --local user.email "accion@github.com"
