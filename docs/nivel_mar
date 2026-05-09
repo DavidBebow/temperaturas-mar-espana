@@ -110,7 +110,7 @@
 <body>
 
 <div id="cabecera">
-  <h2>🌊 Nivel del Mar en España — Tiempo Real</h2>
+  <h2>🌊 Nivel del Mar en España — Anomalía en Tiempo Real</h2>
   <span id="ultima-actualizacion">Cargando...</span>
 </div>
 
@@ -130,7 +130,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const JSON_URL = 'https://TU_USUARIO.github.io/temperaturas-mar-espana/nivel_mar.json';
+const JSON_URL = 'https://DavidBebow.github.io/temperaturas-mar-espana/nivel_mar.json';
 
 const mapa = L.map('mapa', {
   center: [39.8, -3.0],
@@ -139,40 +139,37 @@ const mapa = L.map('mapa', {
 });
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap | Datos: Open-Meteo Marine API',
+  attribution: '© OpenStreetMap | Datos: Copernicus Marine Service',
   maxZoom: 10
 }).addTo(mapa);
 
-function signo(v, decimales) {
-  if (v === null || v === undefined) return '—';
-  const d = decimales !== undefined ? decimales : 2;
-  return (v > 0 ? '+' : '') + v.toFixed(d);
+function formatDif(valor, fn) {
+  if (valor === null || valor === undefined) return '—';
+  const cls = valor > 0 ? 'pos' : valor < 0 ? 'neg' : '';
+  return `<span class="${cls}">${fn(valor)}</span>`;
 }
 
-function mCm(v) {
+function slaStr(v) {
   if (v === null || v === undefined) return '—';
-  const cm = Math.round(v * 100);
-  return (cm > 0 ? '+' : '') + cm + ' cm';
+  return (v > 0 ? '+' : '') + v + ' cm';
 }
 
 function crearIcono(punto) {
   const color = punto.color;
-  const nivel = punto.nivel_actual !== null
-    ? punto.nivel_actual.toFixed(2) + 'm'
+  const sla = punto.sla_actual_cm !== null ? slaStr(punto.sla_actual_cm) : '—';
+  const anterior = punto.sla_anio_anterior_cm !== null ? slaStr(punto.sla_anio_anterior_cm) : '—';
+  const desv = punto.desviacion_cm !== null
+    ? (punto.desviacion_cm > 0 ? '+' : '') + punto.desviacion_cm
     : '—';
-  const anterior = punto.nivel_anio_anterior !== null
-    ? punto.nivel_anio_anterior.toFixed(2) + 'm'
-    : '—';
-  const anomalia = punto.anomalia !== null ? mCm(punto.anomalia) : '—';
 
   const html = `
     <div class="marcador-wrapper">
       <div class="marcador-burbuja" style="background:${color}">
         <div class="marcador-nombre">${punto.nombre}</div>
-        <div class="marcador-nivel">${nivel}</div>
+        <div class="marcador-nivel">${sla}</div>
         <div class="marcador-fila">
           <span class="marcador-anterior">Ant: ${anterior}</span>
-          <span class="marcador-anomalia">${anomalia}</span>
+          <span class="marcador-anomalia">${desv}</span>
         </div>
       </div>
       <div class="marcador-punta" style="border-top:8px solid ${color}"></div>
@@ -187,12 +184,6 @@ function crearIcono(punto) {
   });
 }
 
-function formatDif(valor, fn) {
-  if (valor === null || valor === undefined) return '—';
-  const cls = valor > 0 ? 'pos' : valor < 0 ? 'neg' : '';
-  return `<span class="${cls}">${fn(valor)}</span>`;
-}
-
 fetch(JSON_URL + '?t=' + Date.now())
   .then(r => r.json())
   .then(data => {
@@ -200,7 +191,7 @@ fetch(JSON_URL + '?t=' + Date.now())
       'Actualizado: ' + data.fecha_legible;
 
     data.puntos.forEach(p => {
-      if (p.nivel_actual === null || p.nivel_actual === undefined) return;
+      if (p.sla_actual_cm === null || p.sla_actual_cm === undefined) return;
 
       const icono = crearIcono(p);
 
@@ -209,31 +200,37 @@ fetch(JSON_URL + '?t=' + Date.now())
           <div class="popup-titulo">${p.nombre}</div>
           <div class="popup-zona">📍 ${p.zona}</div>
           <div class="popup-dato">
-            <span>Nivel actual</span>
-            <span>${p.nivel_actual.toFixed(2)} m</span>
+            <span>Anomalía actual (SLA)</span>
+            <span>${slaStr(p.sla_actual_cm)}</span>
           </div>
           <div class="popup-dato">
             <span>Mismo día año anterior</span>
-            <span>${p.nivel_anio_anterior !== null ? p.nivel_anio_anterior.toFixed(2) + ' m' : '—'}</span>
+            <span>${slaStr(p.sla_anio_anterior_cm)}</span>
           </div>
           <div class="popup-dato">
             <span>Diferencia vs año anterior</span>
-            <span>${formatDif(p.diferencia_anual, v => mCm(v))}</span>
+            <span>${formatDif(p.diferencia_anual_cm, slaStr)}</span>
           </div>
           <div class="popup-dato">
             <span>Media histórica del mes</span>
-            <span>${p.media_historica_mes !== null ? p.media_historica_mes.toFixed(2) + ' m' : '—'}</span>
+            <span>${p.media_historica_cm !== null ? slaStr(p.media_historica_cm) : '—'}</span>
           </div>
           <div class="popup-dato">
-            <span>Anomalía histórica</span>
-            <span>${formatDif(p.anomalia, v => mCm(v))}</span>
+            <span>Desviación sobre histórico</span>
+            <span>${formatDif(p.desviacion_cm, slaStr)}</span>
+          </div>
+          <div class="popup-dato">
+            <span>Fecha del dato</span>
+            <span>${p.fecha_dato || '—'}</span>
           </div>
           <div>
             <span class="popup-tag" style="background:${p.color}">
               ${p.etiqueta_anomalia}
             </span>
           </div>
-          <div class="popup-nota">Nivel medio sobre referencia 1991-2020</div>
+          <div class="popup-nota">
+            Fuente: Copernicus Marine DUACS L4 · Referencia 1993-2020
+          </div>
         </div>`;
 
       const marker = L.marker([p.lat, p.lon], { icon: icono })
