@@ -75,7 +75,7 @@ def obtener_nivel_actual(lat, lon):
     params = {
         "latitude": lat,
         "longitude": lon,
-        "hourly": "sea_level_height_above_mean",
+        "hourly": "ocean_current_velocity",
         "forecast_days": 1,
         "timezone": "Europe/Madrid"
     }
