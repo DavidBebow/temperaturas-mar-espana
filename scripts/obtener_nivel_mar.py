@@ -3,7 +3,6 @@ import json
 import os
 import numpy as np
 from datetime import datetime, timedelta
-import statistics
 
 PUNTOS = [
     {"id": "san_sebastian",  "lat": 43.32, "lon": -1.98,  "nombre": "San Sebastián",        "zona": "Cantábrico"},
@@ -34,9 +33,6 @@ PUNTOS = [
     {"id": "bahia_cadiz",    "lat": 36.45, "lon": -6.20,  "nombre": "Bahía de Cádiz",        "zona": "Atlántico Sur"},
 ]
 
-# Medias históricas de anomalía del nivel del mar por mes (cm)
-# Basadas en datos Copernicus 1993-2020
-# Valor 0 = media histórica de referencia (la anomalía se calcula sobre esta base)
 MEDIAS_HISTORICAS_ANOMALIA = {
     "san_sebastian":  [2.1, 1.8, 1.2, 0.8, 0.5, 0.2, 0.0, 0.3, 0.8, 1.5, 1.9, 2.3],
     "santander":      [2.0, 1.7, 1.1, 0.7, 0.4, 0.1, 0.0, 0.2, 0.7, 1.4, 1.8, 2.2],
@@ -66,76 +62,94 @@ MEDIAS_HISTORICAS_ANOMALIA = {
     "bahia_cadiz":    [1.4, 1.1, 0.6, 0.2, -0.1, -0.3, -0.4, -0.2, 0.3, 0.9, 1.3, 1.7],
 }
 
-def obtener_anomalia_copernicus(lat, lon, username, password):
-    """
-    Obtiene la anomalía del nivel del mar (SLA) de Copernicus Marine.
-    Producto: SEALEVEL_EUR_PHY_L4_MY_008_068
-    Variable: sla (Sea Level Anomaly en metros)
-    """
+def obtener_todos_los_datos(puntos, username, password):
     hoy = datetime.now()
-    # Copernicus tiene latencia de ~3 días, usamos fecha de hace 4 días
-    fecha_dato = hoy - timedelta(days=4)
-    fecha_str = fecha_dato.strftime("%Y-%m-%d")
+    fecha_actual   = (hoy - timedelta(days=4)).strftime("%Y-%m-%d")
+    fecha_anterior = (hoy - timedelta(days=369)).strftime("%Y-%m-%d")
 
+    lats = [p["lat"] for p in puntos]
+    lons = [p["lon"] for p in puntos]
+    lat_min = min(lats) - 0.3
+    lat_max = max(lats) + 0.3
+    lon_min = min(lons) - 0.3
+    lon_max = max(lons) + 0.3
+
+    resultados_actual   = {}
+    resultados_anterior = {}
+
+    print(f"\nDescargando datos actuales ({fecha_actual})...")
     try:
         ds = copernicusmarine.open_dataset(
             dataset_id="cmems_obs-sl_glo_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D",
             variables=["sla"],
-            minimum_longitude=lon - 0.2,
-            maximum_longitude=lon + 0.2,
-            minimum_latitude=lat - 0.2,
-            maximum_latitude=lat + 0.2,
-            start_datetime=fecha_str,
-            end_datetime=fecha_str,
+            minimum_longitude=lon_min,
+            maximum_longitude=lon_max,
+            minimum_latitude=lat_min,
+            maximum_latitude=lat_max,
+            start_datetime=fecha_actual,
+            end_datetime=fecha_actual,
             username=username,
             password=password,
         )
-        sla = float(ds["sla"].mean().values)
-        # Convertir de metros a centímetros
-        return round(sla * 100, 1), fecha_str
+        for punto in puntos:
+            try:
+                sla = float(ds["sla"].sel(
+                    latitude=punto["lat"],
+                    longitude=punto["lon"],
+                    method="nearest"
+                ).mean().values)
+                resultados_actual[punto["id"]] = (round(sla * 100, 1), fecha_actual)
+                print(f"  ✓ {punto['nombre']}: {round(sla * 100, 1)} cm")
+            except Exception as e:
+                print(f"  ✗ {punto['nombre']}: {e}")
+                resultados_actual[punto["id"]] = (None, fecha_actual)
     except Exception as e:
-        print(f"  Error Copernicus ({lat}, {lon}): {e}")
-        return None, fecha_str
+        print(f"Error descarga actual: {e}")
+        for punto in puntos:
+            resultados_actual[punto["id"]] = (None, fecha_actual)
 
-def obtener_anomalia_anio_anterior(lat, lon, username, password):
-    """
-    Obtiene la anomalía del mismo día del año anterior.
-    """
-    fecha_anterior = (datetime.now() - timedelta(days=369)).strftime("%Y-%m-%d")
+    print(f"\nDescargando datos año anterior ({fecha_anterior})...")
     try:
-        ds = copernicusmarine.open_dataset(
+        ds_ant = copernicusmarine.open_dataset(
             dataset_id="cmems_obs-sl_glo_phy-ssh_nrt_allsat-l4-duacs-0.125deg_P1D",
             variables=["sla"],
-            minimum_longitude=lon - 0.2,
-            maximum_longitude=lon + 0.2,
-            minimum_latitude=lat - 0.2,
-            maximum_latitude=lat + 0.2,
+            minimum_longitude=lon_min,
+            maximum_longitude=lon_max,
+            minimum_latitude=lat_min,
+            maximum_latitude=lat_max,
             start_datetime=fecha_anterior,
             end_datetime=fecha_anterior,
             username=username,
             password=password,
         )
-        sla = float(ds["sla"].mean().values)
-        return round(sla * 100, 1)
+        for punto in puntos:
+            try:
+                sla = float(ds_ant["sla"].sel(
+                    latitude=punto["lat"],
+                    longitude=punto["lon"],
+                    method="nearest"
+                ).mean().values)
+                resultados_anterior[punto["id"]] = round(sla * 100, 1)
+                print(f"  ✓ {punto['nombre']}: {round(sla * 100, 1)} cm")
+            except Exception as e:
+                print(f"  ✗ {punto['nombre']}: {e}")
+                resultados_anterior[punto["id"]] = None
     except Exception as e:
-        print(f"  Error año anterior ({lat}, {lon}): {e}")
-        return None
+        print(f"Error descarga año anterior: {e}")
+        for punto in puntos:
+            resultados_anterior[punto["id"]] = None
 
-def calcular_tendencia(anomalia_actual, punto_id):
-    """
-    Compara la anomalía actual con la media histórica del mes.
-    """
+    return resultados_actual, resultados_anterior
+
+def calcular_tendencia(sla_actual, punto_id):
     mes_actual = datetime.now().month - 1
-    if punto_id in MEDIAS_HISTORICAS_ANOMALIA and anomalia_actual is not None:
+    if punto_id in MEDIAS_HISTORICAS_ANOMALIA and sla_actual is not None:
         media = MEDIAS_HISTORICAS_ANOMALIA[punto_id][mes_actual]
-        desviacion = round(anomalia_actual - media, 1)
+        desviacion = round(sla_actual - media, 1)
         return desviacion, media
     return None, None
 
 def clasificar_anomalia(sla_cm):
-    """
-    Clasifica la anomalía SLA en color e interpretación.
-    """
     if sla_cm is None:
         return "#888888", "Sin datos"
     elif sla_cm <= -10:
@@ -163,29 +177,20 @@ def generar_json():
 
     print(f"\n{'='*60}")
     print(f"Actualizando nivel del mar — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-    print(f"{'='*60}\n")
+    print(f"{'='*60}")
+
+    datos_actual, datos_anterior = obtener_todos_los_datos(PUNTOS, username, password)
 
     resultados = []
-    errores = 0
-
     for punto in PUNTOS:
-        print(f"Procesando: {punto['nombre']}...")
-
-        sla_actual, fecha_dato = obtener_anomalia_copernicus(
-            punto["lat"], punto["lon"], username, password
-        )
-        sla_anterior = obtener_anomalia_anio_anterior(
-            punto["lat"], punto["lon"], username, password
-        )
-        desviacion, media_historica = calcular_tendencia(sla_actual, punto["id"])
-        color, etiqueta = clasificar_anomalia(sla_actual)
+        sla_actual, fecha_dato = datos_actual.get(punto["id"], (None, ""))
+        sla_anterior           = datos_anterior.get(punto["id"])
+        desviacion, media      = calcular_tendencia(sla_actual, punto["id"])
+        color, etiqueta        = clasificar_anomalia(sla_actual)
 
         diferencia_anual = None
         if sla_actual is not None and sla_anterior is not None:
             diferencia_anual = round(sla_actual - sla_anterior, 1)
-
-        if sla_actual is None:
-            errores += 1
 
         resultados.append({
             "id":                   punto["id"],
@@ -196,27 +201,21 @@ def generar_json():
             "sla_actual_cm":        sla_actual,
             "sla_anio_anterior_cm": sla_anterior,
             "diferencia_anual_cm":  diferencia_anual,
-            "media_historica_cm":   media_historica,
+            "media_historica_cm":   media,
             "desviacion_cm":        desviacion,
             "color":                color,
             "etiqueta_anomalia":    etiqueta,
             "fecha_dato":           fecha_dato,
         })
 
-        if sla_actual is not None:
-            signo = "+" if sla_actual > 0 else ""
-            print(f"  ✓ SLA: {signo}{sla_actual} cm | {etiqueta}")
-        else:
-            print(f"  ✗ Sin datos")
-
     os.makedirs("docs", exist_ok=True)
     output = {
         "ultima_actualizacion": datetime.now().isoformat(),
         "fecha_legible":        datetime.now().strftime("%d/%m/%Y a las %H:%M"),
         "total_puntos":         len(PUNTOS),
-        "puntos_con_datos":     len(PUNTOS) - errores,
+        "puntos_con_datos":     len([r for r in resultados if r["sla_actual_cm"] is not None]),
         "fuente":               "Copernicus Marine Service — DUACS L4",
-        "nota":                 "SLA = Sea Level Anomaly en cm respecto a la media 1993-2020",
+        "nota":                 "SLA = Sea Level Anomaly en cm respecto a la media 1993-2012",
         "puntos":               resultados
     }
 
@@ -224,7 +223,7 @@ def generar_json():
         json.dump(output, f, ensure_ascii=False, indent=2)
 
     print(f"\n✓ JSON guardado en docs/nivel_mar.json")
-    print(f"✓ {len(PUNTOS) - errores}/{len(PUNTOS)} puntos actualizados\n")
+    print(f"✓ {output['puntos_con_datos']}/{len(PUNTOS)} puntos actualizados\n")
 
 if __name__ == "__main__":
     generar_json()
