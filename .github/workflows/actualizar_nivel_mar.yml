@@ -40,5 +40,5 @@ jobs:
         run: |
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
-          git add docs/nivel_mar.json
+          git add docs/nivel_mar.json docs/historial_nivel_mar.json
           git diff --staged --quiet || (git commit -m "Nivel del mar actualizado: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
