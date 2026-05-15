@@ -9,7 +9,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Arial, sans-serif; background: #0a1628; }
   #mapa { width: 100%; height: 530px; background: #0a1628; }
-
   #cabecera {
     background: #060e1a;
     color: white;
@@ -35,7 +34,6 @@
     color: #4a7a9b;
     letter-spacing: 0.02em;
   }
-
   #leyenda {
     background: #0d1f35;
     padding: 7px 16px;
@@ -55,8 +53,6 @@
     border: 1px solid rgba(255,255,255,0.15);
     flex-shrink: 0;
   }
-
-  /* MARCADORES */
   .marcador-wrapper {
     display: flex;
     flex-direction: column;
@@ -79,8 +75,7 @@
     font-size: 9px; font-weight: 700;
     color: rgba(255,255,255,0.9);
     text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    letter-spacing: 0.2px;
-    line-height: 1.2;
+    letter-spacing: 0.2px; line-height: 1.2;
   }
   .marcador-nivel {
     font-size: 13px; font-weight: 800;
@@ -93,14 +88,22 @@
     align-items: center; margin-top: 1px;
   }
   .marcador-anterior {
-    font-size: 9px;
-    color: rgba(255,255,255,0.75);
+    font-size: 9px; color: rgba(255,255,255,0.75);
     text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   }
   .marcador-anomalia {
     font-size: 9px; font-weight: 700; color: white;
     background: rgba(0,0,0,0.35);
     border-radius: 4px; padding: 0 3px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  }
+  .marcador-dias {
+    font-size: 9px; font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    background: rgba(0,0,0,0.25);
+    border-radius: 4px;
+    padding: 0 4px; margin-top: 2px;
     text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   }
   .marcador-punta {
@@ -110,8 +113,6 @@
     margin-top: -1px;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
   }
-
-  /* POPUP OSCURO */
   .leaflet-popup-content-wrapper {
     background: #0d1f35 !important;
     border: 1px solid #1e4060 !important;
@@ -122,18 +123,21 @@
   .leaflet-popup-tip { background: #0d1f35 !important; }
   .leaflet-popup-close-button { color: #4a7a9b !important; }
   .leaflet-popup-close-button:hover { color: #e0eef8 !important; }
-
   .popup-titulo { font-weight: 700; font-size: 14px; margin-bottom: 3px; color: #e8f4ff; }
   .popup-zona { font-size: 11px; color: #4a7a9b; margin-bottom: 10px; }
   .popup-dato {
     display: flex; justify-content: space-between;
-    padding: 5px 0;
-    border-bottom: 1px solid #1a3a5c;
-    font-size: 12px;
-    color: #7aaabb;
+    padding: 5px 0; border-bottom: 1px solid #1a3a5c;
+    font-size: 12px; color: #7aaabb;
   }
   .popup-dato:last-of-type { border-bottom: none; }
   .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; }
+  .popup-separador {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: #4a7a9b; padding: 8px 0 4px;
+    border-bottom: 1px solid #1a3a5c;
+  }
   .popup-tag {
     display: inline-block; margin-top: 10px;
     padding: 3px 12px; border-radius: 12px;
@@ -146,8 +150,6 @@
   }
   .pos { color: #ff6644; }
   .neg { color: #44aaff; }
-
-  /* Controles dark */
   .leaflet-control-zoom a {
     background: #0d1f35 !important;
     color: #7aaabb !important;
@@ -188,7 +190,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const JSON_URL = 'https://DavidBebow.github.io/temperaturas-mar-espana/nivel_mar.json';
+const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/nivel_mar.json';
 
 const mapa = L.map('mapa', {
   center: [39.8, -3.0],
@@ -225,6 +227,9 @@ function crearIcono(punto) {
   const desv     = punto.desviacion_cm !== null
     ? (punto.desviacion_cm > 0 ? '+' : '') + punto.desviacion_cm
     : '—';
+  const dias = punto.dias_consecutivos !== null && punto.dias_consecutivos !== undefined
+    ? punto.dias_consecutivos + 'd ' + (punto.signo_consecutivo === 'positiva' ? '↑' : '↓')
+    : '';
 
   const html = `
     <div class="marcador-wrapper">
@@ -235,6 +240,7 @@ function crearIcono(punto) {
           <span class="marcador-anterior">Ant: ${anterior}</span>
           <span class="marcador-anomalia">${desv}</span>
         </div>
+        ${dias ? `<div class="marcador-dias">${dias}</div>` : ''}
       </div>
       <div class="marcador-punta" style="border-top:8px solid ${color}cc"></div>
     </div>`;
@@ -243,8 +249,8 @@ function crearIcono(punto) {
     html,
     className: '',
     iconSize: null,
-    iconAnchor: [42, 54],
-    popupAnchor: [0, -57]
+    iconAnchor: [42, 58],
+    popupAnchor: [0, -60]
   });
 }
 
@@ -259,8 +265,20 @@ fetch(JSON_URL + '?t=' + Date.now())
 
       const icono = crearIcono(p);
 
+      const diasActuales = p.dias_consecutivos !== null && p.dias_consecutivos !== undefined
+        ? p.dias_consecutivos + ' días seguidos'
+        : '—';
+
+      const maxPos = p.max_dias_positiva !== null && p.max_dias_positiva !== undefined
+        ? p.max_dias_positiva + ' días'
+        : '—';
+
+      const maxNeg = p.max_dias_negativa !== null && p.max_dias_negativa !== undefined
+        ? p.max_dias_negativa + ' días'
+        : '—';
+
       const popup = `
-        <div style="min-width:220px">
+        <div style="min-width:230px">
           <div class="popup-titulo">${p.nombre}</div>
           <div class="popup-zona">📍 ${p.zona}</div>
           <div class="popup-dato">
@@ -287,6 +305,19 @@ fetch(JSON_URL + '?t=' + Date.now())
             <span>Fecha del dato</span>
             <span>${p.fecha_dato || '—'}</span>
           </div>
+          <div class="popup-separador">Rachas de anomalía</div>
+          <div class="popup-dato">
+            <span>Días anomalía ${p.signo_consecutivo || '—'}</span>
+            <span>${diasActuales}</span>
+          </div>
+          <div class="popup-dato">
+            <span>Récord racha positiva</span>
+            <span>${maxPos}</span>
+          </div>
+          <div class="popup-dato">
+            <span>Récord racha negativa</span>
+            <span>${maxNeg}</span>
+          </div>
           <div>
             <span class="popup-tag" style="background:${p.color}99;border:1px solid ${p.color}">
               ${p.etiqueta_anomalia}
@@ -299,7 +330,7 @@ fetch(JSON_URL + '?t=' + Date.now())
 
       const marker = L.marker([p.lat, p.lon], { icon: icono })
         .addTo(mapa)
-        .bindPopup(popup, { maxWidth: 260 });
+        .bindPopup(popup, { maxWidth: 270 });
 
       if (p.id === 'barcelona') {
         setTimeout(() => marker.openPopup(), 800);
@@ -308,7 +339,8 @@ fetch(JSON_URL + '?t=' + Date.now())
   })
   .catch(err => {
     console.error('Error:', err);
-    document.getElementById('ultima-actualizacion').textContent = 'Error al cargar datos';
+    document.getElementById('ultima-actualizacion').textContent =
+      'Error al cargar datos';
   });
 </script>
 </body>
