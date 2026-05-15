@@ -167,6 +167,77 @@ def clasificar_anomalia(sla_cm):
     else:
         return "#CC2200", "Nivel muy elevado"
 
+def calcular_max_racha(entradas, signo):
+    max_racha = 0
+    racha_actual = 0
+    for entrada in sorted(entradas, key=lambda x: x["fecha"]):
+        if entrada["signo"] == signo:
+            racha_actual += 1
+            max_racha = max(max_racha, racha_actual)
+        else:
+            racha_actual = 0
+    return max_racha
+
+def actualizar_historial(resultados):
+    ruta_historial = "docs/historial_nivel_mar.json"
+    hoy = datetime.now().strftime("%Y-%m-%d")
+
+    if os.path.exists(ruta_historial):
+        with open(ruta_historial, "r", encoding="utf-8") as f:
+            historial = json.load(f)
+    else:
+        historial = {}
+
+    for punto in resultados:
+        pid = punto["id"]
+        sla = punto["sla_actual_cm"]
+
+        if sla is None:
+            punto["dias_consecutivos"] = None
+            punto["signo_consecutivo"] = None
+            punto["max_dias_positiva"] = None
+            punto["max_dias_negativa"] = None
+            continue
+
+        signo_hoy = "positiva" if sla > 0 else "negativa" if sla < 0 else "normal"
+
+        if pid not in historial:
+            historial[pid] = []
+
+        entradas_hoy = [e for e in historial[pid] if e["fecha"] == hoy]
+        if not entradas_hoy:
+            historial[pid].append({
+                "fecha": hoy,
+                "signo": signo_hoy,
+                "sla":   sla
+            })
+
+        historial[pid] = sorted(
+            historial[pid],
+            key=lambda x: x["fecha"],
+            reverse=True
+        )[:365]
+
+        dias = 0
+        for entrada in historial[pid]:
+            if entrada["signo"] == signo_hoy:
+                dias += 1
+            else:
+                break
+
+        max_positiva = calcular_max_racha(historial[pid], "positiva")
+        max_negativa = calcular_max_racha(historial[pid], "negativa")
+
+        punto["dias_consecutivos"] = dias
+        punto["signo_consecutivo"] = signo_hoy
+        punto["max_dias_positiva"] = max_positiva
+        punto["max_dias_negativa"] = max_negativa
+
+    with open(ruta_historial, "w", encoding="utf-8") as f:
+        json.dump(historial, f, ensure_ascii=False, indent=2)
+
+    return resultados
+
 def generar_json():
     username = os.environ.get("COPERNICUS_USER")
     password = os.environ.get("COPERNICUS_PASSWORD")
@@ -207,6 +278,8 @@ def generar_json():
             "etiqueta_anomalia":    etiqueta,
             "fecha_dato":           fecha_dato,
         })
+
+    resultados = actualizar_historial(resultados)
 
     os.makedirs("docs", exist_ok=True)
     output = {
