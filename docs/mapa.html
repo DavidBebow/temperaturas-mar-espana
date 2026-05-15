@@ -9,7 +9,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Arial, sans-serif; background: #0a1628; }
   #mapa { width: 100%; height: 530px; background: #0a1628; }
-
   #cabecera {
     background: #060e1a;
     color: white;
@@ -35,7 +34,6 @@
     color: #4a7a9b;
     letter-spacing: 0.02em;
   }
-
   #leyenda {
     background: #0d1f35;
     padding: 7px 16px;
@@ -47,10 +45,7 @@
     font-size: 11px;
     color: #7aaabb;
   }
-  #leyenda strong {
-    color: #9bbccc;
-    font-weight: 500;
-  }
+  #leyenda strong { color: #9bbccc; font-weight: 500; }
   .leyenda-item { display: flex; align-items: center; gap: 4px; color: #7aaabb; }
   .leyenda-punto {
     width: 10px; height: 10px;
@@ -58,8 +53,6 @@
     border: 1px solid rgba(255,255,255,0.15);
     flex-shrink: 0;
   }
-
-  /* MARCADORES */
   .marcador-wrapper {
     display: flex;
     flex-direction: column;
@@ -79,38 +72,38 @@
     backdrop-filter: blur(2px);
   }
   .marcador-nombre {
-    font-size: 9px;
-    font-weight: 700;
+    font-size: 9px; font-weight: 700;
     color: rgba(255,255,255,0.9);
     text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    letter-spacing: 0.2px;
-    line-height: 1.2;
+    letter-spacing: 0.2px; line-height: 1.2;
   }
   .marcador-temp {
-    font-size: 13px;
-    font-weight: 800;
+    font-size: 13px; font-weight: 800;
     color: white;
     text-shadow: 0 1px 4px rgba(0,0,0,0.8);
     line-height: 1.2;
   }
   .marcador-fila {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    margin-top: 1px;
+    display: flex; gap: 5px;
+    align-items: center; margin-top: 1px;
   }
   .marcador-anterior {
-    font-size: 9px;
-    color: rgba(255,255,255,0.75);
+    font-size: 9px; color: rgba(255,255,255,0.75);
     text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   }
   .marcador-anomalia {
-    font-size: 9px;
-    font-weight: 700;
-    color: white;
+    font-size: 9px; font-weight: 700; color: white;
     background: rgba(0,0,0,0.35);
+    border-radius: 4px; padding: 0 3px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  }
+  .marcador-dias {
+    font-size: 9px; font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    background: rgba(0,0,0,0.25);
     border-radius: 4px;
-    padding: 0 3px;
+    padding: 0 4px; margin-top: 2px;
     text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   }
   .marcador-punta {
@@ -120,8 +113,6 @@
     margin-top: -1px;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
   }
-
-  /* POPUP */
   .leaflet-popup-content-wrapper {
     background: #0d1f35 !important;
     border: 1px solid #1e4060 !important;
@@ -129,27 +120,24 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.7) !important;
     color: #e0eef8 !important;
   }
-  .leaflet-popup-tip {
-    background: #0d1f35 !important;
-  }
-  .leaflet-popup-close-button {
-    color: #4a7a9b !important;
-  }
-  .leaflet-popup-close-button:hover {
-    color: #e0eef8 !important;
-  }
-
+  .leaflet-popup-tip { background: #0d1f35 !important; }
+  .leaflet-popup-close-button { color: #4a7a9b !important; }
+  .leaflet-popup-close-button:hover { color: #e0eef8 !important; }
   .popup-titulo { font-weight: 700; font-size: 14px; margin-bottom: 3px; color: #e8f4ff; }
   .popup-zona { font-size: 11px; color: #4a7a9b; margin-bottom: 10px; }
   .popup-dato {
     display: flex; justify-content: space-between;
-    padding: 5px 0;
-    border-bottom: 1px solid #1a3a5c;
-    font-size: 12px;
-    color: #7aaabb;
+    padding: 5px 0; border-bottom: 1px solid #1a3a5c;
+    font-size: 12px; color: #7aaabb;
   }
   .popup-dato:last-of-type { border-bottom: none; }
   .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; }
+  .popup-separador {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: #4a7a9b; padding: 8px 0 4px;
+    border-bottom: 1px solid #1a3a5c;
+  }
   .popup-tag {
     display: inline-block; margin-top: 10px;
     padding: 3px 12px; border-radius: 12px;
@@ -158,8 +146,6 @@
   }
   .pos { color: #ff6644; }
   .neg { color: #44aaff; }
-
-  /* Leaflet zoom control dark */
   .leaflet-control-zoom a {
     background: #0d1f35 !important;
     color: #7aaabb !important;
@@ -169,16 +155,12 @@
     background: #1a3a5c !important;
     color: #e0eef8 !important;
   }
-
-  /* Attribution dark */
   .leaflet-control-attribution {
     background: rgba(6,14,26,0.85) !important;
     color: #4a7a9b !important;
     font-size: 10px !important;
   }
-  .leaflet-control-attribution a {
-    color: #4a9aab !important;
-  }
+  .leaflet-control-attribution a { color: #4a9aab !important; }
 </style>
 </head>
 <body>
@@ -204,7 +186,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const JSON_URL = 'https://DavidBebow.github.io/temperaturas-mar-espana/datos.json';
+const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/datos.json';
 
 const mapa = L.map('mapa', {
   center: [39.8, -3.0],
@@ -212,13 +194,11 @@ const mapa = L.map('mapa', {
   zoomControl: true
 });
 
-// Capa oscura estilo Portus — Esri Dark Gray
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
   attribution: '© Esri | Datos: Open-Meteo Marine API',
   maxZoom: 16
 }).addTo(mapa);
 
-// Capa de referencia con nombres de lugares
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
   attribution: '',
   maxZoom: 16,
@@ -235,6 +215,9 @@ function crearIconoEtiqueta(punto) {
   const temp  = punto.temperatura_actual !== null ? punto.temperatura_actual + '°C' : '—';
   const ant   = punto.temperatura_anio_anterior !== null ? punto.temperatura_anio_anterior + '°C' : '—';
   const anom  = punto.anomalia !== null ? signo(punto.anomalia) : '—';
+  const dias  = punto.dias_consecutivos !== null && punto.dias_consecutivos !== undefined
+    ? punto.dias_consecutivos + 'd ' + (punto.signo_consecutivo === 'positiva' ? '↑' : '↓')
+    : '';
 
   const html = `
     <div class="marcador-wrapper">
@@ -245,6 +228,7 @@ function crearIconoEtiqueta(punto) {
           <span class="marcador-anterior">Ant: ${ant}</span>
           <span class="marcador-anomalia">${anom}</span>
         </div>
+        ${dias ? `<div class="marcador-dias">${dias}</div>` : ''}
       </div>
       <div class="marcador-punta" style="border-top:8px solid ${color}cc"></div>
     </div>`;
@@ -253,8 +237,8 @@ function crearIconoEtiqueta(punto) {
     html,
     className: '',
     iconSize: null,
-    iconAnchor: [40, 52],
-    popupAnchor: [0, -55]
+    iconAnchor: [40, 58],
+    popupAnchor: [0, -60]
   });
 }
 
@@ -271,12 +255,24 @@ fetch(JSON_URL + '?t=' + Date.now())
       'Actualizado: ' + data.fecha_legible;
 
     data.puntos.forEach(p => {
-      if (!p.temperatura_actual) return;
+      if (p.temperatura_actual === null || p.temperatura_actual === undefined) return;
 
       const icono = crearIconoEtiqueta(p);
 
+      const diasActuales = p.dias_consecutivos !== null && p.dias_consecutivos !== undefined
+        ? p.dias_consecutivos + ' días seguidos'
+        : '—';
+
+      const maxPos = p.max_dias_positiva !== null && p.max_dias_positiva !== undefined
+        ? p.max_dias_positiva + ' días'
+        : '—';
+
+      const maxNeg = p.max_dias_negativa !== null && p.max_dias_negativa !== undefined
+        ? p.max_dias_negativa + ' días'
+        : '—';
+
       const popup = `
-        <div style="min-width:210px">
+        <div style="min-width:220px">
           <div class="popup-titulo">${p.nombre}</div>
           <div class="popup-zona">📍 ${p.zona}</div>
           <div class="popup-dato">
@@ -298,6 +294,19 @@ fetch(JSON_URL + '?t=' + Date.now())
           <div class="popup-dato">
             <span>Anomalía histórica</span>
             <span>${formatDif(p.anomalia)}</span>
+          </div>
+          <div class="popup-separador">Rachas de anomalía</div>
+          <div class="popup-dato">
+            <span>Días anomalía ${p.signo_consecutivo || '—'}</span>
+            <span>${diasActuales}</span>
+          </div>
+          <div class="popup-dato">
+            <span>Récord racha positiva</span>
+            <span>${maxPos}</span>
+          </div>
+          <div class="popup-dato">
+            <span>Récord racha negativa</span>
+            <span>${maxNeg}</span>
           </div>
           <div>
             <span class="popup-tag" style="background:${p.color}99;border:1px solid ${p.color}">
