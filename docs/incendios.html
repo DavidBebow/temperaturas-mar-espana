@@ -337,4 +337,30 @@ Promise.all([
         capaGeojson.resetStyle(layer);
       });
 
-      if (c.tiene_fuego && !primer
+      if (c.tiene_fuego && !primerConFuego) {
+        primerConFuego = c;
+        primerLayer    = layer;
+      }
+    }
+  }).addTo(mapa);
+
+  const focos = data.focos_individuales || [];
+  focos.forEach(f => {
+    const icono = crearIconoFoco(f.frp);
+    L.marker([f.lat, f.lon], { icon: icono })
+      .addTo(mapa)
+      .bindPopup(popupFoco(f), { maxWidth: 260 });
+  });
+
+  if (primerLayer) {
+    setTimeout(() => primerLayer.openPopup(), 900);
+  }
+
+})
+.catch(err => {
+  console.error('Error:', err);
+  document.getElementById('resumen-nacional').textContent = 'Error al cargar datos';
+});
+</script>
+</body>
+</html>
