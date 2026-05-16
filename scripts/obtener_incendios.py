@@ -131,7 +131,7 @@ def calcular_max_racha(entradas):
             racha_actual = 0
     return max_racha
 
-def actualizar_historial(dias_con_fuego_actual, dias_con_fuego_anterior):
+def actualizar_historial(dias_con_fuego_actual):
     ruta = "docs/historial_incendios.json"
 
     if os.path.exists(ruta):
@@ -154,19 +154,8 @@ def actualizar_historial(dias_con_fuego_actual, dias_con_fuego_anterior):
                 historial[cid].append({"fecha": fecha, "tiene_fuego": True})
                 fechas_existentes.add(fecha)
 
-        for fecha in dias_con_fuego_anterior.get(cid, set()):
-            if fecha not in fechas_existentes:
-                historial[cid].append({"fecha": fecha, "tiene_fuego": True})
-                fechas_existentes.add(fecha)
-
         for i in range(7):
             fecha = (hoy - timedelta(days=i)).strftime("%Y-%m-%d")
-            if fecha not in fechas_existentes:
-                historial[cid].append({"fecha": fecha, "tiene_fuego": False})
-                fechas_existentes.add(fecha)
-
-        for i in range(7):
-            fecha = (hoy - timedelta(days=365 + i)).strftime("%Y-%m-%d")
             if fecha not in fechas_existentes:
                 historial[cid].append({"fecha": fecha, "tiene_fuego": False})
                 fechas_existentes.add(fecha)
@@ -183,19 +172,17 @@ def actualizar_historial(dias_con_fuego_actual, dias_con_fuego_anterior):
 def calcular_estadisticas(historial, cid):
     entradas = historial.get(cid, [])
     if not entradas:
-        return {"dias_consecutivos": 0, "dias_anio_actual": 0,
-                "dias_anio_anterior": 0, "max_racha_con_fuego": 0}
+        return {
+            "dias_consecutivos":   0,
+            "dias_anio_actual":    0,
+            "max_racha_con_fuego": 0,
+        }
 
-    anio_actual   = datetime.now().year
-    anio_anterior = anio_actual - 1
+    anio_actual = datetime.now().year
 
     dias_anio_actual = sum(
         1 for e in entradas
         if e["tiene_fuego"] and e["fecha"].startswith(str(anio_actual))
-    )
-    dias_anio_anterior = sum(
-        1 for e in entradas
-        if e["tiene_fuego"] and e["fecha"].startswith(str(anio_anterior))
     )
 
     dias_consecutivos = 0
@@ -210,7 +197,6 @@ def calcular_estadisticas(historial, cid):
     return {
         "dias_consecutivos":   dias_consecutivos,
         "dias_anio_actual":    dias_anio_actual,
-        "dias_anio_anterior":  dias_anio_anterior,
         "max_racha_con_fuego": max_racha,
     }
 
@@ -224,22 +210,15 @@ def generar_json():
     print(f"Actualizando incendios — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     print(f"{'='*60}\n")
 
-    fecha_inicio_anterior = (datetime.now() - timedelta(days=371)).strftime("%Y-%m-%d")
-
     print("Obteniendo focos activos (últimos 7 días)...")
     focos_actual, dias_actual = obtener_focos_rango(api_key, dias=7)
 
-    print(f"Obteniendo focos año anterior desde {fecha_inicio_anterior} (7 días)...")
-    focos_anterior, dias_anterior = obtener_focos_rango(
-        api_key, dias=7, fecha_inicio=fecha_inicio_anterior
-    )
-
-    historial = actualizar_historial(dias_actual, dias_anterior)
+    historial = actualizar_historial(dias_actual)
 
     hoy_str = datetime.now().strftime("%Y-%m-%d")
     todos_focos_hoy = []
-
     focos_hoy_por_comunidad = {}
+
     for c in COMUNIDADES:
         cid = c["id"]
         focos_hoy = [f for f in focos_actual.get(cid, []) if f["fecha"] == hoy_str]
@@ -295,12 +274,11 @@ def generar_json():
             "etiqueta":            etiqueta,
             "dias_consecutivos":   stats["dias_consecutivos"],
             "dias_anio_actual":    stats["dias_anio_actual"],
-            "dias_anio_anterior":  stats["dias_anio_anterior"],
             "max_racha_con_fuego": stats["max_racha_con_fuego"],
         })
 
         estado = f"🔥 {n_focos} focos" if n_focos > 0 else "✓ Sin incendios"
-        print(f"  {c['nombre']}: {estado} | Consec: {stats['dias_consecutivos']}d | Año ant: {stats['dias_anio_anterior']}d")
+        print(f"  {c['nombre']}: {estado} | Consec: {stats['dias_consecutivos']}d | Año actual: {stats['dias_anio_actual']}d")
 
     os.makedirs("docs", exist_ok=True)
     output = {
