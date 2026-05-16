@@ -2,12 +2,10 @@ name: Actualizar temperaturas del mar
 
 on:
   schedule:
-    - cron: '1 22 * * *'
-    - cron: '1 23 * * *'
-    - cron: '0 7 * * *'
-    - cron: '0 8 * * *'
     - cron: '0 12 * * *'
-    - cron: '0 13 * * *'
+      timezone: "Europe/Madrid"
+    - cron: '0 21 * * *'
+      timezone: "Europe/Madrid"
   workflow_dispatch:
 
 env:
