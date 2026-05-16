@@ -50,32 +50,6 @@
     border: 1px solid rgba(255,255,255,0.15);
     flex-shrink: 0;
   }
-  .leyenda-foco {
-    font-size: 13px; line-height: 1;
-  }
-
-  /* MARCADOR FOCO */
-  .foco-marker {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-  }
-  .foco-etiqueta {
-    background: rgba(20,8,4,0.88);
-    border: 1px solid rgba(255,100,30,0.5);
-    border-radius: 6px;
-    padding: 2px 6px;
-    font-size: 9px;
-    font-weight: 600;
-    color: #ffaa66;
-    white-space: nowrap;
-    max-width: 110px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-    box-shadow: 0 1px 6px rgba(0,0,0,0.5);
-  }
 
   /* POPUP */
   .leaflet-popup-content-wrapper {
@@ -144,7 +118,7 @@
   <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#cc2a00"></div> 21–50 focos</div>
   <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#ff0000"></div> +50 focos</div>
   <span style="margin-left:6px;color:#7a5a4a">|</span>
-  <div class="leyenda-item"><span class="leyenda-foco">🔥</span> Foco activo con ubicación</div>
+  <div class="leyenda-item"><span style="font-size:13px">🔥</span> Foco activo (tamaño = intensidad)</div>
   <span style="margin-left:auto;font-size:10px;color:#6a4a3a">Clic en comunidad o foco para detalles</span>
 </div>
 
@@ -198,6 +172,7 @@ function colorFondo(focos) {
   if (focos <= 50)   return '#cc2a00';
   return '#ff0000';
 }
+
 function colorBorde(focos) {
   if (focos === 0)   return '#2a5a2a';
   if (focos <= 5)    return '#aa9a20';
@@ -250,40 +225,67 @@ function popupComunidad(c) {
 }
 
 function popupFoco(f) {
-  const lugar = f.lugar || 'Zona rural';
-  const frpLabel = f.frp > 0 ? f.frp + ' MW' : 'No disponible';
-  const intensidad = f.frp > 100 ? '🔴 Alta' : f.frp > 30 ? '🟠 Moderada' : '🟡 Baja';
+  const lugar    = f.lugar || 'Zona rural';
+  const frpLabel = f.frp > 0 ? f.frp + ' MW' : '< 1 MW';
+  const pct      = Math.min(100, Math.round((f.frp / 150) * 100));
+  const colorFRP = f.frp >= 100 ? '#ff2200' : f.frp >= 30 ? '#ff7733' : f.frp >= 10 ? '#ffaa22' : '#ffcc44';
+
+  const barraHTML = `
+    <div style="margin:6px 0 8px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#7a5a4a;margin-bottom:3px">
+        <span>Intensidad (FRP)</span>
+        <span style="color:${colorFRP};font-weight:700">${f.intensidad || '—'}</span>
+      </div>
+      <div style="background:#2a1008;border-radius:4px;height:6px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${colorFRP};border-radius:4px"></div>
+      </div>
+    </div>`;
+
   return `
-    <div style="min-width:200px">
+    <div style="min-width:220px">
       <div class="popup-titulo">🔥 Foco activo</div>
-      <div class="popup-subtitulo">${f.comunidad}</div>
+      <div class="popup-subtitulo">📍 ${f.comunidad}</div>
       <div class="popup-dato">
         <span>Ubicación</span>
         <span>${lugar}</span>
       </div>
+      ${barraHTML}
       <div class="popup-dato">
         <span>Potencia radiativa (FRP)</span>
         <span class="fuego-val">${frpLabel}</span>
       </div>
       <div class="popup-dato">
-        <span>Intensidad estimada</span>
-        <span>${intensidad}</span>
+        <span>¿Qué es el FRP?</span>
+        <span style="font-size:10px;color:#7a5a4a">Energía emitida por el fuego</span>
       </div>
       <div class="popup-dato">
         <span>Coordenadas</span>
-        <span>${f.lat.toFixed(4)}, ${f.lon.toFixed(4)}</span>
+        <span style="font-size:10px">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)}</span>
       </div>
     </div>`;
 }
 
 function crearIconoFoco(frp) {
-  const size  = frp > 100 ? 20 : frp > 30 ? 16 : 13;
-  const emoji = frp > 100 ? '🔥' : '🔥';
+  let size, shadow;
+  if (frp >= 100) {
+    size   = 22;
+    shadow = 'drop-shadow(0 0 6px rgba(255,34,0,0.9))';
+  } else if (frp >= 30) {
+    size   = 17;
+    shadow = 'drop-shadow(0 0 5px rgba(255,120,50,0.8))';
+  } else if (frp >= 10) {
+    size   = 14;
+    shadow = 'drop-shadow(0 0 4px rgba(255,170,34,0.7))';
+  } else {
+    size   = 11;
+    shadow = 'drop-shadow(0 0 3px rgba(255,200,68,0.6))';
+  }
+
   return L.divIcon({
-    html: `<div style="font-size:${size}px;line-height:1;filter:drop-shadow(0 0 4px rgba(255,100,0,0.8));">${emoji}</div>`,
+    html: `<div style="font-size:${size}px;line-height:1;filter:${shadow};cursor:pointer;">🔥</div>`,
     className: '',
     iconSize: [size, size],
-    iconAnchor: [size/2, size],
+    iconAnchor: [size / 2, size],
     popupAnchor: [0, -size - 2]
   });
 }
@@ -310,77 +312,3 @@ Promise.all([
 
   let primerConFuego = null;
   let primerLayer    = null;
-
-  // Capa de polígonos por comunidad
-  const capaGeojson = L.geoJSON(geojson, {
-    style: function(feature) {
-      const nombre = feature.properties.name || feature.properties.NAME || '';
-      const id     = NOMBRE_A_ID[nombre];
-      const c      = id ? datosMap[id] : null;
-      const focos  = c ? c.focos_activos : 0;
-      return {
-        fillColor:   colorFondo(focos),
-        fillOpacity: 0.72,
-        color:       colorBorde(focos),
-        weight:      1.2,
-        opacity:     0.9
-      };
-    },
-    onEachFeature: function(feature, layer) {
-      const nombre = feature.properties.name || feature.properties.NAME || '';
-      const id     = NOMBRE_A_ID[nombre];
-      const c      = id ? datosMap[id] : null;
-      if (!c) return;
-
-      layer.bindPopup(popupComunidad(c), { maxWidth: 280 });
-
-      layer.on('mouseover', function() {
-        layer.setStyle({ fillOpacity: 0.90, weight: 2 });
-      });
-      layer.on('mouseout', function() {
-        capaGeojson.resetStyle(layer);
-      });
-
-      if (c.tiene_fuego && !primerConFuego) {
-        primerConFuego = c;
-        primerLayer    = layer;
-      }
-    }
-  }).addTo(mapa);
-
-  // Capa de focos individuales
-  const focos = data.focos_individuales || [];
-  focos.forEach(f => {
-    const icono = crearIconoFoco(f.frp);
-    const label = f.lugar || f.comunidad;
-
-    const marcadorFoco = L.marker([f.lat, f.lon], { icon: icono })
-      .addTo(mapa)
-      .bindPopup(popupFoco(f), { maxWidth: 240 });
-
-    // Etiqueta de texto debajo del emoji si tiene lugar
-    if (f.lugar) {
-      const etiqueta = L.divIcon({
-        html: `<div class="foco-etiqueta">${f.lugar}</div>`,
-        className: '',
-        iconSize: null,
-        iconAnchor: [-4, -2],
-        popupAnchor: [0, 0]
-      });
-      L.marker([f.lat, f.lon], { icon: etiqueta, interactive: false }).addTo(mapa);
-    }
-  });
-
-  // Abrir primer comunidad con fuego
-  if (primerLayer) {
-    setTimeout(() => primerLayer.openPopup(), 900);
-  }
-
-})
-.catch(err => {
-  console.error('Error:', err);
-  document.getElementById('resumen-nacional').textContent = 'Error al cargar datos';
-});
-</script>
-</body>
-</html>
