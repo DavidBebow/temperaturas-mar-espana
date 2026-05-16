@@ -35,21 +35,14 @@ def asignar_comunidad(lat, lon):
     return None
 
 def obtener_focos_rango(api_key, dias=7, fecha_inicio=None):
-    """
-    Obtiene focos de los últimos N días.
-    Si fecha_inicio es None usa datos NRT.
-    Si fecha_inicio es YYYY-MM-DD usa archivo histórico.
-    Devuelve: dict por comunidad con lista de focos y dict por fecha con bool.
-    """
     area = "-18.5,27.5,4.5,44.0"
-
     if fecha_inicio is None:
         url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{api_key}/VIIRS_SNPP_NRT/{area}/{dias}"
     else:
         url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{api_key}/VIIRS_SNPP_SP/{area}/{dias}/{fecha_inicio}"
 
-    focos_por_comunidad  = {c["id"]: [] for c in COMUNIDADES}
-    dias_con_fuego       = {c["id"]: set() for c in COMUNIDADES}
+    focos_por_comunidad = {c["id"]: [] for c in COMUNIDADES}
+    dias_con_fuego      = {c["id"]: set() for c in COMUNIDADES}
 
     try:
         r = requests.get(url, timeout=30)
@@ -62,10 +55,10 @@ def obtener_focos_rango(api_key, dias=7, fecha_inicio=None):
         reader = csv.DictReader(io.StringIO(r.text))
         for row in reader:
             try:
-                lat  = float(row["latitude"])
-                lon  = float(row["longitude"])
-                conf = row.get("confidence", "n").strip().lower()
-                frp  = float(row.get("frp", 0) or 0)
+                lat   = float(row["latitude"])
+                lon   = float(row["longitude"])
+                conf  = row.get("confidence", "n").strip().lower()
+                frp   = float(row.get("frp", 0) or 0)
                 fecha = row.get("acq_date", "")
 
                 if conf not in ["n", "h", "nominal", "high"]:
@@ -81,7 +74,6 @@ def obtener_focos_rango(api_key, dias=7, fecha_inicio=None):
                     })
                     if fecha:
                         dias_con_fuego[comunidad].add(fecha)
-
             except (ValueError, KeyError):
                 continue
 
@@ -91,10 +83,6 @@ def obtener_focos_rango(api_key, dias=7, fecha_inicio=None):
     return focos_por_comunidad, dias_con_fuego
 
 def reverse_geocode(lat, lon):
-    """
-    Obtiene el nombre del municipio más cercano usando Nominatim.
-    Solo para los focos más intensos para no saturar la API.
-    """
     try:
         url = "https://nominatim.openstreetmap.org/reverse"
         params = {
@@ -119,6 +107,12 @@ def reverse_geocode(lat, lon):
     except Exception:
         return "Zona rural"
 
+def clasificar_intensidad(frp):
+    if frp >= 100: return "Muy alta"
+    elif frp >= 30: return "Alta"
+    elif frp >= 10: return "Moderada"
+    else: return "Baja"
+
 def clasificar_actividad(n_focos):
     if n_focos == 0:    return "#1a3a1a", "Sin incendios activos"
     elif n_focos <= 5:  return "#7a6a10", "Actividad baja"
@@ -138,7 +132,6 @@ def calcular_max_racha(entradas):
     return max_racha
 
 def actualizar_historial(dias_con_fuego_actual, dias_con_fuego_anterior):
-    """Actualiza el historial con los días detectados en el rango."""
     ruta = "docs/historial_incendios.json"
 
     if os.path.exists(ruta):
@@ -147,6 +140,8 @@ def actualizar_historial(dias_con_fuego_actual, dias_con_fuego_anterior):
     else:
         historial = {}
 
+    hoy = datetime.now()
+
     for c in COMUNIDADES:
         cid = c["id"]
         if cid not in historial:
@@ -154,29 +149,24 @@ def actualizar_historial(dias_con_fuego_actual, dias_con_fuego_anterior):
 
         fechas_existentes = {e["fecha"] for e in historial[cid]}
 
-        # Añadir fechas del rango actual
         for fecha in dias_con_fuego_actual.get(cid, set()):
             if fecha not in fechas_existentes:
                 historial[cid].append({"fecha": fecha, "tiene_fuego": True})
                 fechas_existentes.add(fecha)
 
-        # Añadir fechas del rango del año anterior
         for fecha in dias_con_fuego_anterior.get(cid, set()):
             if fecha not in fechas_existentes:
                 historial[cid].append({"fecha": fecha, "tiene_fuego": True})
                 fechas_existentes.add(fecha)
 
-        # Rellenar días sin fuego del rango actual (últimos 7 días)
-        hoy = datetime.now()
         for i in range(7):
             fecha = (hoy - timedelta(days=i)).strftime("%Y-%m-%d")
             if fecha not in fechas_existentes:
                 historial[cid].append({"fecha": fecha, "tiene_fuego": False})
                 fechas_existentes.add(fecha)
 
-        # Rellenar días sin fuego del rango anterior
         for i in range(7):
-            fecha = (hoy - timedelta(days=365+i)).strftime("%Y-%m-%d")
+            fecha = (hoy - timedelta(days=365 + i)).strftime("%Y-%m-%d")
             if fecha not in fechas_existentes:
                 historial[cid].append({"fecha": fecha, "tiene_fuego": False})
                 fechas_existentes.add(fecha)
@@ -234,7 +224,6 @@ def generar_json():
     print(f"Actualizando incendios — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     print(f"{'='*60}\n")
 
-    # Fecha de inicio para el rango del año anterior
     fecha_inicio_anterior = (datetime.now() - timedelta(days=371)).strftime("%Y-%m-%d")
 
     print("Obteniendo focos activos (últimos 7 días)...")
@@ -247,17 +236,14 @@ def generar_json():
 
     historial = actualizar_historial(dias_actual, dias_anterior)
 
-    # Focos solo de HOY para el mapa
     hoy_str = datetime.now().strftime("%Y-%m-%d")
-    focos_hoy_por_comunidad = {}
     todos_focos_hoy = []
 
+    focos_hoy_por_comunidad = {}
     for c in COMUNIDADES:
         cid = c["id"]
         focos_hoy = [f for f in focos_actual.get(cid, []) if f["fecha"] == hoy_str]
         focos_hoy_por_comunidad[cid] = focos_hoy
-
-        # Añadir comunidad a cada foco para el mapa global
         for f in focos_hoy:
             todos_focos_hoy.append({
                 "lat":       f["lat"],
@@ -266,38 +252,34 @@ def generar_json():
                 "comunidad": c["nombre"]
             })
 
-    # Reverse geocoding solo para los 20 focos más intensos
     todos_focos_hoy.sort(key=lambda x: x["frp"], reverse=True)
+    MAX_GEOCODE = 40
     focos_geocodificados = []
 
-    print(f"\nGeocodificando {min(20, len(todos_focos_hoy))} focos más intensos...")
-    for i, foco in enumerate(todos_focos_hoy[:20]):
-        nombre = reverse_geocode(foco["lat"], foco["lon"])
-        focos_geocodificados.append({
-            "lat":       foco["lat"],
-            "lon":       foco["lon"],
-            "frp":       foco["frp"],
-            "comunidad": foco["comunidad"],
-            "lugar":     nombre
-        })
-        print(f"  {i+1}. {nombre} ({foco['comunidad']}) — FRP: {foco['frp']} MW")
-        time.sleep(1.1)  # Respetar límite Nominatim
+    print(f"\nTotal focos hoy: {len(todos_focos_hoy)}")
+    print(f"Geocodificando los {min(MAX_GEOCODE, len(todos_focos_hoy))} más intensos...")
 
-    # Los focos menos intensos sin geocodificar
-    for foco in todos_focos_hoy[20:]:
+    for i, foco in enumerate(todos_focos_hoy):
+        if i < MAX_GEOCODE:
+            nombre = reverse_geocode(foco["lat"], foco["lon"])
+            time.sleep(1.1)
+            print(f"  {i+1}. {nombre} ({foco['comunidad']}) — FRP: {foco['frp']} MW")
+        else:
+            nombre = None
+
         focos_geocodificados.append({
-            "lat":       foco["lat"],
-            "lon":       foco["lon"],
-            "frp":       foco["frp"],
-            "comunidad": foco["comunidad"],
-            "lugar":     None
+            "lat":        foco["lat"],
+            "lon":        foco["lon"],
+            "frp":        foco["frp"],
+            "intensidad": clasificar_intensidad(foco["frp"]),
+            "comunidad":  foco["comunidad"],
+            "lugar":      nombre
         })
 
-    # Construir resultados por comunidad
     resultados = []
     for c in COMUNIDADES:
-        cid   = c["id"]
-        focos = focos_hoy_por_comunidad.get(cid, [])
+        cid     = c["id"]
+        focos   = focos_hoy_por_comunidad.get(cid, [])
         n_focos = len(focos)
         color, etiqueta = clasificar_actividad(n_focos)
         stats = calcular_estadisticas(historial, cid)
@@ -322,21 +304,21 @@ def generar_json():
 
     os.makedirs("docs", exist_ok=True)
     output = {
-        "ultima_actualizacion":   datetime.now().isoformat(),
-        "fecha_legible":          datetime.now().strftime("%d/%m/%Y a las %H:%M"),
-        "total_comunidades":      len(COMUNIDADES),
-        "comunidades_con_fuego":  sum(1 for r in resultados if r["tiene_fuego"]),
-        "total_focos_espana":     sum(r["focos_activos"] for r in resultados),
-        "fuente":                 "NASA FIRMS — VIIRS SNPP",
-        "focos_individuales":     focos_geocodificados,
-        "comunidades":            resultados
+        "ultima_actualizacion":  datetime.now().isoformat(),
+        "fecha_legible":         datetime.now().strftime("%d/%m/%Y a las %H:%M"),
+        "total_comunidades":     len(COMUNIDADES),
+        "comunidades_con_fuego": sum(1 for r in resultados if r["tiene_fuego"]),
+        "total_focos_espana":    sum(r["focos_activos"] for r in resultados),
+        "fuente":                "NASA FIRMS — VIIRS SNPP",
+        "focos_individuales":    focos_geocodificados,
+        "comunidades":           resultados
     }
 
     with open("docs/incendios.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✓ JSON guardado")
-    print(f"✓ {output['comunidades_con_fuego']} comunidades con fuego")
+    print(f"\n✓ JSON guardado en docs/incendios.json")
+    print(f"✓ {output['comunidades_con_fuego']} comunidades con fuego activo")
     print(f"✓ {len(focos_geocodificados)} focos individuales guardados\n")
 
 if __name__ == "__main__":
