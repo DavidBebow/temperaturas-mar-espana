@@ -51,7 +51,6 @@
     flex-shrink: 0;
   }
 
-  /* POPUP */
   .leaflet-popup-content-wrapper {
     background: #1a0a04 !important;
     border: 1px solid #4a2010 !important;
@@ -209,10 +208,6 @@ function popupComunidad(c) {
         <span>${formatDias(c.dias_anio_actual)}</span>
       </div>
       <div class="popup-dato">
-        <span>Días con incendio año anterior</span>
-        <span>${formatDias(c.dias_anio_anterior)}</span>
-      </div>
-      <div class="popup-dato">
         <span>Récord racha con incendio</span>
         <span>${formatDias(c.max_racha_con_fuego)}</span>
       </div>
@@ -312,3 +307,34 @@ Promise.all([
 
   let primerConFuego = null;
   let primerLayer    = null;
+
+  const capaGeojson = L.geoJSON(geojson, {
+    style: function(feature) {
+      const nombre = feature.properties.name || feature.properties.NAME || '';
+      const id     = NOMBRE_A_ID[nombre];
+      const c      = id ? datosMap[id] : null;
+      const focos  = c ? c.focos_activos : 0;
+      return {
+        fillColor:   colorFondo(focos),
+        fillOpacity: 0.72,
+        color:       colorBorde(focos),
+        weight:      1.2,
+        opacity:     0.9
+      };
+    },
+    onEachFeature: function(feature, layer) {
+      const nombre = feature.properties.name || feature.properties.NAME || '';
+      const id     = NOMBRE_A_ID[nombre];
+      const c      = id ? datosMap[id] : null;
+      if (!c) return;
+
+      layer.bindPopup(popupComunidad(c), { maxWidth: 280 });
+
+      layer.on('mouseover', function() {
+        layer.setStyle({ fillOpacity: 0.90, weight: 2 });
+      });
+      layer.on('mouseout', function() {
+        capaGeojson.resetStyle(layer);
+      });
+
+      if (c.tiene_fuego && !primer
