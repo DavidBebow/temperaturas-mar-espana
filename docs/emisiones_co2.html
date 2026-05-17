@@ -155,7 +155,6 @@ let modoActual  = 'total';
 let datosMap    = {};
 let capaGeojson = null;
 
-// Mapeo múltiple nombre inglés -> ISO3
 const N2I = {
   'Afghanistan':'AFG','Albania':'ALB','Algeria':'DZA','Angola':'AGO',
   'Argentina':'ARG','Armenia':'ARM','Australia':'AUS','Austria':'AUT',
@@ -244,10 +243,10 @@ function colorPerCapita(pc) {
 }
 function colorParis(dev, obj) {
   if (!obj || dev === null || dev === undefined) return '#2a2a3a';
-  if (dev <= -0.05)        return '#0a2a4a';
-  if (dev < 0)             return '#1a4a2a';
-  if (dev < obj * 0.10)    return '#5a5a10';
-  if (dev < obj * 0.30)    return '#aa5010';
+  if (dev <= -0.05)         return '#0a2a4a';
+  if (dev < 0)              return '#1a4a2a';
+  if (dev < obj * 0.10)     return '#5a5a10';
+  if (dev < obj * 0.30)     return '#aa5010';
   return '#cc2200';
 }
 function getColor(p) {
@@ -260,12 +259,10 @@ function getColor(p) {
 
 function resolverPais(feature) {
   const pr = feature.properties || {};
-  // Probar todas las variantes de código ISO conocidas
   for (const key of ['ISO_A3','iso_a3','ADM0_A3','GU_A3','ISO3','SOV_A3']) {
     const v = pr[key];
     if (v && v !== '-99' && v !== '' && datosMap[v]) return datosMap[v];
   }
-  // Fallback por nombre
   for (const key of ['ADMIN','NAME_EN','NAME','name','SOVEREIGNT']) {
     const nombre = pr[key];
     if (nombre) {
@@ -280,53 +277,84 @@ function signo(v, d=2) {
   if (v === null || v === undefined) return '—';
   return (v > 0 ? '+' : '') + v.toFixed(d);
 }
-function cls(v) { return v > 0 ? 'val-pos' : v < 0 ? 'val-neg' : ''; }
+function cls(v) {
+  if (v === null || v === undefined) return '';
+  return v > 0 ? 'val-pos' : v < 0 ? 'val-neg' : '';
+}
 
-function popup(p) {
+function construirPopup(p) {
   const eA  = p.emision_actual_gt   != null ? p.emision_actual_gt.toFixed(3)   + ' Gt' : '—';
   const eB  = p.emision_anterior_gt != null ? p.emision_anterior_gt.toFixed(3) + ' Gt' : '—';
+  const fB  = p.fuente_anterior || 'Global Carbon Project 2022';
   const dA  = p.diferencia_anual_gt != null
-    ? `<span class="${cls(p.diferencia_anual_gt)}">${signo(p.diferencia_anual_gt,3)} Gt</span>` : '—';
+    ? `<span class="${cls(p.diferencia_anual_gt)}">${signo(p.diferencia_anual_gt, 3)} Gt</span>` : '—';
   const pc  = p.per_capita_tco2 != null ? p.per_capita_tco2.toFixed(1) + ' t/hab' : '—';
-  const obj = p.objetivo_paris_gt   != null ? p.objetivo_paris_gt.toFixed(3) + ' Gt' : '—';
+  const obj = p.objetivo_paris_gt != null ? p.objetivo_paris_gt.toFixed(3) + ' Gt' : '—';
   const dev = p.desviacion_gt != null
-    ? `<span class="${cls(p.desviacion_gt)}">${signo(p.desviacion_gt,3)} Gt (${signo(p.desviacion_pct,1)}%)</span>` : '—';
+    ? `<span class="${cls(p.desviacion_gt)}">${signo(p.desviacion_gt, 3)} Gt (${signo(p.desviacion_pct, 1)}%)</span>` : '—';
   const rt  = p.fuente_actual?.includes('Carbon Monitor');
 
-  return `<div style="min-width:250px">
-    <div class="popup-titulo">🌍 ${p.nombre}</div>
-    <div class="popup-subtitulo">${p.fuente_actual || '—'} ${rt ? '🟢' : '📅'}</div>
-    <div class="popup-separador">Emisiones de CO₂</div>
-    <div class="popup-dato"><span>Emisión actual (anualizada)</span><span>${eA}</span></div>
-    <div class="popup-dato"><span>Misma fecha año anterior</span><span>${eB}</span></div>
-    <div class="popup-dato"><span>Diferencia anual</span><span>${dA}</span></div>
-    <div class="popup-dato"><span>Emisión per cápita</span><span>${pc}</span></div>
-    <div class="popup-dato"><span>Clasificación per cápita</span><span>${p.etiqueta_per_capita||'—'}</span></div>
-    <div class="popup-separador">Acuerdo de París 2030</div>
-    <div class="popup-dato"><span>Objetivo comprometido</span><span>${obj}</span></div>
-    <div class="popup-dato"><span>Compromiso</span><span style="font-size:10px;color:#7a9aaa">${p.descripcion_paris||'—'}</span></div>
-    <div class="popup-dato"><span>Desviación actual</span><span>${dev}</span></div>
-    <div><span class="popup-badge" style="background:${p.color||'#888'}99;border:1px solid ${p.color||'#888'}">
-      ${p.desviacion_gt!=null?(p.desviacion_gt>0?'⚠️ Por encima':'✅ Cumpliendo'):'Sin objetivo'}
-    </span></div>
-    <div class="popup-nota">Datos: ${p.fuente_actual||'Global Carbon Project 2024'}</div>
-  </div>`;
+  return `
+    <div style="min-width:260px">
+      <div class="popup-titulo">🌍 ${p.nombre}</div>
+      <div class="popup-subtitulo">${p.fuente_actual || '—'} ${rt ? '🟢' : '📅'}</div>
+
+      <div class="popup-separador">Emisiones de CO₂</div>
+      <div class="popup-dato">
+        <span>Emisión actual (anualizada)</span>
+        <span>${eA}</span>
+      </div>
+      <div class="popup-dato">
+        <span>Año anterior</span>
+        <span>${eB} <span style="font-size:9px;color:#4a6a8a;font-weight:400">(${fB})</span></span>
+      </div>
+      <div class="popup-dato">
+        <span>Diferencia anual</span>
+        <span>${dA}</span>
+      </div>
+      <div class="popup-dato">
+        <span>Emisión per cápita</span>
+        <span>${pc}</span>
+      </div>
+      <div class="popup-dato">
+        <span>Clasificación per cápita</span>
+        <span>${p.etiqueta_per_capita || '—'}</span>
+      </div>
+
+      <div class="popup-separador">Acuerdo de París 2030</div>
+      <div class="popup-dato">
+        <span>Objetivo comprometido</span>
+        <span>${obj}</span>
+      </div>
+      <div class="popup-dato">
+        <span>Compromiso</span>
+        <span style="font-size:10px;color:#7a9aaa">${p.descripcion_paris || '—'}</span>
+      </div>
+      <div class="popup-dato">
+        <span>Desviación actual</span>
+        <span>${dev}</span>
+      </div>
+
+      <div>
+        <span class="popup-badge" style="background:${p.color || '#888'}99;border:1px solid ${p.color || '#888'}">
+          ${p.desviacion_gt != null
+            ? (p.desviacion_gt > 0 ? '⚠️ Por encima del objetivo' : '✅ Cumpliendo objetivo')
+            : 'Sin objetivo registrado'}
+        </span>
+      </div>
+      <div class="popup-nota">Datos actuales: ${p.fuente_actual || '—'}</div>
+    </div>`;
 }
 
 function actualizarLeyenda() {
   const l = LEYENDAS[modoActual];
   document.getElementById('leyenda-titulo').textContent = l.titulo;
   document.getElementById('leyenda-items').innerHTML = l.items.map(i =>
-    `<div class="leyenda-item"><div class="leyenda-cuadrado" style="background:${i.color}"></div>${i.label}</div>`
+    `<div class="leyenda-item">
+      <div class="leyenda-cuadrado" style="background:${i.color}"></div>
+      ${i.label}
+    </div>`
   ).join('');
-}
-
-function cambiarModo(modo) {
-  modoActual = modo;
-  document.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('activo'));
-  document.getElementById({total:'btn-total',per_capita:'btn-pc',paris:'btn-paris'}[modo]).classList.add('activo');
-  actualizarLeyenda();
-  if (capaGeojson) capaGeojson.setStyle(f => estilo(f));
 }
 
 function estilo(feature) {
@@ -340,12 +368,21 @@ function estilo(feature) {
   };
 }
 
-// Carga secuencial para mejor manejo de errores
+function cambiarModo(modo) {
+  modoActual = modo;
+  document.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('activo'));
+  const ids = { total: 'btn-total', per_capita: 'btn-pc', paris: 'btn-paris' };
+  document.getElementById(ids[modo]).classList.add('activo');
+  actualizarLeyenda();
+  if (capaGeojson) capaGeojson.setStyle(f => estilo(f));
+}
+
 async function cargar() {
   try {
-    // 1. Cargar JSON de emisiones
     const rJson = await fetch(JSON_URL + '?t=' + Date.now());
-    if (!rJson.ok) throw new Error('JSON no disponible (código ' + rJson.status + '). ¿Has ejecutado el workflow?');
+    if (!rJson.ok) throw new Error(
+      'JSON no disponible (código ' + rJson.status + '). ¿Has ejecutado el workflow desde GitHub Actions?'
+    );
     const data = await rJson.json();
 
     data.paises.forEach(p => { datosMap[p.iso3] = p; });
@@ -357,7 +394,6 @@ async function cargar() {
 
     actualizarLeyenda();
 
-    // 2. Cargar GeoJSON
     const rGeo = await fetch(GEOJSON_URL);
     if (!rGeo.ok) throw new Error('GeoJSON no disponible');
     const geojson = await rGeo.json();
@@ -369,7 +405,7 @@ async function cargar() {
       onEachFeature: function(feature, layer) {
         const p = resolverPais(feature);
         if (!p) return;
-        layer.bindPopup(popup(p), { maxWidth: 300 });
+        layer.bindPopup(construirPopup(p), { maxWidth: 300 });
         layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.96, weight: 1.2 }));
         layer.on('mouseout',  () => capaGeojson.resetStyle(layer));
         if (p.iso3 === 'CHN') primerLayer = layer;
