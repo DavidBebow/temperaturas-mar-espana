@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calidad del Aire en España — 50 Capitales en Tiempo Real</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; background: #0a0e1a; }
+  #mapa { width: 100%; height: 530px; background: #0a0e1a; }
+
+  #cabecera {
+    background: #060810;
+    color: white;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-bottom: 1px solid #1a2240;
+  }
+  #cabecera h2 {
+    font-size: 14px; font-weight: 500;
+    letter-spacing: 0.04em; color: #e8f0ff;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  #resumen { font-size: 11px; color: #6a8aaa; }
+  #resumen span { color: #88ddaa; font-weight: 600; }
+  #resumen span.alerta { color: #ff8844; }
+  #ultima-act { font-size: 11px; color: #4a6a8a; }
+
+  #alerta-sahariana {
+    display: none;
+    background: #3a2800;
+    border-bottom: 1px solid #7a5a00;
+    padding: 7px 16px;
+    font-size: 12px;
+    color: #ffcc66;
+    text-align: center;
+  }
+
+  #leyenda {
+    background: #080c18;
+    padding: 7px 16px;
+    display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #1a2240;
+    font-size: 11px; color: #7a9aaa;
+  }
+  #leyenda strong { color: #9abccc; font-weight: 500; }
+  .leyenda-item { display: flex; align-items: center; gap: 4px; color: #7a9aaa; }
+  .leyenda-punto {
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0;
+  }
+
+  .marcador-wrapper {
+    display: flex; flex-direction: column;
+    align-items: center; cursor: pointer;
+  }
+  .marcador-burbuja {
+    border-radius: 10px;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+    padding: 4px 7px;
+    display: flex; flex-direction: column;
+    align-items: center;
+    min-width: 62px; white-space: nowrap;
+    backdrop-filter: blur(2px);
+  }
+  .marcador-nombre {
+    font-size: 9px; font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    line-height: 1.2;
+  }
+  .marcador-valor {
+    font-size: 13px; font-weight: 800;
+    color: white;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    line-height: 1.2;
+  }
+  .marcador-etiqueta {
+    font-size: 8px; font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    background: rgba(0,0,0,0.25);
+    border-radius: 4px; padding: 0 3px;
+    margin-top: 1px;
+  }
+  .marcador-punta {
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    margin-top: -1px;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+  }
+
+  .leaflet-popup-content-wrapper {
+    background: #0a1020 !important;
+    border: 1px solid #1e3040 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.8) !important;
+    color: #e0eeff !important;
+  }
+  .leaflet-popup-tip { background: #0a1020 !important; }
+  .leaflet-popup-close-button { color: #4a6a8a !important; }
+  .leaflet-popup-close-button:hover { color: #e0eeff !important; }
+
+  .popup-titulo { font-weight: 700; font-size: 15px; margin-bottom: 2px; color: #e8f0ff; }
+  .popup-provincia { font-size: 11px; color: #4a6a8a; margin-bottom: 10px; }
+  .popup-dato {
+    display: flex; justify-content: space-between;
+    padding: 5px 0; border-bottom: 1px solid #1a2a40;
+    font-size: 12px; color: #7a9aaa;
+  }
+  .popup-dato:last-of-type { border-bottom: none; }
+  .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; }
+  .popup-separador {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: #4a6a8a; padding: 8px 0 4px;
+    border-bottom: 1px solid #1a2a40;
+  }
+  .popup-tag {
+    display: inline-block; margin-top: 10px;
+    padding: 3px 12px; border-radius: 12px;
+    font-size: 10px; font-weight: 700; color: white;
+  }
+  .popup-sahariano {
+    display: inline-block; margin-top: 6px; margin-left: 6px;
+    padding: 3px 10px; border-radius: 12px;
+    font-size: 10px; font-weight: 700;
+    background: #5a3a00; color: #ffcc66;
+    border: 1px solid #7a5a00;
+  }
+  .oms-ok  { color: #44cc88; }
+  .oms-mal { color: #ff8844; }
+
+  .leaflet-control-zoom a {
+    background: #0a1020 !important; color: #7a9aaa !important;
+    border-color: #1e3040 !important;
+  }
+  .leaflet-control-zoom a:hover { background: #1a2040 !important; color: #e0eeff !important; }
+  .leaflet-control-attribution {
+    background: rgba(6,8,16,0.85) !important;
+    color: #4a6a8a !important; font-size: 10px !important;
+  }
+  .leaflet-control-attribution a { color: #5a8aaa !important; }
+</style>
+</head>
+<body>
+
+<div id="cabecera">
+  <h2>💨 Calidad del Aire — 50 Capitales de España</h2>
+  <div id="info-derecha">
+    <span id="resumen">Cargando datos...</span>
+    <span id="ultima-act"></span>
+  </div>
+</div>
+
+<div id="alerta-sahariana">
+  🏜️ <strong>Episodio de polvo sahariano probable</strong> — Varias ciudades muestran niveles elevados de PM10 con ratio PM10/PM2.5 compatible con intrusión de polvo del Sahara.
+</div>
+
+<div id="leyenda">
+  <strong>Calidad del aire (PM2.5):</strong>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#0066CC"></div> Excelente &lt;5</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#44AA66"></div> Buena 5–15</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FFCC44"></div> Moderada 15–25</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FF8822"></div> Mala 25–50</div>
+  <div class="leyenda-item"><div class="leyenda-punto" style="background:#CC2200"></div> Muy mala &gt;50</div>
+  <span style="margin-left:auto;font-size:10px;color:#4a6a8a">µg/m³ · Límite OMS: 15 µg/m³ · Clic para detalles</span>
+</div>
+
+<div id="mapa"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/calidad_aire.json';
+
+const mapa = L.map('mapa', {
+  center: [40.0, -3.5], zoom: 5, zoomControl: true, minZoom: 4, maxZoom: 12
+});
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '© Esri | Datos: OpenAQ', maxZoom: 12
+}).addTo(mapa);
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '', maxZoom: 12, opacity: 0.6
+}).addTo(mapa);
+
+function val(v, u) {
+  return v !== null && v !== undefined ? v + ' ' + u : '—';
+}
+
+function crearIcono(c) {
+  const color = c.color;
+  const pm25  = c.pm25 !== null && c.pm25 !== undefined ? c.pm25 + '' : '—';
+  const nombre = c.nombre.length > 12 ? c.nombre.substring(0, 11) + '…' : c.nombre;
+  const sahara = c.sahariano ? ' 🏜️' : '';
+
+  const html = `
+    <div class="marcador-wrapper">
+      <div class="marcador-burbuja" style="background:${color}cc">
+        <div class="marcador-nombre">${nombre}${sahara}</div>
+        <div class="marcador-valor">${pm25}<span style="font-size:9px;opacity:.8"> µg</span></div>
+        <div class="marcador-etiqueta">${c.etiqueta}</div>
+      </div>
+      <div class="marcador-punta" style="border-top:8px solid ${color}cc"></div>
+    </div>`;
+
+  return L.divIcon({
+    html,
+    className: '',
+    iconSize: null,
+    iconAnchor: [40, 54],
+    popupAnchor: [0, -57]
+  });
+}
+
+function construirPopup(c) {
+  const omsClass = c.supera_oms ? 'oms-mal' : 'oms-ok';
+  const omsTexto = c.supera_oms ? '⚠️ Supera límite OMS' : '✅ Dentro del límite OMS';
+  const sahariano = c.sahariano
+    ? `<span class="popup-sahariano">🏜️ Episodio sahariano probable</span>` : '';
+
+  return `
+    <div style="min-width:240px">
+      <div class="popup-titulo">💨 ${c.nombre}</div>
+      <div class="popup-provincia">📍 ${c.provincia}</div>
+
+      <div class="popup-separador">Contaminantes (µg/m³)</div>
+      <div class="popup-dato"><span>PM2.5 (partículas finas)</span><span>${val(c.pm25, 'µg/m³')}</span></div>
+      <div class="popup-dato"><span>PM10 (partículas gruesas)</span><span>${val(c.pm10, 'µg/m³')}</span></div>
+      <div class="popup-dato"><span>NO₂ (dióxido de nitrógeno)</span><span>${val(c.no2, 'µg/m³')}</span></div>
+      <div class="popup-dato"><span>O₃ (ozono)</span><span>${val(c.o3, 'µg/m³')}</span></div>
+      <div class="popup-dato"><span>SO₂ (dióxido de azufre)</span><span>${val(c.so2, 'µg/m³')}</span></div>
+      ${c.contaminante_dominante ? `<div class="popup-dato"><span>Contaminante dominante</span><span>${c.contaminante_dominante}</span></div>` : ''}
+
+      <div class="popup-separador">Límites OMS 2021</div>
+      <div class="popup-dato"><span>Estado respecto a OMS</span><span class="${omsClass}">${omsTexto}</span></div>
+
+      <div class="popup-separador">Histórico</div>
+      <div class="popup-dato"><span>Días consecutivos en este estado</span><span>${c.dias_consecutivos_estado} días</span></div>
+      <div class="popup-dato"><span>Días sobre límite OMS este año</span><span>${c.dias_sobre_oms_anio} días</span></div>
+      <div class="popup-dato"><span>Récord días sobre OMS</span><span>${c.max_dias_sobre_oms} días</span></div>
+
+      <div>
+        <span class="popup-tag" style="background:${c.color}99;border:1px solid ${c.color}">
+          ${c.etiqueta}
+        </span>
+        ${sahariano}
+      </div>
+    </div>`;
+}
+
+fetch(JSON_URL + '?t=' + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    const buenas = data.ciudades_buena_calidad || 0;
+    const malas  = data.ciudades_mala_calidad  || 0;
+
+    document.getElementById('resumen').innerHTML =
+      `<span>${buenas} ciudades</span> con buena calidad · ` +
+      `<span class="${malas > 5 ? 'alerta' : ''}">${malas} ciudades</span> con mala calidad`;
+    document.getElementById('ultima-act').textContent =
+      'Actualizado: ' + data.fecha_legible;
+
+    if (data.episodio_sahariano) {
+      document.getElementById('alerta-sahariana').style.display = 'block';
+    }
+
+    let primerMadrid = null;
+
+    data.ciudades.forEach(c => {
+      if (c.pm25 === null && c.pm25 === undefined) return;
+
+      const icono  = crearIcono(c);
+      const marker = L.marker([c.lat, c.lon], { icon: icono })
+        .addTo(mapa)
+        .bindPopup(construirPopup(c), { maxWidth: 280 });
+
+      if (c.id === 'madrid') primerMadrid = marker;
+    });
+
+    if (primerMadrid) setTimeout(() => primerMadrid.openPopup(), 800);
+  })
+  .catch(err => {
+    console.error('Error:', err);
+    document.getElementById('resumen').textContent = 'Error al cargar datos';
+  });
+</script>
+</body>
+</html>
