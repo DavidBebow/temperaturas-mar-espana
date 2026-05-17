@@ -26,57 +26,31 @@
     letter-spacing: 0.04em; color: #e8f0ff;
     display: flex; align-items: center; gap: 8px;
   }
-  #info-derecha {
-    display: flex; flex-direction: column;
-    align-items: flex-end; gap: 2px;
-  }
-  #resumen-global   { font-size: 11px; color: #6a8aaa; }
+  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  #resumen-global { font-size: 11px; color: #6a8aaa; }
   #resumen-global span { color: #ff9944; font-weight: 600; }
   #ultima-actualizacion { font-size: 11px; color: #4a6a8a; }
 
-  /* SELECTOR DE MODO */
   #selector-modo {
     background: #0a1828;
     padding: 7px 16px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    border-bottom: 1px solid #1a2a4a;
-    flex-wrap: wrap;
+    display: flex; gap: 8px; align-items: center;
+    border-bottom: 1px solid #1a2a4a; flex-wrap: wrap;
   }
   .modo-btn {
     font-size: 11px; font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid #2a4a6a;
-    background: transparent;
-    color: #6a8aaa;
-    cursor: pointer;
-    transition: all .2s;
-    letter-spacing: 0.03em;
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid #2a4a6a; background: transparent;
+    color: #6a8aaa; cursor: pointer; transition: all .2s;
   }
-  .modo-btn.activo {
-    background: #1a3a6a;
-    border-color: #4a7aaa;
-    color: #c8e0ff;
-  }
-  .modo-btn:hover:not(.activo) {
-    background: #0d1e34;
-    color: #a0c0e0;
-  }
-  #modo-label {
-    margin-left: auto;
-    font-size: 10px;
-    color: #4a6a8a;
-  }
+  .modo-btn.activo { background: #1a3a6a; border-color: #4a7aaa; color: #c8e0ff; }
+  .modo-btn:hover:not(.activo) { background: #0d1e34; color: #a0c0e0; }
+  #modo-label { margin-left: auto; font-size: 10px; color: #4a6a8a; }
 
-  /* LEYENDA */
   #leyenda {
     background: #080e1c;
     padding: 7px 16px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: flex; flex-wrap: wrap; gap: 10px;
     align-items: center;
     border-bottom: 1px solid #1a2a4a;
     font-size: 11px; color: #7a9aaa;
@@ -84,13 +58,15 @@
   #leyenda strong { color: #9abccc; font-weight: 500; }
   .leyenda-item { display: flex; align-items: center; gap: 4px; color: #7a9aaa; }
   .leyenda-cuadrado {
-    width: 12px; height: 12px;
-    border-radius: 2px;
-    border: 1px solid rgba(255,255,255,0.1);
-    flex-shrink: 0;
+    width: 12px; height: 12px; border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;
   }
 
-  /* POPUP */
+  #error-msg {
+    display: none; padding: 20px; text-align: center;
+    color: #ff9944; font-size: 13px; background: #0a1020;
+  }
+
   .leaflet-popup-content-wrapper {
     background: #0a1828 !important;
     border: 1px solid #1e3a5c !important;
@@ -101,7 +77,6 @@
   .leaflet-popup-tip { background: #0a1828 !important; }
   .leaflet-popup-close-button { color: #4a6a8a !important; }
   .leaflet-popup-close-button:hover { color: #e0eeff !important; }
-
   .popup-titulo   { font-weight: 700; font-size: 15px; margin-bottom: 3px; color: #e8f0ff; }
   .popup-subtitulo { font-size: 11px; color: #4a6a8a; margin-bottom: 10px; }
   .popup-dato {
@@ -112,9 +87,8 @@
   .popup-dato:last-of-type { border-bottom: none; }
   .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; }
   .popup-separador {
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: #4a6a8a; padding: 8px 0 4px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: #4a6a8a; padding: 8px 0 4px;
     border-bottom: 1px solid #1a2a40;
   }
   .popup-badge {
@@ -122,22 +96,15 @@
     padding: 3px 12px; border-radius: 12px;
     font-size: 10px; font-weight: 700; color: white;
   }
-  .popup-nota {
-    font-size: 10px; color: #4a6a8a;
-    margin-top: 8px; font-style: italic;
-  }
+  .popup-nota { font-size: 10px; color: #4a6a8a; margin-top: 8px; font-style: italic; }
   .val-pos { color: #ff6644; }
   .val-neg { color: #44aaff; }
-  .val-ok  { color: #44cc88; }
 
-  /* Controles */
   .leaflet-control-zoom a {
     background: #0a1828 !important; color: #7a9aaa !important;
     border-color: #1e3a5c !important;
   }
-  .leaflet-control-zoom a:hover {
-    background: #1a2a40 !important; color: #e0eeff !important;
-  }
+  .leaflet-control-zoom a:hover { background: #1a2a40 !important; color: #e0eeff !important; }
   .leaflet-control-attribution {
     background: rgba(6,12,26,0.85) !important;
     color: #4a6a8a !important; font-size: 10px !important;
@@ -157,63 +124,64 @@
 
 <div id="selector-modo">
   <strong style="font-size:11px;color:#9abccc">Ver por:</strong>
-  <button class="modo-btn activo" onclick="cambiarModo('total')"     id="btn-total">Emisiones totales</button>
+  <button class="modo-btn activo" onclick="cambiarModo('total')"      id="btn-total">Emisiones totales</button>
   <button class="modo-btn"        onclick="cambiarModo('per_capita')" id="btn-pc">Per cápita</button>
   <button class="modo-btn"        onclick="cambiarModo('paris')"      id="btn-paris">Desviación París</button>
   <span id="modo-label">Clic en un país para más detalles</span>
 </div>
 
 <div id="leyenda">
-  <strong id="leyenda-titulo">Emisiones totales (GtCO₂/año):</strong>
-  <div id="leyenda-items"></div>
+  <strong id="leyenda-titulo">Cargando...</strong>
+  <div id="leyenda-items" style="display:flex;flex-wrap:wrap;gap:10px"></div>
 </div>
 
 <div id="mapa"></div>
+<div id="error-msg"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const JSON_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/emisiones_co2.json';
-const GEOJSON_URL = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
+const GEOJSON_URL = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
 
 const mapa = L.map('mapa', {
-  center: [20, 0], zoom: 2, zoomControl: true, minZoom: 2, maxZoom: 8
+  center: [20, 0], zoom: 2, zoomControl: true, minZoom: 2, maxZoom: 7
 });
 
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
   attribution: '© Esri | Datos: Carbon Monitor + Global Carbon Project', maxZoom: 8
 }).addTo(mapa);
 
-let modoActual = 'total';
-let datosMap   = {};
+let modoActual  = 'total';
+let datosMap    = {};
 let capaGeojson = null;
 
-// Mapeo nombre inglés GeoJSON -> ISO3
-const NOMBRE_EN_A_ISO = {
+// Mapeo múltiple nombre inglés -> ISO3
+const N2I = {
   'Afghanistan':'AFG','Albania':'ALB','Algeria':'DZA','Angola':'AGO',
   'Argentina':'ARG','Armenia':'ARM','Australia':'AUS','Austria':'AUT',
   'Azerbaijan':'AZE','Bahrain':'BHR','Bangladesh':'BGD','Belarus':'BLR',
-  'Belgium':'BEL','Bolivia':'BOL','Bosnia and Herzegovina':'BIH',
-  'Brazil':'BRA','Bulgaria':'BGR','Cambodia':'KHM','Cameroon':'CMR',
-  'Canada':'CAN','Chile':'CHL','China':'CHN','Colombia':'COL',
-  'Croatia':'HRV','Cuba':'CUB','Czech Republic':'CZE','Czechia':'CZE',
-  'Denmark':'DNK','Dominican Republic':'DOM','Ecuador':'ECU','Egypt':'EGY',
-  'El Salvador':'SLV','Estonia':'EST','Ethiopia':'ETH','Finland':'FIN',
-  'France':'FRA','Germany':'DEU','Ghana':'GHA','Greece':'GRC',
-  'Guatemala':'GTM','Hong Kong':'HKG','Hungary':'HUN','India':'IND',
-  'Indonesia':'IDN','Iran':'IRN','Iraq':'IRQ','Ireland':'IRL',
-  'Israel':'ISR','Italy':'ITA','Japan':'JPN','Jordan':'JOR',
-  'Kazakhstan':'KAZ','Kenya':'KEN','Kuwait':'KWT','Laos':'LAO',
-  'Latvia':'LVA','Lebanon':'LBN','Libya':'LBY','Lithuania':'LTU',
-  'Malaysia':'MYS','Mexico':'MEX','Mongolia':'MNG','Morocco':'MAR',
-  'Mozambique':'MOZ','Myanmar':'MMR','Nepal':'NPL','Netherlands':'NLD',
-  'New Zealand':'NZL','Nigeria':'NGA','North Korea':'PRK','Norway':'NOR',
-  'Oman':'OMN','Pakistan':'PAK','Papua New Guinea':'PNG','Paraguay':'PRY',
-  'Peru':'PER','Philippines':'PHL','Poland':'POL','Portugal':'PRT',
-  'Qatar':'QAT','Romania':'ROU','Russia':'RUS','Saudi Arabia':'SAU',
-  'Serbia':'SRB','Singapore':'SGP','Slovakia':'SVK','Slovenia':'SVN',
-  'South Africa':'ZAF','South Korea':'KOR','Spain':'ESP','Sudan':'SDN',
-  'Sweden':'SWE','Switzerland':'CHE','Syria':'SYR','Taiwan':'TWN',
-  'Tanzania':'TZA','Thailand':'THA','Tunisia':'TUN','Turkey':'TUR',
+  'Belgium':'BEL','Bolivia':'BOL','Brazil':'BRA','Bulgaria':'BGR',
+  'Cambodia':'KHM','Cameroon':'CMR','Canada':'CAN','Chile':'CHL',
+  'China':'CHN','Colombia':'COL','Croatia':'HRV','Cuba':'CUB',
+  'Czech Republic':'CZE','Czechia':'CZE','Denmark':'DNK',
+  'Dominican Republic':'DOM','Ecuador':'ECU','Egypt':'EGY',
+  'El Salvador':'SLV','Ethiopia':'ETH','Finland':'FIN','France':'FRA',
+  'Germany':'DEU','Ghana':'GHA','Greece':'GRC','Guatemala':'GTM',
+  'Hungary':'HUN','India':'IND','Indonesia':'IDN','Iran':'IRN',
+  'Iraq':'IRQ','Ireland':'IRL','Israel':'ISR','Italy':'ITA',
+  'Japan':'JPN','Jordan':'JOR','Kazakhstan':'KAZ','Kenya':'KEN',
+  'Kuwait':'KWT','Laos':'LAO','Latvia':'LVA','Lebanon':'LBN',
+  'Libya':'LBY','Lithuania':'LTU','Malaysia':'MYS','Mexico':'MEX',
+  'Mongolia':'MNG','Morocco':'MAR','Mozambique':'MOZ','Myanmar':'MMR',
+  'Nepal':'NPL','Netherlands':'NLD','New Zealand':'NZL','Nigeria':'NGA',
+  'North Korea':'PRK','Norway':'NOR','Oman':'OMN','Pakistan':'PAK',
+  'Papua New Guinea':'PNG','Paraguay':'PRY','Peru':'PER',
+  'Philippines':'PHL','Poland':'POL','Portugal':'PRT','Qatar':'QAT',
+  'Romania':'ROU','Russia':'RUS','Saudi Arabia':'SAU','Serbia':'SRB',
+  'Singapore':'SGP','Slovakia':'SVK','South Africa':'ZAF',
+  'South Korea':'KOR','Spain':'ESP','Sudan':'SDN','Sweden':'SWE',
+  'Switzerland':'CHE','Syria':'SYR','Taiwan':'TWN','Tanzania':'TZA',
+  'Thailand':'THA','Tunisia':'TUN','Turkey':'TUR','Türkiye':'TUR',
   'Turkmenistan':'TKM','Ukraine':'UKR','United Arab Emirates':'ARE',
   'United Kingdom':'GBR','United States of America':'USA',
   'United States':'USA','Uruguay':'URY','Uzbekistan':'UZB',
@@ -224,218 +192,203 @@ const LEYENDAS = {
   total: {
     titulo: 'Emisiones totales (GtCO₂/año):',
     items: [
-      { color: '#2a2a3a', label: 'Sin datos' },
-      { color: '#1a3a1a', label: '< 0.1 Gt' },
-      { color: '#5a5a10', label: '0.1–0.5 Gt' },
-      { color: '#aa5010', label: '0.5–2 Gt' },
-      { color: '#cc2200', label: '2–5 Gt' },
-      { color: '#880000', label: '> 5 Gt' },
+      {color:'#2a2a3a',label:'Sin datos'},
+      {color:'#1a3a1a',label:'< 0.1 Gt'},
+      {color:'#5a5a10',label:'0.1–0.5 Gt'},
+      {color:'#aa5010',label:'0.5–2 Gt'},
+      {color:'#cc2200',label:'2–5 Gt'},
+      {color:'#880000',label:'> 5 Gt'},
     ]
   },
   per_capita: {
     titulo: 'Emisiones per cápita (tCO₂/hab/año):',
     items: [
-      { color: '#2a2a3a', label: 'Sin datos' },
-      { color: '#0a2a4a', label: '< 2 t' },
-      { color: '#1a4a2a', label: '2–5 t' },
-      { color: '#5a5a10', label: '5–8 t' },
-      { color: '#aa5010', label: '8–12 t' },
-      { color: '#cc2200', label: '12–20 t' },
-      { color: '#5a0080', label: '> 20 t' },
+      {color:'#2a2a3a',label:'Sin datos'},
+      {color:'#0a2a4a',label:'< 2 t'},
+      {color:'#1a4a2a',label:'2–5 t'},
+      {color:'#5a5a10',label:'5–8 t'},
+      {color:'#aa5010',label:'8–12 t'},
+      {color:'#cc2200',label:'12–20 t'},
+      {color:'#5a0080',label:'> 20 t'},
     ]
   },
   paris: {
     titulo: 'Desviación respecto al Acuerdo de París:',
     items: [
-      { color: '#2a2a3a', label: 'Sin objetivo' },
-      { color: '#0a2a4a', label: 'Bajo objetivo' },
-      { color: '#1a4a2a', label: 'Cumpliendo' },
-      { color: '#5a5a10', label: 'Ligeramente alto' },
-      { color: '#aa5010', label: 'Por encima' },
-      { color: '#cc2200', label: 'Muy por encima' },
+      {color:'#2a2a3a',label:'Sin objetivo'},
+      {color:'#0a2a4a',label:'Bajo objetivo'},
+      {color:'#1a4a2a',label:'Cumpliendo'},
+      {color:'#5a5a10',label:'Ligeramente alto'},
+      {color:'#aa5010',label:'Por encima'},
+      {color:'#cc2200',label:'Muy por encima'},
     ]
   }
 };
 
 function colorTotal(gt) {
-  if (!gt || gt === 0) return '#2a2a3a';
-  if (gt < 0.1)  return '#1a3a1a';
-  if (gt < 0.5)  return '#5a5a10';
-  if (gt < 2.0)  return '#aa5010';
-  if (gt < 5.0)  return '#cc2200';
+  if (!gt) return '#2a2a3a';
+  if (gt < 0.1) return '#1a3a1a';
+  if (gt < 0.5) return '#5a5a10';
+  if (gt < 2.0) return '#aa5010';
+  if (gt < 5.0) return '#cc2200';
   return '#880000';
 }
-
 function colorPerCapita(pc) {
-  if (!pc || pc === 0) return '#2a2a3a';
-  if (pc < 2)   return '#0a2a4a';
-  if (pc < 5)   return '#1a4a2a';
-  if (pc < 8)   return '#5a5a10';
-  if (pc < 12)  return '#aa5010';
-  if (pc < 20)  return '#cc2200';
+  if (!pc) return '#2a2a3a';
+  if (pc < 2)  return '#0a2a4a';
+  if (pc < 5)  return '#1a4a2a';
+  if (pc < 8)  return '#5a5a10';
+  if (pc < 12) return '#aa5010';
+  if (pc < 20) return '#cc2200';
   return '#5a0080';
 }
-
-function colorParis(desviacion, objetivo) {
-  if (!objetivo)             return '#2a2a3a';
-  if (desviacion === null || desviacion === undefined) return '#2a2a3a';
-  if (desviacion <= -0.05)   return '#0a2a4a';
-  if (desviacion < 0)        return '#1a4a2a';
-  if (desviacion < objetivo * 0.1) return '#5a5a10';
-  if (desviacion < objetivo * 0.3) return '#aa5010';
+function colorParis(dev, obj) {
+  if (!obj || dev === null || dev === undefined) return '#2a2a3a';
+  if (dev <= -0.05)        return '#0a2a4a';
+  if (dev < 0)             return '#1a4a2a';
+  if (dev < obj * 0.10)    return '#5a5a10';
+  if (dev < obj * 0.30)    return '#aa5010';
   return '#cc2200';
 }
-
-function getColor(pais) {
-  if (!pais) return '#1e1e2e';
-  if (modoActual === 'total')      return colorTotal(pais.emision_actual_gt);
-  if (modoActual === 'per_capita') return colorPerCapita(pais.per_capita_tco2);
-  if (modoActual === 'paris')      return colorParis(pais.desviacion_gt, pais.objetivo_paris_gt);
+function getColor(p) {
+  if (!p) return '#1e1e2e';
+  if (modoActual === 'total')      return colorTotal(p.emision_actual_gt);
+  if (modoActual === 'per_capita') return colorPerCapita(p.per_capita_tco2);
+  if (modoActual === 'paris')      return colorParis(p.desviacion_gt, p.objetivo_paris_gt);
   return '#1e1e2e';
 }
 
-function getOpacity(pais) {
-  return pais && (pais.emision_actual_gt > 0) ? 0.82 : 0.30;
+function resolverPais(feature) {
+  const pr = feature.properties || {};
+  // Probar todas las variantes de código ISO conocidas
+  for (const key of ['ISO_A3','iso_a3','ADM0_A3','GU_A3','ISO3','SOV_A3']) {
+    const v = pr[key];
+    if (v && v !== '-99' && v !== '' && datosMap[v]) return datosMap[v];
+  }
+  // Fallback por nombre
+  for (const key of ['ADMIN','NAME_EN','NAME','name','SOVEREIGNT']) {
+    const nombre = pr[key];
+    if (nombre) {
+      const iso = N2I[nombre];
+      if (iso && datosMap[iso]) return datosMap[iso];
+    }
+  }
+  return null;
 }
 
-function signo(v, dec=2) {
+function signo(v, d=2) {
   if (v === null || v === undefined) return '—';
-  return (v > 0 ? '+' : '') + v.toFixed(dec);
+  return (v > 0 ? '+' : '') + v.toFixed(d);
 }
+function cls(v) { return v > 0 ? 'val-pos' : v < 0 ? 'val-neg' : ''; }
 
-function classSigNo(v) {
-  if (!v) return '';
-  return v > 0 ? 'val-pos' : v < 0 ? 'val-neg' : '';
-}
+function popup(p) {
+  const eA  = p.emision_actual_gt   != null ? p.emision_actual_gt.toFixed(3)   + ' Gt' : '—';
+  const eB  = p.emision_anterior_gt != null ? p.emision_anterior_gt.toFixed(3) + ' Gt' : '—';
+  const dA  = p.diferencia_anual_gt != null
+    ? `<span class="${cls(p.diferencia_anual_gt)}">${signo(p.diferencia_anual_gt,3)} Gt</span>` : '—';
+  const pc  = p.per_capita_tco2 != null ? p.per_capita_tco2.toFixed(1) + ' t/hab' : '—';
+  const obj = p.objetivo_paris_gt   != null ? p.objetivo_paris_gt.toFixed(3) + ' Gt' : '—';
+  const dev = p.desviacion_gt != null
+    ? `<span class="${cls(p.desviacion_gt)}">${signo(p.desviacion_gt,3)} Gt (${signo(p.desviacion_pct,1)}%)</span>` : '—';
+  const rt  = p.fuente_actual?.includes('Carbon Monitor');
 
-function construirPopup(p) {
-  const emActual   = p.emision_actual_gt   != null ? p.emision_actual_gt.toFixed(3)   + ' Gt' : '—';
-  const emAnterior = p.emision_anterior_gt != null ? p.emision_anterior_gt.toFixed(3) + ' Gt' : '—';
-  const difAnual   = p.diferencia_anual_gt != null
-    ? `<span class="${classSigNo(p.diferencia_anual_gt)}">${signo(p.diferencia_anual_gt, 3)} Gt</span>` : '—';
-  const perCap     = p.per_capita_tco2 != null ? p.per_capita_tco2.toFixed(1) + ' t/hab' : '—';
-  const objetivo   = p.objetivo_paris_gt  != null ? p.objetivo_paris_gt.toFixed(3)  + ' Gt' : '—';
-  const desviacion = p.desviacion_gt != null
-    ? `<span class="${classSigNo(p.desviacion_gt)}">${signo(p.desviacion_gt, 3)} Gt (${signo(p.desviacion_pct, 1)}%)</span>` : '—';
-  const esRT = p.fuente_actual?.includes('Carbon Monitor');
-
-  return `
-    <div style="min-width:250px">
-      <div class="popup-titulo">🌍 ${p.nombre}</div>
-      <div class="popup-subtitulo">${p.fuente_actual || '—'} ${esRT ? '🟢' : '📅'}</div>
-      <div class="popup-separador">Emisiones de CO₂</div>
-      <div class="popup-dato"><span>Emisión actual (anualizada)</span><span>${emActual}</span></div>
-      <div class="popup-dato"><span>Misma fecha año anterior</span><span>${emAnterior}</span></div>
-      <div class="popup-dato"><span>Diferencia anual</span><span>${difAnual}</span></div>
-      <div class="popup-dato"><span>Emisión per cápita</span><span>${perCap}</span></div>
-      <div class="popup-dato"><span>Clasificación per cápita</span><span>${p.etiqueta_per_capita || '—'}</span></div>
-      <div class="popup-separador">Acuerdo de París 2030</div>
-      <div class="popup-dato"><span>Objetivo comprometido</span><span>${objetivo}</span></div>
-      <div class="popup-dato"><span>Compromiso</span><span style="font-size:10px;color:#7a9aaa">${p.descripcion_paris || '—'}</span></div>
-      <div class="popup-dato"><span>Desviación actual</span><span>${desviacion}</span></div>
-      <div>
-        <span class="popup-badge" style="background:${p.color || '#888'}99;border:1px solid ${p.color || '#888'}">
-          ${p.desviacion_gt != null
-            ? (p.desviacion_gt > 0 ? '⚠️ Por encima del objetivo' : '✅ Cumpliendo objetivo')
-            : 'Sin objetivo registrado'}
-        </span>
-      </div>
-      <div class="popup-nota">Datos: ${p.fuente_actual || 'Global Carbon Project 2024'}</div>
-    </div>`;
+  return `<div style="min-width:250px">
+    <div class="popup-titulo">🌍 ${p.nombre}</div>
+    <div class="popup-subtitulo">${p.fuente_actual || '—'} ${rt ? '🟢' : '📅'}</div>
+    <div class="popup-separador">Emisiones de CO₂</div>
+    <div class="popup-dato"><span>Emisión actual (anualizada)</span><span>${eA}</span></div>
+    <div class="popup-dato"><span>Misma fecha año anterior</span><span>${eB}</span></div>
+    <div class="popup-dato"><span>Diferencia anual</span><span>${dA}</span></div>
+    <div class="popup-dato"><span>Emisión per cápita</span><span>${pc}</span></div>
+    <div class="popup-dato"><span>Clasificación per cápita</span><span>${p.etiqueta_per_capita||'—'}</span></div>
+    <div class="popup-separador">Acuerdo de París 2030</div>
+    <div class="popup-dato"><span>Objetivo comprometido</span><span>${obj}</span></div>
+    <div class="popup-dato"><span>Compromiso</span><span style="font-size:10px;color:#7a9aaa">${p.descripcion_paris||'—'}</span></div>
+    <div class="popup-dato"><span>Desviación actual</span><span>${dev}</span></div>
+    <div><span class="popup-badge" style="background:${p.color||'#888'}99;border:1px solid ${p.color||'#888'}">
+      ${p.desviacion_gt!=null?(p.desviacion_gt>0?'⚠️ Por encima':'✅ Cumpliendo'):'Sin objetivo'}
+    </span></div>
+    <div class="popup-nota">Datos: ${p.fuente_actual||'Global Carbon Project 2024'}</div>
+  </div>`;
 }
 
 function actualizarLeyenda() {
-  const leyenda = LEYENDAS[modoActual];
-  document.getElementById('leyenda-titulo').textContent = leyenda.titulo;
-  document.getElementById('leyenda-items').innerHTML = leyenda.items.map(item => `
-    <div class="leyenda-item">
-      <div class="leyenda-cuadrado" style="background:${item.color}"></div>
-      ${item.label}
-    </div>`).join('');
+  const l = LEYENDAS[modoActual];
+  document.getElementById('leyenda-titulo').textContent = l.titulo;
+  document.getElementById('leyenda-items').innerHTML = l.items.map(i =>
+    `<div class="leyenda-item"><div class="leyenda-cuadrado" style="background:${i.color}"></div>${i.label}</div>`
+  ).join('');
 }
 
 function cambiarModo(modo) {
   modoActual = modo;
   document.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('activo'));
-  const ids = { total: 'btn-total', per_capita: 'btn-pc', paris: 'btn-paris' };
-  document.getElementById(ids[modo]).classList.add('activo');
+  document.getElementById({total:'btn-total',per_capita:'btn-pc',paris:'btn-paris'}[modo]).classList.add('activo');
   actualizarLeyenda();
+  if (capaGeojson) capaGeojson.setStyle(f => estilo(f));
+}
 
-  if (capaGeojson) {
-    capaGeojson.setStyle(function(feature) {
-      const pais = resolverPais(feature);
-      return {
-        fillColor:   getColor(pais),
-        fillOpacity: getOpacity(pais),
-        color:       '#1a2a40',
-        weight:      0.5,
-        opacity:     0.7
-      };
-    });
+function estilo(feature) {
+  const p = resolverPais(feature);
+  return {
+    fillColor:   getColor(p),
+    fillOpacity: p ? 0.82 : 0.25,
+    color:       '#1a2a40',
+    weight:      0.4,
+    opacity:     0.6
+  };
+}
+
+// Carga secuencial para mejor manejo de errores
+async function cargar() {
+  try {
+    // 1. Cargar JSON de emisiones
+    const rJson = await fetch(JSON_URL + '?t=' + Date.now());
+    if (!rJson.ok) throw new Error('JSON no disponible (código ' + rJson.status + '). ¿Has ejecutado el workflow?');
+    const data = await rJson.json();
+
+    data.paises.forEach(p => { datosMap[p.iso3] = p; });
+
+    document.getElementById('resumen-global').innerHTML =
+      `Emisiones globales: <span>${data.emisiones_globales_gt} GtCO₂/año</span> · <span>${data.paises_carbon_monitor}</span> países en tiempo real`;
+    document.getElementById('ultima-actualizacion').textContent =
+      'Actualizado: ' + data.fecha_legible;
+
+    actualizarLeyenda();
+
+    // 2. Cargar GeoJSON
+    const rGeo = await fetch(GEOJSON_URL);
+    if (!rGeo.ok) throw new Error('GeoJSON no disponible');
+    const geojson = await rGeo.json();
+
+    let primerLayer = null;
+
+    capaGeojson = L.geoJSON(geojson, {
+      style: estilo,
+      onEachFeature: function(feature, layer) {
+        const p = resolverPais(feature);
+        if (!p) return;
+        layer.bindPopup(popup(p), { maxWidth: 300 });
+        layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.96, weight: 1.2 }));
+        layer.on('mouseout',  () => capaGeojson.resetStyle(layer));
+        if (p.iso3 === 'CHN') primerLayer = layer;
+      }
+    }).addTo(mapa);
+
+    if (primerLayer) setTimeout(() => primerLayer.openPopup(), 900);
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('resumen-global').textContent = 'Error al cargar datos';
+    document.getElementById('mapa').style.display = 'none';
+    const em = document.getElementById('error-msg');
+    em.style.display = 'block';
+    em.textContent = '⚠️ ' + err.message;
   }
 }
 
-function resolverPais(feature) {
-  const props = feature.properties || {};
-  // Intentar por múltiples propiedades ISO
-  const iso = props.ISO_A3 || props.iso_a3 || props.ISO3 ||
-              props.ADM0_A3 || props.GU_A3 || '';
-  if (iso && iso !== '-99' && datosMap[iso]) return datosMap[iso];
-
-  // Fallback por nombre en inglés
-  const nombre = props.ADMIN || props.name || props.NAME || props.NAME_EN || '';
-  const isoFallback = NOMBRE_EN_A_ISO[nombre];
-  if (isoFallback && datosMap[isoFallback]) return datosMap[isoFallback];
-
-  return null;
-}
-
-Promise.all([
-  fetch(JSON_URL + '?t=' + Date.now()).then(r => r.json()),
-  fetch(GEOJSON_URL).then(r => r.json())
-])
-.then(([data, geojson]) => {
-
-  data.paises.forEach(p => { datosMap[p.iso3] = p; });
-
-  document.getElementById('resumen-global').innerHTML =
-    `Emisiones globales: <span>${data.emisiones_globales_gt} GtCO₂/año</span> · <span>${data.paises_carbon_monitor}</span> países en tiempo real`;
-  document.getElementById('ultima-actualizacion').textContent =
-    'Actualizado: ' + data.fecha_legible;
-
-  actualizarLeyenda();
-
-  let primerLayer = null;
-
-  capaGeojson = L.geoJSON(geojson, {
-    style: function(feature) {
-      const pais = resolverPais(feature);
-      return {
-        fillColor:   getColor(pais),
-        fillOpacity: getOpacity(pais),
-        color:       '#1a2a40',
-        weight:      0.5,
-        opacity:     0.7
-      };
-    },
-    onEachFeature: function(feature, layer) {
-      const pais = resolverPais(feature);
-      if (!pais) return;
-
-      layer.bindPopup(construirPopup(pais), { maxWidth: 300 });
-      layer.on('mouseover', function() {
-        layer.setStyle({ fillOpacity: 0.96, weight: 1.5 });
-      });
-      layer.on('mouseout', function() { capaGeojson.resetStyle(layer); });
-
-      if (pais.iso3 === 'CHN') primerLayer = layer;
-    }
-  }).addTo(mapa);
-
-  if (primerLayer) setTimeout(() => primerLayer.openPopup(), 900);
-
-})
-.catch(err => {
-  console.error('Error:', err);
-  document.getElementById('resumen-global').textContent = 'Error al cargar datos';
-});
+cargar();
+</script>
+</body>
+</html>
