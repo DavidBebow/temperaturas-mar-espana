@@ -1,9 +1,10 @@
-name: Actualizar Embalses (MITECO)
+name: Actualizar Embalses
 
 on:
+  # Cada martes a las 12:00 UTC — después de actualizar DATOS_EMBALSES en el script
   schedule:
-    # Martes a las 13:30 UTC = 15:30 hora España peninsular (verano)
-    - cron: '30 13 * * 2'
+    - cron: '0 12 * * 2'
+  # También se puede lanzar manualmente tras cada actualización de datos
   workflow_dispatch:
 
 env:
@@ -24,13 +25,9 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalar mdbtools (lector de ficheros .mdb de Microsoft Access)
-        run: sudo apt-get install -y mdbtools
+      # No hay dependencias externas — solo librería estándar de Python
 
-      - name: Instalar dependencias Python
-        run: pip install requests
-
-      - name: Ejecutar script de embalses
+      - name: Generar JSONs de embalses
         run: python scripts/obtener_embalses.py
 
       - name: Publicar cambios
@@ -39,7 +36,7 @@ jobs:
           git config --local user.name "GitHub Actions Bot"
           git add docs/embalses_nacional.json docs/embalses/
           git diff --staged --quiet && echo "Sin cambios." || (
-            git commit -m "Embalses actualizados: $(date +'%d/%m/%Y %H:%M UTC') — MITECO" &&
+            git commit -m "Embalses actualizados: $(date +'%d/%m/%Y') — MITECO" &&
             git pull --rebase &&
             git push
           )
