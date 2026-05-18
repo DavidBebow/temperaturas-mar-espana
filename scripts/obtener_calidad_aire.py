@@ -108,26 +108,35 @@ def obtener_calidad_ciudad(lat, lon):
 
 def clasificar_calidad_pm25(pm25):
     if pm25 is None:
-        return "#888888", "Sin datos", 0
-    if pm25 < 5:
-        return "#0066CC", "Excelente", 1
-    if pm25 < 15:
-        return "#44AA66", "Buena",     2
-    if pm25 < 25:
-        return "#FFCC44", "Moderada",  3
-    if pm25 < 50:
-        return "#FF8822", "Mala",      4
-    return "#CC2200", "Muy mala",      5
+        return None, None, 0
+    if pm25 < 5:   return "#0066CC", "Excelente", 1
+    if pm25 < 15:  return "#44AA66", "Buena",     2
+    if pm25 < 25:  return "#FFCC44", "Moderada",  3
+    if pm25 < 50:  return "#FF8822", "Mala",      4
+    return "#CC2200", "Muy mala", 5
 
 def clasificar_aqi_europeo(aqi):
-    """Etiqueta del índice europeo de calidad del aire."""
-    if aqi is None: return "Sin datos"
-    if aqi < 20:    return "Muy buena"
-    if aqi < 40:    return "Buena"
-    if aqi < 60:    return "Moderada"
-    if aqi < 80:    return "Mala"
-    if aqi < 100:   return "Muy mala"
-    return "Extremadamente mala"
+    """Fallback cuando no hay PM2.5."""
+    if aqi is None:  return "#888888", "Sin datos", 0
+    if aqi < 20:     return "#0066CC", "Muy buena", 1
+    if aqi < 40:     return "#44AA66", "Buena",     2
+    if aqi < 60:     return "#FFCC44", "Moderada",  3
+    if aqi < 80:     return "#FF8822", "Mala",      4
+    if aqi < 100:    return "#CC2200", "Muy mala",  5
+    return "#880000", "Extrema", 5
+
+def clasificar_ciudad(pm25, aqi_europeo):
+    """
+    Usa PM2.5 como indicador principal.
+    Si no hay PM2.5, usa el AQI europeo como fallback.
+    Devuelve: color, etiqueta, nivel, valor_mostrado, unidad_mostrada
+    """
+    color, etiqueta, nivel = clasificar_calidad_pm25(pm25)
+    if color is not None:
+        return color, etiqueta, nivel, pm25, "µg/m³ PM2.5"
+
+    color, etiqueta, nivel = clasificar_aqi_europeo(aqi_europeo)
+    return color, etiqueta, nivel, aqi_europeo, "AQI europeo"
 
 def detectar_sahariano(pm10, dust):
     """
@@ -250,6 +259,10 @@ def generar_json():
             estado += " 🏜️"
         print(f"  ✓ {estado}")
 
+color, etiqueta, nivel, valor_mostrado, unidad_mostrada = clasificar_ciudad(
+            pm25, aqi
+        )
+
         resultados.append({
             "id":           ciudad["id"],
             "nombre":       ciudad["nombre"],
@@ -262,14 +275,16 @@ def generar_json():
             "o3":           o3,
             "so2":          so2,
             "aqi_europeo":  aqi,
-            "etiqueta_aqi": etiq_aqi,
+            "etiqueta_aqi": clasificar_aqi_europeo(aqi)[1] if aqi else "Sin datos",
             "dust":         dust,
             "color":        color,
             "etiqueta":     etiqueta,
             "nivel":        nivel,
+            "valor_mostrado":  valor_mostrado,
+            "unidad_mostrada": unidad_mostrada,
             "supera_oms":   supera_oms,
             "sahariano":    sahariano,
-            "contaminante_dominante":  contaminante,
+            "contaminante_dominante": contaminante,
             "dias_consecutivos_estado": 0,
             "max_dias_sobre_oms":       0,
             "dias_sobre_oms_anio":      0,
