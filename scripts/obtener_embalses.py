@@ -832,6 +832,7 @@ def procesar():
     for id_prov, prov in PROVINCIAS.items():
         lista_embalses = []
         total_vol = total_cap = 0.0
+        provincia_con_datos = False  # solo True si al menos un embalse tiene dato real
 
         for embalse in prov["embalses"]:
             if usando_fallback:
@@ -844,10 +845,28 @@ def procesar():
             else:
                 vol, pct, _ = buscar(embalse["buscar"], datos_mdb)
 
+            # Si no hay dato real: guardar null, NO inventar un 5%
             if pct is None:
-                pct = 5.0
-                vol = round(embalse["capacidad_hm3"] * pct / 100, 2)
+                color, etiqueta = calcular_estado(None)
+                lista_embalses.append({
+                    "id":            embalse["id"],
+                    "nombre":        embalse["nombre"],
+                    "rio":           embalse["rio"],
+                    "municipio":     embalse["municipio"],
+                    "provincia":     prov["nombre"],
+                    "lat":           embalse["lat"],
+                    "lon":           embalse["lon"],
+                    "capacidad_hm3": embalse["capacidad_hm3"],
+                    "volumen_hm3":   None,
+                    "pct":           None,
+                    "color":         color,
+                    "etiqueta":      etiqueta,
+                })
+                total_cap += embalse["capacidad_hm3"]
+                continue
 
+            # Dato real disponible
+            provincia_con_datos = True
             vol = round(float(vol), 2)
             pct = round(float(pct), 1)
             color, etiqueta = calcular_estado(pct)
@@ -869,7 +888,12 @@ def procesar():
                 "etiqueta":      etiqueta,
             })
 
-        pct_media = round((total_vol / total_cap) * 100, 1) if total_cap > 0 else None
+        # pct_media solo si hay datos reales; si no, None → gris en el mapa
+        embalses_con_datos = [e for e in lista_embalses if e["pct"] is not None]
+        if embalses_con_datos and total_cap > 0:
+            pct_media = round((total_vol / total_cap) * 100, 1)
+        else:
+            pct_media = None
         color_p, etiq_p = calcular_estado(pct_media)
 
         # Guardar JSON de provincia
@@ -889,14 +913,16 @@ def procesar():
                 "embalses":             lista_embalses,
             }, f, ensure_ascii=False, indent=2)
 
-        print(f"  ✓ {prov['nombre']:25s}: {pct_media}%  ({total_vol:.1f}/{total_cap} Hm³)")
+        estado_str = f"{pct_media}%" if pct_media is not None else "sin datos"
+        print(f"  ✓ {prov['nombre']:25s}: {estado_str}")
 
-        # Acumular en comunidad
-        idc = prov["id_comunidad"]
-        if idc not in resumen_comunidades:
-            resumen_comunidades[idc] = {"vol": 0.0, "cap": 0.0}
-        resumen_comunidades[idc]["vol"] += total_vol
-        resumen_comunidades[idc]["cap"] += total_cap
+        # Acumular en comunidad SOLO si tiene datos reales
+        if provincia_con_datos:
+            idc = prov["id_comunidad"]
+            if idc not in resumen_comunidades:
+                resumen_comunidades[idc] = {"vol": 0.0, "cap": 0.0}
+            resumen_comunidades[idc]["vol"] += total_vol
+            resumen_comunidades[idc]["cap"] += total_cap
 
     # 4. Generar embalses_nacional.json
     comunidades_lista = []
@@ -905,15 +931,19 @@ def procesar():
             r = resumen_comunidades[idc]
             pct = round((r["vol"] / r["cap"]) * 100, 1) if r["cap"] > 0 else None
             color, etiq = calcular_estado(pct)
-            comunidades_lista.append({
-                "id":                idc,
-                "nombre":            info["nombre"],
-                "pct":               pct,
-                "color":             color,
-                "etiqueta":          etiq,
-                "url_detalle":       info["url"],
-                "datos_disponibles": True,
-            })
+            tiene_datos = pct is not None
+        else:
+            pct, color, etiq, tiene_datos = None, "#2a3a4a", "Sin datos", False
+
+        comunidades_lista.append({
+            "id":                idc,
+            "nombre":            info["nombre"],
+            "pct":               pct,
+            "color":             color,
+            "etiqueta":          etiq,
+            "url_detalle":       info["url"],
+            "datos_disponibles": tiene_datos,
+        })
 
     with open("docs/embalses_nacional.json", "w", encoding="utf-8") as f:
         json.dump({
