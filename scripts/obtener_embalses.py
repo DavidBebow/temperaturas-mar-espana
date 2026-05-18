@@ -446,17 +446,58 @@ def to_f(s):
 # DESCARGA Y LECTURA DEL ZIP MITECO
 # ─────────────────────────────────────────────────────────────────────────────
 
+PAGINA_BOLETIN = (
+    "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/"
+    "boletin-hidrologico/default.aspx"
+)
+CABECERAS_NAVEGADOR = {
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept-Language": "es-ES,es;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+}
+
 def descargar_zip():
+    """
+    El servidor MITECO requiere cookies de sesión para descargar el ZIP.
+    Usamos requests.Session: primero visitamos la página del boletín
+    para obtener las cookies, luego descargamos el ZIP.
+    """
+    sesion = requests.Session()
+    sesion.headers.update(CABECERAS_NAVEGADOR)
+
+    # Paso 1: visitar la página del boletín → cookies de sesión
+    try:
+        print("  Obteniendo cookies de sesión MITECO...")
+        r0 = sesion.get(PAGINA_BOLETIN, timeout=30, allow_redirects=True)
+        print(f"  Página boletín: HTTP {r0.status_code} | cookies: {list(sesion.cookies.keys())}")
+    except Exception as e:
+        print(f"  Aviso cookies: {e}")
+
+    # Paso 2: descargar el ZIP con las cookies y el Referer correcto
     print(f"  GET {ZIP_URL}")
     try:
-        r = requests.get(ZIP_URL, headers=CABECERA, timeout=120)
+        sesion.headers.update({
+            "Referer": PAGINA_BOLETIN,
+            "Accept": "application/zip,application/octet-stream,*/*;q=0.8",
+        })
+        r = sesion.get(ZIP_URL, timeout=180, allow_redirects=True)
         ct = r.headers.get("Content-Type", "")
-        print(f"  HTTP {r.status_code}  Content-Type: {ct}  Size: {len(r.content)} bytes")
-        if r.status_code == 200 and len(r.content) > 50_000:
+        size = len(r.content)
+        print(f"  HTTP {r.status_code}  Content-Type: {ct}  Size: {size:,} bytes")
+
+        # Un ZIP real empieza con los bytes mágicos PK (0x50 0x4B)
+        if r.status_code == 200 and size > 100_000 and r.content[:2] == b'PK':
+            print(f"  ✓ ZIP válido ({size // 1024} KB)")
             return r.content
-        print("  ZIP no válido o demasiado pequeño")
+
+        print(f"  No es un ZIP válido (bytes: {r.content[:4].hex()}) o demasiado pequeño")
     except Exception as e:
         print(f"  Error descargando ZIP: {e}")
+
     return None
 
 
