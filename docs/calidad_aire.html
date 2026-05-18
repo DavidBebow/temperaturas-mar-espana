@@ -200,29 +200,41 @@ function v(val, unidad) {
 }
 
 function crearIcono(c) {
-  const color    = c.color || '#888888';
-  const pm25str  = (c.pm25 !== null && c.pm25 !== undefined) ? c.pm25 + '' : '—';
-  const etiqueta = c.etiqueta || 'Sin datos';
-  const sahara   = c.sahariano ? ' 🏜️' : '';
-  let   nombre   = c.nombre || '';
+  const color = c.color || '#888888';
+
+  // Mostrar PM2.5 si existe, sino AQI europeo, sino —
+  let valorStr, subtexto;
+  if (c.pm25 !== null && c.pm25 !== undefined) {
+    valorStr = c.pm25 + '<span style="font-size:9px;opacity:.8"> µg</span>';
+    subtexto = c.etiqueta || 'Sin datos';
+  } else if (c.aqi_europeo !== null && c.aqi_europeo !== undefined) {
+    valorStr = c.aqi_europeo + '<span style="font-size:9px;opacity:.8"> AQI</span>';
+    subtexto = c.etiqueta || 'Sin datos';
+  } else {
+    valorStr = '<span style="font-size:11px;opacity:.7">Sin datos</span>';
+    subtexto = '';
+  }
+
+  let nombre = c.nombre || '';
   if (nombre.length > 12) nombre = nombre.substring(0, 11) + '…';
+  const sahara = c.sahariano ? ' 🏜️' : '';
 
   const html = `
     <div class="marcador-wrapper">
       <div class="marcador-burbuja" style="background:${color}cc">
         <div class="marcador-nombre">${nombre}${sahara}</div>
-        <div class="marcador-valor">${pm25str}<span style="font-size:9px;opacity:.8"> µg</span></div>
-        <div class="marcador-etiqueta">${etiqueta}</div>
+        <div class="marcador-valor">${valorStr}</div>
+        ${subtexto ? `<div class="marcador-etiqueta">${subtexto}</div>` : ''}
       </div>
       <div class="marcador-punta" style="border-top:8px solid ${color}cc"></div>
     </div>`;
 
   return L.divIcon({
     html,
-    className: '',
-    iconSize:   null,
-    iconAnchor: [40, 54],
-    popupAnchor:[0, -57]
+    className:   '',
+    iconSize:    null,
+    iconAnchor:  [40, 54],
+    popupAnchor: [0, -57]
   });
 }
 
