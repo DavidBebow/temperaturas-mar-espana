@@ -67,46 +67,50 @@ LIMITES_OMS = {
 
 def buscar_estacion(lat, lon, api_key):
     """
-    Busca la estación más cercana probando radios progresivos.
-    Retorna el ID de la primera estación que tenga mediciones recientes.
+    Busca la estación OpenAQ más cercana.
+    Solo usa coordenadas — sin filtro de país para evitar errores de ID.
     """
     headers = {
         "X-API-Key": api_key,
         "Accept":    "application/json",
     }
 
-    # Probar radios progresivos: 25km, 50km, 100km
     for radio in [25000, 50000, 100000]:
-        url = "https://api.openaq.org/v3/locations"
+        url    = "https://api.openaq.org/v3/locations"
         params = {
             "coordinates": f"{lat},{lon}",
-            "radius":       radio,
-            "limit":        10,
-            "order_by":     "distance",
-            "country_id":   "ES",
+            "radius":      radio,
+            "limit":       10,
+            "order_by":    "distance",
         }
         try:
             r = requests.get(url, params=params, headers=headers, timeout=20)
-            print(f"    API status {r.status_code} (radio {radio//1000}km)")
+            print(f"    status {r.status_code} · radio {radio // 1000}km")
 
             if r.status_code == 401:
-                print("    ERROR: API key inválida o no configurada")
+                print("    ERROR 401: API key inválida o no configurada en GitHub Secrets")
                 return None
 
+            if r.status_code == 422:
+                print(f"    ERROR 422: parámetros incorrectos — {r.text[:200]}")
+                continue
+
             if r.status_code != 200:
+                print(f"    Error inesperado: {r.text[:200]}")
                 continue
 
             resultados = r.json().get("results", [])
             print(f"    Estaciones encontradas: {len(resultados)}")
 
-            # Tomar la primera estación con sensores activos
             for loc in resultados:
                 loc_id = loc.get("id")
+                nombre = loc.get("name", "—")
                 if loc_id:
+                    print(f"    → Usando: {nombre} (ID {loc_id})")
                     return loc_id
 
         except Exception as e:
-            print(f"    Error en búsqueda radio {radio//1000}km: {e}")
+            print(f"    Excepción radio {radio // 1000}km: {e}")
 
         time.sleep(0.5)
 
