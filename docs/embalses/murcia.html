@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embalses de Murcia — Estado en Tiempo Real</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; background: #0a1218; }
+  #mapa { width: 100%; height: 530px; background: #0a1218; }
+
+  #cabecera {
+    background: #060e14;
+    color: white;
+    padding: 10px 16px;
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 6px;
+    border-bottom: 1px solid #1a3040;
+  }
+  #cabecera h2 { font-size: 14px; font-weight: 500; color: #e0f0ff; }
+  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  #resumen-murcia { font-size: 11px; color: #5a8aaa; }
+  #resumen-murcia span { font-weight: 600; }
+  #ultima-act { font-size: 11px; color: #4a6a8a; }
+
+  #back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #5a8aaa; text-decoration: none;
+    padding: 6px 12px; border-radius: 8px;
+    border: 1px solid #1a3040; background: #060e14;
+    transition: color .2s, border-color .2s;
+  }
+  #back-btn:hover { color: #e0f0ff; border-color: #3a6080; }
+
+  #leyenda {
+    background: #080c12;
+    padding: 7px 16px;
+    display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #1a3040;
+    font-size: 11px; color: #7a9aaa;
+  }
+  #leyenda strong { color: #9abccc; font-weight: 500; }
+  .ley-item { display: flex; align-items: center; gap: 4px; }
+  .ley-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* MARCADORES */
+  .embalse-marker {
+    display: flex; flex-direction: column;
+    align-items: center; cursor: pointer;
+  }
+  .embalse-circulo {
+    border-radius: 50%;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .embalse-pct {
+    font-size: 11px; font-weight: 800;
+    color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    line-height: 1;
+  }
+  .embalse-nombre-label {
+    font-size: 9px; font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    margin-top: 2px; line-height: 1;
+    text-align: center; max-width: 70px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* POPUP */
+  .leaflet-popup-content-wrapper {
+    background: #0a1828 !important;
+    border: 1px solid #1e3a5c !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.8) !important;
+    color: #e0eeff !important;
+  }
+  .leaflet-popup-tip { background: #0a1828 !important; }
+  .leaflet-popup-close-button { color: #4a6a8a !important; }
+
+  .popup-titulo { font-weight: 700; font-size: 15px; margin-bottom: 3px; color: #e8f0ff; }
+  .popup-sub    { font-size: 11px; color: #4a6a8a; margin-bottom: 12px; }
+
+  /* Barra de llenado */
+  .popup-barra-wrap {
+    margin: 10px 0 14px;
+    background: #0d1a28; border-radius: 6px;
+    height: 8px; overflow: hidden;
+  }
+  .popup-barra {
+    height: 100%; border-radius: 6px;
+    transition: width .4s ease;
+  }
+  .popup-pct-label {
+    font-size: 26px; font-weight: 300;
+    color: #e8f0ff; letter-spacing: -0.02em;
+    margin-bottom: 2px;
+  }
+
+  .popup-dato {
+    display: flex; justify-content: space-between;
+    padding: 5px 0; border-bottom: 1px solid #1a2a40;
+    font-size: 12px; color: #7a9aaa;
+  }
+  .popup-dato:last-of-type { border-bottom: none; }
+  .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; }
+  .popup-tag {
+    display: inline-block; margin-top: 12px;
+    padding: 3px 12px; border-radius: 12px;
+    font-size: 10px; font-weight: 700; color: white;
+  }
+
+  .leaflet-control-zoom a {
+    background: #0a1828 !important; color: #7a9aaa !important;
+    border-color: #1e3a5c !important;
+  }
+  .leaflet-control-attribution {
+    background: rgba(6,8,18,0.85) !important;
+    color: #4a6a8a !important; font-size: 10px !important;
+  }
+</style>
+</head>
+<body>
+
+<div id="cabecera">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <a id="back-btn"
+       href="https://davidbebow.github.io/temperaturas-mar-espana/embalses.html">
+      ← Volver al mapa nacional
+    </a>
+    <h2>💧 Embalses de la Región de Murcia</h2>
+  </div>
+  <div id="info-derecha">
+    <span id="resumen-murcia">Cargando datos...</span>
+    <span id="ultima-act"></span>
+  </div>
+</div>
+
+<div id="leyenda">
+  <strong>% embalsado:</strong>
+  <div class="ley-item"><div class="ley-dot" style="background:#CC2200"></div> Crítico &lt;20%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#FF8822"></div> Bajo 20–40%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#FFCC44"></div> Moderado 40–60%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#44AA66"></div> Bueno 60–80%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#0066CC"></div> Muy bueno &gt;80%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#888"></div> Sin datos</div>
+  <span style="margin-left:auto;font-size:10px;color:#4a6a8a">
+    Tamaño = capacidad · Clic para detalle
+  </span>
+</div>
+
+<div id="mapa"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/embalses/murcia.json';
+
+const mapa = L.map('mapa', {
+  center: [37.9, -1.7], zoom: 8
+});
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '© Esri | Datos: SAIH CHS / MITECO', maxZoom: 14
+}).addTo(mapa);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 14, opacity: 0.6
+}).addTo(mapa);
+
+function colorPct(pct) {
+  if (pct === null || pct === undefined) return '#888888';
+  if (pct < 20)  return '#CC2200';
+  if (pct < 40)  return '#FF8822';
+  if (pct < 60)  return '#FFCC44';
+  if (pct < 80)  return '#44AA66';
+  return '#0066CC';
+}
+
+function crearIconoEmbalse(e) {
+  // Tamaño proporcional a la capacidad (entre 36px y 72px)
+  const capMax = 437.5;
+  const capMin = 3.6;
+  const sMin   = 36;
+  const sMax   = 72;
+  const size   = Math.round(sMin + ((e.capacidad_hm3 - capMin) / (capMax - capMin)) * (sMax - sMin));
+  const color  = colorPct(e.pct);
+  const pctStr = e.pct !== null && e.pct !== undefined ? e.pct + '%' : '—';
+  const nombre = e.nombre.length > 10 ? e.nombre.substring(0, 9) + '…' : e.nombre;
+
+  const html = `
+    <div class="embalse-marker">
+      <div class="embalse-circulo" style="width:${size}px;height:${size}px;background:${color}bb">
+        <div class="embalse-pct">${pctStr}</div>
+      </div>
+      <div class="embalse-nombre-label" style="max-width:${size + 20}px">${nombre}</div>
+    </div>`;
+
+  return L.divIcon({
+    html,
+    className:   '',
+    iconSize:    null,
+    iconAnchor:  [size / 2 + 5, size / 2 + 14],
+    popupAnchor: [0, -(size / 2 + 16)],
+  });
+}
+
+function construirPopup(e) {
+  const color  = colorPct(e.pct);
+  const pctStr = e.pct !== null && e.pct !== undefined ? e.pct + '%' : 'Sin datos';
+  const barra  = e.pct !== null ? e.pct : 0;
+
+  const volStr = e.volumen_hm3 !== null && e.volumen_hm3 !== undefined
+    ? e.volumen_hm3.toFixed(1) + ' Hm³' : '—';
+
+  const volLibre = (e.volumen_hm3 !== null && e.pct !== null)
+    ? (e.capacidad_hm3 - e.volumen_hm3).toFixed(1) + ' Hm³' : '—';
+
+  return `
+    <div style="min-width:230px">
+      <div class="popup-titulo">💧 ${e.nombre}</div>
+      <div class="popup-sub">Río ${e.rio} · ${e.municipio}</div>
+      <div class="popup-pct-label" style="color:${color}">${pctStr}</div>
+      <div class="popup-barra-wrap">
+        <div class="popup-barra" style="width:${barra}%;background:${color}"></div>
+      </div>
+      <div class="popup-dato"><span>Volumen actual</span><span>${volStr}</span></div>
+      <div class="popup-dato"><span>Capacidad total</span><span>${e.capacidad_hm3} Hm³</span></div>
+      <div class="popup-dato"><span>Volumen libre</span><span>${volLibre}</span></div>
+      <div class="popup-dato"><span>Estado</span><span>${e.etiqueta || '—'}</span></div>
+      <span class="popup-tag" style="background:${color}99;border:1px solid ${color}">
+        ${e.etiqueta || 'Sin datos'}
+      </span>
+    </div>`;
+}
+
+fetch(JSON_URL + '?t=' + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    const pct = data.pct_media;
+    document.getElementById('resumen-murcia').innerHTML =
+      `Media regional: <span style="color:${colorPct(pct)}">${pct !== null ? pct + '%' : '—'}</span> embalsado · ${data.total_embalses} embalses`;
+    document.getElementById('ultima-act').textContent =
+      'Actualizado: ' + (data.fecha_legible || '—');
+
+    let primerGrande = null;
+
+    (data.embalses || []).forEach(e => {
+      const icono  = crearIconoEmbalse(e);
+      const marker = L.marker([e.lat, e.lon], { icon: icono })
+        .addTo(mapa)
+        .bindPopup(construirPopup(e), { maxWidth: 270 });
+
+      // Abrir el más grande (Cenajo) por defecto
+      if (e.id === 'cenajo') primerGrande = marker;
+    });
+
+    if (primerGrande) setTimeout(() => primerGrande.openPopup(), 800);
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById('resumen-murcia').textContent = 'Error al cargar datos';
+  });
+</script>
+</body>
+</html>
