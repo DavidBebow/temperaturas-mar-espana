@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado de los Embalses en España</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; background: #0a1218; }
+  #mapa { width: 100%; height: 530px; background: #0a1218; }
+
+  #cabecera {
+    background: #060e14;
+    color: white;
+    padding: 10px 16px;
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 6px;
+    border-bottom: 1px solid #1a3040;
+  }
+  #cabecera h2 {
+    font-size: 14px; font-weight: 500;
+    letter-spacing: 0.04em; color: #e0f0ff;
+  }
+  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  #resumen { font-size: 11px; color: #5a8aaa; }
+  #ultima-act { font-size: 11px; color: #4a6a8a; }
+
+  #leyenda {
+    background: #080c12;
+    padding: 7px 16px;
+    display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #1a3040;
+    font-size: 11px; color: #7a9aaa;
+  }
+  #leyenda strong { color: #9abccc; font-weight: 500; }
+  .ley-item { display: flex; align-items: center; gap: 4px; }
+  .ley-dot {
+    width: 12px; height: 12px; border-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;
+  }
+
+  .leaflet-popup-content-wrapper {
+    background: #0a1828 !important;
+    border: 1px solid #1e3a5c !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.8) !important;
+    color: #e0eeff !important;
+  }
+  .leaflet-popup-tip { background: #0a1828 !important; }
+  .leaflet-popup-close-button { color: #4a6a8a !important; }
+
+  .popup-titulo  { font-weight: 700; font-size: 15px; margin-bottom: 6px; color: #e8f0ff; }
+  .popup-pct     { font-size: 28px; font-weight: 300; color: #e8f0ff; margin: 8px 0 4px; letter-spacing: -0.02em; }
+  .popup-etiq    { font-size: 12px; color: #7a9aaa; margin-bottom: 12px; }
+  .popup-dato    {
+    display: flex; justify-content: space-between;
+    padding: 5px 0; border-bottom: 1px solid #1a2a40;
+    font-size: 12px; color: #7a9aaa;
+  }
+  .popup-dato:last-of-type { border-bottom: none; }
+  .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; }
+  .popup-btn {
+    display: block; margin-top: 14px;
+    padding: 8px 0; text-align: center;
+    border-radius: 10px; font-size: 12px;
+    font-weight: 600; text-decoration: none;
+    color: white; transition: opacity .2s;
+  }
+  .popup-btn:hover { opacity: .85; }
+  .popup-pronto {
+    margin-top: 14px; padding: 8px;
+    text-align: center; font-size: 11px;
+    color: #4a6a8a; background: #0d1a28;
+    border-radius: 8px; border: 1px solid #1a3040;
+  }
+
+  .leaflet-control-zoom a {
+    background: #0a1828 !important; color: #7a9aaa !important;
+    border-color: #1e3a5c !important;
+  }
+  .leaflet-control-attribution {
+    background: rgba(6,8,18,0.85) !important;
+    color: #4a6a8a !important; font-size: 10px !important;
+  }
+</style>
+</head>
+<body>
+
+<div id="cabecera">
+  <h2>💧 Estado de los Embalses en España — Mapa por Comunidad Autónoma</h2>
+  <div id="info-derecha">
+    <span id="resumen">Cargando datos...</span>
+    <span id="ultima-act"></span>
+  </div>
+</div>
+
+<div id="leyenda">
+  <strong>% embalsado:</strong>
+  <div class="ley-item"><div class="ley-dot" style="background:#CC2200"></div> Crítico &lt;20%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#FF8822"></div> Bajo 20–40%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#FFCC44"></div> Moderado 40–60%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#44AA66"></div> Bueno 60–80%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#0066CC"></div> Muy bueno &gt;80%</div>
+  <div class="ley-item"><div class="ley-dot" style="background:#2a3a4a"></div> Próximamente</div>
+  <span style="margin-left:auto;font-size:10px;color:#4a6a8a">Clic en una comunidad para más detalles</span>
+</div>
+
+<div id="mapa"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const JSON_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/embalses_nacional.json';
+const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-communities.geojson';
+const BASE_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/';
+
+const NOMBRE_A_ID = {
+  'Andalucía':'andalucia','Andalucia':'andalucia',
+  'Aragón':'aragon','Aragon':'aragon',
+  'Asturias':'asturias','Principado de Asturias':'asturias',
+  'Islas Baleares':'baleares','Illes Balears':'baleares',
+  'Canarias':'canarias','Cantabria':'cantabria',
+  'Castilla-La Mancha':'castilla_mancha','Castilla - La Mancha':'castilla_mancha',
+  'Castilla y León':'castilla_leon','Castilla y Leon':'castilla_leon',
+  'Cataluña':'cataluna','Catalunya':'cataluna',
+  'Comunidad Valenciana':'c_valenciana',
+  'Extremadura':'extremadura','Galicia':'galicia',
+  'La Rioja':'la_rioja',
+  'Comunidad de Madrid':'madrid','Madrid':'madrid',
+  'Región de Murcia':'murcia','Murcia':'murcia',
+  'Navarra':'navarra','País Vasco':'pais_vasco','Euskadi':'pais_vasco',
+  'Ceuta':'ceuta','Melilla':'melilla',
+};
+
+const mapa = L.map('mapa', { center: [40.0, -3.5], zoom: 5 });
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '© Esri | Datos: SAIH / MITECO', maxZoom: 10
+}).addTo(mapa);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 10, opacity: 0.5
+}).addTo(mapa);
+
+let datosMap    = {};
+let capaGeojson = null;
+
+function colorPct(pct) {
+  if (pct === null || pct === undefined) return '#1e2e3a';
+  if (pct < 20)  return '#CC2200';
+  if (pct < 40)  return '#FF8822';
+  if (pct < 60)  return '#FFCC44';
+  if (pct < 80)  return '#44AA66';
+  return '#0066CC';
+}
+
+function construirPopup(c) {
+  if (!c.datos_disponibles) {
+    return `
+      <div style="min-width:200px">
+        <div class="popup-titulo">💧 ${c.nombre}</div>
+        <div class="popup-pronto">📅 Datos próximamente disponibles</div>
+      </div>`;
+  }
+
+  const pctStr = c.pct !== null ? c.pct + '%' : '—';
+  return `
+    <div style="min-width:220px">
+      <div class="popup-titulo">💧 ${c.nombre}</div>
+      <div class="popup-pct" style="color:${colorPct(c.pct)}">${pctStr}</div>
+      <div class="popup-etiq">${c.etiqueta || '—'} · embalsado</div>
+      <a class="popup-btn"
+         style="background:${colorPct(c.pct)}cc;border:1px solid ${colorPct(c.pct)}"
+         href="${BASE_URL}${c.url_detalle}" target="_blank">
+        Ver embalses de ${c.nombre} →
+      </a>
+    </div>`;
+}
+
+Promise.all([
+  fetch(JSON_URL + '?t=' + Date.now()).then(r => r.json()),
+  fetch(GEOJSON_URL).then(r => r.json())
+])
+.then(([data, geojson]) => {
+  (data.comunidades || []).forEach(c => { datosMap[c.id] = c; });
+
+  document.getElementById('resumen').textContent =
+    `Datos actualizados · ${data.fecha_legible || ''}`;
+  document.getElementById('ultima-act').textContent =
+    'Fuente: ' + (data.fuente || 'SAIH / MITECO');
+
+  capaGeojson = L.geoJSON(geojson, {
+    style: function(feature) {
+      const nombre = feature.properties.name || '';
+      const id     = NOMBRE_A_ID[nombre];
+      const c      = id ? datosMap[id] : null;
+      return {
+        fillColor:   c && c.datos_disponibles ? colorPct(c.pct) : '#1e2e3a',
+        fillOpacity: c && c.datos_disponibles ? 0.78 : 0.35,
+        color:       '#1a3040',
+        weight:      1,
+        opacity:     0.8,
+      };
+    },
+    onEachFeature: function(feature, layer) {
+      const nombre = feature.properties.name || '';
+      const id     = NOMBRE_A_ID[nombre];
+      const c      = id ? datosMap[id] : { nombre, datos_disponibles: false };
+      if (!c) return;
+
+      layer.bindPopup(construirPopup(c), { maxWidth: 260 });
+      layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 2 }));
+      layer.on('mouseout',  () => capaGeojson.resetStyle(layer));
+
+      // Abrir Murcia por defecto
+      if (id === 'murcia') {
+        setTimeout(() => layer.openPopup(), 800);
+      }
+    }
+  }).addTo(mapa);
+})
+.catch(err => {
+  console.error(err);
+  document.getElementById('resumen').textContent = 'Error al cargar datos';
+});
+</script>
+</body>
+</html>
