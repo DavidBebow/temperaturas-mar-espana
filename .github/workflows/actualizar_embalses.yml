@@ -1,10 +1,11 @@
-name: Actualizar Embalses
+name: Actualizar Embalses (MITECO)
 
 on:
   schedule:
-    # Martes a las 10:00 UTC — el MITECO publica el Boletín Hidrológico los martes por la mañana
-    - cron: '0 10 * * 2'
-  workflow_dispatch:  # Permite lanzarlo manualmente desde la pestaña Actions
+    # Martes a las 13:30 UTC = 15:30 hora España peninsular (verano)
+    # El MITECO publica el Boletín Hidrológico los martes por la mañana
+    - cron: '30 13 * * 2'
+  workflow_dispatch:   # Permite lanzarlo manualmente desde la pestaña Actions
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -25,18 +26,18 @@ jobs:
           python-version: '3.11'
 
       - name: Instalar dependencias
-        run: pip install requests
+        run: pip install requests openpyxl
 
       - name: Ejecutar script de embalses
         run: python scripts/obtener_embalses.py
 
-      - name: Confirmar y publicar cambios
+      - name: Publicar cambios en el repositorio
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions Bot"
           git add docs/embalses_nacional.json docs/embalses/
           git diff --staged --quiet && echo "Sin cambios en los datos." || (
-            git commit -m "Embalses actualizados: $(date +'%d/%m/%Y %H:%M UTC')" &&
+            git commit -m "Embalses actualizados: $(date +'%d/%m/%Y %H:%M UTC') — Fuente: MITECO" &&
             git pull --rebase &&
             git push
           )
