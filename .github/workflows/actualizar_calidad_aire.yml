@@ -2,12 +2,10 @@ name: Actualizar calidad del aire
 
 on:
   schedule:
-    - cron: '1 22 * * *'
-    - cron: '1 23 * * *'
-    - cron: '0 7 * * *'
-    - cron: '0 8 * * *'
+    - cron: '0 11 * * *'
     - cron: '0 12 * * *'
-    - cron: '0 13 * * *'
+    - cron: '0 16 * * *'
+    - cron: '0 17 * * *'
   workflow_dispatch:
 
 env:
@@ -31,13 +29,11 @@ jobs:
         run: pip install requests
 
       - name: Ejecutar script
-        env:
-          OPENAQ_KEY: ${{ secrets.OPENAQ_KEY }}
         run: python scripts/obtener_calidad_aire.py
 
       - name: Guardar cambios
         run: |
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
-          git add docs/calidad_aire.json docs/historial_calidad_aire.json docs/cache_estaciones.json
+          git add docs/calidad_aire.json docs/historial_calidad_aire.json
           git diff --staged --quiet || (git commit -m "Calidad aire actualizada: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
