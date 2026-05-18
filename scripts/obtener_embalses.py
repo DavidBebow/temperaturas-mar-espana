@@ -34,49 +34,148 @@ from datetime import datetime
 # Fuente: https://www.miteco.gob.es → Agua → Boletín Hidrológico
 # ═══════════════════════════════════════════════════════════════════════════════
 
-FECHA_DATOS = "12/05/2026"   # ← Fecha del boletín (DD/MM/YYYY)
+FECHA_DATOS = "11/05/2026"   # ← Fecha del boletín (DD/MM/YYYY)
 
 # Formato: "NOMBRE EN MAYÚSCULAS": {"vol": hm³_actual, "pct": porcentaje}
-# Los nombres deben coincidir exactamente con los de PROVINCIAS más abajo.
+# Fuente: embalses.net / Boletín Hidrológico MITECO — semana 19/2026 (11-05-2026)
+# Los nombres deben coincidir con los de PROVINCIAS → embalses → buscar
 DATOS_EMBALSES = {
-    # ── Murcia (Cuenca del Segura, 59.5%) ────────────────────────────────────
-    "ALFONSO XIII":       {"vol":  3.0, "pct": 13.6},
-    "ALGECIRAS":          {"vol": 19.0, "pct": 42.2},
-    "ARGOS":              {"vol":  7.0, "pct": 65.4},
-    "LA CIERVA":          {"vol":  5.0, "pct": 68.5},
-    "PUENTES":            {"vol": 14.0, "pct": 53.8},
-    "SANTOMERA":          {"vol":  2.0, "pct": 11.1},
-    "VALDEINFIERNO":      {"vol":  0.1, "pct":  0.9},
-    "MULA":               {"vol":  1.2, "pct":  5.7},
-    "PLIEGO":             {"vol":  0.2, "pct":  5.5},
-    # ── Andalucía — Guadalquivir (87.8%) ─────────────────────────────────────
-    "LA MINILLA":         {"vol": 180.3, "pct": 91.5},
-    "EL GERGAL":          {"vol":  72.6, "pct": 88.3},
-    "MELONARES":          {"vol": 151.7, "pct": 90.3},
-    "ARACENA":            {"vol": 109.3, "pct": 86.1},
-    "IZNAJAR":            {"vol": 862.4, "pct": 87.9},
-    "LA BREÑA II":        {"vol": 733.3, "pct": 89.1},
-    "BEMBEZAR":           {"vol": 237.0, "pct": 91.5},
-    "SAN RAFAEL":         {"vol":  49.8, "pct": 85.8},
-    "EL TRANCO":          {"vol": 441.0, "pct": 88.2},
-    "JANDULA":            {"vol": 282.4, "pct": 87.5},
-    "EL RUMBLAR":         {"vol":  78.5, "pct": 87.7},
-    "NEGRATIN":           {"vol": 498.5, "pct": 87.9},
-    "RULES":              {"vol":  98.3, "pct": 81.9},
-    "LOS BERMEJALES":     {"vol":  74.2, "pct": 81.8},
-    "CANALES":            {"vol":  61.6, "pct": 87.6},
-    # ── Andalucía — Guadalete-Barbate (89.3%) ────────────────────────────────
-    "ZAHARA":             {"vol": 199.5, "pct": 92.8},
-    "BORNOS":             {"vol": 229.0, "pct": 89.8},
-    "BARBATE":            {"vol": 193.0, "pct": 84.6},
-    # ── Andalucía — Mediterránea Andaluza (76.9%) ────────────────────────────
-    "LA VINUELA":         {"vol": 131.3, "pct": 77.7},
-    "GUADALTEBA":         {"vol":  96.4, "pct": 78.9},
-    "CONDE GUADALHORCE":  {"vol": 103.8, "pct": 76.4},
-    "EL ANDEVALO":        {"vol": 138.4, "pct": 87.0},
-    "RIO TINTO":          {"vol":  46.9, "pct": 86.8},
-    "CUEVAS DE ALMANZORA":{"vol": 131.4, "pct": 74.1},
-    "BENINAR":            {"vol":  43.7, "pct": 78.2},
+    # ── MURCIA ───────────────────────────────────────────────────────────────
+    "ALFONSO XIII":        {"vol":  3.0, "pct": 13.6},
+    "ALGECIRAS":           {"vol": 19.0, "pct": 42.2},
+    "ARGOS":               {"vol":  7.0, "pct": 65.4},
+    "LA CIERVA":           {"vol":  5.0, "pct": 68.5},
+    "PUENTES":             {"vol": 14.0, "pct": 53.8},
+    "SANTOMERA":           {"vol":  2.0, "pct": 11.1},
+    "VALDEINFIERNO":       {"vol":  0.1, "pct":  0.9},
+    "MULA":                {"vol":  1.2, "pct":  5.7},
+    "PLIEGO":              {"vol":  0.2, "pct":  5.5},
+    # ── ANDALUCÍA ────────────────────────────────────────────────────────────
+    "LA MINILLA":          {"vol": 180.3, "pct": 91.5},
+    "EL GERGAL":           {"vol":  72.6, "pct": 88.3},
+    "MELONARES":           {"vol": 151.7, "pct": 90.3},
+    "ARACENA":             {"vol": 109.3, "pct": 86.1},
+    "IZNAJAR":             {"vol": 862.4, "pct": 87.9},
+    "LA BREÑA II":         {"vol": 733.3, "pct": 89.1},
+    "BEMBEZAR":            {"vol": 237.0, "pct": 91.5},
+    "SAN RAFAEL":          {"vol":  49.8, "pct": 85.8},
+    "EL TRANCO":           {"vol": 441.0, "pct": 88.2},
+    "JANDULA":             {"vol": 282.4, "pct": 87.5},
+    "EL RUMBLAR":          {"vol":  78.5, "pct": 87.7},
+    "NEGRATIN":            {"vol": 498.5, "pct": 87.9},
+    "RULES":               {"vol":  98.3, "pct": 81.9},
+    "LOS BERMEJALES":      {"vol":  74.2, "pct": 81.8},
+    "CANALES":             {"vol":  61.6, "pct": 87.6},
+    "ZAHARA":              {"vol": 199.5, "pct": 92.8},
+    "BORNOS":              {"vol": 229.0, "pct": 89.8},
+    "BARBATE":             {"vol": 193.0, "pct": 84.6},
+    "LA VINUELA":          {"vol": 131.3, "pct": 77.7},
+    "GUADALTEBA":          {"vol":  96.4, "pct": 78.9},
+    "CONDE GUADALHORCE":   {"vol": 103.8, "pct": 76.4},
+    "EL ANDEVALO":         {"vol": 138.4, "pct": 87.0},
+    "RIO TINTO":           {"vol":  46.9, "pct": 86.8},
+    "CUEVAS DE ALMANZORA": {"vol": 131.4, "pct": 74.1},
+    "BENINAR":             {"vol":  43.7, "pct": 78.2},
+    # ── MADRID ───────────────────────────────────────────────────────────────
+    "EL ATAZAR":           {"vol": 362.0, "pct": 85.2},
+    "VALMAYOR":            {"vol": 106.0, "pct": 85.2},
+    "SANTILLANA":          {"vol":  77.6, "pct": 85.2},
+    "EL PARDO":            {"vol":  35.5, "pct": 85.2},
+    "PINILLA":             {"vol":  32.4, "pct": 85.2},
+    "RIOSEQUILLO":         {"vol":  35.2, "pct": 85.2},
+    "EL VADO":             {"vol":  47.0, "pct": 85.2},
+    # ── EXTREMADURA ──────────────────────────────────────────────────────────
+    "LA SERENA":           {"vol": 2760.0, "pct": 85.7},
+    "CIJARA":              {"vol": 1386.0, "pct": 85.7},
+    "GARCIA SOLA":         {"vol":  735.0, "pct": 85.7},
+    "ZUJAR":               {"vol":  265.0, "pct": 85.7},
+    "ALCANTARA":           {"vol": 2710.0, "pct": 83.7},
+    "GABRIEL GALAN":       {"vol":  774.0, "pct": 83.7},
+    # ── CASTILLA-LA MANCHA ───────────────────────────────────────────────────
+    "ALARCON":             {"vol":  899.0, "pct": 79.3},
+    "CONTRERAS":           {"vol":  675.0, "pct": 79.3},
+    "BUENDIA":             {"vol": 1299.0, "pct": 79.3},
+    "FUENSANTA":           {"vol":  177.0, "pct": 66.9},
+    "TALAVE":              {"vol":   22.8, "pct": 66.9},
+    "AZUTAN":              {"vol":  209.0, "pct": 66.1},
+    "ENTREPEÑAS":          {"vol": 1320.0, "pct": 66.6},
+    # ── COMUNIDAD VALENCIANA ─────────────────────────────────────────────────
+    "TOUS":                {"vol":  233.0, "pct": 61.8},
+    "FORATA":              {"vol":   23.0, "pct": 61.8},
+    "AMADORIO":            {"vol":    8.5, "pct": 49.8},
+    "GUADALEST":           {"vol":    6.6, "pct": 49.8},
+    "SICHAR":              {"vol":   29.5, "pct": 59.7},
+    # ── ARAGÓN ───────────────────────────────────────────────────────────────
+    "MEQUINENZA":          {"vol": 1315.0, "pct": 94.0},
+    "RIBARROJA":           {"vol":  197.0, "pct": 94.0},
+    "MEDIANO":             {"vol":  373.0, "pct": 85.6},
+    "EL GRADO":            {"vol":  342.0, "pct": 85.6},
+    "YESA":                {"vol":  382.0, "pct": 85.6},
+    "SOTONERA":            {"vol":  162.0, "pct": 85.6},
+    # ── CATALUÑA ─────────────────────────────────────────────────────────────
+    "RIALB":               {"vol":  366.0, "pct": 90.8},
+    "CANELLES":            {"vol":  616.0, "pct": 90.8},
+    "LA BAELLS":           {"vol":  103.0, "pct": 94.2},
+    "SUSQUEDA":            {"vol":  219.0, "pct": 94.2},
+    "SAU":                 {"vol":  153.0, "pct": 90.8},
+    "BOADELLA":            {"vol":   56.0, "pct": 90.8},
+    # ── LA RIOJA ─────────────────────────────────────────────────────────────
+    "MANSILLA":            {"vol":   61.5, "pct": 90.5},
+    # ── NAVARRA ──────────────────────────────────────────────────────────────
+    "ITOIZ":               {"vol":  373.0, "pct": 89.2},
+    "ALLOZ":               {"vol":   59.0, "pct": 89.2},
+    # ── PAÍS VASCO ───────────────────────────────────────────────────────────
+    "ULLIBARRI":           {"vol":  125.8, "pct": 85.6},
+    "URRUNAGA":            {"vol":   61.2, "pct": 85.6},
+    # ── CANTABRIA ────────────────────────────────────────────────────────────
+    "DEL EBRO":            {"vol":  488.0, "pct": 84.9},
+    # ── ASTURIAS ─────────────────────────────────────────────────────────────
+    "TANES":               {"vol":   36.7, "pct": 83.3},
+    "RIOSECO":             {"vol":   27.1, "pct": 83.3},
+    # ── CASTILLA Y LEÓN ──────────────────────────────────────────────────────
+    "BARRIOS DE LUNA":     {"vol":  272.7, "pct": 88.7},
+    "RIANO":               {"vol":  577.0, "pct": 88.7},
+    "RICOBAYO":            {"vol":  960.8, "pct": 82.8},
+    "ALMENDRA":            {"vol": 2854.0, "pct": 89.2},
+    "REQUEJADA":           {"vol":  411.8, "pct": 85.8},
+    # ── GALICIA ──────────────────────────────────────────────────────────────
+    "BELESAR":             {"vol":  588.0, "pct": 90.1},
+    "CASTRELO":            {"vol": 1152.0, "pct": 84.8},
+    "CECEBRE":             {"vol":   49.9, "pct": 74.1},
+    # ── GALICIA — Pontevedra ──────────────────────────────────────────────────
+    "EIRAS":               {"vol":  101.1, "pct": 87.9},
+    "CALDAS":              {"vol":   63.3, "pct": 87.9},
+    # ── CASTILLA Y LEÓN adicional ─────────────────────────────────────────────
+    "EL BURGUILLO":        {"vol":  181.1, "pct": 91.0},
+    "ALBERCHE":            {"vol":   80.1, "pct": 91.0},
+    "PONTON ALTO":         {"vol":   23.2, "pct": 91.0},
+    "LINARES DEL ARROYO":  {"vol":   50.1, "pct": 91.0},
+    "CUERDA DEL POZO":     {"vol":  190.5, "pct": 83.5},
+    "AGUILAR":             {"vol":  208.8, "pct": 85.2},
+    # ── CASTILLA-LA MANCHA adicional ─────────────────────────────────────────
+    "GASSET":              {"vol":   37.0, "pct": 89.6},
+    "PUENTE NUEVO":        {"vol":   44.8, "pct": 89.6},
+    "VEGA DE JABALON":     {"vol":   32.3, "pct": 89.6},
+    # ── ARAGÓN — Teruel ───────────────────────────────────────────────────────
+    "CUEVA FORADADA":      {"vol":   12.8, "pct": 75.6},
+    "GALLIPUEN":           {"vol":   32.0, "pct": 75.6},
+    "PENA":                {"vol":   13.6, "pct": 75.6},
+    # ── CATALUÑA — Tarragona ──────────────────────────────────────────────────
+    "RIUDECANYES":         {"vol":    9.7, "pct": 89.4},
+    "SIURANA":             {"vol":   11.1, "pct": 89.4},
+    # ── PAÍS VASCO — Guipúzcoa / Álava ───────────────────────────────────────
+    "ANARBE":              {"vol":   27.0, "pct": 93.1},
+    # ── CASTILLA Y LEÓN — Burgos/Palencia extra ───────────────────────────────
+    "SOBRÓN":              {"vol":   17.6, "pct": 84.9},
+    "SOBRON":              {"vol":   17.6, "pct": 84.9},
+    "URREZ":               {"vol":   22.1, "pct": 84.9},
+    "BOLARQUE":            {"vol":   21.0, "pct": 66.6},
+    "CAMPORREDONDO":       {"vol":   59.9, "pct": 85.6},
+    # ── PROVINCIAS CON PCT DIRECTO DE EMBALSES.NET ───────────────────────────
+    # Guadalajara (66.62%) — Entrepeñas pertenece en su mayor parte a Guadalajara
+    "ENTREPEÑAS":          {"vol":  556.7, "pct": 66.6},
+    # Palencia (85.63%) — datos directos
+    "REQUEJADA":           {"vol":   78.4, "pct": 85.6},
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -247,6 +346,7 @@ PROVINCIAS = {
         "lat": 40.6, "lon": -3.2,
         "embalses": [
             {"id":"entrepeñas","nombre":"Entrepeñas","buscar":["ENTREPEÑAS","ENTREPENAS"],"rio":"Tajo","municipio":"Sacedón","cap":835.0,"lat":40.545,"lon":-2.691},
+            {"id":"bolarque",  "nombre":"Bolarque",  "buscar":["BOLARQUE"],               "rio":"Tajo","municipio":"Bolarque","cap":31.5,"lat":40.371,"lon":-2.825},
         ],
     },
 
@@ -340,14 +440,6 @@ PROVINCIAS = {
         ],
     },
 
-    "pais_vasco": {
-        "nombre": "País Vasco", "comunidad": "País Vasco",
-        "lat": 42.9, "lon": -2.7,
-        "embalses": [
-            {"id":"ullibarri","nombre":"Ullíbarri-Gamboa","buscar":["ULLIBARRI"],"rio":"Zadorra","municipio":"Ullibarri","cap":147.0,"lat":42.840,"lon":-2.638},
-            {"id":"urrunaga", "nombre":"Urrunaga",        "buscar":["URRUNAGA"], "rio":"Santa Engracia","municipio":"Legutiano","cap":71.5,"lat":42.977,"lon":-2.671},
-        ],
-    },
 
     "cantabria": {
         "nombre": "Cantabria", "comunidad": "Cantabria",
@@ -387,7 +479,7 @@ PROVINCIAS = {
         "nombre": "Salamanca", "comunidad": "Castilla y León",
         "lat": 40.9, "lon": -5.7,
         "embalses": [
-            {"id":"almendra","nombre":"Almendra","buscar":["ALMENDRA"],"rio":"Tormes","municipio":"Almendra","cap":2648.0,"lat":41.268,"lon":-6.343},
+            {"id":"almendra","nombre":"Almendra","buscar":["ALMENDRA"],"rio":"Tormes","municipio":"Almendra","cap":3585.0,"lat":41.268,"lon":-6.343},
         ],
     },
 
@@ -396,6 +488,7 @@ PROVINCIAS = {
         "lat": 42.0, "lon": -4.5,
         "embalses": [
             {"id":"requejada","nombre":"Requejada","buscar":["REQUEJADA"],"rio":"Pisuerga","municipio":"Cervera","cap":91.5,"lat":42.879,"lon":-4.503},
+            {"id":"camporredondo","nombre":"Camporredondo","buscar":["CAMPORREDONDO"],"rio":"Carrión","municipio":"Alba de los Cardaños","cap":70.0,"lat":42.905,"lon":-4.753},
         ],
     },
 
@@ -411,7 +504,7 @@ PROVINCIAS = {
         "nombre": "Ourense", "comunidad": "Galicia",
         "lat": 42.3, "lon": -7.9,
         "embalses": [
-            {"id":"castrelo","nombre":"Castrelo de Miño","buscar":["CASTRELO"],"rio":"Miño","municipio":"Castrelo","cap":197.0,"lat":42.246,"lon":-8.058},
+            {"id":"castrelo","nombre":"Castrelo de Miño","buscar":["CASTRELO"],"rio":"Miño","municipio":"Castrelo","cap":1359.0,"lat":42.246,"lon":-8.058},
         ],
     },
 
@@ -422,11 +515,105 @@ PROVINCIAS = {
             {"id":"cecebre","nombre":"Cecebre","buscar":["CECEBRE"],"rio":"Mero","municipio":"Cambre","cap":67.4,"lat":43.272,"lon":-8.243},
         ],
     },
+
+    "pontevedra": {
+        "nombre": "Pontevedra", "comunidad": "Galicia",
+        "lat": 42.4, "lon": -8.6,
+        "embalses": [
+            {"id":"eiras",  "nombre":"Eiras",  "buscar":["EIRAS"],  "rio":"Verdugo","municipio":"Fornelos","cap":115.0,"lat":42.380,"lon":-8.433},
+            {"id":"caldas", "nombre":"Caldas",  "buscar":["CALDAS"], "rio":"Umia",   "municipio":"Caldas",  "cap":72.0, "lat":42.566,"lon":-8.629},
+        ],
+    },
+
+    "avila": {
+        "nombre": "Ávila", "comunidad": "Castilla y León",
+        "lat": 40.7, "lon": -5.0,
+        "embalses": [
+            {"id":"el_burguillo","nombre":"El Burguillo","buscar":["EL BURGUILLO","BURGUILLO"],"rio":"Alberche","municipio":"El Tiemblo","cap":199.0,"lat":40.413,"lon":-4.650},
+            {"id":"el_alberche", "nombre":"El Alberche",  "buscar":["ALBERCHE"],               "rio":"Alberche","municipio":"Navaluenga","cap":88.0, "lat":40.362,"lon":-4.727},
+        ],
+    },
+
+    "burgos": {
+        "nombre": "Burgos", "comunidad": "Castilla y León",
+        "lat": 42.3, "lon": -3.7,
+        "embalses": [
+            {"id":"sobrón","nombre":"Sobrón","buscar":["SOBRON","SOBRÓN"],"rio":"Ebro","municipio":"Sobrón","cap":20.7,"lat":42.791,"lon":-3.050},
+            {"id":"urrez", "nombre":"Úrrez",  "buscar":["URREZ"],          "rio":"Ausines","municipio":"Hontoria","cap":26.0,"lat":42.307,"lon":-3.649},
+        ],
+    },
+
+    "segovia": {
+        "nombre": "Segovia", "comunidad": "Castilla y León",
+        "lat": 40.9, "lon": -4.1,
+        "embalses": [
+            {"id":"el_ponton_alto","nombre":"El Pontón Alto","buscar":["PONTON ALTO","EL PONTON","PONTÓN"],"rio":"Eresma","municipio":"La Losa","cap":25.5,"lat":40.929,"lon":-4.204},
+            {"id":"linares",       "nombre":"Linares",        "buscar":["LINARES DEL ARROYO","LINARES"],   "rio":"Riaza", "municipio":"Cerezo",  "cap":55.0,"lat":41.302,"lon":-3.556},
+        ],
+    },
+
+    "soria": {
+        "nombre": "Soria", "comunidad": "Castilla y León",
+        "lat": 41.8, "lon": -2.5,
+        "embalses": [
+            {"id":"la_cuerda_del_pozo","nombre":"La Cuerda del Pozo","buscar":["CUERDA DEL POZO","LA CUERDA"],"rio":"Duero","municipio":"Vinuesa","cap":228.0,"lat":41.966,"lon":-2.766},
+        ],
+    },
+
+    "valladolid": {
+        "nombre": "Valladolid", "comunidad": "Castilla y León",
+        "lat": 41.7, "lon": -4.7,
+        "embalses": [
+            {"id":"aguilar","nombre":"Aguilar de Campoo","buscar":["AGUILAR"],"rio":"Pisuerga","municipio":"Aguilar","cap":245.0,"lat":42.795,"lon":-4.266},
+        ],
+    },
+
+    "ciudad_real": {
+        "nombre": "Ciudad Real", "comunidad": "Castilla-La Mancha",
+        "lat": 38.9, "lon": -3.9,
+        "embalses": [
+            {"id":"gasset",      "nombre":"Gasset",       "buscar":["GASSET"],      "rio":"Jabalón", "municipio":"Ciudad Real","cap":41.3,"lat":38.932,"lon":-3.784},
+            {"id":"puente_nuevo","nombre":"Puente Nuevo",  "buscar":["PUENTE NUEVO"],"rio":"Guadiana","municipio":"Puertollano","cap":50.0,"lat":38.646,"lon":-4.148},
+            {"id":"vega_jabalón","nombre":"Vega de Jabalón","buscar":["VEGA DE JABALON","VEGA JABALON"],"rio":"Jabalón","municipio":"Carrión","cap":36.0,"lat":38.834,"lon":-3.793},
+        ],
+    },
+
+    "teruel": {
+        "nombre": "Teruel", "comunidad": "Aragón",
+        "lat": 40.3, "lon": -1.1,
+        "embalses": [
+            {"id":"cueva_foradada","nombre":"Cueva Foradada","buscar":["CUEVA FORADADA"],"rio":"Martín",  "municipio":"Oliete",  "cap":16.9,"lat":40.996,"lon":-0.628},
+            {"id":"gallipuen",     "nombre":"Gallipuén",     "buscar":["GALLIPUEN"],      "rio":"Alfambra","municipio":"Gallipuén","cap":42.3,"lat":40.422,"lon":-0.888},
+            {"id":"pena",          "nombre":"Pena",          "buscar":["PENA","EMBALSE DE PENA"],"rio":"Pena","municipio":"Beceite","cap":18.0,"lat":40.884,"lon":0.013},
+        ],
+    },
+
+    "tarragona": {
+        "nombre": "Tarragona", "comunidad": "Cataluña",
+        "lat": 41.2, "lon": 1.2,
+        "embalses": [
+            {"id":"riudecanyes","nombre":"Riudecanyes","buscar":["RIUDECANYES"],"rio":"Riudecanyes","municipio":"Riudecanyes","cap":10.8,"lat":41.155,"lon":0.927},
+            {"id":"siurana",    "nombre":"Siurana",    "buscar":["SIURANA"],    "rio":"Siurana",    "municipio":"Cornudella",  "cap":12.4,"lat":41.253,"lon":0.912},
+        ],
+    },
+
+    "guipuzcoa": {
+        "nombre": "Guipúzcoa", "comunidad": "País Vasco",
+        "lat": 43.1, "lon": -2.2,
+        "embalses": [
+            {"id":"añarbe","nombre":"Añarbe","buscar":["ANARBE","AÑARBE"],"rio":"Añarbe","municipio":"Hernani","cap":29.0,"lat":43.213,"lon":-1.968},
+        ],
+    },
+
+    "alava": {
+        "nombre": "Álava", "comunidad": "País Vasco",
+        "lat": 42.8, "lon": -2.7,
+        "embalses": [
+            {"id":"ullibarri_alava","nombre":"Ullíbarri-Gamboa","buscar":["ULLIBARRI"],"rio":"Zadorra","municipio":"Ullibarri","cap":147.0,"lat":42.840,"lon":-2.638},
+            {"id":"urrunaga_alava", "nombre":"Urrunaga",        "buscar":["URRUNAGA"], "rio":"Santa Engracia","municipio":"Legutiano","cap":71.5,"lat":42.977,"lon":-2.671},
+        ],
+    },
 }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# LÓGICA (no tocar)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def estado(pct):
