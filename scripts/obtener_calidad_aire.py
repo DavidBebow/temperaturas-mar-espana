@@ -5,58 +5,59 @@ import time
 from datetime import datetime, timedelta
 
 CIUDADES = [
-    {"id": "vitoria",      "nombre": "Vitoria-Gasteiz",       "provincia": "Álava",        "lat": 42.85, "lon": -2.67},
-    {"id": "albacete",     "nombre": "Albacete",               "provincia": "Albacete",     "lat": 38.99, "lon": -1.86},
-    {"id": "alicante",     "nombre": "Alicante",               "provincia": "Alicante",     "lat": 38.35, "lon": -0.48},
-    {"id": "almeria",      "nombre": "Almería",                "provincia": "Almería",      "lat": 36.84, "lon": -2.47},
-    {"id": "avila",        "nombre": "Ávila",                  "provincia": "Ávila",        "lat": 40.65, "lon": -4.70},
-    {"id": "badajoz",      "nombre": "Badajoz",                "provincia": "Badajoz",      "lat": 38.88, "lon": -6.97},
-    {"id": "barcelona",    "nombre": "Barcelona",              "provincia": "Barcelona",    "lat": 41.38, "lon":  2.18},
-    {"id": "bilbao",       "nombre": "Bilbao",                 "provincia": "Vizcaya",      "lat": 43.26, "lon": -2.93},
-    {"id": "burgos",       "nombre": "Burgos",                 "provincia": "Burgos",       "lat": 42.34, "lon": -3.70},
-    {"id": "caceres",      "nombre": "Cáceres",                "provincia": "Cáceres",      "lat": 39.47, "lon": -6.37},
-    {"id": "cadiz",        "nombre": "Cádiz",                  "provincia": "Cádiz",        "lat": 36.53, "lon": -6.30},
-    {"id": "santander",    "nombre": "Santander",              "provincia": "Cantabria",    "lat": 43.46, "lon": -3.81},
-    {"id": "castellon",    "nombre": "Castellón",              "provincia": "Castellón",    "lat": 39.99, "lon": -0.03},
-    {"id": "ciudad_real",  "nombre": "Ciudad Real",            "provincia": "Ciudad Real",  "lat": 38.99, "lon": -3.93},
-    {"id": "cordoba",      "nombre": "Córdoba",                "provincia": "Córdoba",      "lat": 37.89, "lon": -4.78},
-    {"id": "cuenca",       "nombre": "Cuenca",                 "provincia": "Cuenca",       "lat": 40.07, "lon": -2.13},
-    {"id": "girona",       "nombre": "Girona",                 "provincia": "Girona",       "lat": 41.98, "lon":  2.82},
-    {"id": "granada",      "nombre": "Granada",                "provincia": "Granada",      "lat": 37.18, "lon": -3.60},
-    {"id": "guadalajara",  "nombre": "Guadalajara",            "provincia": "Guadalajara",  "lat": 40.63, "lon": -3.17},
-    {"id": "san_sebastian","nombre": "San Sebastián",          "provincia": "Guipúzcoa",    "lat": 43.32, "lon": -1.98},
-    {"id": "huelva",       "nombre": "Huelva",                 "provincia": "Huelva",       "lat": 37.26, "lon": -6.95},
-    {"id": "huesca",       "nombre": "Huesca",                 "provincia": "Huesca",       "lat": 42.14, "lon": -0.41},
-    {"id": "jaen",         "nombre": "Jaén",                   "provincia": "Jaén",         "lat": 37.77, "lon": -3.79},
-    {"id": "coruna",       "nombre": "A Coruña",               "provincia": "A Coruña",     "lat": 43.37, "lon": -8.40},
-    {"id": "logrono",      "nombre": "Logroño",                "provincia": "La Rioja",     "lat": 42.47, "lon": -2.44},
-    {"id": "las_palmas",   "nombre": "Las Palmas",             "provincia": "Las Palmas",   "lat": 28.10, "lon": -15.41},
-    {"id": "leon",         "nombre": "León",                   "provincia": "León",         "lat": 42.60, "lon": -5.57},
-    {"id": "lleida",       "nombre": "Lleida",                 "provincia": "Lleida",       "lat": 41.62, "lon":  0.62},
-    {"id": "lugo",         "nombre": "Lugo",                   "provincia": "Lugo",         "lat": 43.01, "lon": -7.56},
-    {"id": "madrid",       "nombre": "Madrid",                 "provincia": "Madrid",       "lat": 40.42, "lon": -3.70},
-    {"id": "malaga",       "nombre": "Málaga",                 "provincia": "Málaga",       "lat": 36.72, "lon": -4.42},
-    {"id": "murcia",       "nombre": "Murcia",                 "provincia": "Murcia",       "lat": 37.99, "lon": -1.13},
-    {"id": "pamplona",     "nombre": "Pamplona",               "provincia": "Navarra",      "lat": 42.82, "lon": -1.65},
-    {"id": "ourense",      "nombre": "Ourense",                "provincia": "Ourense",      "lat": 42.34, "lon": -7.86},
-    {"id": "palencia",     "nombre": "Palencia",               "provincia": "Palencia",     "lat": 42.01, "lon": -4.53},
-    {"id": "pontevedra",   "nombre": "Pontevedra",             "provincia": "Pontevedra",   "lat": 42.43, "lon": -8.65},
-    {"id": "salamanca",    "nombre": "Salamanca",              "provincia": "Salamanca",    "lat": 40.97, "lon": -5.66},
-    {"id": "tenerife",     "nombre": "Santa Cruz Tenerife",    "provincia": "Tenerife",     "lat": 28.46, "lon": -16.25},
-    {"id": "segovia",      "nombre": "Segovia",                "provincia": "Segovia",      "lat": 40.95, "lon": -4.12},
-    {"id": "sevilla",      "nombre": "Sevilla",                "provincia": "Sevilla",      "lat": 37.39, "lon": -5.99},
-    {"id": "soria",        "nombre": "Soria",                  "provincia": "Soria",        "lat": 41.76, "lon": -2.47},
-    {"id": "tarragona",    "nombre": "Tarragona",              "provincia": "Tarragona",    "lat": 41.12, "lon":  1.25},
-    {"id": "teruel",       "nombre": "Teruel",                 "provincia": "Teruel",       "lat": 40.35, "lon": -1.11},
-    {"id": "toledo",       "nombre": "Toledo",                 "provincia": "Toledo",       "lat": 39.86, "lon": -4.02},
-    {"id": "valencia",     "nombre": "Valencia",               "provincia": "Valencia",     "lat": 39.47, "lon": -0.38},
-    {"id": "valladolid",   "nombre": "Valladolid",             "provincia": "Valladolid",   "lat": 41.65, "lon": -4.72},
-    {"id": "zamora",       "nombre": "Zamora",                 "provincia": "Zamora",       "lat": 41.50, "lon": -5.75},
-    {"id": "zaragoza",     "nombre": "Zaragoza",               "provincia": "Zaragoza",     "lat": 41.65, "lon": -0.88},
-    {"id": "ceuta",        "nombre": "Ceuta",                  "provincia": "Ceuta",        "lat": 35.89, "lon": -5.32},
-    {"id": "melilla",      "nombre": "Melilla",                "provincia": "Melilla",      "lat": 35.29, "lon": -2.94},
+    {"id": "vitoria",      "nombre": "Vitoria-Gasteiz",     "provincia": "Álava",        "lat": 42.85, "lon": -2.67},
+    {"id": "albacete",     "nombre": "Albacete",             "provincia": "Albacete",     "lat": 38.99, "lon": -1.86},
+    {"id": "alicante",     "nombre": "Alicante",             "provincia": "Alicante",     "lat": 38.35, "lon": -0.48},
+    {"id": "almeria",      "nombre": "Almería",              "provincia": "Almería",      "lat": 36.84, "lon": -2.47},
+    {"id": "avila",        "nombre": "Ávila",                "provincia": "Ávila",        "lat": 40.65, "lon": -4.70},
+    {"id": "badajoz",      "nombre": "Badajoz",              "provincia": "Badajoz",      "lat": 38.88, "lon": -6.97},
+    {"id": "barcelona",    "nombre": "Barcelona",            "provincia": "Barcelona",    "lat": 41.38, "lon":  2.18},
+    {"id": "bilbao",       "nombre": "Bilbao",               "provincia": "Vizcaya",      "lat": 43.26, "lon": -2.93},
+    {"id": "burgos",       "nombre": "Burgos",               "provincia": "Burgos",       "lat": 42.34, "lon": -3.70},
+    {"id": "caceres",      "nombre": "Cáceres",              "provincia": "Cáceres",      "lat": 39.47, "lon": -6.37},
+    {"id": "cadiz",        "nombre": "Cádiz",                "provincia": "Cádiz",        "lat": 36.53, "lon": -6.30},
+    {"id": "santander",    "nombre": "Santander",            "provincia": "Cantabria",    "lat": 43.46, "lon": -3.81},
+    {"id": "castellon",    "nombre": "Castellón",            "provincia": "Castellón",    "lat": 39.99, "lon": -0.03},
+    {"id": "ciudad_real",  "nombre": "Ciudad Real",          "provincia": "Ciudad Real",  "lat": 38.99, "lon": -3.93},
+    {"id": "cordoba",      "nombre": "Córdoba",              "provincia": "Córdoba",      "lat": 37.89, "lon": -4.78},
+    {"id": "cuenca",       "nombre": "Cuenca",               "provincia": "Cuenca",       "lat": 40.07, "lon": -2.13},
+    {"id": "girona",       "nombre": "Girona",               "provincia": "Girona",       "lat": 41.98, "lon":  2.82},
+    {"id": "granada",      "nombre": "Granada",              "provincia": "Granada",      "lat": 37.18, "lon": -3.60},
+    {"id": "guadalajara",  "nombre": "Guadalajara",          "provincia": "Guadalajara",  "lat": 40.63, "lon": -3.17},
+    {"id": "san_sebastian","nombre": "San Sebastián",        "provincia": "Guipúzcoa",    "lat": 43.32, "lon": -1.98},
+    {"id": "huelva",       "nombre": "Huelva",               "provincia": "Huelva",       "lat": 37.26, "lon": -6.95},
+    {"id": "huesca",       "nombre": "Huesca",               "provincia": "Huesca",       "lat": 42.14, "lon": -0.41},
+    {"id": "jaen",         "nombre": "Jaén",                 "provincia": "Jaén",         "lat": 37.77, "lon": -3.79},
+    {"id": "coruna",       "nombre": "A Coruña",             "provincia": "A Coruña",     "lat": 43.37, "lon": -8.40},
+    {"id": "logrono",      "nombre": "Logroño",              "provincia": "La Rioja",     "lat": 42.47, "lon": -2.44},
+    {"id": "las_palmas",   "nombre": "Las Palmas",           "provincia": "Las Palmas",   "lat": 28.10, "lon": -15.41},
+    {"id": "leon",         "nombre": "León",                 "provincia": "León",         "lat": 42.60, "lon": -5.57},
+    {"id": "lleida",       "nombre": "Lleida",               "provincia": "Lleida",       "lat": 41.62, "lon":  0.62},
+    {"id": "lugo",         "nombre": "Lugo",                 "provincia": "Lugo",         "lat": 43.01, "lon": -7.56},
+    {"id": "madrid",       "nombre": "Madrid",               "provincia": "Madrid",       "lat": 40.42, "lon": -3.70},
+    {"id": "malaga",       "nombre": "Málaga",               "provincia": "Málaga",       "lat": 36.72, "lon": -4.42},
+    {"id": "murcia",       "nombre": "Murcia",               "provincia": "Murcia",       "lat": 37.99, "lon": -1.13},
+    {"id": "pamplona",     "nombre": "Pamplona",             "provincia": "Navarra",      "lat": 42.82, "lon": -1.65},
+    {"id": "ourense",      "nombre": "Ourense",              "provincia": "Ourense",      "lat": 42.34, "lon": -7.86},
+    {"id": "palencia",     "nombre": "Palencia",             "provincia": "Palencia",     "lat": 42.01, "lon": -4.53},
+    {"id": "pontevedra",   "nombre": "Pontevedra",           "provincia": "Pontevedra",   "lat": 42.43, "lon": -8.65},
+    {"id": "salamanca",    "nombre": "Salamanca",            "provincia": "Salamanca",    "lat": 40.97, "lon": -5.66},
+    {"id": "tenerife",     "nombre": "Santa Cruz Tenerife",  "provincia": "Tenerife",     "lat": 28.46, "lon": -16.25},
+    {"id": "segovia",      "nombre": "Segovia",              "provincia": "Segovia",      "lat": 40.95, "lon": -4.12},
+    {"id": "sevilla",      "nombre": "Sevilla",              "provincia": "Sevilla",      "lat": 37.39, "lon": -5.99},
+    {"id": "soria",        "nombre": "Soria",                "provincia": "Soria",        "lat": 41.76, "lon": -2.47},
+    {"id": "tarragona",    "nombre": "Tarragona",            "provincia": "Tarragona",    "lat": 41.12, "lon":  1.25},
+    {"id": "teruel",       "nombre": "Teruel",               "provincia": "Teruel",       "lat": 40.35, "lon": -1.11},
+    {"id": "toledo",       "nombre": "Toledo",               "provincia": "Toledo",       "lat": 39.86, "lon": -4.02},
+    {"id": "valencia",     "nombre": "Valencia",             "provincia": "Valencia",     "lat": 39.47, "lon": -0.38},
+    {"id": "valladolid",   "nombre": "Valladolid",           "provincia": "Valladolid",   "lat": 41.65, "lon": -4.72},
+    {"id": "zamora",       "nombre": "Zamora",               "provincia": "Zamora",       "lat": 41.50, "lon": -5.75},
+    {"id": "zaragoza",     "nombre": "Zaragoza",             "provincia": "Zaragoza",     "lat": 41.65, "lon": -0.88},
+    {"id": "ceuta",        "nombre": "Ceuta",                "provincia": "Ceuta",        "lat": 35.89, "lon": -5.32},
+    {"id": "melilla",      "nombre": "Melilla",              "provincia": "Melilla",      "lat": 35.29, "lon": -2.94},
 ]
 
+# Límites OMS 2021 (µg/m³)
 LIMITES_OMS = {
     "pm25": 15.0,
     "pm10": 45.0,
@@ -65,98 +66,44 @@ LIMITES_OMS = {
     "so2":  40.0,
 }
 
-def buscar_estacion(lat, lon, api_key):
+def obtener_calidad_ciudad(lat, lon):
     """
-    Busca la estación OpenAQ más cercana.
-    Solo usa coordenadas — sin filtro de país para evitar errores de ID.
+    Obtiene datos de calidad del aire usando Open-Meteo Air Quality API.
+    Gratuita, sin API key, cobertura completa de España.
     """
-    headers = {
-        "X-API-Key": api_key,
-        "Accept":    "application/json",
+    url = "https://air-quality-api.open-meteo.com/v1/air-quality"
+    params = {
+        "latitude":  lat,
+        "longitude": lon,
+        "current":   "pm10,pm2_5,nitrogen_dioxide,ozone,sulphur_dioxide,european_aqi,dust",
+        "timezone":  "Europe/Madrid",
     }
-
-    for radio in [25000, 50000, 100000]:
-        url    = "https://api.openaq.org/v3/locations"
-        params = {
-            "coordinates": f"{lat},{lon}",
-            "radius":      radio,
-            "limit":       10,
-            "order_by":    "distance",
-        }
-        try:
-            r = requests.get(url, params=params, headers=headers, timeout=20)
-            print(f"    status {r.status_code} · radio {radio // 1000}km")
-
-            if r.status_code == 401:
-                print("    ERROR 401: API key inválida o no configurada en GitHub Secrets")
-                return None
-
-            if r.status_code == 422:
-                print(f"    ERROR 422: parámetros incorrectos — {r.text[:200]}")
-                continue
-
-            if r.status_code != 200:
-                print(f"    Error inesperado: {r.text[:200]}")
-                continue
-
-            resultados = r.json().get("results", [])
-            print(f"    Estaciones encontradas: {len(resultados)}")
-
-            for loc in resultados:
-                loc_id = loc.get("id")
-                nombre = loc.get("name", "—")
-                if loc_id:
-                    print(f"    → Usando: {nombre} (ID {loc_id})")
-                    return loc_id
-
-        except Exception as e:
-            print(f"    Excepción radio {radio // 1000}km: {e}")
-
-        time.sleep(0.5)
-
-    return None
-
-def obtener_mediciones(location_id, api_key):
-    """Obtiene las últimas mediciones de una estación."""
-    url = f"https://api.openaq.org/v3/locations/{location_id}/latest"
-    headers = {
-        "X-API-Key": api_key,
-        "Accept":    "application/json",
-    }
-    valores = {}
     try:
-        r = requests.get(url, headers=headers, timeout=20)
-        if r.status_code != 200:
-            print(f"    Error mediciones: status {r.status_code}")
-            return {}
+        r = requests.get(url, params=params, timeout=15)
+        r.raise_for_status()
+        data    = r.json()
+        current = data.get("current", {})
 
-        data = r.json()
-        for entry in data.get("results", []):
-            param = entry.get("parameter", {})
-            nombre_param = param.get("name", "").lower() if isinstance(param, dict) else str(param).lower()
-            val = entry.get("value")
+        pm25 = current.get("pm2_5")
+        pm10 = current.get("pm10")
+        no2  = current.get("nitrogen_dioxide")
+        o3   = current.get("ozone")
+        so2  = current.get("sulphur_dioxide")
+        aqi  = current.get("european_aqi")
+        dust = current.get("dust")
 
-            # Normalizar nombres de parámetros
-            if nombre_param in ["pm25", "pm2.5"]:
-                nombre_param = "pm25"
-            elif nombre_param in ["pm10"]:
-                nombre_param = "pm10"
-            elif nombre_param in ["no2"]:
-                nombre_param = "no2"
-            elif nombre_param in ["o3", "ozone"]:
-                nombre_param = "o3"
-            elif nombre_param in ["so2"]:
-                nombre_param = "so2"
-            else:
-                continue
-
-            if val is not None and float(val) >= 0:
-                valores[nombre_param] = round(float(val), 1)
-
-        return valores
+        return {
+            "pm25": round(pm25, 1) if pm25 is not None else None,
+            "pm10": round(pm10, 1) if pm10 is not None else None,
+            "no2":  round(no2,  1) if no2  is not None else None,
+            "o3":   round(o3,   1) if o3   is not None else None,
+            "so2":  round(so2,  1) if so2  is not None else None,
+            "aqi_europeo": int(aqi) if aqi is not None else None,
+            "dust": round(dust, 1) if dust is not None else None,
+        }
 
     except Exception as e:
-        print(f"    Error obteniendo mediciones: {e}")
+        print(f"  Error: {e}")
         return {}
 
 def clasificar_calidad_pm25(pm25):
@@ -165,17 +112,34 @@ def clasificar_calidad_pm25(pm25):
     if pm25 < 5:
         return "#0066CC", "Excelente", 1
     if pm25 < 15:
-        return "#44AA66", "Buena", 2
+        return "#44AA66", "Buena",     2
     if pm25 < 25:
-        return "#FFCC44", "Moderada", 3
+        return "#FFCC44", "Moderada",  3
     if pm25 < 50:
-        return "#FF8822", "Mala", 4
-    return "#CC2200", "Muy mala", 5
+        return "#FF8822", "Mala",      4
+    return "#CC2200", "Muy mala",      5
 
-def detectar_sahariano(pm25, pm10):
-    if pm10 is None or pm25 is None or pm25 == 0:
-        return False
-    return pm10 > 50 and (pm10 / pm25) > 3.0
+def clasificar_aqi_europeo(aqi):
+    """Etiqueta del índice europeo de calidad del aire."""
+    if aqi is None: return "Sin datos"
+    if aqi < 20:    return "Muy buena"
+    if aqi < 40:    return "Buena"
+    if aqi < 60:    return "Moderada"
+    if aqi < 80:    return "Mala"
+    if aqi < 100:   return "Muy mala"
+    return "Extremadamente mala"
+
+def detectar_sahariano(pm10, dust):
+    """
+    Detecta episodio sahariano usando el valor de dust de Open-Meteo.
+    Umbral: dust > 50 µg/m³ O PM10 elevado con ratio dust/pm10 > 0.5
+    """
+    if dust is not None and dust > 50:
+        return True
+    if pm10 is not None and dust is not None and pm10 > 0:
+        if (dust / pm10) > 0.5 and pm10 > 40:
+            return True
+    return False
 
 def supera_limite_oms(valores):
     for param, limite in LIMITES_OMS.items():
@@ -185,9 +149,7 @@ def supera_limite_oms(valores):
     return False
 
 def contaminante_dominante(valores):
-    if not valores:
-        return None
-    nombres = {"pm25": "PM2.5", "pm10": "PM10", "no2": "NO₂", "o3": "O₃", "so2": "SO₂"}
+    nombres   = {"pm25": "PM2.5", "pm10": "PM10", "no2": "NO₂", "o3": "O₃", "so2": "SO₂"}
     peor_ratio, peor_param = 0, None
     for param, limite in LIMITES_OMS.items():
         val = valores.get(param)
@@ -200,7 +162,7 @@ def contaminante_dominante(valores):
 def calcular_max_racha(entradas):
     max_racha = racha = 0
     for e in sorted(entradas, key=lambda x: x["fecha"]):
-        if e["supera_oms"]:
+        if e.get("supera_oms"):
             racha += 1
             max_racha = max(max_racha, racha)
         else:
@@ -233,8 +195,8 @@ def actualizar_historial(resultados):
             historial[cid], key=lambda x: x["fecha"], reverse=True
         )[:365]
 
-        dias_consec = 0
         supera_hoy  = r["supera_oms"]
+        dias_consec = 0
         for e in historial[cid]:
             if e.get("supera_oms") == supera_hoy:
                 dias_consec += 1
@@ -254,87 +216,54 @@ def actualizar_historial(resultados):
     return resultados
 
 def generar_json():
-    api_key = os.environ.get("OPENAQ_KEY")
-    if not api_key:
-        print("ERROR CRÍTICO: Variable OPENAQ_KEY no configurada.")
-        print("Regístrate en https://openaq.org/register y añade el secreto en GitHub.")
-        raise SystemExit(1)
-
     print(f"\n{'='*60}")
-    print(f"Actualizando calidad del aire — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-    print(f"API key: {'*' * (len(api_key) - 4) + api_key[-4:]}")
+    print(f"Calidad del aire — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    print(f"Fuente: Open-Meteo Air Quality API (sin API key)")
     print(f"{'='*60}\n")
 
-    # Cargar caché — limpiar entradas nulas para forzar nueva búsqueda
-    cache_ruta = "docs/cache_estaciones.json"
-    cache = {}
-    if os.path.exists(cache_ruta):
-        with open(cache_ruta, "r") as f:
-            raw = json.load(f)
-        # Solo mantener entradas con ID válido (no None, no 0)
-        cache = {k: v for k, v in raw.items() if v}
-        nulas = len(raw) - len(cache)
-        if nulas > 0:
-            print(f"  Limpiadas {nulas} entradas nulas del caché\n")
-
     resultados = []
-    sin_datos  = 0
+    errores    = 0
 
     for ciudad in CIUDADES:
-        cid = ciudad["id"]
         print(f"Procesando: {ciudad['nombre']}...")
+        valores = obtener_calidad_ciudad(ciudad["lat"], ciudad["lon"])
 
-        # Buscar estación si no está en caché válido
-        if cid not in cache:
-            print(f"  Buscando estación...")
-            station_id = buscar_estacion(ciudad["lat"], ciudad["lon"], api_key)
-            if station_id:
-                cache[cid] = station_id
-                print(f"  ✓ Estación: {station_id}")
-            else:
-                print(f"  ✗ Sin estación disponible en 100km")
-            time.sleep(0.6)
-        else:
-            station_id = cache[cid]
-            print(f"  Estación en caché: {station_id}")
-
-        valores = {}
-        if station_id:
-            valores = obtener_mediciones(station_id, api_key)
-            if valores:
-                print(f"  ✓ Datos: {valores}")
-            else:
-                print(f"  ✗ Sin mediciones recientes")
-                # Invalidar caché si no hay mediciones
-                cache.pop(cid, None)
-            time.sleep(0.4)
+        if not valores:
+            errores += 1
 
         pm25 = valores.get("pm25")
         pm10 = valores.get("pm10")
         no2  = valores.get("no2")
         o3   = valores.get("o3")
         so2  = valores.get("so2")
-
-        if not valores:
-            sin_datos += 1
+        aqi  = valores.get("aqi_europeo")
+        dust = valores.get("dust")
 
         color, etiqueta, nivel = clasificar_calidad_pm25(pm25)
-        sahariano    = detectar_sahariano(pm25, pm10)
+        sahariano    = detectar_sahariano(pm10, dust)
         supera_oms   = supera_limite_oms(valores)
         contaminante = contaminante_dominante(valores)
+        etiq_aqi     = clasificar_aqi_europeo(aqi)
+
+        estado = f"PM2.5:{pm25} PM10:{pm10} NO2:{no2} → {etiqueta}"
+        if sahariano:
+            estado += " 🏜️"
+        print(f"  ✓ {estado}")
 
         resultados.append({
-            "id":           cid,
+            "id":           ciudad["id"],
             "nombre":       ciudad["nombre"],
             "provincia":    ciudad["provincia"],
             "lat":          ciudad["lat"],
             "lon":          ciudad["lon"],
-            "station_id":   station_id,
             "pm25":         pm25,
             "pm10":         pm10,
             "no2":          no2,
             "o3":           o3,
             "so2":          so2,
+            "aqi_europeo":  aqi,
+            "etiqueta_aqi": etiq_aqi,
+            "dust":         dust,
             "color":        color,
             "etiqueta":     etiqueta,
             "nivel":        nivel,
@@ -346,29 +275,25 @@ def generar_json():
             "dias_sobre_oms_anio":      0,
         })
 
-    # Guardar caché actualizada
-    with open(cache_ruta, "w") as f:
-        json.dump(cache, f, indent=2)
-    print(f"\nCaché guardada: {len(cache)} estaciones válidas")
+        time.sleep(0.2)
 
     resultados = actualizar_historial(resultados)
 
-    ciudades_con_datos = len(CIUDADES) - sin_datos
-    ciudades_buenas    = sum(1 for r in resultados if r["nivel"] in [1, 2])
-    ciudades_malas     = sum(1 for r in resultados if r["nivel"] >= 4)
-    saharianos         = sum(1 for r in resultados if r["sahariano"])
+    ciudades_ok    = sum(1 for r in resultados if r["nivel"] in [1, 2])
+    ciudades_malas = sum(1 for r in resultados if r["nivel"] >= 4)
+    saharianos     = sum(1 for r in resultados if r["sahariano"])
 
     os.makedirs("docs", exist_ok=True)
     output = {
         "ultima_actualizacion":   datetime.now().isoformat(),
         "fecha_legible":          datetime.now().strftime("%d/%m/%Y a las %H:%M"),
         "total_ciudades":         len(CIUDADES),
-        "ciudades_con_datos":     ciudades_con_datos,
-        "ciudades_buena_calidad": ciudades_buenas,
+        "ciudades_con_datos":     len(CIUDADES) - errores,
+        "ciudades_buena_calidad": ciudades_ok,
         "ciudades_mala_calidad":  ciudades_malas,
         "episodio_sahariano":     saharianos > 3,
         "ciudades_saharianas":    saharianos,
-        "fuente":                 "OpenAQ v3",
+        "fuente":                 "Open-Meteo Air Quality API — CAMS European reanalysis",
         "nota_oms":               "Límites OMS 2021: PM2.5<15, PM10<45, NO2<25, O3<100 µg/m³",
         "ciudades":               resultados,
     }
@@ -376,13 +301,11 @@ def generar_json():
     with open("docs/calidad_aire.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\n{'='*60}")
-    print(f"✓ {ciudades_con_datos}/{len(CIUDADES)} ciudades con datos")
-    print(f"✓ {ciudades_buenas} ciudades buena calidad")
+    print(f"\n✓ {len(CIUDADES) - errores}/{len(CIUDADES)} ciudades con datos")
+    print(f"✓ {ciudades_ok} ciudades buena calidad")
     print(f"✓ {ciudades_malas} ciudades mala calidad")
     if saharianos:
-        print(f"⚠️  {saharianos} ciudades con episodio sahariano")
-    print(f"{'='*60}\n")
+        print(f"⚠️  {saharianos} ciudades con episodio sahariano\n")
 
 if __name__ == "__main__":
     generar_json()
