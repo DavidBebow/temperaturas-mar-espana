@@ -1,10 +1,10 @@
-name: Actualizar embalses
+name: Actualizar Embalses
 
 on:
   schedule:
-    # Se ejecuta todos los días a las 19:00 UTC (Aprox. 21:00 en España peninsular)
-    - cron: '0 19 * * *'
-  workflow_dispatch: # Permite ejecutarlo manualmente
+    # Martes a las 10:00 UTC — el MITECO publica el Boletín Hidrológico los martes por la mañana
+    - cron: '0 10 * * 2'
+  workflow_dispatch:  # Permite lanzarlo manualmente desde la pestaña Actions
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -14,24 +14,29 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
-      - name: Configurar Python
+      - name: Configurar Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Instalar dependencias
-        run: pip install requests beautifulsoup4
+        run: pip install requests
 
-      - name: Ejecutar script
+      - name: Ejecutar script de embalses
         run: python scripts/obtener_embalses.py
 
-      - name: Guardar cambios
+      - name: Confirmar y publicar cambios
         run: |
-          git config --local user.email "accion@github.com"
+          git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions Bot"
           git add docs/embalses_nacional.json docs/embalses/
-          git diff --staged --quiet || (git commit -m "Embalses actualizados: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
+          git diff --staged --quiet && echo "Sin cambios en los datos." || (
+            git commit -m "Embalses actualizados: $(date +'%d/%m/%Y %H:%M UTC')" &&
+            git pull --rebase &&
+            git push
+          )
