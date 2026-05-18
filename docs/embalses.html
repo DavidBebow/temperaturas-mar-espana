@@ -3,262 +3,243 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Estado de los Embalses en España</title>
+<title>Estado de los Embalses en España — Por Provincia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  :root {
-    --bg:        #07101a;
-    --bg2:       #0b1822;
-    --border:    #162636;
-    --text:      #c8dff0;
-    --muted:     #4a6a85;
-    --accent:    #1a8fcf;
-    --c-critico: #CC2200;
-    --c-bajo:    #FF8822;
-    --c-mod:     #FFCC44;
-    --c-bueno:   #44AA66;
-    --c-optimo:  #0077DD;
-    --c-nd:      #2a3a4a;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
-
-  /* ── CABECERA ─────────────────────────────────────────────────────── */
+  :root { --bg:#07101a; --bg2:#0b1822; --border:#162636; --text:#c8dff0; --muted:#4a6a85; --accent:#1a8fcf; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
   #cabecera {
-    background: var(--bg2);
-    padding: 10px 18px;
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 8px;
-    border-bottom: 1px solid var(--border);
+    background:var(--bg2); padding:10px 18px;
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--border);
   }
-  #cabecera h1 {
-    font-size: 13px; font-weight: 500; letter-spacing: 0.06em;
-    color: #e4f0ff; text-transform: uppercase;
-  }
-  #cabecera h1 span { color: var(--accent); }
-  #meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-  #meta p { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-
-  /* ── LEYENDA ──────────────────────────────────────────────────────── */
+  #cabecera h1 { font-size:13px; font-weight:500; letter-spacing:.06em; color:#e4f0ff; text-transform:uppercase; }
+  #cabecera h1 span { color:var(--accent); }
+  #meta { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+  #meta p { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; }
   #leyenda {
-    background: #090f18;
-    padding: 6px 18px;
-    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-    border-bottom: 1px solid var(--border);
-    font-size: 11px; color: var(--muted);
+    background:#090f18; padding:6px 18px;
+    display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+    border-bottom:1px solid var(--border); font-size:11px; color:var(--muted);
   }
-  #leyenda strong { color: #7a9aaa; font-weight: 500; margin-right: 4px; }
-  .ley { display: flex; align-items: center; gap: 5px; }
-  .ley-dot {
-    width: 11px; height: 11px; border-radius: 2px;
-    border: 1px solid rgba(255,255,255,0.08);
-  }
-  #leyenda .hint { margin-left: auto; font-size: 10px; color: #2e4a62; }
+  #leyenda strong { color:#7a9aaa; font-weight:500; margin-right:4px; }
+  .ley { display:flex; align-items:center; gap:5px; }
+  .ley-dot { width:11px; height:11px; border-radius:2px; border:1px solid rgba(255,255,255,.08); }
+  .hint { margin-left:auto; font-size:10px; color:#2e4a62; }
+  #mapa { width:100%; height:calc(100vh - 88px); min-height:420px; background:var(--bg); }
 
-  /* ── MAPA ─────────────────────────────────────────────────────────── */
-  #mapa { width: 100%; height: calc(100vh - 88px); min-height: 400px; background: var(--bg); }
-
-  /* ── POPUP ────────────────────────────────────────────────────────── */
   .leaflet-popup-content-wrapper {
-    background: #09141f !important;
-    border: 1px solid #1a3550 !important;
-    border-radius: 14px !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.85) !important;
-    color: var(--text) !important;
-    padding: 0 !important;
+    background:#09141f !important; border:1px solid #1a3550 !important;
+    border-radius:14px !important; box-shadow:0 10px 40px rgba(0,0,0,.85) !important;
+    color:var(--text) !important; padding:0 !important;
   }
-  .leaflet-popup-content { margin: 0 !important; }
-  .leaflet-popup-tip { background: #09141f !important; }
-  .leaflet-popup-close-button { color: var(--muted) !important; top: 10px !important; right: 12px !important; font-size: 16px !important; }
-
-  .popup-wrap { padding: 18px 20px; min-width: 220px; }
-  .popup-nombre { font-size: 15px; font-weight: 600; color: #e8f4ff; margin-bottom: 2px; }
-  .popup-pct {
-    font-size: 36px; font-weight: 300; letter-spacing: -0.03em;
-    margin: 12px 0 4px;
-    font-family: 'DM Mono', monospace;
-  }
-  .popup-etiq { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
-  .popup-barra-bg {
-    background: #0d1e2e; border-radius: 4px; height: 6px;
-    margin-bottom: 16px; overflow: hidden;
-  }
-  .popup-barra { height: 100%; border-radius: 4px; transition: width .5s ease; }
-  .popup-nd {
-    padding: 14px 0; font-size: 12px; color: var(--muted);
-    text-align: center; border: 1px dashed #1a2e40; border-radius: 8px;
-    margin: 12px 0;
-  }
+  .leaflet-popup-content { margin:0 !important; }
+  .leaflet-popup-tip { background:#09141f !important; }
+  .leaflet-popup-close-button { color:var(--muted) !important; top:10px !important; right:12px !important; }
+  .popup-wrap { padding:18px 20px; min-width:220px; }
+  .popup-prov { font-size:15px; font-weight:600; color:#e8f4ff; margin-bottom:2px; }
+  .popup-com  { font-size:11px; color:var(--muted); margin-bottom:10px; }
+  .popup-pct  { font-size:36px; font-weight:300; letter-spacing:-.03em; margin:4px 0 2px; font-family:'DM Mono',monospace; }
+  .popup-etiq { font-size:11px; color:var(--muted); margin-bottom:12px; }
+  .popup-bar-bg { background:#0d1e2e; border-radius:4px; height:6px; margin-bottom:16px; overflow:hidden; }
+  .popup-bar    { height:100%; border-radius:4px; }
+  .popup-fila { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #0f2035; font-size:12px; color:var(--muted); }
+  .popup-fila:last-of-type { border-bottom:none; }
+  .popup-fila span:last-child { font-family:'DM Mono',monospace; font-weight:500; color:#c0daf0; }
   .popup-btn {
-    display: block; margin-top: 14px;
-    padding: 9px 0; text-align: center;
-    border-radius: 10px; font-size: 12px; font-weight: 600;
-    text-decoration: none; color: white;
-    transition: opacity .2s, transform .1s;
-    border: 1px solid transparent;
+    display:block; margin-top:14px; padding:9px 0; text-align:center;
+    border-radius:10px; font-size:12px; font-weight:600; text-decoration:none;
+    color:white; border:1px solid transparent; transition:opacity .2s, transform .1s;
   }
-  .popup-btn:hover { opacity: .85; transform: translateY(-1px); }
-
-  /* ── LEAFLET OVERRIDES ────────────────────────────────────────────── */
-  .leaflet-control-zoom a {
-    background: var(--bg2) !important; color: var(--muted) !important;
-    border-color: var(--border) !important;
-  }
-  .leaflet-control-attribution {
-    background: rgba(7,16,26,0.9) !important;
-    color: #2a4a60 !important; font-size: 10px !important;
-  }
+  .popup-btn:hover { opacity:.85; transform:translateY(-1px); }
+  .popup-nd { padding:12px; text-align:center; font-size:11px; color:var(--muted); background:#0d1a28; border-radius:8px; border:1px dashed #1a2e40; margin:10px 0; }
+  .leaflet-control-zoom a { background:var(--bg2) !important; color:var(--muted) !important; border-color:var(--border) !important; }
+  .leaflet-control-attribution { background:rgba(7,16,26,.9) !important; color:#2a4a60 !important; font-size:10px !important; }
 </style>
 </head>
 <body>
-
 <div id="cabecera">
-  <h1>💧 Embalses de <span>España</span> — Estado semanal</h1>
+  <h1>💧 Embalses de <span>España</span> — Estado semanal por provincia</h1>
   <div id="meta">
     <p id="txt-fecha">Cargando...</p>
     <p id="txt-fuente"></p>
   </div>
 </div>
-
 <div id="leyenda">
   <strong>% embalsado:</strong>
-  <div class="ley"><div class="ley-dot" style="background:var(--c-critico)"></div>Crítico &lt;20%</div>
-  <div class="ley"><div class="ley-dot" style="background:var(--c-bajo)"></div>Bajo 20–40%</div>
-  <div class="ley"><div class="ley-dot" style="background:var(--c-mod)"></div>Moderado 40–60%</div>
-  <div class="ley"><div class="ley-dot" style="background:var(--c-bueno)"></div>Bueno 60–80%</div>
-  <div class="ley"><div class="ley-dot" style="background:var(--c-optimo)"></div>Muy bueno &gt;80%</div>
-  <div class="ley"><div class="ley-dot" style="background:var(--c-nd)"></div>Próximamente</div>
-  <span class="hint">Clic en una comunidad para ver sus embalses</span>
+  <div class="ley"><div class="ley-dot" style="background:#CC2200"></div>Crítico &lt;20%</div>
+  <div class="ley"><div class="ley-dot" style="background:#FF8822"></div>Bajo 20–40%</div>
+  <div class="ley"><div class="ley-dot" style="background:#FFCC44"></div>Moderado 40–60%</div>
+  <div class="ley"><div class="ley-dot" style="background:#44AA66"></div>Bueno 60–80%</div>
+  <div class="ley"><div class="ley-dot" style="background:#0077DD"></div>Muy bueno &gt;80%</div>
+  <div class="ley"><div class="ley-dot" style="background:#1e2e3a"></div>Sin datos</div>
+  <span class="hint">Clic en una provincia para ver sus embalses</span>
 </div>
-
 <div id="mapa"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ── CONFIG ───────────────────────────────────────────────────────────────────
 const JSON_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/embalses_nacional.json';
-const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-communities.geojson';
+// GeoJSON de provincias con nombres reales del IGN (click_that_hood)
+const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-provinces.geojson';
 const BASE_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/';
 
-// Mapeo nombre GeoJSON → id interno (igual que antes, probado y funciona)
+// Mapeo: nombre exacto en el GeoJSON → id en nuestro JSON
+// Los nombres del GeoJSON click_that_hood son los oficiales del IGN
 const NOMBRE_A_ID = {
-  'Andalucía':'andalucia','Andalucia':'andalucia',
-  'Aragón':'aragon','Aragon':'aragon',
-  'Asturias':'asturias','Principado de Asturias':'asturias',
-  'Islas Baleares':'baleares','Illes Balears':'baleares',
-  'Canarias':'canarias',
+  // Andalucía
+  'Almería':'almeria', 'Cádiz':'cadiz', 'Córdoba':'cordoba', 'Granada':'granada',
+  'Huelva':'huelva', 'Jaén':'jaen', 'Málaga':'malaga', 'Sevilla':'sevilla',
+  // Aragón
+  'Huesca':'huesca', 'Teruel':'teruel', 'Zaragoza':'zaragoza',
+  // Asturias
+  'Asturias':'asturias',
+  // Baleares
+  'Balears, Illes':'baleares', 'Illes Balears':'baleares', 'Islas Baleares':'baleares',
+  // Canarias
+  'Las Palmas':'las_palmas', 'Santa Cruz de Tenerife':'sta_cruz_tenerife',
+  // Cantabria
   'Cantabria':'cantabria',
-  'Castilla-La Mancha':'castilla_mancha','Castilla - La Mancha':'castilla_mancha',
-  'Castilla y León':'castilla_leon','Castilla y Leon':'castilla_leon',
-  'Cataluña':'cataluna','Catalunya':'cataluna',
-  'Comunidad Valenciana':'c_valenciana',
-  'Extremadura':'extremadura',
-  'Galicia':'galicia',
-  'La Rioja':'la_rioja',
-  'Comunidad de Madrid':'madrid','Madrid':'madrid',
-  'Región de Murcia':'murcia','Murcia':'murcia',
-  'Navarra':'navarra',
-  'País Vasco':'pais_vasco','Euskadi':'pais_vasco',
-  'Ceuta':'ceuta','Melilla':'melilla',
+  // Castilla-La Mancha
+  'Albacete':'albacete', 'Ciudad Real':'ciudad_real', 'Cuenca':'cuenca',
+  'Guadalajara':'guadalajara', 'Toledo':'toledo',
+  // Castilla y León
+  'Ávila':'avila', 'Burgos':'burgos', 'León':'leon', 'Palencia':'palencia',
+  'Salamanca':'salamanca', 'Segovia':'segovia', 'Soria':'soria',
+  'Valladolid':'valladolid', 'Zamora':'zamora',
+  // Cataluña (el GeoJSON puede usar formas catalanas)
+  'Barcelona':'barcelona', 'Girona':'girona', 'Gerona':'girona',
+  'Lleida':'lleida', 'Lérida':'lleida', 'Tarragona':'tarragona',
+  // C. Valenciana
+  'Alicante':'alicante', 'Alacant':'alicante',
+  'Castellón':'castellon', 'Castelló':'castellon',
+  'Valencia':'valencia', 'València':'valencia',
+  // Extremadura
+  'Badajoz':'badajoz', 'Cáceres':'caceres',
+  // Galicia
+  'A Coruña':'a_coruña', 'Coruña, A':'a_coruña', 'La Coruña':'a_coruña',
+  'Lugo':'lugo',
+  'Ourense':'ourense', 'Orense':'ourense',
+  'Pontevedra':'pontevedra',
+  // La Rioja
+  'La Rioja':'la_rioja', 'Rioja, La':'la_rioja',
+  // Madrid
+  'Madrid':'madrid',
+  // Murcia
+  'Murcia':'murcia',
+  // Navarra
+  'Navarra':'navarra', 'Nafarroa':'navarra',
+  // País Vasco
+  'Álava':'alava', 'Araba/Álava':'alava',
+  'Guipúzcoa':'guipuzcoa', 'Gipuzkoa':'guipuzcoa',
+  'Vizcaya':'vizcaya', 'Bizkaia':'vizcaya',
+  // Ceuta / Melilla
+  'Ceuta':'ceuta', 'Melilla':'melilla',
 };
 
-// ── MAPA ─────────────────────────────────────────────────────────────────────
-const mapa = L.map('mapa', { center: [40.0, -3.5], zoom: 5, zoomControl: true });
-
-L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-  { attribution: '© Esri &nbsp;|&nbsp; Datos: MITECO', maxZoom: 10 }
-).addTo(mapa);
-L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-  { maxZoom: 10, opacity: 0.45 }
-).addTo(mapa);
-
-// ── HELPERS ───────────────────────────────────────────────────────────────────
 function colorPct(pct) {
-  if (pct == null) return 'var(--c-nd)';
-  if (pct < 20)   return 'var(--c-critico)';
-  if (pct < 40)   return 'var(--c-bajo)';
-  if (pct < 60)   return 'var(--c-mod)';
-  if (pct < 80)   return 'var(--c-bueno)';
-  return 'var(--c-optimo)';
+  if (pct == null) return '#1a2a3a';
+  if (pct < 20) return '#CC2200';
+  if (pct < 40) return '#FF8822';
+  if (pct < 60) return '#FFCC44';
+  if (pct < 80) return '#44AA66';
+  return '#0077DD';
 }
 
-function buildPopup(c) {
-  if (!c || !c.datos_disponibles) {
+const mapa = L.map('mapa', { center:[40.0,-3.5], zoom:5 });
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  { attribution:'© Esri | Datos: MITECO', maxZoom:10 }).addTo(mapa);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  { maxZoom:10, opacity:.45 }).addTo(mapa);
+
+function buildPopup(d, nombre_geo) {
+  const nombre = d ? d.nombre : nombre_geo;
+  const com    = d ? d.comunidad : '';
+  if (!d || !d.datos_disponibles) {
     return `<div class="popup-wrap">
-      <div class="popup-nombre">💧 ${c ? c.nombre : '—'}</div>
-      <div class="popup-nd">📅 Datos próximamente disponibles</div>
+      <div class="popup-prov">💧 ${nombre}</div>
+      ${com ? `<div class="popup-com">${com}</div>` : ''}
+      <div class="popup-nd">Sin datos disponibles aún</div>
     </div>`;
   }
-  const col  = colorPct(c.pct);
-  const pct  = c.pct != null ? c.pct + '%' : '—';
-  const barra = c.pct ?? 0;
-  const url  = BASE_URL + c.url_detalle;
+  const col   = colorPct(d.pct);
+  const pctTx = d.pct != null ? d.pct + '%' : '—';
+  const barra = d.pct ?? 0;
+  const url   = BASE_URL + d.url_detalle;
   return `<div class="popup-wrap">
-    <div class="popup-nombre">💧 ${c.nombre}</div>
-    <div class="popup-pct" style="color:${col}">${pct}</div>
-    <div class="popup-etiq">${c.etiqueta ?? ''} embalsado</div>
-    <div class="popup-barra-bg">
-      <div class="popup-barra" style="width:${barra}%;background:${col}"></div>
-    </div>
-    <a class="popup-btn"
-       style="background:${col}cc;border-color:${col}"
+    <div class="popup-prov">💧 ${nombre}</div>
+    <div class="popup-com">${com}</div>
+    <div class="popup-pct" style="color:${col}">${pctTx}</div>
+    <div class="popup-etiq">${d.etiqueta ?? ''} embalsado</div>
+    <div class="popup-bar-bg"><div class="popup-bar" style="width:${barra}%;background:${col}"></div></div>
+    <div class="popup-fila"><span>Capacidad total</span><span>${d.capacidad_total_hm3 ?? '—'} Hm³</span></div>
+    <div class="popup-fila"><span>Volumen actual</span><span>${d.volumen_total_hm3 ?? '—'} Hm³</span></div>
+    <div class="popup-fila"><span>Nº embalses</span><span>${d.total_embalses ?? '—'}</span></div>
+    <a class="popup-btn" style="background:${col}cc;border-color:${col}"
        href="${url}" target="_blank">
-      Ver embalses de ${c.nombre} →
+      Todos los embalses de ${nombre} →
     </a>
   </div>`;
 }
 
-// ── CARGA DE DATOS ────────────────────────────────────────────────────────────
-let datosMap    = {};
-let capaGeojson = null;
+let datosMap = {}, capaGeojson = null;
 
 Promise.all([
   fetch(JSON_URL + '?_=' + Date.now()).then(r => r.json()),
   fetch(GEOJSON_URL).then(r => r.json()),
 ])
 .then(([data, geojson]) => {
-  // Indexar comunidades por id
-  (data.comunidades || []).forEach(c => { datosMap[c.id] = c; });
+  // Lee "provincias" (nuevo script) o "comunidades" (compatibilidad hacia atrás)
+  const lista = data.provincias || data.comunidades || [];
+  lista.forEach(p => { datosMap[p.id] = p; });
 
   document.getElementById('txt-fecha').textContent =
     'Actualizado: ' + (data.fecha_legible || '—');
   document.getElementById('txt-fuente').textContent =
     data.fuente || 'MITECO — Boletín Hidrológico Semanal';
 
+  // Debug: muestra en consola los nombres del GeoJSON para verificar mapeo
+  const nombresGeo = new Set();
+
   capaGeojson = L.geoJSON(geojson, {
     style(feature) {
-      const id = NOMBRE_A_ID[feature.properties.name || ''];
-      const c  = id ? datosMap[id] : null;
-      const conDatos = c && c.datos_disponibles;
+      const nombre = feature.properties.name || '';
+      nombresGeo.add(nombre);
+      const id = NOMBRE_A_ID[nombre];
+      const d  = id ? datosMap[id] : null;
+      const ok = d && d.datos_disponibles;
       return {
-        fillColor:   conDatos ? colorPct(c.pct)  : 'var(--c-nd)',
-        fillOpacity: conDatos ? 0.80 : 0.30,
-        color:       '#0f2035',
+        fillColor:   ok ? colorPct(d.pct) : '#1a2a3a',
+        fillOpacity: ok ? 0.80 : 0.28,
+        color:       '#0d1e2e',
         weight:      1,
-        opacity:     0.9,
+        opacity:     1,
       };
     },
     onEachFeature(feature, layer) {
-      const id = NOMBRE_A_ID[feature.properties.name || ''];
-      const c  = id ? datosMap[id] : { nombre: feature.properties.name, datos_disponibles: false };
-      if (!c) return;
-
-      layer.bindPopup(buildPopup(c), { maxWidth: 270 });
-      layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 2 }));
+      const nombre = feature.properties.name || '';
+      const id     = NOMBRE_A_ID[nombre];
+      const d      = id ? datosMap[id] : null;
+      layer.bindPopup(buildPopup(d, nombre), { maxWidth:280 });
+      layer.on('mouseover', () => layer.setStyle({ fillOpacity:.95, weight:2 }));
       layer.on('mouseout',  () => capaGeojson.resetStyle(layer));
-
-      // Abrir Murcia por defecto al cargar
       if (id === 'murcia') setTimeout(() => layer.openPopup(), 700);
     },
   }).addTo(mapa);
+
+  // Muestra en consola los nombres no reconocidos (para depurar)
+  setTimeout(() => {
+    const noReconocidos = [...nombresGeo].filter(n => !NOMBRE_A_ID[n]);
+    if (noReconocidos.length) console.warn('Provincias sin mapear:', noReconocidos);
+    else console.log('✓ Todas las provincias mapeadas correctamente');
+  }, 500);
 })
 .catch(err => {
-  console.error('Error cargando datos:', err);
+  console.error(err);
   document.getElementById('txt-fecha').textContent = 'Error al cargar datos';
 });
 </script>
