@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embalses de Andalucía — Estado semanal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root { --bg:#07101a; --bg2:#0b1822; --border:#162636; --text:#c8dff0; --muted:#4a6a85; --accent:#1a8fcf; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
+
+  #cabecera {
+    background:var(--bg2); padding:10px 18px;
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:8px; border-bottom:1px solid var(--border);
+  }
+  .cab-left { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  #back-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; color:var(--muted); text-decoration:none;
+    padding:5px 12px; border-radius:8px;
+    border:1px solid var(--border); background:var(--bg);
+    transition:color .2s, border-color .2s;
+  }
+  #back-btn:hover { color:var(--text); border-color:var(--accent); }
+  #cabecera h1 { font-size:13px; font-weight:500; letter-spacing:.06em; color:#e4f0ff; text-transform:uppercase; }
+  #cabecera h1 span { color:var(--accent); }
+  #meta { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+  #meta p { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; }
+
+  #leyenda {
+    background:#090f18; padding:6px 18px;
+    display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+    border-bottom:1px solid var(--border); font-size:11px; color:var(--muted);
+  }
+  #leyenda strong { color:#7a9aaa; font-weight:500; margin-right:4px; }
+  .ley { display:flex; align-items:center; gap:5px; }
+  .ley-dot { width:10px; height:10px; border-radius:50%; }
+  .hint { margin-left:auto; font-size:10px; color:#2e4a62; }
+
+  #mapa { width:100%; height:calc(100vh - 88px); min-height:420px; background:var(--bg); }
+
+  /* Marcadores */
+  .emb-marker { display:flex; flex-direction:column; align-items:center; cursor:pointer; }
+  .emb-circulo {
+    border-radius:50%; border:2px solid rgba(255,255,255,.25);
+    box-shadow:0 3px 14px rgba(0,0,0,.7);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .emb-pct { font-family:'DM Mono',monospace; font-size:11px; font-weight:700; color:white; text-shadow:0 1px 3px rgba(0,0,0,.9); line-height:1; }
+  .emb-label { font-size:9px; font-weight:600; color:rgba(255,255,255,.9); text-shadow:0 1px 3px rgba(0,0,0,.9); margin-top:3px; line-height:1; text-align:center; max-width:80px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* Popup */
+  .leaflet-popup-content-wrapper {
+    background:#09141f !important; border:1px solid #1a3550 !important;
+    border-radius:14px !important; box-shadow:0 10px 40px rgba(0,0,0,.85) !important;
+    color:var(--text) !important; padding:0 !important;
+  }
+  .leaflet-popup-content { margin:0 !important; }
+  .leaflet-popup-tip { background:#09141f !important; }
+  .leaflet-popup-close-button { color:var(--muted) !important; top:10px !important; right:12px !important; }
+
+  .popup-wrap { padding:18px 20px; min-width:240px; }
+  .popup-nombre { font-size:15px; font-weight:600; color:#e8f4ff; margin-bottom:2px; }
+  .popup-sub { font-size:11px; color:var(--muted); margin-bottom:10px; }
+  .popup-pct { font-size:36px; font-weight:300; letter-spacing:-.03em; margin:4px 0 2px; font-family:'DM Mono',monospace; }
+  .popup-etiq { font-size:11px; color:var(--muted); margin-bottom:12px; }
+  .popup-bar-bg { background:#0d1e2e; border-radius:4px; height:6px; margin-bottom:14px; overflow:hidden; }
+  .popup-bar { height:100%; border-radius:4px; }
+  .popup-fila { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #0f2035; font-size:12px; color:var(--muted); }
+  .popup-fila:last-of-type { border-bottom:none; }
+  .popup-fila span:last-child { font-family:'DM Mono',monospace; font-weight:500; color:#c0daf0; }
+
+  /* Separador de provincia */
+  .provincia-sep {
+    padding:4px 10px; font-size:10px; font-weight:600;
+    letter-spacing:.08em; text-transform:uppercase;
+    color:#4a6a85; background:transparent;
+    pointer-events:none;
+  }
+
+  .leaflet-control-zoom a { background:var(--bg2) !important; color:var(--muted) !important; border-color:var(--border) !important; }
+  .leaflet-control-attribution { background:rgba(7,16,26,.9) !important; color:#2a4a60 !important; font-size:10px !important; }
+</style>
+</head>
+<body>
+
+<div id="cabecera">
+  <div class="cab-left">
+    <a id="back-btn" href="https://davidbebow.github.io/temperaturas-mar-espana/embalses.html">← Mapa España</a>
+    <h1>💧 Embalses de <span>Andalucía</span></h1>
+  </div>
+  <div id="meta">
+    <p id="txt-resumen">Cargando...</p>
+    <p id="txt-fecha"></p>
+  </div>
+</div>
+
+<div id="leyenda">
+  <strong>% embalsado:</strong>
+  <div class="ley"><div class="ley-dot" style="background:#CC2200"></div>Crítico &lt;20%</div>
+  <div class="ley"><div class="ley-dot" style="background:#FF8822"></div>Bajo 20–40%</div>
+  <div class="ley"><div class="ley-dot" style="background:#FFCC44"></div>Moderado 40–60%</div>
+  <div class="ley"><div class="ley-dot" style="background:#44AA66"></div>Bueno 60–80%</div>
+  <div class="ley"><div class="ley-dot" style="background:#0077DD"></div>Muy bueno &gt;80%</div>
+  <span class="hint">Tamaño = capacidad · Clic para detalles</span>
+</div>
+
+<div id="mapa"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Las 8 provincias de Andalucía
+const PROVINCIAS_AND = ['almeria','granada','malaga','cadiz','huelva','sevilla','cordoba','jaen'];
+const BASE = 'https://davidbebow.github.io/temperaturas-mar-espana/embalses/';
+
+// Capacidades extremas de todos los embalses de Andalucía para escalar marcadores
+const CAP_MIN = 8.0, CAP_MAX = 3219.0, R_MIN = 28, R_MAX = 68;
+
+function colorPct(pct) {
+  if (pct==null) return '#888';
+  if (pct<20) return '#CC2200'; if (pct<40) return '#FF8822';
+  if (pct<60) return '#FFCC44'; if (pct<80) return '#44AA66';
+  return '#0077DD';
+}
+
+function tamano(cap) {
+  const c = Math.min(Math.max(cap, CAP_MIN), CAP_MAX);
+  return Math.round(R_MIN + ((c-CAP_MIN)/(CAP_MAX-CAP_MIN))*(R_MAX-R_MIN));
+}
+
+function crearIcono(e) {
+  const s   = tamano(e.capacidad_hm3);
+  const col = colorPct(e.pct);
+  const tx  = e.pct != null ? e.pct+'%' : '—';
+  const lbl = e.nombre.length>10 ? e.nombre.substring(0,9)+'…' : e.nombre;
+  return L.divIcon({
+    html:`<div class="emb-marker">
+      <div class="emb-circulo" style="width:${s}px;height:${s}px;background:${col}bb">
+        <div class="emb-pct">${tx}</div>
+      </div>
+      <div class="emb-label" style="max-width:${s+20}px">${lbl}</div>
+    </div>`,
+    className:'', iconSize:null,
+    iconAnchor:[s/2+5,s/2+14], popupAnchor:[0,-(s/2+16)],
+  });
+}
+
+function buildPopup(e) {
+  const col   = colorPct(e.pct);
+  const pctTx = e.pct != null ? e.pct+'%' : 'Sin datos';
+  const barra = e.pct ?? 0;
+  const volTx = e.volumen_hm3 != null ? e.volumen_hm3.toFixed(1)+' Hm³' : '—';
+  const libre = (e.volumen_hm3!=null && e.pct!=null)
+    ? (e.capacidad_hm3-e.volumen_hm3).toFixed(1)+' Hm³' : '—';
+  return `<div class="popup-wrap">
+    <div class="popup-nombre">💧 ${e.nombre}</div>
+    <div class="popup-sub">Río ${e.rio??'—'} · ${e.municipio??'—'} · <em>${e.provincia}</em></div>
+    <div class="popup-pct" style="color:${col}">${pctTx}</div>
+    <div class="popup-etiq">${e.etiqueta??'—'}</div>
+    <div class="popup-bar-bg"><div class="popup-bar" style="width:${barra}%;background:${col}"></div></div>
+    <div class="popup-fila"><span>Volumen actual</span><span>${volTx}</span></div>
+    <div class="popup-fila"><span>Capacidad total</span><span>${e.capacidad_hm3} Hm³</span></div>
+    <div class="popup-fila"><span>Volumen libre</span><span>${libre}</span></div>
+    <div class="popup-fila"><span>Estado</span><span>${e.etiqueta??'—'}</span></div>
+  </div>`;
+}
+
+// ── Mapa ─────────────────────────────────────────────────────────────────────
+const mapa = L.map('mapa', { center:[37.5,-4.5], zoom:7 });
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  { attribution:'© Esri | Datos: MITECO', maxZoom:14 }).addTo(mapa);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  { maxZoom:14, opacity:.55 }).addTo(mapa);
+
+// ── Carga de las 8 provincias en paralelo ─────────────────────────────────────
+let totalVol=0, totalCap=0, totalEmb=0;
+let fechaLegible='—';
+let primerMarcador=null;
+
+Promise.all(
+  PROVINCIAS_AND.map(id =>
+    fetch(BASE+id+'.json?_='+Date.now())
+      .then(r=>r.json())
+      .catch(()=>null)
+  )
+).then(resultados => {
+  resultados.forEach(data => {
+    if (!data) return;
+    if (data.fecha_legible) fechaLegible = data.fecha_legible;
+
+    totalCap += data.capacidad_total_hm3 || 0;
+    totalVol += data.volumen_total_hm3   || 0;
+    totalEmb += data.total_embalses      || 0;
+
+    (data.embalses||[]).forEach(e => {
+      if (!e.lat || !e.lon) return;
+      const m = L.marker([e.lat,e.lon],{icon:crearIcono(e)})
+        .addTo(mapa)
+        .bindPopup(buildPopup(e),{maxWidth:290});
+      // Abrir el mayor: La Serena
+      if (e.id==='la_serena') primerMarcador=m;
+    });
+  });
+
+  const pctTotal = totalCap>0 ? Math.round((totalVol/totalCap)*1000)/10 : null;
+  const col = colorPct(pctTotal);
+
+  document.getElementById('txt-resumen').innerHTML =
+    `Media Andalucía: <strong style="color:${col}">${pctTotal!=null?pctTotal+'%':'—'}</strong> &nbsp;·&nbsp; ${totalEmb} embalses`;
+  document.getElementById('txt-fecha').textContent =
+    'Actualizado: '+fechaLegible;
+
+  if (primerMarcador) setTimeout(()=>primerMarcador.openPopup(), 700);
+})
+.catch(err=>{
+  console.error(err);
+  document.getElementById('txt-resumen').textContent='Error al cargar datos';
+});
+</script>
+</body>
+</html>
