@@ -57,7 +57,6 @@ CIUDADES = [
     {"id": "melilla",      "nombre": "Melilla",              "provincia": "Melilla",      "lat": 35.29, "lon": -2.94},
 ]
 
-# Límites OMS 2021 (µg/m³)
 LIMITES_OMS = {
     "pm25": 15.0,
     "pm10": 45.0,
@@ -67,10 +66,6 @@ LIMITES_OMS = {
 }
 
 def obtener_calidad_ciudad(lat, lon):
-    """
-    Obtiene datos de calidad del aire usando Open-Meteo Air Quality API.
-    Gratuita, sin API key, cobertura completa de España.
-    """
     url = "https://air-quality-api.open-meteo.com/v1/air-quality"
     params = {
         "latitude":  lat,
@@ -83,7 +78,6 @@ def obtener_calidad_ciudad(lat, lon):
         r.raise_for_status()
         data    = r.json()
         current = data.get("current", {})
-
         pm25 = current.get("pm2_5")
         pm10 = current.get("pm10")
         no2  = current.get("nitrogen_dioxide")
@@ -91,7 +85,6 @@ def obtener_calidad_ciudad(lat, lon):
         so2  = current.get("sulphur_dioxide")
         aqi  = current.get("european_aqi")
         dust = current.get("dust")
-
         return {
             "pm25": round(pm25, 1) if pm25 is not None else None,
             "pm10": round(pm10, 1) if pm10 is not None else None,
@@ -101,7 +94,6 @@ def obtener_calidad_ciudad(lat, lon):
             "aqi_europeo": int(aqi) if aqi is not None else None,
             "dust": round(dust, 1) if dust is not None else None,
         }
-
     except Exception as e:
         print(f"  Error: {e}")
         return {}
@@ -109,40 +101,29 @@ def obtener_calidad_ciudad(lat, lon):
 def clasificar_calidad_pm25(pm25):
     if pm25 is None:
         return None, None, 0
-    if pm25 < 5:   return "#0066CC", "Excelente", 1
-    if pm25 < 15:  return "#44AA66", "Buena",     2
-    if pm25 < 25:  return "#FFCC44", "Moderada",  3
-    if pm25 < 50:  return "#FF8822", "Mala",      4
+    if pm25 < 5:  return "#0066CC", "Excelente", 1
+    if pm25 < 15: return "#44AA66", "Buena",     2
+    if pm25 < 25: return "#FFCC44", "Moderada",  3
+    if pm25 < 50: return "#FF8822", "Mala",      4
     return "#CC2200", "Muy mala", 5
 
 def clasificar_aqi_europeo(aqi):
-    """Fallback cuando no hay PM2.5."""
-    if aqi is None:  return "#888888", "Sin datos", 0
-    if aqi < 20:     return "#0066CC", "Muy buena", 1
-    if aqi < 40:     return "#44AA66", "Buena",     2
-    if aqi < 60:     return "#FFCC44", "Moderada",  3
-    if aqi < 80:     return "#FF8822", "Mala",      4
-    if aqi < 100:    return "#CC2200", "Muy mala",  5
+    if aqi is None: return "#888888", "Sin datos", 0
+    if aqi < 20:    return "#0066CC", "Muy buena", 1
+    if aqi < 40:    return "#44AA66", "Buena",     2
+    if aqi < 60:    return "#FFCC44", "Moderada",  3
+    if aqi < 80:    return "#FF8822", "Mala",      4
+    if aqi < 100:   return "#CC2200", "Muy mala",  5
     return "#880000", "Extrema", 5
 
 def clasificar_ciudad(pm25, aqi_europeo):
-    """
-    Usa PM2.5 como indicador principal.
-    Si no hay PM2.5, usa el AQI europeo como fallback.
-    Devuelve: color, etiqueta, nivel, valor_mostrado, unidad_mostrada
-    """
     color, etiqueta, nivel = clasificar_calidad_pm25(pm25)
     if color is not None:
         return color, etiqueta, nivel, pm25, "µg/m³ PM2.5"
-
     color, etiqueta, nivel = clasificar_aqi_europeo(aqi_europeo)
     return color, etiqueta, nivel, aqi_europeo, "AQI europeo"
 
 def detectar_sahariano(pm10, dust):
-    """
-    Detecta episodio sahariano usando el valor de dust de Open-Meteo.
-    Umbral: dust > 50 µg/m³ O PM10 elevado con ratio dust/pm10 > 0.5
-    """
     if dust is not None and dust > 50:
         return True
     if pm10 is not None and dust is not None and pm10 > 0:
@@ -158,7 +139,7 @@ def supera_limite_oms(valores):
     return False
 
 def contaminante_dominante(valores):
-    nombres   = {"pm25": "PM2.5", "pm10": "PM10", "no2": "NO₂", "o3": "O₃", "so2": "SO₂"}
+    nombres = {"pm25": "PM2.5", "pm10": "PM10", "no2": "NO₂", "o3": "O₃", "so2": "SO₂"}
     peor_ratio, peor_param = 0, None
     for param, limite in LIMITES_OMS.items():
         val = valores.get(param)
@@ -181,17 +162,14 @@ def calcular_max_racha(entradas):
 def actualizar_historial(resultados):
     ruta = "docs/historial_calidad_aire.json"
     hoy  = datetime.now().strftime("%Y-%m-%d")
-
     historial = {}
     if os.path.exists(ruta):
         with open(ruta, "r", encoding="utf-8") as f:
             historial = json.load(f)
-
     for r in resultados:
         cid = r["id"]
         if cid not in historial:
             historial[cid] = []
-
         fechas = {e["fecha"] for e in historial[cid]}
         if hoy not in fechas:
             historial[cid].append({
@@ -199,11 +177,9 @@ def actualizar_historial(resultados):
                 "supera_oms": r["supera_oms"],
                 "pm25":       r.get("pm25"),
             })
-
         historial[cid] = sorted(
             historial[cid], key=lambda x: x["fecha"], reverse=True
         )[:365]
-
         supera_hoy  = r["supera_oms"]
         dias_consec = 0
         for e in historial[cid]:
@@ -211,17 +187,14 @@ def actualizar_historial(resultados):
                 dias_consec += 1
             else:
                 break
-
         r["dias_consecutivos_estado"] = dias_consec
         r["max_dias_sobre_oms"]       = calcular_max_racha(historial[cid])
         r["dias_sobre_oms_anio"]      = sum(
             1 for e in historial[cid]
             if e.get("supera_oms") and e["fecha"].startswith(str(datetime.now().year))
         )
-
     with open(ruta, "w", encoding="utf-8") as f:
         json.dump(historial, f, ensure_ascii=False, indent=2)
-
     return resultados
 
 def generar_json():
@@ -248,43 +221,39 @@ def generar_json():
         aqi  = valores.get("aqi_europeo")
         dust = valores.get("dust")
 
-        color, etiqueta, nivel = clasificar_calidad_pm25(pm25)
+        color, etiqueta, nivel, valor_mostrado, unidad_mostrada = clasificar_ciudad(pm25, aqi)
         sahariano    = detectar_sahariano(pm10, dust)
         supera_oms   = supera_limite_oms(valores)
         contaminante = contaminante_dominante(valores)
-        etiq_aqi     = clasificar_aqi_europeo(aqi)
+        etiq_aqi     = clasificar_aqi_europeo(aqi)[1] if aqi is not None else "Sin datos"
 
-        estado = f"PM2.5:{pm25} PM10:{pm10} NO2:{no2} → {etiqueta}"
+        estado = f"PM2.5:{pm25} AQI:{aqi} → {etiqueta}"
         if sahariano:
             estado += " 🏜️"
         print(f"  ✓ {estado}")
 
-color, etiqueta, nivel, valor_mostrado, unidad_mostrada = clasificar_ciudad(
-            pm25, aqi
-        )
-
         resultados.append({
-            "id":           ciudad["id"],
-            "nombre":       ciudad["nombre"],
-            "provincia":    ciudad["provincia"],
-            "lat":          ciudad["lat"],
-            "lon":          ciudad["lon"],
-            "pm25":         pm25,
-            "pm10":         pm10,
-            "no2":          no2,
-            "o3":           o3,
-            "so2":          so2,
-            "aqi_europeo":  aqi,
-            "etiqueta_aqi": clasificar_aqi_europeo(aqi)[1] if aqi else "Sin datos",
-            "dust":         dust,
-            "color":        color,
-            "etiqueta":     etiqueta,
-            "nivel":        nivel,
+            "id":              ciudad["id"],
+            "nombre":          ciudad["nombre"],
+            "provincia":       ciudad["provincia"],
+            "lat":             ciudad["lat"],
+            "lon":             ciudad["lon"],
+            "pm25":            pm25,
+            "pm10":            pm10,
+            "no2":             no2,
+            "o3":              o3,
+            "so2":             so2,
+            "aqi_europeo":     aqi,
+            "etiqueta_aqi":    etiq_aqi,
+            "dust":            dust,
+            "color":           color,
+            "etiqueta":        etiqueta,
+            "nivel":           nivel,
             "valor_mostrado":  valor_mostrado,
             "unidad_mostrada": unidad_mostrada,
-            "supera_oms":   supera_oms,
-            "sahariano":    sahariano,
-            "contaminante_dominante": contaminante,
+            "supera_oms":      supera_oms,
+            "sahariano":       sahariano,
+            "contaminante_dominante":  contaminante,
             "dias_consecutivos_estado": 0,
             "max_dias_sobre_oms":       0,
             "dias_sobre_oms_anio":      0,
@@ -308,7 +277,7 @@ color, etiqueta, nivel, valor_mostrado, unidad_mostrada = clasificar_ciudad(
         "ciudades_mala_calidad":  ciudades_malas,
         "episodio_sahariano":     saharianos > 3,
         "ciudades_saharianas":    saharianos,
-        "fuente":                 "Open-Meteo Air Quality API — CAMS European reanalysis",
+        "fuente":                 "Open-Meteo Air Quality API — CAMS Copernicus",
         "nota_oms":               "Límites OMS 2021: PM2.5<15, PM10<45, NO2<25, O3<100 µg/m³",
         "ciudades":               resultados,
     }
