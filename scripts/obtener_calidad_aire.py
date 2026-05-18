@@ -57,7 +57,6 @@ CIUDADES = [
     {"id": "melilla",      "nombre": "Melilla",                "provincia": "Melilla",      "lat": 35.29, "lon": -2.94},
 ]
 
-# Límites OMS 2021 (µg/m³, media 24h)
 LIMITES_OMS = {
     "pm25": 15.0,
     "pm10": 45.0,
@@ -66,75 +65,115 @@ LIMITES_OMS = {
     "so2":  40.0,
 }
 
-HEADERS_BASE = {
-    "Accept": "application/json",
-    "User-Agent": "calentamientoglobal.es/calidad-aire"
-}
-
 def buscar_estacion(lat, lon, api_key):
-    """Busca la estación OpenAQ más cercana a las coordenadas dadas."""
-    url = "https://api.openaq.org/v3/locations"
-    params = {
-        "coordinates": f"{lat},{lon}",
-        "radius":       50000,
-        "limit":        5,
-        "order_by":     "distance",
+    """
+    Busca la estación más cercana probando radios progresivos.
+    Retorna el ID de la primera estación que tenga mediciones recientes.
+    """
+    headers = {
+        "X-API-Key": api_key,
+        "Accept":    "application/json",
     }
-    headers = {**HEADERS_BASE, "X-API-Key": api_key}
-    try:
-        r = requests.get(url, params=params, headers=headers, timeout=15)
-        r.raise_for_status()
-        resultados = r.json().get("results", [])
-        if resultados:
-            return resultados[0]["id"]
-        return None
-    except Exception as e:
-        print(f"    Error buscando estación: {e}")
-        return None
+
+    # Probar radios progresivos: 25km, 50km, 100km
+    for radio in [25000, 50000, 100000]:
+        url = "https://api.openaq.org/v3/locations"
+        params = {
+            "coordinates": f"{lat},{lon}",
+            "radius":       radio,
+            "limit":        10,
+            "order_by":     "distance",
+            "country_id":   "ES",
+        }
+        try:
+            r = requests.get(url, params=params, headers=headers, timeout=20)
+            print(f"    API status {r.status_code} (radio {radio//1000}km)")
+
+            if r.status_code == 401:
+                print("    ERROR: API key inválida o no configurada")
+                return None
+
+            if r.status_code != 200:
+                continue
+
+            resultados = r.json().get("results", [])
+            print(f"    Estaciones encontradas: {len(resultados)}")
+
+            # Tomar la primera estación con sensores activos
+            for loc in resultados:
+                loc_id = loc.get("id")
+                if loc_id:
+                    return loc_id
+
+        except Exception as e:
+            print(f"    Error en búsqueda radio {radio//1000}km: {e}")
+
+        time.sleep(0.5)
+
+    return None
 
 def obtener_mediciones(location_id, api_key):
     """Obtiene las últimas mediciones de una estación."""
     url = f"https://api.openaq.org/v3/locations/{location_id}/latest"
-    headers = {**HEADERS_BASE, "X-API-Key": api_key}
+    headers = {
+        "X-API-Key": api_key,
+        "Accept":    "application/json",
+    }
     valores = {}
     try:
-        r = requests.get(url, headers=headers, timeout=15)
-        r.raise_for_status()
-        for entry in r.json().get("results", []):
-            param = entry.get("parameter", {}).get("name", "").lower()
-            val   = entry.get("value")
-            if param and val is not None and val >= 0:
-                valores[param] = round(float(val), 1)
+        r = requests.get(url, headers=headers, timeout=20)
+        if r.status_code != 200:
+            print(f"    Error mediciones: status {r.status_code}")
+            return {}
+
+        data = r.json()
+        for entry in data.get("results", []):
+            param = entry.get("parameter", {})
+            nombre_param = param.get("name", "").lower() if isinstance(param, dict) else str(param).lower()
+            val = entry.get("value")
+
+            # Normalizar nombres de parámetros
+            if nombre_param in ["pm25", "pm2.5"]:
+                nombre_param = "pm25"
+            elif nombre_param in ["pm10"]:
+                nombre_param = "pm10"
+            elif nombre_param in ["no2"]:
+                nombre_param = "no2"
+            elif nombre_param in ["o3", "ozone"]:
+                nombre_param = "o3"
+            elif nombre_param in ["so2"]:
+                nombre_param = "so2"
+            else:
+                continue
+
+            if val is not None and float(val) >= 0:
+                valores[nombre_param] = round(float(val), 1)
+
         return valores
+
     except Exception as e:
         print(f"    Error obteniendo mediciones: {e}")
         return {}
 
 def clasificar_calidad_pm25(pm25):
-    """Clasifica la calidad del aire según PM2.5 y límites OMS."""
     if pm25 is None:
         return "#888888", "Sin datos", 0
     if pm25 < 5:
         return "#0066CC", "Excelente", 1
     if pm25 < 15:
-        return "#44AA66", "Buena",     2
+        return "#44AA66", "Buena", 2
     if pm25 < 25:
-        return "#FFCC44", "Moderada",  3
+        return "#FFCC44", "Moderada", 3
     if pm25 < 50:
-        return "#FF8822", "Mala",      4
-    return "#CC2200", "Muy mala",      5
+        return "#FF8822", "Mala", 4
+    return "#CC2200", "Muy mala", 5
 
 def detectar_sahariano(pm25, pm10):
-    """Detecta probable episodio de polvo sahariano."""
-    if pm10 is None or pm25 is None:
+    if pm10 is None or pm25 is None or pm25 == 0:
         return False
-    if pm10 > 50 and pm25 > 0:
-        ratio = pm10 / pm25
-        return ratio > 3.0
-    return False
+    return pm10 > 50 and (pm10 / pm25) > 3.0
 
 def supera_limite_oms(valores):
-    """Devuelve True si algún contaminante supera el límite OMS."""
     for param, limite in LIMITES_OMS.items():
         val = valores.get(param)
         if val is not None and val > limite:
@@ -142,22 +181,17 @@ def supera_limite_oms(valores):
     return False
 
 def contaminante_dominante(valores):
-    """Devuelve el contaminante más problemático del día."""
     if not valores:
         return None
-    peor_ratio = 0
-    peor_param = None
     nombres = {"pm25": "PM2.5", "pm10": "PM10", "no2": "NO₂", "o3": "O₃", "so2": "SO₂"}
+    peor_ratio, peor_param = 0, None
     for param, limite in LIMITES_OMS.items():
         val = valores.get(param)
         if val is not None and limite > 0:
             ratio = val / limite
             if ratio > peor_ratio:
-                peor_ratio = ratio
-                peor_param = param
-    if peor_param:
-        return nombres.get(peor_param, peor_param)
-    return None
+                peor_ratio, peor_param = ratio, param
+    return nombres.get(peor_param) if peor_param else None
 
 def calcular_max_racha(entradas):
     max_racha = racha = 0
@@ -184,28 +218,21 @@ def actualizar_historial(resultados):
             historial[cid] = []
 
         fechas = {e["fecha"] for e in historial[cid]}
-
         if hoy not in fechas:
             historial[cid].append({
-                "fecha":       hoy,
-                "supera_oms":  r["supera_oms"],
-                "pm25":        r.get("pm25"),
+                "fecha":      hoy,
+                "supera_oms": r["supera_oms"],
+                "pm25":       r.get("pm25"),
             })
-
-        # Rellenar día sin datos si no existe
-        for e in historial[cid]:
-            if "supera_oms" not in e:
-                e["supera_oms"] = False
 
         historial[cid] = sorted(
             historial[cid], key=lambda x: x["fecha"], reverse=True
         )[:365]
 
-        # Calcular días consecutivos
         dias_consec = 0
         supera_hoy  = r["supera_oms"]
         for e in historial[cid]:
-            if e["supera_oms"] == supera_hoy:
+            if e.get("supera_oms") == supera_hoy:
                 dias_consec += 1
             else:
                 break
@@ -214,7 +241,7 @@ def actualizar_historial(resultados):
         r["max_dias_sobre_oms"]       = calcular_max_racha(historial[cid])
         r["dias_sobre_oms_anio"]      = sum(
             1 for e in historial[cid]
-            if e["supera_oms"] and e["fecha"].startswith(str(datetime.now().year))
+            if e.get("supera_oms") and e["fecha"].startswith(str(datetime.now().year))
         )
 
     with open(ruta, "w", encoding="utf-8") as f:
@@ -225,43 +252,58 @@ def actualizar_historial(resultados):
 def generar_json():
     api_key = os.environ.get("OPENAQ_KEY")
     if not api_key:
-        print("ERROR: Falta OPENAQ_KEY")
-        return
+        print("ERROR CRÍTICO: Variable OPENAQ_KEY no configurada.")
+        print("Regístrate en https://openaq.org/register y añade el secreto en GitHub.")
+        raise SystemExit(1)
 
     print(f"\n{'='*60}")
     print(f"Actualizando calidad del aire — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    print(f"API key: {'*' * (len(api_key) - 4) + api_key[-4:]}")
     print(f"{'='*60}\n")
 
-    # Cargar caché de IDs de estaciones para no buscarlas cada vez
+    # Cargar caché — limpiar entradas nulas para forzar nueva búsqueda
     cache_ruta = "docs/cache_estaciones.json"
     cache = {}
     if os.path.exists(cache_ruta):
         with open(cache_ruta, "r") as f:
-            cache = json.load(f)
+            raw = json.load(f)
+        # Solo mantener entradas con ID válido (no None, no 0)
+        cache = {k: v for k, v in raw.items() if v}
+        nulas = len(raw) - len(cache)
+        if nulas > 0:
+            print(f"  Limpiadas {nulas} entradas nulas del caché\n")
 
-    resultados  = []
-    sin_datos   = 0
+    resultados = []
+    sin_datos  = 0
 
     for ciudad in CIUDADES:
         cid = ciudad["id"]
         print(f"Procesando: {ciudad['nombre']}...")
 
-        # Buscar estación si no está en caché
+        # Buscar estación si no está en caché válido
         if cid not in cache:
+            print(f"  Buscando estación...")
             station_id = buscar_estacion(ciudad["lat"], ciudad["lon"], api_key)
             if station_id:
                 cache[cid] = station_id
-                print(f"  Estación encontrada: {station_id}")
+                print(f"  ✓ Estación: {station_id}")
             else:
-                print(f"  Sin estación disponible")
-            time.sleep(0.5)
+                print(f"  ✗ Sin estación disponible en 100km")
+            time.sleep(0.6)
         else:
             station_id = cache[cid]
+            print(f"  Estación en caché: {station_id}")
 
         valores = {}
         if station_id:
             valores = obtener_mediciones(station_id, api_key)
-            time.sleep(0.3)
+            if valores:
+                print(f"  ✓ Datos: {valores}")
+            else:
+                print(f"  ✗ Sin mediciones recientes")
+                # Invalidar caché si no hay mediciones
+                cache.pop(cid, None)
+            time.sleep(0.4)
 
         pm25 = valores.get("pm25")
         pm10 = valores.get("pm10")
@@ -269,15 +311,15 @@ def generar_json():
         o3   = valores.get("o3")
         so2  = valores.get("so2")
 
-        color, etiqueta, nivel = clasificar_calidad_pm25(pm25)
-        sahariano   = detectar_sahariano(pm25, pm10)
-        supera_oms  = supera_limite_oms(valores)
-        contaminante = contaminante_dominante(valores)
-
         if not valores:
             sin_datos += 1
 
-        resultado = {
+        color, etiqueta, nivel = clasificar_calidad_pm25(pm25)
+        sahariano    = detectar_sahariano(pm25, pm10)
+        supera_oms   = supera_limite_oms(valores)
+        contaminante = contaminante_dominante(valores)
+
+        resultados.append({
             "id":           cid,
             "nombre":       ciudad["nombre"],
             "provincia":    ciudad["provincia"],
@@ -294,52 +336,49 @@ def generar_json():
             "nivel":        nivel,
             "supera_oms":   supera_oms,
             "sahariano":    sahariano,
-            "contaminante_dominante": contaminante,
-            # Estos se rellenan en actualizar_historial
+            "contaminante_dominante":  contaminante,
             "dias_consecutivos_estado": 0,
             "max_dias_sobre_oms":       0,
             "dias_sobre_oms_anio":      0,
-        }
-        resultados.append(resultado)
-
-        estado = f"{etiqueta} | PM2.5: {pm25}" if pm25 else "Sin datos"
-        if sahariano:
-            estado += " 🏜️ SAHARIANO"
-        print(f"  ✓ {estado}")
+        })
 
     # Guardar caché actualizada
     with open(cache_ruta, "w") as f:
         json.dump(cache, f, indent=2)
+    print(f"\nCaché guardada: {len(cache)} estaciones válidas")
 
     resultados = actualizar_historial(resultados)
 
-    ciudades_buenas = sum(1 for r in resultados if r["nivel"] <= 2 and r["nivel"] > 0)
-    ciudades_malas  = sum(1 for r in resultados if r["nivel"] >= 4)
-    saharianos      = sum(1 for r in resultados if r["sahariano"])
+    ciudades_con_datos = len(CIUDADES) - sin_datos
+    ciudades_buenas    = sum(1 for r in resultados if r["nivel"] in [1, 2])
+    ciudades_malas     = sum(1 for r in resultados if r["nivel"] >= 4)
+    saharianos         = sum(1 for r in resultados if r["sahariano"])
 
     os.makedirs("docs", exist_ok=True)
     output = {
-        "ultima_actualizacion": datetime.now().isoformat(),
-        "fecha_legible":        datetime.now().strftime("%d/%m/%Y a las %H:%M"),
-        "total_ciudades":       len(CIUDADES),
-        "ciudades_con_datos":   len(CIUDADES) - sin_datos,
+        "ultima_actualizacion":   datetime.now().isoformat(),
+        "fecha_legible":          datetime.now().strftime("%d/%m/%Y a las %H:%M"),
+        "total_ciudades":         len(CIUDADES),
+        "ciudades_con_datos":     ciudades_con_datos,
         "ciudades_buena_calidad": ciudades_buenas,
         "ciudades_mala_calidad":  ciudades_malas,
-        "episodio_sahariano":   saharianos > 3,
-        "ciudades_saharianas":  saharianos,
-        "fuente":               "OpenAQ v3 — Red de estaciones oficiales",
-        "nota_oms":             "Límites OMS 2021: PM2.5 <15, PM10 <45, NO2 <25, O3 <100 µg/m³",
-        "ciudades":             resultados
+        "episodio_sahariano":     saharianos > 3,
+        "ciudades_saharianas":    saharianos,
+        "fuente":                 "OpenAQ v3",
+        "nota_oms":               "Límites OMS 2021: PM2.5<15, PM10<45, NO2<25, O3<100 µg/m³",
+        "ciudades":               resultados,
     }
 
     with open("docs/calidad_aire.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✓ JSON guardado en docs/calidad_aire.json")
-    print(f"✓ {len(CIUDADES) - sin_datos}/{len(CIUDADES)} ciudades con datos")
-    print(f"✓ {ciudades_malas} ciudades con mala calidad")
+    print(f"\n{'='*60}")
+    print(f"✓ {ciudades_con_datos}/{len(CIUDADES)} ciudades con datos")
+    print(f"✓ {ciudades_buenas} ciudades buena calidad")
+    print(f"✓ {ciudades_malas} ciudades mala calidad")
     if saharianos:
-        print(f"⚠️  {saharianos} ciudades con episodio sahariano probable\n")
+        print(f"⚠️  {saharianos} ciudades con episodio sahariano")
+    print(f"{'='*60}\n")
 
 if __name__ == "__main__":
     generar_json()
