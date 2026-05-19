@@ -167,6 +167,24 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_D
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
   { maxZoom:10, opacity:.45 }).addTo(mapa);
 
+// URLs de las páginas en calentamientoglobal.es
+// Añade aquí la URL de WordPress de cada provincia cuando la crees.
+// Si no tiene URL de WordPress todavía, se usa el mapa de GitHub.
+const WP_URLS = {
+  'murcia':       'https://calentamientoglobal.es/embalses-murcia/',
+  'sevilla':      'https://calentamientoglobal.es/embalses-sevilla/',
+  'cordoba':      'https://calentamientoglobal.es/embalses-cordoba/',
+  'jaen':         'https://calentamientoglobal.es/embalses-jaen/',
+  'granada':      'https://calentamientoglobal.es/embalses-granada/',
+  'malaga':       'https://calentamientoglobal.es/embalses-malaga/',
+  'huelva':       'https://calentamientoglobal.es/embalses-huelva/',
+  'cadiz':        'https://calentamientoglobal.es/embalses-cadiz/',
+  'almeria':      'https://calentamientoglobal.es/embalses-almeria/',
+  // Añade más aquí según vayas creando las páginas:
+  // 'madrid':    'https://calentamientoglobal.es/embalses-madrid/',
+  // 'badajoz':   'https://calentamientoglobal.es/embalses-badajoz/',
+};
+
 function buildPopup(d, nombre_geo) {
   const nombre = d ? d.nombre : nombre_geo;
   const com    = d ? d.comunidad : '';
@@ -180,7 +198,8 @@ function buildPopup(d, nombre_geo) {
   const col   = colorPct(d.pct);
   const pctTx = d.pct != null ? d.pct + '%' : '—';
   const barra = d.pct ?? 0;
-  const url   = BASE_URL + d.url_detalle;
+  // Usar URL de WordPress si existe, si no el mapa de GitHub
+  const url   = WP_URLS[d.id] || (BASE_URL + d.url_detalle);
   return `<div class="popup-wrap">
     <div class="popup-prov">💧 ${nombre}</div>
     <div class="popup-com">${com}</div>
