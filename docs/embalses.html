@@ -114,10 +114,10 @@ const NOMBRE_A_ID = {
   // Cataluña (el GeoJSON puede usar formas catalanas)
   'Barcelona':'barcelona', 'Girona':'girona', 'Gerona':'girona',
   'Lleida':'lleida', 'Lérida':'lleida', 'Tarragona':'tarragona',
-  // C. Valenciana
-  'Alicante':'alicante', 'Alacant':'alicante',
-  'Castellón':'castellon', 'Castelló':'castellon',
-  'Valencia':'valencia', 'València':'valencia',
+  // C. Valenciana — el GeoJSON usa nombres con barra (español/valenciano)
+  'Alicante':'alicante', 'Alacant':'alicante', 'Alicante/Alacant':'alicante',
+  'Castellón':'castellon', 'Castelló':'castellon', 'Castellón/Castelló':'castellon',
+  'Valencia':'valencia', 'València':'valencia', 'Valencia/València':'valencia',
   // Extremadura
   'Badajoz':'badajoz', 'Cáceres':'caceres',
   // Galicia
@@ -133,10 +133,10 @@ const NOMBRE_A_ID = {
   'Murcia':'murcia',
   // Navarra
   'Navarra':'navarra', 'Nafarroa':'navarra',
-  // País Vasco
+  // País Vasco — el GeoJSON usa 'Araba/Álava', 'Gipuzkoa', 'Bizkaia'
   'Álava':'alava', 'Araba/Álava':'alava', 'Araba':'alava',
-  'Guipúzcoa':'guipuzcoa', 'Gipuzkoa':'guipuzcoa',
-  'Vizcaya':'vizcaya', 'Bizkaia':'vizcaya',
+  'Guipúzcoa':'guipuzcoa', 'Gipuzkoa':'guipuzcoa', 'Guipúzcoa/Gipuzkoa':'guipuzcoa',
+  'Vizcaya':'vizcaya', 'Bizkaia':'vizcaya', 'Vizcaya/Bizkaia':'vizcaya',
   // Castellano-leonesas adicionales
   'Ávila':'avila', 'Burgos':'burgos', 'Segovia':'segovia',
   'Soria':'soria', 'Valladolid':'valladolid',
@@ -199,6 +199,21 @@ function buildPopup(d, nombre_geo) {
 
 let datosMap = {}, capaGeojson = null;
 
+// Resuelve el nombre del GeoJSON al id interno.
+// Maneja nombres bilingües con barra: "Alicante/Alacant", "Gipuzkoa", etc.
+function resolverId(nombre) {
+  if (NOMBRE_A_ID[nombre]) return NOMBRE_A_ID[nombre];
+  // Probar cada parte separada por '/'
+  const partes = nombre.split('/').map(p => p.trim());
+  for (const p of partes) {
+    if (NOMBRE_A_ID[p]) return NOMBRE_A_ID[p];
+  }
+  // Probar versión sin acentos (fallback)
+  const sinAcentos = nombre.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if (NOMBRE_A_ID[sinAcentos]) return NOMBRE_A_ID[sinAcentos];
+  return null;
+}
+
 Promise.all([
   fetch(JSON_URL + '?_=' + Date.now()).then(r => r.json()),
   fetch(GEOJSON_URL).then(r => r.json()),
@@ -220,7 +235,7 @@ Promise.all([
     style(feature) {
       const nombre = feature.properties.name || '';
       nombresGeo.add(nombre);
-      const id = NOMBRE_A_ID[nombre];
+      const id = resolverId(nombre);
       const d  = id ? datosMap[id] : null;
       const ok = d && d.datos_disponibles;
       return {
@@ -233,7 +248,7 @@ Promise.all([
     },
     onEachFeature(feature, layer) {
       const nombre = feature.properties.name || '';
-      const id     = NOMBRE_A_ID[nombre];
+      const id     = resolverId(nombre);
       const d      = id ? datosMap[id] : null;
       layer.bindPopup(buildPopup(d, nombre), { maxWidth:280 });
       layer.on('mouseover', () => layer.setStyle({ fillOpacity:.95, weight:2 }));
