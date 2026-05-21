@@ -1,13 +1,27 @@
-import requests
-import json
+"""
+Script incremental: solo descarga los datos del día anterior y actualiza
+el JSON existente. Mucho más rápido que recalcular todo cada día.
+
+Lógica:
+- Lee el JSON anterior (si existe) y conserva el histórico
+- Para cada ciudad, pide a AEMET solo el dato de AYER
+- Actualiza tmin_anoche, recalcula medias del mes y acumula noches tropicales
+- Las medias del año anterior se recalculan UNA VEZ AL MES (día 1)
+"""
 import os
+import json
 import time
+import requests
 from datetime import datetime, timedelta, date
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from zoneinfo import ZoneInfo
 
 API_KEY  = os.environ.get("AEMET_API_KEY", "")
 BASE_URL = "https://opendata.aemet.es/opendata/api"
 HEADERS  = {"api_key": API_KEY, "Accept": "application/json"}
+
+JSON_PATH = "docs/temperaturas_nocturnas.json"
+TZ = ZoneInfo("Europe/Madrid")
 
 CIUDADES = [
     {"id": "sevilla",       "nombre": "Sevilla",       "ccaa": "Andalucía",          "idema": "5783",  "lat": 37.418, "lon": -5.881},
@@ -61,248 +75,26 @@ CIUDADES = [
     {"id": "melilla",       "nombre": "Melilla",       "ccaa": "Melilla",            "idema": "6000A", "lat": 35.279, "lon": -2.956},
 ]
 
-hoy  = date.today()
+ahora = datetime.now(TZ)
+hoy  = ahora.date()
 ayer = hoy - timedelta(days=1)
 
-def fmt(d):
-    return d.strftime("%Y-%m-%dT00:00:00UTC")
-
-def aemet_tramo(idema, fecha_ini, fecha_fin, intentos=3):
-    """Una petición AEMET con reintentos automáticos en caso de rate limit."""
-    url = (
-        f"{BASE_URL}/valores/climatologicos/diarios/datos"
-        f"/fechaini/{fmt(fecha_ini)}/fechafin/{fmt(fecha_fin)}"
-        f"/estacion/{idema}"
-    )
-
-    for intento in range(intentos):
-        try:
-            r = requests.get(url, headers=HEADERS, timeout=20)
-
-            if r.status_code == 429:
-                # Rate limit AEMET — esperar y reintentar
-                espera = 5 * (intento + 1)
-                print(f"      ⏳ {idema} rate limit, esperando {espera}s...")
-                time.sleep(espera)
-                continue
-
-            if r.status_code != 200:
-                if intento == intentos - 1:
-                    print(f"      ❌ {idema} {fecha_ini}: status {r.status_code} — {r.text[:100]}")
-                time.sleep(2)
-                continue
-
-            body = r.json()
-            estado = body.get("estado")
-
-            if estado == 429:
-                espera = 5 * (intento + 1)
-                print(f"      ⏳ {idema} estado 429, esperando {espera}s...")
-                time.sleep(espera)
-                continue
-
-            if estado == 404:
-                # Sin datos para ese tramo, no es un error realmente
-                return []
-
-            if estado != 200:
-                if intento == intentos - 1:
-                    print(f"      ⚠️  {idema} estado {estado}: {body.get('descripcion','')}")
-                return []
-
-            datos_url = body.get("datos")
-            if not datos_url:
-                return []
-
-            # Descargar los datos reales
-            r2 = requests.get(datos_url, timeout=20)
-            if r2.status_code == 200:
-                return r2.json()
-            else:
-                if intento == intentos - 1:
-                    print(f"      ❌ {idema} descarga falló: status {r2.status_code}")
-                time.sleep(2)
-                continue
-
-        except Exception as e:
-            if intento == intentos - 1:
-                print(f"      ❌ {idema} excepción: {e}")
-            time.sleep(2)
-
-    return []
-
-def tramos(fecha_ini, fecha_fin):
-    """Fragmenta un rango en tramos de 15 días (límite AEMET)."""
-    resultado = []
-    cursor = fecha_ini
-    while cursor <= fecha_fin:
-        fin = min(cursor + timedelta(days=14), fecha_fin)
-        resultado.append((cursor, fin))
-        cursor = fin + timedelta(days=1)
-    return resultado
-
-def aemet_ciudad(ciudad):
-    """Descarga todos los tramos necesarios para una ciudad SECUENCIALMENTE."""
-    mes_act   = hoy.month
-    anyo_act  = hoy.year
-    anyo_ant  = hoy.year - 1
-
-    inicio_mes_act  = date(anyo_act, mes_act, 1)
-    inicio_anyo_act = date(anyo_act, 1, 1)
-    inicio_mes_ant  = date(anyo_ant, mes_act, 1)
-    fin_mes_ant     = (date(anyo_ant, mes_act % 12 + 1, 1) - timedelta(days=1)) \
-                      if mes_act < 12 else date(anyo_ant, 12, 31)
-
-    # Recolectamos todos los tramos necesarios sin solapamientos
-    regs_anyo = []  # cubre desde 1 enero hasta ayer (incluye mes actual)
-    regs_ant  = []  # cubre el mismo mes del año anterior
-
-    # Año en curso (incluye mes actual)
-    for ini, fin in tramos(inicio_anyo_act, ayer):
-        datos = aemet_tramo(ciudad["idema"], ini, fin)
-        regs_anyo += datos
-        time.sleep(0.4)  # Pausa entre peticiones de la misma ciudad
-
-    # Mismo mes año anterior
-    for ini, fin in tramos(inicio_mes_ant, fin_mes_ant):
-        datos = aemet_tramo(ciudad["idema"], ini, fin)
-        regs_ant += datos
-        time.sleep(0.4)
-
-    # Filtramos del año los datos del mes actual
-    mes_actual_str = f"{anyo_act}-{mes_act:02d}"
-    regs_mes = [r for r in regs_anyo if r.get("fecha", "").startswith(mes_actual_str)]
-
-    return regs_mes, regs_anyo, regs_ant
-
-def parse_float(val):
-    if val is None or val == "" or val == "Ip":
-        return None
+# ─────────────────────────────────────────────────────────────────────────────
+# Cargar el histórico previo (si existe)
+# ─────────────────────────────────────────────────────────────────────────────
+def cargar_historico():
+    """
+    El JSON guarda, dentro de cada ciudad, un campo 'historico' con todas las
+    mínimas y máximas diarias del año en curso. Así no hace falta volver a
+    pedirlas a AEMET cada día.
+    """
+    if not os.path.exists(JSON_PATH):
+        return {}, None, None  # primera ejecución
     try:
-        return float(str(val).replace(",", "."))
-    except:
-        return None
-
-def media(lista):
-    vals = [v for v in lista if v is not None]
-    return round(sum(vals) / len(vals), 1) if vals else None
-
-def contar_nt(lista):
-    return sum(1 for v in lista if v is not None and v >= 20.0)
-
-def calcular_color(t):
-    if t is None:  return "#888888", "Sin datos"
-    if t >= 25:    return "#CC2200", "Muy cálida"
-    if t >= 20:    return "#FF6600", "Tropical"
-    if t >= 15:    return "#FFAA00", "Cálida"
-    if t >= 10:    return "#44AA66", "Templada"
-    if t >= 5:     return "#3399CC", "Fresca"
-    return "#0055AA", "Fría"
-
-def procesar_ciudad(ciudad):
-    """Procesa una ciudad completa."""
-    regs_mes, regs_anyo, regs_ant = aemet_ciudad(ciudad)
-
-    ayer_str = ayer.strftime("%Y-%m-%d")
-    t_min_anoche = None
-    for r in regs_mes:
-        if r.get("fecha", "") == ayer_str:
-            t_min_anoche = parse_float(r.get("tmin"))
-            break
-
-    mins_mes  = [parse_float(r.get("tmin")) for r in regs_mes]
-    maxs_mes  = [parse_float(r.get("tmax")) for r in regs_mes]
-    mins_anyo = [parse_float(r.get("tmin")) for r in regs_anyo]
-    mins_ant  = [parse_float(r.get("tmin")) for r in regs_ant]
-    maxs_ant  = [parse_float(r.get("tmax")) for r in regs_ant]
-
-    media_min_mes     = media(mins_mes)
-    media_max_mes     = media(maxs_mes)
-    media_min_mes_ant = media(mins_ant)
-    media_max_mes_ant = media(maxs_ant)
-
-    diff_min = round(media_min_mes - media_min_mes_ant, 1) \
-               if media_min_mes is not None and media_min_mes_ant is not None else None
-    diff_max = round(media_max_mes - media_max_mes_ant, 1) \
-               if media_max_mes is not None and media_max_mes_ant is not None else None
-
-    color, etiqueta = calcular_color(t_min_anoche)
-
-    return {
-        "id":                ciudad["id"],
-        "nombre":            ciudad["nombre"],
-        "ccaa":              ciudad["ccaa"],
-        "lat":               ciudad["lat"],
-        "lon":               ciudad["lon"],
-        "t_min_anoche":      round(t_min_anoche, 1) if t_min_anoche is not None else None,
-        "media_min_mes":     media_min_mes,
-        "media_max_mes":     media_max_mes,
-        "media_min_mes_ant": media_min_mes_ant,
-        "media_max_mes_ant": media_max_mes_ant,
-        "diff_min_vs_ant":   diff_min,
-        "diff_max_vs_ant":   diff_max,
-        "nt_mes":            contar_nt(mins_mes),
-        "nt_anyo":           contar_nt(mins_anyo),
-        "color":             color,
-        "etiqueta":          etiqueta,
-    }
-
-def procesar():
-    if not API_KEY:
-        print("ERROR: AEMET_API_KEY no definida.")
-        return
-
-    print(f"Procesando {len(CIUDADES)} ciudades en paralelo (3 hilos simultáneos)...")
-    os.makedirs("docs", exist_ok=True)
-
-    MESES = ["enero","febrero","marzo","abril","mayo","junio",
-             "julio","agosto","septiembre","octubre","noviembre","diciembre"]
-    mes_act = hoy.month
-
-    resultado = [None] * len(CIUDADES)
-
-    # SOLO 3 ciudades en paralelo para no saturar AEMET
-    with ThreadPoolExecutor(max_workers=3) as ex:
-        futures = {ex.submit(procesar_ciudad, c): i for i, c in enumerate(CIUDADES)}
-        completadas = 0
-        for future in as_completed(futures):
-            idx = futures[future]
-            try:
-                resultado[idx] = future.result()
-                completadas += 1
-                r = resultado[idx]
-                print(f"  [{completadas}/{len(CIUDADES)}] {r['nombre']:<18} "
-                      f"tmin_anoche={r['t_min_anoche']}  "
-                      f"nt_mes={r['nt_mes']}  nt_año={r['nt_anyo']}")
-            except Exception as e:
-                print(f"  Error ciudad idx {idx}: {e}")
-                c = CIUDADES[idx]
-                resultado[idx] = {
-                    "id": c["id"], "nombre": c["nombre"], "ccaa": c["ccaa"],
-                    "lat": c["lat"], "lon": c["lon"],
-                    "t_min_anoche": None,
-                    "media_min_mes": None, "media_max_mes": None,
-                    "media_min_mes_ant": None, "media_max_mes_ant": None,
-                    "diff_min_vs_ant": None, "diff_max_vs_ant": None,
-                    "nt_mes": 0, "nt_anyo": 0,
-                    "color": "#888888", "etiqueta": "Sin datos",
-                }
-
-    output = {
-        "ultima_actualizacion": datetime.now().isoformat(),
-        "fecha_legible":        datetime.now().strftime("%d/%m/%Y a las %H:%M"),
-        "mes_actual":           MESES[mes_act - 1].capitalize(),
-        "anyo_actual":          hoy.year,
-        "mes_anterior_ref":     f"{MESES[mes_act - 1]} {hoy.year - 1}",
-        "fuente":               "AEMET OpenData",
-        "total_ciudades":       len(resultado),
-        "ciudades":             resultado,
-    }
-
-    with open("docs/temperaturas_nocturnas.json", "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
-
-    print(f"\n✓ Generado con {len(resultado)} ciudades.")
-
-if __name__ == "__main__":
-    procesar()
+        with open(JSON_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        hist = {c["id"]: c.get("historico", {}) for c in data.get("ciudades", [])}
+        anyo_guardado = data.get("anyo_actual")
+        mes_guardado  = data.get("_mes_calculado_ant")  # control para recalcular año anterior
+        return hist, anyo_guardado, mes_guardado
+    except Exception as e:
