@@ -67,29 +67,82 @@ ayer = hoy - timedelta(days=1)
 def fmt(d):
     return d.strftime("%Y-%m-%dT00:00:00UTC")
 
-def aemet_tramo(idema, fecha_ini, fecha_fin):
-    """Una petición AEMET de hasta 31 días. Devuelve lista de registros."""
+def aemet_tramo(idema, fecha_ini, fecha_fin, intentos=3):
+    """Una petición AEMET con reintentos automáticos en caso de rate limit."""
     url = (
         f"{BASE_URL}/valores/climatologicos/diarios/datos"
         f"/fechaini/{fmt(fecha_ini)}/fechafin/{fmt(fecha_fin)}"
         f"/estacion/{idema}"
     )
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=15)
-        if r.status_code == 200:
+
+    for intento in range(intentos):
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=20)
+
+            if r.status_code == 429:
+                # Rate limit AEMET — esperar y reintentar
+                espera = 5 * (intento + 1)
+                print(f"      ⏳ {idema} rate limit, esperando {espera}s...")
+                time.sleep(espera)
+                continue
+
+            if r.status_code != 200:
+                if intento == intentos - 1:
+                    print(f"      ❌ {idema} {fecha_ini}: status {r.status_code} — {r.text[:100]}")
+                time.sleep(2)
+                continue
+
             body = r.json()
-            if body.get("estado") == 200:
-                datos_url = body.get("datos")
-                if datos_url:
-                    r2 = requests.get(datos_url, timeout=15)
-                    if r2.status_code == 200:
-                        return r2.json()
-    except Exception as e:
-        print(f"    Error {idema} {fecha_ini}: {e}")
+            estado = body.get("estado")
+
+            if estado == 429:
+                espera = 5 * (intento + 1)
+                print(f"      ⏳ {idema} estado 429, esperando {espera}s...")
+                time.sleep(espera)
+                continue
+
+            if estado == 404:
+                # Sin datos para ese tramo, no es un error realmente
+                return []
+
+            if estado != 200:
+                if intento == intentos - 1:
+                    print(f"      ⚠️  {idema} estado {estado}: {body.get('descripcion','')}")
+                return []
+
+            datos_url = body.get("datos")
+            if not datos_url:
+                return []
+
+            # Descargar los datos reales
+            r2 = requests.get(datos_url, timeout=20)
+            if r2.status_code == 200:
+                return r2.json()
+            else:
+                if intento == intentos - 1:
+                    print(f"      ❌ {idema} descarga falló: status {r2.status_code}")
+                time.sleep(2)
+                continue
+
+        except Exception as e:
+            if intento == intentos - 1:
+                print(f"      ❌ {idema} excepción: {e}")
+            time.sleep(2)
+
     return []
 
+def tramos(fecha_ini, fecha_fin):
+    """Fragmenta un rango en tramos de 15 días (límite AEMET)."""
+    resultado = []
+    cursor = fecha_ini
+    while cursor <= fecha_fin:
+        fin = min(cursor + timedelta(days=14), fecha_fin)
+        resultado.append((cursor, fin))
+        cursor = fin + timedelta(days=1)
+    return resultado
+
 def aemet_ciudad(ciudad):
-    """Descarga todos los tramos necesarios para una ciudad en paralelo interno."""
+    """Descarga todos los tramos necesarios para una ciudad SECUENCIALMENTE."""
     mes_act   = hoy.month
     anyo_act  = hoy.year
     anyo_ant  = hoy.year - 1
@@ -100,39 +153,25 @@ def aemet_ciudad(ciudad):
     fin_mes_ant     = (date(anyo_ant, mes_act % 12 + 1, 1) - timedelta(days=1)) \
                       if mes_act < 12 else date(anyo_ant, 12, 31)
 
-    def tramos(fecha_ini, fecha_fin):
-        """Fragmenta un rango en tramos de 15 días (límite máximo de AEMET)."""
-        resultado = []
-        cursor = fecha_ini
-        while cursor <= fecha_fin:
-            fin = min(cursor + timedelta(days=14), fecha_fin)
-            resultado.append((cursor, fin))
-            cursor = fin + timedelta(days=1)
-        return resultado
+    # Recolectamos todos los tramos necesarios sin solapamientos
+    regs_anyo = []  # cubre desde 1 enero hasta ayer (incluye mes actual)
+    regs_ant  = []  # cubre el mismo mes del año anterior
 
-    # Lanzamos todos los tramos de esta ciudad en paralelo (máx 8 hilos internos)
-    todos_tramos = (
-        [("mes", ini, fin) for ini, fin in tramos(inicio_mes_act, ayer)] +
-        [("anyo", ini, fin) for ini, fin in tramos(inicio_anyo_act, ayer)] +
-        [("ant",  ini, fin) for ini, fin in tramos(inicio_mes_ant, fin_mes_ant)]
-    )
+    # Año en curso (incluye mes actual)
+    for ini, fin in tramos(inicio_anyo_act, ayer):
+        datos = aemet_tramo(ciudad["idema"], ini, fin)
+        regs_anyo += datos
+        time.sleep(0.4)  # Pausa entre peticiones de la misma ciudad
 
-    regs_mes  = []
-    regs_anyo = []
-    regs_ant  = []
+    # Mismo mes año anterior
+    for ini, fin in tramos(inicio_mes_ant, fin_mes_ant):
+        datos = aemet_tramo(ciudad["idema"], ini, fin)
+        regs_ant += datos
+        time.sleep(0.4)
 
-    with ThreadPoolExecutor(max_workers=6) as ex:
-        futures = {ex.submit(aemet_tramo, ciudad["idema"], ini, fin): etiq
-                   for etiq, ini, fin in todos_tramos}
-        for future in as_completed(futures):
-            etiq = futures[future]
-            datos = future.result()
-            if etiq == "mes":
-                regs_mes  += datos
-            elif etiq == "anyo":
-                regs_anyo += datos
-            else:
-                regs_ant  += datos
+    # Filtramos del año los datos del mes actual
+    mes_actual_str = f"{anyo_act}-{mes_act:02d}"
+    regs_mes = [r for r in regs_anyo if r.get("fecha", "").startswith(mes_actual_str)]
 
     return regs_mes, regs_anyo, regs_ant
 
@@ -161,7 +200,7 @@ def calcular_color(t):
     return "#0055AA", "Fría"
 
 def procesar_ciudad(ciudad):
-    """Procesa una ciudad completa. Se llama desde el pool externo."""
+    """Procesa una ciudad completa."""
     regs_mes, regs_anyo, regs_ant = aemet_ciudad(ciudad)
 
     ayer_str = ayer.strftime("%Y-%m-%d")
@@ -171,8 +210,8 @@ def procesar_ciudad(ciudad):
             t_min_anoche = parse_float(r.get("tmin"))
             break
 
-    mins_mes = [parse_float(r.get("tmin")) for r in regs_mes]
-    maxs_mes = [parse_float(r.get("tmax")) for r in regs_mes]
+    mins_mes  = [parse_float(r.get("tmin")) for r in regs_mes]
+    maxs_mes  = [parse_float(r.get("tmax")) for r in regs_mes]
     mins_anyo = [parse_float(r.get("tmin")) for r in regs_anyo]
     mins_ant  = [parse_float(r.get("tmin")) for r in regs_ant]
     maxs_ant  = [parse_float(r.get("tmax")) for r in regs_ant]
@@ -213,7 +252,7 @@ def procesar():
         print("ERROR: AEMET_API_KEY no definida.")
         return
 
-    print(f"Procesando {len(CIUDADES)} ciudades en paralelo (10 hilos)...")
+    print(f"Procesando {len(CIUDADES)} ciudades en paralelo (3 hilos simultáneos)...")
     os.makedirs("docs", exist_ok=True)
 
     MESES = ["enero","febrero","marzo","abril","mayo","junio",
@@ -222,8 +261,8 @@ def procesar():
 
     resultado = [None] * len(CIUDADES)
 
-    # 10 ciudades en paralelo — equilibrio entre velocidad y rate limit AEMET
-    with ThreadPoolExecutor(max_workers=10) as ex:
+    # SOLO 3 ciudades en paralelo para no saturar AEMET
+    with ThreadPoolExecutor(max_workers=3) as ex:
         futures = {ex.submit(procesar_ciudad, c): i for i, c in enumerate(CIUDADES)}
         completadas = 0
         for future in as_completed(futures):
@@ -231,15 +270,23 @@ def procesar():
             try:
                 resultado[idx] = future.result()
                 completadas += 1
-                print(f"  [{completadas}/{len(CIUDADES)}] {resultado[idx]['nombre']} ✓  "
-                      f"tmin={resultado[idx]['t_min_anoche']} nt_mes={resultado[idx]['nt_mes']}")
+                r = resultado[idx]
+                print(f"  [{completadas}/{len(CIUDADES)}] {r['nombre']:<18} "
+                      f"tmin_anoche={r['t_min_anoche']}  "
+                      f"nt_mes={r['nt_mes']}  nt_año={r['nt_anyo']}")
             except Exception as e:
                 print(f"  Error ciudad idx {idx}: {e}")
-                resultado[idx] = {**CIUDADES[idx], "t_min_anoche": None,
+                c = CIUDADES[idx]
+                resultado[idx] = {
+                    "id": c["id"], "nombre": c["nombre"], "ccaa": c["ccaa"],
+                    "lat": c["lat"], "lon": c["lon"],
+                    "t_min_anoche": None,
                     "media_min_mes": None, "media_max_mes": None,
                     "media_min_mes_ant": None, "media_max_mes_ant": None,
                     "diff_min_vs_ant": None, "diff_max_vs_ant": None,
-                    "nt_mes": 0, "nt_anyo": 0, "color": "#888888", "etiqueta": "Sin datos"}
+                    "nt_mes": 0, "nt_anyo": 0,
+                    "color": "#888888", "etiqueta": "Sin datos",
+                }
 
     output = {
         "ultima_actualizacion": datetime.now().isoformat(),
