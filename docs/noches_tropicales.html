@@ -15,25 +15,30 @@
       --line: rgba(36, 28, 21, 0.14);
       --accent: #b64224;
     }
+
     * {
       box-sizing: border-box;
     }
+
     body {
       margin: 0;
       background: var(--bg);
       color: var(--ink);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
+
     .wrap {
       min-height: 100vh;
       display: grid;
       grid-template-rows: auto 1fr;
     }
+
     header {
       padding: 16px 18px 12px;
       border-bottom: 1px solid var(--line);
       background: var(--panel);
     }
+
     h1 {
       margin: 0;
       font-size: 22px;
@@ -41,6 +46,7 @@
       font-weight: 750;
       letter-spacing: 0;
     }
+
     .meta {
       margin-top: 8px;
       display: flex;
@@ -49,12 +55,14 @@
       color: var(--muted);
       font-size: 13px;
     }
+
     .summary {
       margin-top: 12px;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
     }
+
     .metric {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -62,11 +70,13 @@
       background: #fff;
       min-width: 0;
     }
+
     .metric b {
       display: block;
       font-size: 18px;
       line-height: 1.1;
     }
+
     .metric span {
       display: block;
       margin-top: 4px;
@@ -74,11 +84,13 @@
       font-size: 12px;
       line-height: 1.25;
     }
+
     #map {
       min-height: 460px;
       height: calc(100vh - 150px);
       width: 100%;
     }
+
     .legend {
       padding: 8px 10px;
       background: rgba(255, 250, 242, 0.94);
@@ -86,3 +98,301 @@
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
       font-size: 12px;
+      color: var(--ink);
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 5px;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.18);
+      flex: 0 0 auto;
+    }
+
+    .city-popup {
+      width: 270px;
+      color: #dcefff;
+      background: #071b2e;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .city-popup h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.15;
+      color: #ffffff;
+    }
+
+    .popup-inner {
+      padding: 14px 14px 12px;
+    }
+
+    .popup-place {
+      margin-top: 3px;
+      color: #75a8c8;
+      font-size: 12px;
+    }
+
+    .popup-close-hint {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      color: #5b86a6;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .popup-rule {
+      width: 24px;
+      height: 2px;
+      margin: 26px 0 12px;
+      background: rgba(220, 239, 255, 0.8);
+    }
+
+    .popup-current {
+      margin-bottom: 12px;
+      color: #a9c6da;
+      font-size: 12px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 5px 0;
+      border-top: 1px solid rgba(130, 174, 205, 0.16);
+      font-size: 13px;
+    }
+
+    .row span:first-child {
+      color: #9ec3da;
+    }
+
+    .row strong {
+      white-space: nowrap;
+      color: #e8f6ff;
+      font-weight: 750;
+    }
+
+    .section-title {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(130, 174, 205, 0.12);
+      color: #5f91b4;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .leaflet-popup-content-wrapper {
+      padding: 0;
+      border-radius: 10px;
+      background: #071b2e;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .leaflet-popup-content {
+      margin: 0;
+    }
+
+    .leaflet-popup-tip {
+      background: #071b2e;
+    }
+
+    .leaflet-popup-close-button {
+      display: none;
+    }
+
+    .leaflet-tooltip.city-label {
+      background: rgba(255, 250, 242, 0.95);
+      border: 1px solid rgba(36, 28, 21, 0.18);
+      border-radius: 6px;
+      color: var(--ink);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        padding: 13px 12px 10px;
+      }
+
+      h1 {
+        font-size: 19px;
+      }
+
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      #map {
+        height: 520px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Temperaturas nocturnas y noches tropicales</h1>
+      <div class="meta" id="meta">Cargando datos...</div>
+      <div class="summary">
+        <div class="metric">
+          <b id="metric-hot">--</b>
+          <span>Ciudad más cálida anoche</span>
+        </div>
+        <div class="metric">
+          <b id="metric-nt-month">--</b>
+          <span>Noches tropicales del mes, máximo por ciudad</span>
+        </div>
+        <div class="metric">
+          <b id="metric-nt-year">--</b>
+          <span>Noches tropicales del año, máximo por ciudad</span>
+        </div>
+      </div>
+    </header>
+    <main id="map" aria-label="Mapa de temperaturas nocturnas"></main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const DATA_URL = "temperaturas_nocturnas.json?v=" + Date.now();
+
+    function fmtTemp(value) {
+      return value === null || value === undefined ? "Sin datos" : value.toFixed(1).replace(".", ",") + "ºC";
+    }
+
+    function fmtDelta(value) {
+      if (value === null || value === undefined) return "Sin datos";
+      const sign = value > 0 ? "+" : "";
+      return sign + value.toFixed(1).replace(".", ",") + "ºC";
+    }
+
+    function fmtNum(value) {
+      return value === null || value === undefined ? "0" : String(value);
+    }
+
+    function markerRadius(city) {
+      const base = 7;
+      const extra = Math.min(city.nt_mes || 0, 20) * 0.45;
+      return base + extra;
+    }
+
+    function popupHtml(city, data) {
+      const nightLine = city.t_min_anoche === null || city.t_min_anoche === undefined
+        ? "Sin datos · mínima de anoche"
+        : `${fmtTemp(city.t_min_anoche)} · mínima de anoche`;
+      return `
+        <div class="city-popup">
+          <div class="popup-inner">
+            <span class="popup-close-hint">×</span>
+            <h2>🌙 ${city.nombre}</h2>
+            <div class="popup-place">${city.nombre}</div>
+            <div class="popup-rule"></div>
+            <div class="popup-current">${nightLine}</div>
+
+            <div class="section-title">📅 ${data.mes_actual}</div>
+            <div class="row"><span>Media mínimas</span><strong>${fmtTemp(city.media_min_mes)}</strong></div>
+            <div class="row"><span>Media máximas</span><strong>${fmtTemp(city.media_max_mes)}</strong></div>
+            <div class="row"><span>🌙 Noches tropicales mes</span><strong>${fmtNum(city.nt_mes)}</strong></div>
+            <div class="row"><span>🌙 Noches tropicales año</span><strong>${fmtNum(city.nt_anyo)}</strong></div>
+
+            <div class="section-title">📆 vs ${data.mes_anterior_ref}</div>
+            <div class="row"><span>Media mínimas año ant.</span><strong>${fmtTemp(city.media_min_mes_ant)}</strong></div>
+            <div class="row"><span>Media máximas año ant.</span><strong>${fmtTemp(city.media_max_mes_ant)}</strong></div>
+            <div class="row"><span>Diferencia mínimas</span><strong>${fmtDelta(city.diff_min_vs_ant)}</strong></div>
+            <div class="row"><span>Diferencia máximas</span><strong>${fmtDelta(city.diff_max_vs_ant)}</strong></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function setSummary(data) {
+      const withNight = data.ciudades.filter(c => c.t_min_anoche !== null && c.t_min_anoche !== undefined);
+      const hottest = withNight.sort((a, b) => b.t_min_anoche - a.t_min_anoche)[0];
+      const maxMonth = data.ciudades.reduce((best, c) => (c.nt_mes || 0) > (best.nt_mes || 0) ? c : best, data.ciudades[0]);
+      const maxYear = data.ciudades.reduce((best, c) => (c.nt_anyo || 0) > (best.nt_anyo || 0) ? c : best, data.ciudades[0]);
+
+      document.getElementById("metric-hot").textContent = hottest ? `${hottest.nombre}: ${fmtTemp(hottest.t_min_anoche)}` : "Sin datos";
+      document.getElementById("metric-nt-month").textContent = maxMonth ? `${maxMonth.nombre}: ${fmtNum(maxMonth.nt_mes)}` : "--";
+      document.getElementById("metric-nt-year").textContent = maxYear ? `${maxYear.nombre}: ${fmtNum(maxYear.nt_anyo)}` : "--";
+    }
+
+    async function init() {
+      const response = await fetch(DATA_URL, { cache: "no-store" });
+      if (!response.ok) throw new Error("No se pudo cargar " + DATA_URL);
+      const data = await response.json();
+
+      document.getElementById("meta").innerHTML = `
+        <span>Actualizado: ${data.fecha_legible}</span>
+        <span>Mínima de referencia: ${data.fecha_anoche || "ayer"}</span>
+        <span>Fuente: ${data.fuente}</span>
+      `;
+      setSummary(data);
+
+      const map = L.map("map", {
+        scrollWheelZoom: false
+      }).setView([39.7, -3.6], 6);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(map);
+
+      const bounds = [];
+      data.ciudades.forEach(city => {
+        if (typeof city.lat !== "number" || typeof city.lon !== "number") return;
+        const marker = L.circleMarker([city.lat, city.lon], {
+          radius: markerRadius(city),
+          color: "#2b2118",
+          weight: 1,
+          fillColor: city.color || "#888888",
+          fillOpacity: 0.86
+        }).addTo(map);
+
+        marker.bindTooltip(`${city.nombre}<br>${fmtTemp(city.t_min_anoche)} · NT mes: ${fmtNum(city.nt_mes)}`, {
+          className: "city-label",
+          direction: "top",
+          offset: [0, -6]
+        });
+        marker.bindPopup(popupHtml(city, data));
+        bounds.push([city.lat, city.lon]);
+      });
+
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [18, 18] });
+      }
+
+      const legend = L.control({ position: "bottomright" });
+      legend.onAdd = function() {
+        const div = L.DomUtil.create("div", "legend");
+        div.innerHTML = `
+          <strong>Mínima anoche</strong>
+          <div class="legend-row"><span class="swatch" style="background:#CC2200"></span>Muy cálida, 25 ºC o más</div>
+          <div class="legend-row"><span class="swatch" style="background:#FF6600"></span>Tropical, 20-24,9 ºC</div>
+          <div class="legend-row"><span class="swatch" style="background:#FFAA00"></span>Cálida, 15-19,9 ºC</div>
+          <div class="legend-row"><span class="swatch" style="background:#44AA66"></span>Templada, 10-14,9 ºC</div>
+          <div class="legend-row"><span class="swatch" style="background:#3399CC"></span>Fresca, 5-9,9 ºC</div>
+          <div class="legend-row"><span class="swatch" style="background:#888888"></span>Sin datos</div>
+        `;
+        return div;
+      };
+      legend.addTo(map);
+    }
+
+    init().catch(error => {
+      document.getElementById("meta").textContent = "Error cargando datos: " + error.message;
+    });
+  </script>
+</body>
+</html>
