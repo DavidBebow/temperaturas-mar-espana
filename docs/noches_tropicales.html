@@ -3,24 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Temperaturas nocturnas en España</title>
+  <title>Temperaturas Nocturnas en España</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root {
       color-scheme: dark;
-      --bg: #071019;
+      --bg: #061019;
       --panel: #06121a;
       --ink: #e7f4ff;
-      --muted: #6f9fbd;
-      --line: rgba(116, 169, 200, 0.28);
-      --accent: #f0c83b;
+      --muted: #7faac6;
+      --line: rgba(116, 169, 200, 0.3);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    body {
+    html, body {
+      height: 100%;
       margin: 0;
       background: var(--bg);
       color: var(--ink);
@@ -28,15 +26,16 @@
     }
 
     .wrap {
-      min-height: 100vh;
+      min-height: 100%;
       display: grid;
       grid-template-rows: auto 1fr;
+      background: var(--bg);
     }
 
     header {
-      padding: 10px 14px 8px;
-      border-bottom: 1px solid var(--line);
       background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px 7px;
     }
 
     .topbar {
@@ -48,53 +47,52 @@
 
     h1 {
       margin: 0;
+      color: #eef8ff;
       font-size: 14px;
-      line-height: 1.15;
-      font-weight: 750;
-      letter-spacing: 0;
-      color: var(--ink);
+      line-height: 1.2;
+      font-weight: 760;
       white-space: nowrap;
     }
 
-    .meta {
-      margin-top: 0;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 4px 10px;
+    .version {
+      color: #7faac6;
+      font-weight: 650;
+    }
+
+    .meta-block {
+      text-align: right;
       color: var(--muted);
       font-size: 11px;
-      text-align: right;
+      line-height: 1.35;
     }
 
-    .status-line {
-      color: #7faac6;
-      font-size: 11px;
-      text-align: right;
-      margin-bottom: 3px;
+    .highlight {
+      color: #ffc938;
+      font-weight: 800;
     }
 
-    .summary {
+    .legend-bar {
       margin-top: 9px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      color: #99c1d8;
-      font-size: 11px;
       overflow-x: auto;
-      padding-bottom: 2px;
+      color: #9fc5dc;
+      font-size: 11px;
+      scrollbar-width: thin;
     }
 
-    .legend-inline {
+    .legend-left,
+    .legend-right {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 11px;
       white-space: nowrap;
     }
 
-    .legend-inline strong {
-      color: #cde6f6;
+    .legend-left strong {
+      color: #d9edf8;
       font-weight: 650;
     }
 
@@ -104,66 +102,100 @@
       gap: 5px;
     }
 
-    .moon-help {
-      color: #7faac6;
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.32);
       flex: 0 0 auto;
-      white-space: nowrap;
     }
 
     #map {
-      min-height: 460px;
       height: calc(100vh - 80px);
+      min-height: 520px;
       width: 100%;
       background: #20242a;
     }
 
-    .legend {
-      padding: 8px 10px;
-      background: rgba(5, 16, 24, 0.9);
-      border: 1px solid var(--line);
-      border-radius: 2px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-      font-size: 10px;
-      color: #8fb6cf;
-    }
-
-    .legend-row {
+    .city-marker {
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-top: 5px;
+      justify-content: center;
+      width: var(--size);
+      height: var(--size);
+      border-radius: 999px;
+      border: 1.5px solid rgba(255, 255, 255, 0.62);
+      background: var(--marker-color);
+      color: #fff;
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 6px rgba(255, 255, 255, 0.28);
+      font-size: var(--font-size);
+      font-weight: 850;
+      line-height: 1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+      opacity: var(--marker-opacity);
     }
 
-    .swatch {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      flex: 0 0 auto;
+    .city-marker.no-data {
+      color: rgba(255, 255, 255, 0.78);
     }
 
-    .swatch.inline {
-      width: 10px;
-      height: 10px;
+    .leaflet-tooltip.city-label {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 850;
+      text-shadow: 0 1px 2px #000, 0 0 5px #000;
+    }
+
+    .leaflet-popup-content-wrapper {
+      padding: 0;
+      border-radius: 10px;
+      background: #071b2e;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42);
+    }
+
+    .leaflet-popup-content {
+      margin: 0;
+    }
+
+    .leaflet-popup-tip {
+      background: #071b2e;
+    }
+
+    .leaflet-popup-close-button {
+      display: block;
+      color: #6b98b7 !important;
+      font-size: 21px !important;
+      padding: 7px 9px 0 0 !important;
+    }
+
+    .leaflet-popup-close-button:hover {
+      color: #e7f4ff !important;
+      background: transparent !important;
     }
 
     .city-popup {
-      width: 270px;
+      width: 275px;
       color: #dcefff;
       background: #071b2e;
       border-radius: 10px;
       overflow: hidden;
     }
 
-    .city-popup h2 {
-      margin: 0;
-      font-size: 16px;
-      line-height: 1.15;
-      color: #ffffff;
-    }
-
     .popup-inner {
       padding: 14px 14px 12px;
+    }
+
+    .city-popup h2 {
+      margin: 0;
+      padding-right: 18px;
+      color: #ffffff;
+      font-size: 16px;
+      line-height: 1.15;
     }
 
     .popup-place {
@@ -172,19 +204,10 @@
       font-size: 12px;
     }
 
-    .popup-close-hint {
-      position: absolute;
-      top: 8px;
-      right: 10px;
-      color: #5b86a6;
-      font-size: 18px;
-      line-height: 1;
-    }
-
     .popup-rule {
       width: 24px;
       height: 2px;
-      margin: 26px 0 12px;
+      margin: 25px 0 12px;
       background: rgba(220, 239, 255, 0.8);
     }
 
@@ -192,6 +215,17 @@
       margin-bottom: 12px;
       color: #a9c6da;
       font-size: 12px;
+    }
+
+    .section-title {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(130, 174, 205, 0.14);
+      color: #5f91b4;
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .row {
@@ -208,75 +242,37 @@
     }
 
     .row strong {
-      white-space: nowrap;
       color: #e8f6ff;
-      font-weight: 750;
+      font-weight: 780;
+      white-space: nowrap;
     }
 
-    .section-title {
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(130, 174, 205, 0.12);
-      color: #5f91b4;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .leaflet-popup-content-wrapper {
-      padding: 0;
-      border-radius: 10px;
-      background: #071b2e;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-    }
-
-    .leaflet-popup-content {
-      margin: 0;
-    }
-
-    .leaflet-popup-tip {
-      background: #071b2e;
-    }
-
-    .leaflet-popup-close-button {
-      display: none;
-    }
-
-    .leaflet-tooltip.city-label {
-      background: transparent;
-      border: 0;
-      color: #f7fbff;
-      box-shadow: none;
+    .attribution-note {
+      color: #87abc0;
       font-size: 10px;
-      font-weight: 800;
-      text-shadow: 0 1px 2px #000, 0 0 5px #000;
     }
 
-    @media (max-width: 700px) {
-      header {
-        padding: 10px 10px 8px;
-      }
+    @media (max-width: 720px) {
+      header { padding: 9px 10px 7px; }
 
-      .topbar {
-        display: block;
-      }
+      .topbar { display: block; }
 
       h1 {
-        font-size: 13px;
         white-space: normal;
+        font-size: 13px;
       }
 
-      .meta,
-      .status-line {
-        margin-top: 6px;
+      .meta-block {
+        margin-top: 5px;
         text-align: left;
-        justify-content: flex-start;
       }
 
-      #map {
-        height: 540px;
+      .legend-bar {
+        align-items: flex-start;
+        font-size: 10px;
       }
+
+      #map { height: 540px; }
     }
   </style>
 </head>
@@ -284,25 +280,28 @@
   <div class="wrap">
     <header>
       <div class="topbar">
-        <h1>🌙 Temperaturas Nocturnas en España</h1>
-        <div>
-          <div class="status-line" id="status-line">Cargando datos...</div>
-          <div class="meta" id="meta"></div>
+        <h1>🌙 Temperaturas Nocturnas en España <span class="version">v2 anomalías</span></h1>
+        <div class="meta-block">
+          <div id="top-summary">Cargando datos...</div>
+          <div id="top-meta"></div>
         </div>
       </div>
-      <div class="summary">
-        <div class="legend-inline">
-          <strong>Mínima anoche:</strong>
-          <span class="legend-item"><span class="swatch inline" style="background:#CC2200"></span>Muy cálida ≥25ºC</span>
-          <span class="legend-item"><span class="swatch inline" style="background:#FF6600"></span>Tropical ≥20ºC</span>
-          <span class="legend-item"><span class="swatch inline" style="background:#FFAA00"></span>Cálida ≥15ºC</span>
-          <span class="legend-item"><span class="swatch inline" style="background:#44AA66"></span>Templada ≥10ºC</span>
-          <span class="legend-item"><span class="swatch inline" style="background:#3399CC"></span>Fresca ≥5ºC</span>
-          <span class="legend-item"><span class="swatch inline" style="background:#0055AA"></span>Fría &lt;5ºC</span>
+
+      <div class="legend-bar">
+        <div class="legend-left">
+          <strong>Anomalía media mínimas:</strong>
+          <span class="legend-item"><span class="dot" style="background:#cc2200"></span>≥ +4ºC</span>
+          <span class="legend-item"><span class="dot" style="background:#ff6600"></span>+2 a +4ºC</span>
+          <span class="legend-item"><span class="dot" style="background:#ffaa00"></span>+0,5 a +2ºC</span>
+          <span class="legend-item"><span class="dot" style="background:#d6d6d6"></span>Normal</span>
+          <span class="legend-item"><span class="dot" style="background:#44aa66"></span>-0,5 a -2ºC</span>
+          <span class="legend-item"><span class="dot" style="background:#3399cc"></span>-2 a -4ºC</span>
+          <span class="legend-item"><span class="dot" style="background:#0055aa"></span>≤ -4ºC</span>
         </div>
-        <div class="moon-help">🌙 = noches tropicales del mes · Clic para detalle</div>
+        <div class="legend-right">🌙 = noches tropicales del mes · Clic para detalle</div>
       </div>
     </header>
+
     <main id="map" aria-label="Mapa de temperaturas nocturnas"></main>
   </div>
 
@@ -324,20 +323,43 @@
       return value === null || value === undefined ? "0" : String(value);
     }
 
-    function markerRadius(city) {
-      const base = 7;
-      const extra = Math.min(city.nt_mes || 0, 20) * 0.45;
-      return base + extra;
+    function colorAnomalia(value) {
+      if (value === null || value === undefined) return "#8a8a8a";
+      if (value >= 4) return "#cc2200";
+      if (value >= 2) return "#ff6600";
+      if (value >= 0.5) return "#ffaa00";
+      if (value > -0.5) return "#d6d6d6";
+      if (value > -2) return "#44aa66";
+      if (value > -4) return "#3399cc";
+      return "#0055aa";
+    }
+
+    function markerSize(city) {
+      const tropicales = city.nt_mes || 0;
+      return Math.max(34, Math.min(58, 34 + tropicales * 2.2));
+    }
+
+    function markerText(city) {
+      if (city.diff_min_vs_ant !== null && city.diff_min_vs_ant !== undefined) {
+        const sign = city.diff_min_vs_ant > 0 ? "+" : "";
+        return sign + city.diff_min_vs_ant.toFixed(1).replace(".", ",");
+      }
+
+      if (city.t_min_anoche !== null && city.t_min_anoche !== undefined) {
+        return city.t_min_anoche.toFixed(1).replace(".", ",");
+      }
+
+      return "—";
     }
 
     function popupHtml(city, data) {
       const nightLine = city.t_min_anoche === null || city.t_min_anoche === undefined
         ? "Sin datos · mínima de anoche"
         : `${fmtTemp(city.t_min_anoche)} · mínima de anoche`;
+
       return `
         <div class="city-popup">
           <div class="popup-inner">
-            <span class="popup-close-hint">×</span>
             <h2>🌙 ${city.nombre}</h2>
             <div class="popup-place">${city.nombre}</div>
             <div class="popup-rule"></div>
@@ -359,76 +381,74 @@
       `;
     }
 
-    function setSummary(data) {
+    function setHeader(data) {
       const withNight = data.ciudades.filter(c => c.t_min_anoche !== null && c.t_min_anoche !== undefined);
-      document.getElementById("status-line").textContent = withNight.length
-        ? `${withNight.length} ciudades con dato de anoche`
+      const hottest = withNight.slice().sort((a, b) => b.t_min_anoche - a.t_min_anoche)[0];
+      const tropicalTotal = data.ciudades.reduce((sum, city) => sum + (city.nt_mes || 0), 0);
+
+      document.getElementById("top-summary").innerHTML = hottest
+        ? `Más cálida anoche: <span class="highlight">${hottest.nombre} ${fmtTemp(hottest.t_min_anoche)}</span> · ${tropicalTotal} noches tropicales acumuladas este mes`
         : "Sin datos disponibles";
+
+      document.getElementById("top-meta").textContent =
+        `Actualizado: ${data.fecha_legible} · Fuente: ${data.fuente}`;
+    }
+
+    function addCityMarker(map, city, data, bounds) {
+      if (typeof city.lat !== "number" || typeof city.lon !== "number") return;
+
+      const size = markerSize(city);
+      const color = colorAnomalia(city.diff_min_vs_ant);
+
+      const icon = L.divIcon({
+        className: "",
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        popupAnchor: [0, -size / 2],
+        html: `<div class="city-marker ${city.diff_min_vs_ant === null || city.diff_min_vs_ant === undefined ? "no-data" : ""}" style="--size:${size}px;--marker-color:${color};--marker-opacity:${city.diff_min_vs_ant === null || city.diff_min_vs_ant === undefined ? 0.62 : 0.9};--font-size:${size > 48 ? 12 : 11}px">${markerText(city)}</div>`
+      });
+
+      const marker = L.marker([city.lat, city.lon], { icon }).addTo(map);
+
+      marker.bindTooltip(city.nombre, {
+        className: "city-label",
+        direction: "bottom",
+        permanent: true,
+        offset: [0, Math.round(size / 2) - 1]
+      });
+
+      marker.bindPopup(popupHtml(city, data));
+      bounds.push([city.lat, city.lon]);
     }
 
     async function init() {
       const response = await fetch(DATA_URL, { cache: "no-store" });
       if (!response.ok) throw new Error("No se pudo cargar " + DATA_URL);
-      const data = await response.json();
 
-      document.getElementById("meta").innerHTML =
-        `<span>Actualizado: ${data.fecha_legible}</span><span>Fuente: ${data.fuente}</span>`;
-      setSummary(data);
+      const data = await response.json();
+      setHeader(data);
 
       const map = L.map("map", {
-        scrollWheelZoom: false,
+        scrollWheelZoom: true,
         zoomControl: true
       }).setView([39.7, -3.6], 6);
 
       L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
         maxZoom: 18,
-        attribution: '&copy; OpenStreetMap &copy; CARTO · Datos: AEMET'
+        attribution: '<span class="attribution-note">Datos: AEMET · &copy; OpenStreetMap &copy; CARTO</span>'
       }).addTo(map);
 
       const bounds = [];
-      data.ciudades.forEach(city => {
-        if (typeof city.lat !== "number" || typeof city.lon !== "number") return;
-        const marker = L.circleMarker([city.lat, city.lon], {
-          radius: markerRadius(city),
-          color: "rgba(255, 255, 255, 0.62)",
-          weight: 1.4,
-          fillColor: city.color || "#888888",
-          fillOpacity: city.t_min_anoche === null || city.t_min_anoche === undefined ? 0.55 : 0.82
-        }).addTo(map);
-
-        marker.bindTooltip(`${city.nombre}`, {
-          className: "city-label",
-          direction: "bottom",
-          permanent: true,
-          offset: [0, 8]
-        });
-        marker.bindPopup(popupHtml(city, data));
-        bounds.push([city.lat, city.lon]);
-      });
+      data.ciudades.forEach(city => addCityMarker(map, city, data, bounds));
 
       if (bounds.length) {
-        map.fitBounds(bounds, { padding: [18, 18] });
+        map.fitBounds(bounds, { padding: [22, 22] });
       }
-
-      const legend = L.control({ position: "bottomright" });
-      legend.onAdd = function() {
-        const div = L.DomUtil.create("div", "legend");
-        div.innerHTML = `
-          <strong>Mínima anoche</strong>
-          <div class="legend-row"><span class="swatch" style="background:#CC2200"></span>Muy cálida, 25 ºC o más</div>
-          <div class="legend-row"><span class="swatch" style="background:#FF6600"></span>Tropical, 20-24,9 ºC</div>
-          <div class="legend-row"><span class="swatch" style="background:#FFAA00"></span>Cálida, 15-19,9 ºC</div>
-          <div class="legend-row"><span class="swatch" style="background:#44AA66"></span>Templada, 10-14,9 ºC</div>
-          <div class="legend-row"><span class="swatch" style="background:#3399CC"></span>Fresca, 5-9,9 ºC</div>
-          <div class="legend-row"><span class="swatch" style="background:#888888"></span>Sin datos</div>
-        `;
-        return div;
-      };
-      legend.addTo(map);
     }
 
     init().catch(error => {
-      document.getElementById("meta").textContent = "Error cargando datos: " + error.message;
+      document.getElementById("top-summary").textContent = "Error cargando datos";
+      document.getElementById("top-meta").textContent = error.message;
     });
   </script>
 </body>
