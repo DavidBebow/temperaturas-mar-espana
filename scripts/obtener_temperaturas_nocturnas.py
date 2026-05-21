@@ -1,7 +1,6 @@
 """
 Script incremental: solo descarga los datos del día anterior y actualiza
 el JSON existente. Mucho más rápido que recalcular todo cada día.
-
 Lógica:
 - Lee el JSON anterior (si existe) y conserva el histórico
 - Para cada ciudad, pide a AEMET solo el dato de AYER
@@ -15,14 +14,11 @@ import requests
 from datetime import datetime, timedelta, date
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from zoneinfo import ZoneInfo
-
 API_KEY  = os.environ.get("AEMET_API_KEY", "")
 BASE_URL = "https://opendata.aemet.es/opendata/api"
 HEADERS  = {"api_key": API_KEY, "Accept": "application/json"}
-
 JSON_PATH = "docs/temperaturas_nocturnas.json"
 TZ = ZoneInfo("Europe/Madrid")
-
 CIUDADES = [
     {"id": "sevilla",       "nombre": "Sevilla",       "ccaa": "Andalucía",          "idema": "5783",  "lat": 37.418, "lon": -5.881},
     {"id": "malaga",        "nombre": "Málaga",        "ccaa": "Andalucía",          "idema": "6155A", "lat": 36.660, "lon": -4.499},
@@ -74,11 +70,9 @@ CIUDADES = [
     {"id": "ceuta",         "nombre": "Ceuta",         "ccaa": "Ceuta",              "idema": "5000C", "lat": 35.890, "lon": -5.316},
     {"id": "melilla",       "nombre": "Melilla",       "ccaa": "Melilla",            "idema": "6000A", "lat": 35.279, "lon": -2.956},
 ]
-
 ahora = datetime.now(TZ)
 hoy  = ahora.date()
 ayer = hoy - timedelta(days=1)
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Cargar el histórico previo (si existe)
 # ─────────────────────────────────────────────────────────────────────────────
