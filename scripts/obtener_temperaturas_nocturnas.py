@@ -101,11 +101,11 @@ def aemet_ciudad(ciudad):
                       if mes_act < 12 else date(anyo_ant, 12, 31)
 
     def tramos(fecha_ini, fecha_fin):
-        """Fragmenta un rango en tramos de 31 días."""
+        """Fragmenta un rango en tramos de 15 días (límite máximo de AEMET)."""
         resultado = []
         cursor = fecha_ini
         while cursor <= fecha_fin:
-            fin = min(cursor + timedelta(days=30), fecha_fin)
+            fin = min(cursor + timedelta(days=14), fecha_fin)
             resultado.append((cursor, fin))
             cursor = fin + timedelta(days=1)
         return resultado
