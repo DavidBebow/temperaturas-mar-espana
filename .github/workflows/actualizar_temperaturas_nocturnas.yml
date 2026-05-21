@@ -1,0 +1,37 @@
+name: Actualizar temperaturas nocturnas
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 6:00 UTC (8:00 en España en verano, 7:00 en invierno)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Ejecutar script
+        run: python scripts/obtener_temperaturas_nocturnas.py
+
+      - name: Guardar cambios
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add docs/temperaturas_nocturnas.json
+          git diff --staged --quiet || (git commit -m "Temperaturas nocturnas actualizadas: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
