@@ -2,18 +2,17 @@ name: Actualizar temperaturas nocturnas
 
 on:
   schedule:
-    # 6:00 UTC = 8:00 en España en verano, 7:00 en invierno
-    - cron: '0 6 * * *'
+    # 11:00 UTC = 13:00 en España peninsular en verano, 12:00 en invierno.
+    # Lo hacemos más tarde para dar tiempo a que AEMET publique el dato diario de ayer.
+    - cron: "0 11 * * *"
   workflow_dispatch:
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   actualizar:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
@@ -21,7 +20,7 @@ jobs:
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Instalar dependencias
         run: pip install requests
@@ -35,5 +34,7 @@ jobs:
         run: |
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
-          git add docs/temperaturas_nocturnas.json
-          git diff --staged --quiet || (git commit -m "Temperaturas nocturnas actualizadas: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
+          git add docs/temperaturas_nocturnas.json docs/noches_tropicales.html
+          git diff --staged --quiet || git commit -m "Actualiza temperaturas nocturnas"
+          git pull --rebase
+          git push
