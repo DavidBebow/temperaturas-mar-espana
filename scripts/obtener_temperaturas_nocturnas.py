@@ -1,6 +1,7 @@
 """
 Script incremental: solo descarga los datos del día anterior y actualiza
 el JSON existente. Mucho más rápido que recalcular todo cada día.
+
 Lógica:
 - Lee el JSON anterior (si existe) y conserva el histórico
 - Para cada ciudad, pide a AEMET solo el dato de AYER
@@ -14,11 +15,14 @@ import requests
 from datetime import datetime, timedelta, date
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from zoneinfo import ZoneInfo
+
 API_KEY  = os.environ.get("AEMET_API_KEY", "")
 BASE_URL = "https://opendata.aemet.es/opendata/api"
 HEADERS  = {"api_key": API_KEY, "Accept": "application/json"}
+
 JSON_PATH = "docs/temperaturas_nocturnas.json"
 TZ = ZoneInfo("Europe/Madrid")
+
 CIUDADES = [
     {"id": "sevilla",       "nombre": "Sevilla",       "ccaa": "Andalucía",          "idema": "5783",  "lat": 37.418, "lon": -5.881},
     {"id": "malaga",        "nombre": "Málaga",        "ccaa": "Andalucía",          "idema": "6155A", "lat": 36.660, "lon": -4.499},
@@ -70,9 +74,11 @@ CIUDADES = [
     {"id": "ceuta",         "nombre": "Ceuta",         "ccaa": "Ceuta",              "idema": "5000C", "lat": 35.890, "lon": -5.316},
     {"id": "melilla",       "nombre": "Melilla",       "ccaa": "Melilla",            "idema": "6000A", "lat": 35.279, "lon": -2.956},
 ]
+
 ahora = datetime.now(TZ)
 hoy  = ahora.date()
 ayer = hoy - timedelta(days=1)
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Cargar el histórico previo (si existe)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -92,3 +98,303 @@ def cargar_historico():
         mes_guardado  = data.get("_mes_calculado_ant")  # control para recalcular año anterior
         return hist, anyo_guardado, mes_guardado
     except Exception as e:
+        print(f"⚠️  No se pudo leer histórico: {e}")
+        return {}, None, None
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Llamadas a AEMET
+# ─────────────────────────────────────────────────────────────────────────────
+def fmt(d):
+    return d.strftime("%Y-%m-%dT00:00:00UTC")
+
+def aemet_tramo(idema, fecha_ini, fecha_fin, intentos=3):
+    url = (
+        f"{BASE_URL}/valores/climatologicos/diarios/datos"
+        f"/fechaini/{fmt(fecha_ini)}/fechafin/{fmt(fecha_fin)}"
+        f"/estacion/{idema}"
+    )
+    for intento in range(intentos):
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=20)
+            if r.status_code == 429:
+                time.sleep(5 * (intento + 1))
+                continue
+            if r.status_code != 200:
+                if intento == intentos - 1:
+                    print(f"      ❌ {idema}: status {r.status_code}")
+                time.sleep(2)
+                continue
+            body = r.json()
+            if body.get("estado") == 404:
+                return []
+            if body.get("estado") != 200:
+                return []
+            datos_url = body.get("datos")
+            if not datos_url:
+                return []
+            r2 = requests.get(datos_url, timeout=20)
+            if r2.status_code == 200:
+                return r2.json()
+        except Exception as e:
+            if intento == intentos - 1:
+                print(f"      ❌ {idema} excepción: {e}")
+            time.sleep(2)
+    return []
+
+def tramos_15dias(fecha_ini, fecha_fin):
+    resultado = []
+    cursor = fecha_ini
+    while cursor <= fecha_fin:
+        fin = min(cursor + timedelta(days=14), fecha_fin)
+        resultado.append((cursor, fin))
+        cursor = fin + timedelta(days=1)
+    return resultado
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Utilidades
+# ─────────────────────────────────────────────────────────────────────────────
+def parse_float(val):
+    if val is None or val == "" or val == "Ip":
+        return None
+    try:
+        return float(str(val).replace(",", "."))
+    except:
+        return None
+
+def media(lista):
+    vals = [v for v in lista if v is not None]
+    return round(sum(vals) / len(vals), 1) if vals else None
+
+def contar_nt(lista):
+    return sum(1 for v in lista if v is not None and v >= 20.0)
+
+def es_fecha_iso(clave):
+    try:
+        date.fromisoformat(clave)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+def datos_historicos(historico):
+    """Devuelve solo entradas diarias, excluyendo metadatos internos."""
+    return {
+        f: d for f, d in historico.items()
+        if es_fecha_iso(f) and isinstance(d, dict)
+    }
+
+def calcular_color(t):
+    if t is None:  return "#888888", "Sin datos"
+    if t >= 25:    return "#CC2200", "Muy cálida"
+    if t >= 20:    return "#FF6600", "Tropical"
+    if t >= 15:    return "#FFAA00", "Cálida"
+    if t >= 10:    return "#44AA66", "Templada"
+    if t >= 5:     return "#3399CC", "Fresca"
+    return "#0055AA", "Fría"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Procesamiento por ciudad
+# ─────────────────────────────────────────────────────────────────────────────
+def procesar_ciudad(args):
+    """
+    args = (ciudad, historico_previo, anyo_cambio, mes_cambio)
+    historico_previo: dict {fecha: {"tmin": x, "tmax": y}}
+    anyo_cambio: True si hay que descargar año entero (cambio de año o sin histórico)
+    mes_cambio:  True si hay que recalcular el mes anterior (cambio de mes o sin datos)
+    """
+    ciudad, hist_previo, anyo_cambio, mes_cambio = args
+
+    mes_act  = hoy.month
+    anyo_act = hoy.year
+    anyo_ant = anyo_act - 1
+
+    # ── Histórico del año actual ──────────────────────────────────────────────
+    historico = dict(hist_previo)  # copiamos lo que ya teníamos
+
+    if anyo_cambio or not historico:
+        # Primera ejecución del año (o primer día absoluto) → descarga completa
+        print(f"    {ciudad['nombre']}: descargando año entero...")
+        inicio_anyo = date(anyo_act, 1, 1)
+        for ini, fin in tramos_15dias(inicio_anyo, ayer):
+            datos = aemet_tramo(ciudad["idema"], ini, fin)
+            for r in datos:
+                f = r.get("fecha")
+                if f:
+                    historico[f] = {
+                        "tmin": parse_float(r.get("tmin")),
+                        "tmax": parse_float(r.get("tmax")),
+                    }
+            time.sleep(0.4)
+    else:
+        # Solo pedimos los días que falten entre el último guardado y ayer
+        fechas_existentes = set(datos_historicos(historico).keys())
+        ayer_str = ayer.strftime("%Y-%m-%d")
+        if ayer_str not in fechas_existentes:
+            # Buscamos la última fecha guardada
+            fechas_ord = sorted(fechas_existentes)
+            ultima = date.fromisoformat(fechas_ord[-1]) if fechas_ord else date(anyo_act, 1, 1)
+            siguiente = ultima + timedelta(days=1)
+            if siguiente <= ayer:
+                for ini, fin in tramos_15dias(siguiente, ayer):
+                    datos = aemet_tramo(ciudad["idema"], ini, fin)
+                    for r in datos:
+                        f = r.get("fecha")
+                        if f:
+                            historico[f] = {
+                                "tmin": parse_float(r.get("tmin")),
+                                "tmax": parse_float(r.get("tmax")),
+                            }
+                    time.sleep(0.4)
+
+    # ── Histórico del mismo mes del año anterior (solo cuando cambia el mes) ──
+    # Lo guardamos como datos resumidos directamente
+    hist_mes_ant = hist_previo.get("_resumen_mes_ant") if isinstance(hist_previo, dict) else None
+
+    if mes_cambio or hist_mes_ant is None or not isinstance(hist_mes_ant, dict):
+        print(f"    {ciudad['nombre']}: recalculando mes año anterior...")
+        inicio_mes_ant = date(anyo_ant, mes_act, 1)
+        fin_mes_ant    = (date(anyo_ant, mes_act % 12 + 1, 1) - timedelta(days=1)) \
+                         if mes_act < 12 else date(anyo_ant, 12, 31)
+        mins_ant, maxs_ant = [], []
+        for ini, fin in tramos_15dias(inicio_mes_ant, fin_mes_ant):
+            datos = aemet_tramo(ciudad["idema"], ini, fin)
+            for r in datos:
+                mins_ant.append(parse_float(r.get("tmin")))
+                maxs_ant.append(parse_float(r.get("tmax")))
+            time.sleep(0.4)
+        hist_mes_ant = {
+            "media_min": media(mins_ant),
+            "media_max": media(maxs_ant),
+        }
+
+    # ── Cálculos finales a partir del histórico ───────────────────────────────
+    mes_str = f"{anyo_act}-{mes_act:02d}"
+    hist_diario = datos_historicos(historico)
+    mins_mes  = [d.get("tmin") for f, d in hist_diario.items() if f.startswith(mes_str)]
+    maxs_mes  = [d.get("tmax") for f, d in hist_diario.items() if f.startswith(mes_str)]
+    mins_anyo = [d.get("tmin") for d in hist_diario.values()]
+
+    ayer_str = ayer.strftime("%Y-%m-%d")
+    dato_ayer = hist_diario.get(ayer_str, {})
+    t_min_anoche = dato_ayer.get("tmin")
+    t_max_ayer = dato_ayer.get("tmax")
+
+    media_min_mes     = media(mins_mes)
+    media_max_mes     = media(maxs_mes)
+    media_min_mes_ant = hist_mes_ant.get("media_min")
+    media_max_mes_ant = hist_mes_ant.get("media_max")
+
+    diff_min = round(media_min_mes - media_min_mes_ant, 1) \
+               if media_min_mes is not None and media_min_mes_ant is not None else None
+    diff_max = round(media_max_mes - media_max_mes_ant, 1) \
+               if media_max_mes is not None and media_max_mes_ant is not None else None
+
+    color, etiqueta = calcular_color(t_min_anoche)
+
+    # Guardamos el resumen del mes anterior dentro del propio histórico
+    historico["_resumen_mes_ant"] = hist_mes_ant
+
+    return {
+        "id":                ciudad["id"],
+        "nombre":            ciudad["nombre"],
+        "ccaa":              ciudad["ccaa"],
+        "lat":               ciudad["lat"],
+        "lon":               ciudad["lon"],
+        "fecha_anoche":       ayer_str,
+        "t_min_anoche":      round(t_min_anoche, 1) if t_min_anoche is not None else None,
+        "t_max_ayer":         round(t_max_ayer, 1) if t_max_ayer is not None else None,
+        "media_min_mes":     media_min_mes,
+        "media_max_mes":     media_max_mes,
+        "media_min_mes_ant": media_min_mes_ant,
+        "media_max_mes_ant": media_max_mes_ant,
+        "diff_min_vs_ant":   diff_min,
+        "diff_max_vs_ant":   diff_max,
+        "nt_mes":            contar_nt(mins_mes),
+        "nt_anyo":           contar_nt(mins_anyo),
+        "color":             color,
+        "etiqueta":          etiqueta,
+        "historico":         historico,
+    }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Main
+# ─────────────────────────────────────────────────────────────────────────────
+def procesar():
+    if not API_KEY:
+        print("ERROR: AEMET_API_KEY no definida.")
+        raise SystemExit(1)
+
+    os.makedirs("docs", exist_ok=True)
+
+    # Cargar histórico anterior
+    historico_previo, anyo_guardado, mes_guardado = cargar_historico()
+    anyo_cambio = (anyo_guardado != hoy.year)
+    mes_cambio  = (mes_guardado != hoy.month)
+
+    if anyo_cambio:
+        print(f"📅 Cambio de año detectado: descarga completa del año en curso.")
+    if mes_cambio:
+        print(f"📅 Cambio de mes detectado: recálculo del mismo mes del año anterior.")
+    if not anyo_cambio and not mes_cambio:
+        print(f"⚡ Modo incremental: solo se descargarán los días nuevos.")
+
+    print(f"Procesando {len(CIUDADES)} ciudades (3 hilos paralelos)...")
+
+    resultado = [None] * len(CIUDADES)
+
+    args_list = [
+        (c, historico_previo.get(c["id"], {}), anyo_cambio, mes_cambio)
+        for c in CIUDADES
+    ]
+
+    with ThreadPoolExecutor(max_workers=3) as ex:
+        futures = {ex.submit(procesar_ciudad, args_list[i]): i for i in range(len(CIUDADES))}
+        completadas = 0
+        for future in as_completed(futures):
+            idx = futures[future]
+            try:
+                resultado[idx] = future.result()
+                completadas += 1
+                r = resultado[idx]
+                print(f"  [{completadas}/{len(CIUDADES)}] {r['nombre']:<18} "
+                      f"tmin_anoche={r['t_min_anoche']}  "
+                      f"nt_mes={r['nt_mes']}  nt_año={r['nt_anyo']}")
+            except Exception as e:
+                print(f"  Error idx {idx}: {e}")
+                c = CIUDADES[idx]
+                resultado[idx] = {
+                    "id": c["id"], "nombre": c["nombre"], "ccaa": c["ccaa"],
+                    "lat": c["lat"], "lon": c["lon"],
+                    "fecha_anoche": ayer.strftime("%Y-%m-%d"),
+                    "t_min_anoche": None,
+                    "t_max_ayer": None,
+                    "media_min_mes": None, "media_max_mes": None,
+                    "media_min_mes_ant": None, "media_max_mes_ant": None,
+                    "diff_min_vs_ant": None, "diff_max_vs_ant": None,
+                    "nt_mes": 0, "nt_anyo": 0,
+                    "color": "#888888", "etiqueta": "Sin datos",
+                    "historico": historico_previo.get(c["id"], {}),
+                }
+
+    MESES = ["enero","febrero","marzo","abril","mayo","junio",
+             "julio","agosto","septiembre","octubre","noviembre","diciembre"]
+
+    output = {
+        "ultima_actualizacion":   ahora.isoformat(),
+        "fecha_legible":          ahora.strftime("%d/%m/%Y a las %H:%M"),
+        "fecha_anoche":           ayer.strftime("%Y-%m-%d"),
+        "mes_actual":             MESES[hoy.month - 1].capitalize(),
+        "anyo_actual":            hoy.year,
+        "mes_anterior_ref":       f"{MESES[hoy.month - 1]} {hoy.year - 1}",
+        "fuente":                 "AEMET OpenData",
+        "total_ciudades":         len(resultado),
+        "_mes_calculado_ant":     hoy.month,
+        "ciudades":               resultado,
+    }
+
+    with open(JSON_PATH, "w", encoding="utf-8") as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+
+    print(f"\n✓ Generado con {len(resultado)} ciudades.")
+
+if __name__ == "__main__":
+    procesar()
