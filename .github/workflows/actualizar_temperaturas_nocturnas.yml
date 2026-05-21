@@ -2,9 +2,9 @@ name: Actualizar temperaturas nocturnas
 
 on:
   schedule:
-    # Se ejecuta todos los días a las 6:00 UTC (8:00 en España en verano, 7:00 en invierno)
+    # 6:00 UTC = 8:00 en España en verano, 7:00 en invierno
     - cron: '0 6 * * *'
-  workflow_dispatch: # Permite ejecutarlo manualmente
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -27,6 +27,8 @@ jobs:
         run: pip install requests
 
       - name: Ejecutar script
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
         run: python scripts/obtener_temperaturas_nocturnas.py
 
       - name: Guardar cambios
