@@ -29,7 +29,7 @@ jobs:
       - name: Ejecutar script
         env:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
-        run: python scripts/obtener_temperaturas_nocturnas.py
+        run: python scripts/diagnostico_aemet.py
 
       - name: Guardar cambios
         run: |
