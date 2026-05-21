@@ -7,13 +7,13 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f7f3ec;
-      --panel: #fffaf2;
-      --ink: #241c15;
-      --muted: #6f6258;
-      --line: rgba(36, 28, 21, 0.14);
-      --accent: #b64224;
+      color-scheme: dark;
+      --bg: #071019;
+      --panel: #06121a;
+      --ink: #e7f4ff;
+      --muted: #6f9fbd;
+      --line: rgba(116, 169, 200, 0.28);
+      --accent: #f0c83b;
     }
 
     * {
@@ -34,71 +34,97 @@
     }
 
     header {
-      padding: 16px 18px 12px;
+      padding: 10px 14px 8px;
       border-bottom: 1px solid var(--line);
       background: var(--panel);
     }
 
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
     h1 {
       margin: 0;
-      font-size: 22px;
+      font-size: 14px;
       line-height: 1.15;
       font-weight: 750;
       letter-spacing: 0;
+      color: var(--ink);
+      white-space: nowrap;
     }
 
     .meta {
-      margin-top: 8px;
+      margin-top: 0;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px 14px;
+      justify-content: flex-end;
+      gap: 4px 10px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .status-line {
+      color: #7faac6;
+      font-size: 11px;
+      text-align: right;
+      margin-bottom: 3px;
     }
 
     .summary {
-      margin-top: 12px;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
+      margin-top: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #99c1d8;
+      font-size: 11px;
+      overflow-x: auto;
+      padding-bottom: 2px;
     }
 
-    .metric {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px 12px;
-      background: #fff;
-      min-width: 0;
+    .legend-inline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      white-space: nowrap;
     }
 
-    .metric b {
-      display: block;
-      font-size: 18px;
-      line-height: 1.1;
+    .legend-inline strong {
+      color: #cde6f6;
+      font-weight: 650;
     }
 
-    .metric span {
-      display: block;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.25;
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .moon-help {
+      color: #7faac6;
+      flex: 0 0 auto;
+      white-space: nowrap;
     }
 
     #map {
       min-height: 460px;
-      height: calc(100vh - 150px);
+      height: calc(100vh - 80px);
       width: 100%;
+      background: #20242a;
     }
 
     .legend {
       padding: 8px 10px;
-      background: rgba(255, 250, 242, 0.94);
+      background: rgba(5, 16, 24, 0.9);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 2px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-      font-size: 12px;
-      color: var(--ink);
+      font-size: 10px;
+      color: #8fb6cf;
     }
 
     .legend-row {
@@ -112,8 +138,13 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      border: 1px solid rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       flex: 0 0 auto;
+    }
+
+    .swatch.inline {
+      width: 10px;
+      height: 10px;
     }
 
     .city-popup {
@@ -213,30 +244,38 @@
     }
 
     .leaflet-tooltip.city-label {
-      background: rgba(255, 250, 242, 0.95);
-      border: 1px solid rgba(36, 28, 21, 0.18);
-      border-radius: 6px;
-      color: var(--ink);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
-      font-size: 12px;
-      font-weight: 650;
+      background: transparent;
+      border: 0;
+      color: #f7fbff;
+      box-shadow: none;
+      font-size: 10px;
+      font-weight: 800;
+      text-shadow: 0 1px 2px #000, 0 0 5px #000;
     }
 
     @media (max-width: 700px) {
       header {
-        padding: 13px 12px 10px;
+        padding: 10px 10px 8px;
+      }
+
+      .topbar {
+        display: block;
       }
 
       h1 {
-        font-size: 19px;
+        font-size: 13px;
+        white-space: normal;
       }
 
-      .summary {
-        grid-template-columns: 1fr;
+      .meta,
+      .status-line {
+        margin-top: 6px;
+        text-align: left;
+        justify-content: flex-start;
       }
 
       #map {
-        height: 520px;
+        height: 540px;
       }
     }
   </style>
@@ -244,21 +283,24 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Temperaturas nocturnas y noches tropicales</h1>
-      <div class="meta" id="meta">Cargando datos...</div>
+      <div class="topbar">
+        <h1>🌙 Temperaturas Nocturnas en España</h1>
+        <div>
+          <div class="status-line" id="status-line">Cargando datos...</div>
+          <div class="meta" id="meta"></div>
+        </div>
+      </div>
       <div class="summary">
-        <div class="metric">
-          <b id="metric-hot">--</b>
-          <span>Ciudad más cálida anoche</span>
+        <div class="legend-inline">
+          <strong>Mínima anoche:</strong>
+          <span class="legend-item"><span class="swatch inline" style="background:#CC2200"></span>Muy cálida ≥25ºC</span>
+          <span class="legend-item"><span class="swatch inline" style="background:#FF6600"></span>Tropical ≥20ºC</span>
+          <span class="legend-item"><span class="swatch inline" style="background:#FFAA00"></span>Cálida ≥15ºC</span>
+          <span class="legend-item"><span class="swatch inline" style="background:#44AA66"></span>Templada ≥10ºC</span>
+          <span class="legend-item"><span class="swatch inline" style="background:#3399CC"></span>Fresca ≥5ºC</span>
+          <span class="legend-item"><span class="swatch inline" style="background:#0055AA"></span>Fría &lt;5ºC</span>
         </div>
-        <div class="metric">
-          <b id="metric-nt-month">--</b>
-          <span>Noches tropicales del mes, máximo por ciudad</span>
-        </div>
-        <div class="metric">
-          <b id="metric-nt-year">--</b>
-          <span>Noches tropicales del año, máximo por ciudad</span>
-        </div>
+        <div class="moon-help">🌙 = noches tropicales del mes · Clic para detalle</div>
       </div>
     </header>
     <main id="map" aria-label="Mapa de temperaturas nocturnas"></main>
@@ -319,13 +361,9 @@
 
     function setSummary(data) {
       const withNight = data.ciudades.filter(c => c.t_min_anoche !== null && c.t_min_anoche !== undefined);
-      const hottest = withNight.sort((a, b) => b.t_min_anoche - a.t_min_anoche)[0];
-      const maxMonth = data.ciudades.reduce((best, c) => (c.nt_mes || 0) > (best.nt_mes || 0) ? c : best, data.ciudades[0]);
-      const maxYear = data.ciudades.reduce((best, c) => (c.nt_anyo || 0) > (best.nt_anyo || 0) ? c : best, data.ciudades[0]);
-
-      document.getElementById("metric-hot").textContent = hottest ? `${hottest.nombre}: ${fmtTemp(hottest.t_min_anoche)}` : "Sin datos";
-      document.getElementById("metric-nt-month").textContent = maxMonth ? `${maxMonth.nombre}: ${fmtNum(maxMonth.nt_mes)}` : "--";
-      document.getElementById("metric-nt-year").textContent = maxYear ? `${maxYear.nombre}: ${fmtNum(maxYear.nt_anyo)}` : "--";
+      document.getElementById("status-line").textContent = withNight.length
+        ? `${withNight.length} ciudades con dato de anoche`
+        : "Sin datos disponibles";
     }
 
     async function init() {
@@ -333,20 +371,18 @@
       if (!response.ok) throw new Error("No se pudo cargar " + DATA_URL);
       const data = await response.json();
 
-      document.getElementById("meta").innerHTML = `
-        <span>Actualizado: ${data.fecha_legible}</span>
-        <span>Mínima de referencia: ${data.fecha_anoche || "ayer"}</span>
-        <span>Fuente: ${data.fuente}</span>
-      `;
+      document.getElementById("meta").innerHTML =
+        `<span>Actualizado: ${data.fecha_legible}</span><span>Fuente: ${data.fuente}</span>`;
       setSummary(data);
 
       const map = L.map("map", {
-        scrollWheelZoom: false
+        scrollWheelZoom: false,
+        zoomControl: true
       }).setView([39.7, -3.6], 6);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
         maxZoom: 18,
-        attribution: "&copy; OpenStreetMap"
+        attribution: '&copy; OpenStreetMap &copy; CARTO · Datos: AEMET'
       }).addTo(map);
 
       const bounds = [];
@@ -354,16 +390,17 @@
         if (typeof city.lat !== "number" || typeof city.lon !== "number") return;
         const marker = L.circleMarker([city.lat, city.lon], {
           radius: markerRadius(city),
-          color: "#2b2118",
-          weight: 1,
+          color: "rgba(255, 255, 255, 0.62)",
+          weight: 1.4,
           fillColor: city.color || "#888888",
-          fillOpacity: 0.86
+          fillOpacity: city.t_min_anoche === null || city.t_min_anoche === undefined ? 0.55 : 0.82
         }).addTo(map);
 
-        marker.bindTooltip(`${city.nombre}<br>${fmtTemp(city.t_min_anoche)} · NT mes: ${fmtNum(city.nt_mes)}`, {
+        marker.bindTooltip(`${city.nombre}`, {
           className: "city-label",
-          direction: "top",
-          offset: [0, -6]
+          direction: "bottom",
+          permanent: true,
+          offset: [0, 8]
         });
         marker.bindPopup(popupHtml(city, data));
         bounds.push([city.lat, city.lon]);
