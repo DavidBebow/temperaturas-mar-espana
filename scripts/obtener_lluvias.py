@@ -66,53 +66,39 @@ PROVINCIAS = [
 # OPEN-METEO: una sola llamada por provincia devuelve todo el histórico del año
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_daily_prec(url, lat, lon, start, end):
-    """Llamada genérica a Open-Meteo y devuelve lista de mm diarios."""
+def obtener_datos_provincia(prov, ini_anual, fin):
+    """
+    Una sola llamada al archive de Open-Meteo cubre desde el 1 de enero
+    hasta el último día disponible. De ahí extraemos los tres períodos.
+    El archive tiene datos hasta ~2 días antes de hoy.
+    """
+    ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
     params = {
-        "latitude":   lat,
-        "longitude":  lon,
+        "latitude":   prov["lat"],
+        "longitude":  prov["lon"],
         "daily":      "precipitation_sum",
         "timezone":   "Europe/Madrid",
-        "start_date": start.strftime("%Y-%m-%d"),
-        "end_date":   end.strftime("%Y-%m-%d"),
+        "start_date": ini_anual.strftime("%Y-%m-%d"),
+        "end_date":   fin.strftime("%Y-%m-%d"),
     }
-    r = requests.get(url, params=params, timeout=15)
-    data = r.json()
-    if "daily" not in data:
-        return []
-    prec = data["daily"]["precipitation_sum"]
-    return [x if x is not None else 0.0 for x in prec]
-
-def obtener_datos_provincia(prov, ini_anual, ayer):
-    """
-    Combina dos endpoints de Open-Meteo:
-    - /v1/archive  → datos históricos consolidados (1 ene → anteayer)
-    - /v1/forecast → últimos días con datos recientes (últimos 7 días → ayer)
-    Devuelve (mm_ayer, mm_semana, mm_anual).
-    """
-    FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
-    ARCHIVE_URL  = "https://archive-api.open-meteo.com/v1/archive"
-
     try:
-        # --- Datos recientes: últimos 7 días hasta ayer (forecast) ---
-        prec_reciente = get_daily_prec(
-            FORECAST_URL, prov["lat"], prov["lon"],
-            ayer - timedelta(days=6), ayer
-        )
-        mm_ayer   = round(prec_reciente[-1], 1) if prec_reciente else 0.0
-        mm_semana = round(sum(prec_reciente), 1)
+        r = requests.get(ARCHIVE_URL, params=params, timeout=45)
+        data = r.json()
+        if "daily" not in data:
+            print(f"✗ {prov['nombre']}: {data.get('reason', data.get('error','sin datos'))}")
+            return 0.0, 0.0, 0.0
 
-        # --- Acumulado anual: 1 enero → ayer (archive) ---
-        prec_anual = get_daily_prec(
-            ARCHIVE_URL, prov["lat"], prov["lon"],
-            ini_anual, ayer
-        )
-        mm_anual = round(sum(prec_anual), 1)
+        prec = [x if x is not None else 0.0 for x in data["daily"]["precipitation_sum"]]
+        if not prec:
+            return 0.0, 0.0, 0.0
 
+        mm_ayer   = round(prec[-1], 1)
+        mm_semana = round(sum(prec[-7:]), 1)
+        mm_anual  = round(sum(prec), 1)
         return mm_ayer, mm_semana, mm_anual
 
     except Exception as e:
-        print(f"  ✗ {prov['nombre']}: {e}")
+        print(f"✗ {prov['nombre']}: {e}")
         return 0.0, 0.0, 0.0
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -156,17 +142,17 @@ def color_anomalia(a):
 
 def procesar_lluvias():
     hoy        = datetime.now()
-    ayer       = hoy - timedelta(days=1)
+    fin        = hoy - timedelta(days=2)  # archive lag ~2 días
     ini_anual  = datetime(hoy.year, 1, 1)
-    dia_del_anio = ayer.timetuple().tm_yday
+    dia_del_anio = fin.timetuple().tm_yday
 
-    print(f"Open-Meteo · {len(PROVINCIAS)} provincias · datos hasta {ayer.strftime('%d/%m/%Y')}")
+    print(f"Open-Meteo · {len(PROVINCIAS)} provincias · datos hasta {fin.strftime('%d/%m/%Y')}")
 
     provincias_resultado = []
 
     for i, prov in enumerate(PROVINCIAS, 1):
         print(f"  [{i:02d}/{len(PROVINCIAS)}] {prov['nombre']}...", end=" ", flush=True)
-        mm_dia, mm_semana, mm_anual = obtener_datos_provincia(prov, ini_anual, ayer)  # noqa
+        mm_dia, mm_semana, mm_anual = obtener_datos_provincia(prov, ini_anual, fin)
         print(f"ayer={mm_dia}mm  7d={mm_semana}mm  anual={mm_anual}mm")
 
         media_diaria    = round(prov["media_anual_mm"] / 365, 2)
@@ -205,7 +191,7 @@ def procesar_lluvias():
     output = {
         "ultima_actualizacion": hoy.isoformat(),
         "fecha_legible":  hoy.strftime("%d/%m/%Y a las %H:%M"),
-        "fecha_datos":    ayer.strftime("%d/%m/%Y"),
+        "fecha_datos":    fin.strftime("%d/%m/%Y"),
         "fuente":         "Open-Meteo",
         "provincias":     provincias_resultado,
     }
