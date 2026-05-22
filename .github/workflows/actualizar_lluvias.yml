@@ -1,0 +1,40 @@
+name: Actualizar lluvias
+
+on:
+  schedule:
+    # Se ejecuta todos los días a las 08:00 UTC (≈10:00 en España peninsular)
+    # Las observaciones del día anterior ya están consolidadas a esa hora
+    - cron: '0 8 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Ejecutar script
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+        run: python scripts/obtener_lluvias.py
+
+      - name: Guardar cambios
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add docs/lluvias_nacional.json
+          git diff --staged --quiet || (git commit -m "Lluvias actualizadas: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
