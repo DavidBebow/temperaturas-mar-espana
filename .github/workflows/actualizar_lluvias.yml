@@ -2,10 +2,9 @@ name: Actualizar lluvias
 
 on:
   schedule:
-    # Se ejecuta todos los días a las 08:00 UTC (≈10:00 en España peninsular)
-    # Las observaciones del día anterior ya están consolidadas a esa hora
-    - cron: '0 8 * * *'
-  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
+    # Todos los días a las 07:00 UTC (09:00 en España)
+    - cron: '0 7 * * *'
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -28,8 +27,6 @@ jobs:
         run: pip install requests
 
       - name: Ejecutar script
-        env:
-          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
         run: python scripts/obtener_lluvias.py
 
       - name: Guardar cambios
