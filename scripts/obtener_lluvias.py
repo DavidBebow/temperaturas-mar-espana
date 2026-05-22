@@ -138,6 +138,45 @@ def obtener_precipitacion_periodo(fecha_ini, fecha_fin):
             resultado[prov] = round(sum(valores) / len(valores), 1)
     return resultado
 
+def obtener_precipitacion_anual_chunked(fecha_ini, fecha_fin):
+    """
+    AEMET limita el endpoint a 15 días por llamada.
+    Divide el período en tramos de 14 días y los acumula.
+    """
+    acumulado = {}  # {provincia: {indicativo: mm_totales}}
+    cursor = fecha_ini
+    tramo  = 0
+    while cursor <= fecha_fin:
+        fin_tramo = min(cursor + timedelta(days=13), fecha_fin)
+        tramo += 1
+        print(f"     tramo {tramo}: {cursor.strftime('%d/%m')} → {fin_tramo.strftime('%d/%m')}")
+        datos = aemet_get(
+            f"/valores/climatologicos/diarios/datos"
+            f"/fechaini/{fecha_aemet(cursor)}"
+            f"/fechafin/{fecha_aemet(fin_tramo)}"
+            f"/todasestaciones"
+        )
+        if datos:
+            for obs in datos:
+                prov = obs.get("provincia", "").strip().upper()
+                if not prov:
+                    continue
+                mm = mm_de_registro(obs)
+                if mm is None:
+                    continue
+                ind = obs.get("indicativo", "")
+                if prov not in acumulado:
+                    acumulado[prov] = {}
+                acumulado[prov][ind] = acumulado[prov].get(ind, 0.0) + mm
+        cursor = fin_tramo + timedelta(days=1)
+
+    resultado = {}
+    for prov, estaciones in acumulado.items():
+        valores = list(estaciones.values())
+        if valores:
+            resultado[prov] = round(sum(valores) / len(valores), 1)
+    return resultado
+
 def calcular_anomalia(real_mm, media_mm):
     if not media_mm:
         return None
@@ -189,8 +228,8 @@ def procesar_lluvias():
         prec_semana = obtener_precipitacion_periodo(ini_semana, fin)
         print(f"     {len(prec_semana)} provincias con datos")
 
-        print("  → Acumulado anual...")
-        prec_anual  = obtener_precipitacion_periodo(ini_anual, fin)
+        print("  → Acumulado anual (en tramos de 15 días)...")
+        prec_anual = obtener_precipitacion_anual_chunked(ini_anual, fin)
         print(f"     {len(prec_anual)} provincias con datos")
 
         # Debug: muestra todas las claves de provincia que devuelve AEMET
