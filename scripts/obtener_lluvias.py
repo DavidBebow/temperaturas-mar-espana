@@ -6,62 +6,63 @@ from datetime import datetime, timedelta
 AEMET_API_KEY = os.environ.get("AEMET_API_KEY", "")
 AEMET_BASE    = "https://opendata.aemet.es/opendata/api"
 
-# AEMET tarda ~5 días en consolidar datos climatológicos diarios
+# AEMET consolida datos climatológicos con ~5 días de retraso
 DIAS_RETRASO = 5
 
+# Nombres exactos tal como los devuelve AEMET en el campo "provincia"
 PROVINCIAS = [
-    {"id": "almeria",        "nombre": "Almería",          "ccaa": "Andalucía",           "aemet": "ALMERIA",        "lat": 37.23, "lon": -1.86,  "media_anual_mm": 220},
-    {"id": "cadiz",          "nombre": "Cádiz",            "ccaa": "Andalucía",           "aemet": "CADIZ",          "lat": 36.52, "lon": -6.30,  "media_anual_mm": 640},
-    {"id": "cordoba",        "nombre": "Córdoba",          "ccaa": "Andalucía",           "aemet": "CORDOBA",        "lat": 37.88, "lon": -4.78,  "media_anual_mm": 580},
-    {"id": "granada",        "nombre": "Granada",          "ccaa": "Andalucía",           "aemet": "GRANADA",        "lat": 37.18, "lon": -3.60,  "media_anual_mm": 450},
-    {"id": "huelva",         "nombre": "Huelva",           "ccaa": "Andalucía",           "aemet": "HUELVA",         "lat": 37.25, "lon": -6.95,  "media_anual_mm": 560},
-    {"id": "jaen",           "nombre": "Jaén",             "ccaa": "Andalucía",           "aemet": "JAEN",           "lat": 37.77, "lon": -3.79,  "media_anual_mm": 500},
-    {"id": "malaga",         "nombre": "Málaga",           "ccaa": "Andalucía",           "aemet": "MALAGA",         "lat": 36.72, "lon": -4.42,  "media_anual_mm": 530},
-    {"id": "sevilla",        "nombre": "Sevilla",          "ccaa": "Andalucía",           "aemet": "SEVILLA",        "lat": 37.39, "lon": -5.99,  "media_anual_mm": 540},
-    {"id": "huesca",         "nombre": "Huesca",           "ccaa": "Aragón",              "aemet": "HUESCA",         "lat": 42.14, "lon": -0.41,  "media_anual_mm": 530},
-    {"id": "teruel",         "nombre": "Teruel",           "ccaa": "Aragón",              "aemet": "TERUEL",         "lat": 40.34, "lon": -1.11,  "media_anual_mm": 420},
-    {"id": "zaragoza",       "nombre": "Zaragoza",         "ccaa": "Aragón",              "aemet": "ZARAGOZA",       "lat": 41.65, "lon": -0.89,  "media_anual_mm": 315},
-    {"id": "asturias",       "nombre": "Asturias",         "ccaa": "Asturias",            "aemet": "ASTURIAS",       "lat": 43.36, "lon": -5.85,  "media_anual_mm": 1050},
-    {"id": "baleares",       "nombre": "Illes Balears",    "ccaa": "Illes Balears",       "aemet": "ILLES BALEARS",  "lat": 39.57, "lon":  2.65,  "media_anual_mm": 450},
-    {"id": "canarias_las_p", "nombre": "Las Palmas",       "ccaa": "Canarias",            "aemet": "LAS PALMAS",     "lat": 28.10, "lon": -15.41, "media_anual_mm": 200},
-    {"id": "canarias_sc_tf", "nombre": "S.C. Tenerife",    "ccaa": "Canarias",            "aemet": "STA. CRUZ DE TENERIFE", "lat": 28.46, "lon": -16.25, "media_anual_mm": 300},
-    {"id": "cantabria",      "nombre": "Cantabria",        "ccaa": "Cantabria",           "aemet": "CANTABRIA",      "lat": 43.18, "lon": -3.99,  "media_anual_mm": 1200},
-    {"id": "albacete",       "nombre": "Albacete",         "ccaa": "Castilla-La Mancha",  "aemet": "ALBACETE",       "lat": 39.00, "lon": -1.86,  "media_anual_mm": 380},
-    {"id": "ciudad_real",    "nombre": "Ciudad Real",      "ccaa": "Castilla-La Mancha",  "aemet": "CIUDAD REAL",    "lat": 38.99, "lon": -3.93,  "media_anual_mm": 390},
-    {"id": "cuenca",         "nombre": "Cuenca",           "ccaa": "Castilla-La Mancha",  "aemet": "CUENCA",         "lat": 40.07, "lon": -2.14,  "media_anual_mm": 480},
-    {"id": "guadalajara",    "nombre": "Guadalajara",      "ccaa": "Castilla-La Mancha",  "aemet": "GUADALAJARA",    "lat": 40.63, "lon": -3.17,  "media_anual_mm": 450},
-    {"id": "toledo",         "nombre": "Toledo",           "ccaa": "Castilla-La Mancha",  "aemet": "TOLEDO",         "lat": 39.86, "lon": -4.02,  "media_anual_mm": 380},
-    {"id": "avila",          "nombre": "Ávila",            "ccaa": "Castilla y León",     "aemet": "AVILA",          "lat": 40.66, "lon": -4.69,  "media_anual_mm": 420},
-    {"id": "burgos",         "nombre": "Burgos",           "ccaa": "Castilla y León",     "aemet": "BURGOS",         "lat": 42.34, "lon": -3.70,  "media_anual_mm": 590},
-    {"id": "leon",           "nombre": "León",             "ccaa": "Castilla y León",     "aemet": "LEON",           "lat": 42.60, "lon": -5.57,  "media_anual_mm": 580},
-    {"id": "palencia",       "nombre": "Palencia",         "ccaa": "Castilla y León",     "aemet": "PALENCIA",       "lat": 42.01, "lon": -4.53,  "media_anual_mm": 510},
-    {"id": "salamanca",      "nombre": "Salamanca",        "ccaa": "Castilla y León",     "aemet": "SALAMANCA",      "lat": 40.96, "lon": -5.66,  "media_anual_mm": 450},
-    {"id": "segovia",        "nombre": "Segovia",          "ccaa": "Castilla y León",     "aemet": "SEGOVIA",        "lat": 40.95, "lon": -4.12,  "media_anual_mm": 480},
-    {"id": "soria",          "nombre": "Soria",            "ccaa": "Castilla y León",     "aemet": "SORIA",          "lat": 41.77, "lon": -2.46,  "media_anual_mm": 550},
-    {"id": "valladolid",     "nombre": "Valladolid",       "ccaa": "Castilla y León",     "aemet": "VALLADOLID",     "lat": 41.65, "lon": -4.72,  "media_anual_mm": 460},
-    {"id": "zamora",         "nombre": "Zamora",           "ccaa": "Castilla y León",     "aemet": "ZAMORA",         "lat": 41.50, "lon": -5.74,  "media_anual_mm": 430},
-    {"id": "barcelona",      "nombre": "Barcelona",        "ccaa": "Cataluña",            "aemet": "BARCELONA",      "lat": 41.38, "lon":  2.17,  "media_anual_mm": 580},
-    {"id": "girona",         "nombre": "Girona",           "ccaa": "Cataluña",            "aemet": "GIRONA",         "lat": 41.98, "lon":  2.82,  "media_anual_mm": 700},
-    {"id": "lleida",         "nombre": "Lleida",           "ccaa": "Cataluña",            "aemet": "LLEIDA",         "lat": 41.62, "lon":  0.63,  "media_anual_mm": 380},
-    {"id": "tarragona",      "nombre": "Tarragona",        "ccaa": "Cataluña",            "aemet": "TARRAGONA",      "lat": 41.11, "lon":  1.25,  "media_anual_mm": 480},
-    {"id": "badajoz",        "nombre": "Badajoz",          "ccaa": "Extremadura",         "aemet": "BADAJOZ",        "lat": 38.88, "lon": -6.97,  "media_anual_mm": 490},
-    {"id": "caceres",        "nombre": "Cáceres",          "ccaa": "Extremadura",         "aemet": "CACERES",        "lat": 39.47, "lon": -6.37,  "media_anual_mm": 580},
-    {"id": "acoruna",        "nombre": "A Coruña",         "ccaa": "Galicia",             "aemet": "A CORUÑA",       "lat": 43.36, "lon": -8.40,  "media_anual_mm": 1050},
-    {"id": "lugo",           "nombre": "Lugo",             "ccaa": "Galicia",             "aemet": "LUGO",           "lat": 43.01, "lon": -7.55,  "media_anual_mm": 1100},
-    {"id": "ourense",        "nombre": "Ourense",          "ccaa": "Galicia",             "aemet": "OURENSE",        "lat": 42.34, "lon": -7.87,  "media_anual_mm": 850},
-    {"id": "pontevedra",     "nombre": "Pontevedra",       "ccaa": "Galicia",             "aemet": "PONTEVEDRA",     "lat": 42.43, "lon": -8.65,  "media_anual_mm": 1600},
-    {"id": "rioja",          "nombre": "La Rioja",         "ccaa": "La Rioja",            "aemet": "LA RIOJA",       "lat": 42.27, "lon": -2.37,  "media_anual_mm": 500},
-    {"id": "madrid",         "nombre": "Madrid",           "ccaa": "Comunidad de Madrid", "aemet": "MADRID",         "lat": 40.42, "lon": -3.70,  "media_anual_mm": 440},
-    {"id": "murcia",         "nombre": "Murcia",           "ccaa": "Región de Murcia",    "aemet": "MURCIA",         "lat": 37.99, "lon": -1.13,  "media_anual_mm": 300},
-    {"id": "navarra",        "nombre": "Navarra",          "ccaa": "Navarra",             "aemet": "NAVARRA",        "lat": 42.82, "lon": -1.65,  "media_anual_mm": 750},
-    {"id": "alava",          "nombre": "Álava",            "ccaa": "País Vasco",          "aemet": "ALAVA",          "lat": 42.85, "lon": -2.67,  "media_anual_mm": 780},
-    {"id": "guipuzcoa",      "nombre": "Gipuzkoa",         "ccaa": "País Vasco",          "aemet": "GUIPUZCOA",      "lat": 43.19, "lon": -2.04,  "media_anual_mm": 1500},
-    {"id": "vizcaya",        "nombre": "Bizkaia",          "ccaa": "País Vasco",          "aemet": "VIZCAYA",        "lat": 43.26, "lon": -2.93,  "media_anual_mm": 1200},
-    {"id": "alicante",       "nombre": "Alicante",         "ccaa": "C. Valenciana",       "aemet": "ALICANTE",       "lat": 38.35, "lon": -0.48,  "media_anual_mm": 330},
-    {"id": "castellon",      "nombre": "Castellón",        "ccaa": "C. Valenciana",       "aemet": "CASTELLON",      "lat": 40.00, "lon": -0.05,  "media_anual_mm": 480},
-    {"id": "valencia",       "nombre": "Valencia",         "ccaa": "C. Valenciana",       "aemet": "VALENCIA",       "lat": 39.47, "lon": -0.37,  "media_anual_mm": 450},
-    {"id": "ceuta",          "nombre": "Ceuta",            "ccaa": "Ceuta",               "aemet": "CEUTA",          "lat": 35.89, "lon": -5.32,  "media_anual_mm": 700},
-    {"id": "melilla",        "nombre": "Melilla",          "ccaa": "Melilla",             "aemet": "MELILLA",        "lat": 35.29, "lon": -2.94,  "media_anual_mm": 370},
+    {"id": "almeria",        "nombre": "Almería",        "ccaa": "Andalucía",           "aemet": "ALMERIA",          "lat": 37.23, "lon": -1.86,  "media_anual_mm": 220},
+    {"id": "cadiz",          "nombre": "Cádiz",          "ccaa": "Andalucía",           "aemet": "CADIZ",            "lat": 36.52, "lon": -6.30,  "media_anual_mm": 640},
+    {"id": "cordoba",        "nombre": "Córdoba",        "ccaa": "Andalucía",           "aemet": "CORDOBA",          "lat": 37.88, "lon": -4.78,  "media_anual_mm": 580},
+    {"id": "granada",        "nombre": "Granada",        "ccaa": "Andalucía",           "aemet": "GRANADA",          "lat": 37.18, "lon": -3.60,  "media_anual_mm": 450},
+    {"id": "huelva",         "nombre": "Huelva",         "ccaa": "Andalucía",           "aemet": "HUELVA",           "lat": 37.25, "lon": -6.95,  "media_anual_mm": 560},
+    {"id": "jaen",           "nombre": "Jaén",           "ccaa": "Andalucía",           "aemet": "JAEN",             "lat": 37.77, "lon": -3.79,  "media_anual_mm": 500},
+    {"id": "malaga",         "nombre": "Málaga",         "ccaa": "Andalucía",           "aemet": "MALAGA",           "lat": 36.72, "lon": -4.42,  "media_anual_mm": 530},
+    {"id": "sevilla",        "nombre": "Sevilla",        "ccaa": "Andalucía",           "aemet": "SEVILLA",          "lat": 37.39, "lon": -5.99,  "media_anual_mm": 540},
+    {"id": "huesca",         "nombre": "Huesca",         "ccaa": "Aragón",              "aemet": "HUESCA",           "lat": 42.14, "lon": -0.41,  "media_anual_mm": 530},
+    {"id": "teruel",         "nombre": "Teruel",         "ccaa": "Aragón",              "aemet": "TERUEL",           "lat": 40.34, "lon": -1.11,  "media_anual_mm": 420},
+    {"id": "zaragoza",       "nombre": "Zaragoza",       "ccaa": "Aragón",              "aemet": "ZARAGOZA",         "lat": 41.65, "lon": -0.89,  "media_anual_mm": 315},
+    {"id": "asturias",       "nombre": "Asturias",       "ccaa": "Asturias",            "aemet": "ASTURIAS",         "lat": 43.36, "lon": -5.85,  "media_anual_mm": 1050},
+    {"id": "baleares",       "nombre": "Illes Balears",  "ccaa": "Illes Balears",       "aemet": "ILLES BALEARS",    "lat": 39.57, "lon":  2.65,  "media_anual_mm": 450},
+    {"id": "canarias_las_p", "nombre": "Las Palmas",     "ccaa": "Canarias",            "aemet": "LAS PALMAS",       "lat": 28.10, "lon": -15.41, "media_anual_mm": 200},
+    {"id": "canarias_sc_tf", "nombre": "S.C. Tenerife",  "ccaa": "Canarias",            "aemet": "STA. CRUZ DE TENERIFE", "lat": 28.46, "lon": -16.25, "media_anual_mm": 300},
+    {"id": "cantabria",      "nombre": "Cantabria",      "ccaa": "Cantabria",           "aemet": "CANTABRIA",        "lat": 43.18, "lon": -3.99,  "media_anual_mm": 1200},
+    {"id": "albacete",       "nombre": "Albacete",       "ccaa": "Castilla-La Mancha",  "aemet": "ALBACETE",         "lat": 39.00, "lon": -1.86,  "media_anual_mm": 380},
+    {"id": "ciudad_real",    "nombre": "Ciudad Real",    "ccaa": "Castilla-La Mancha",  "aemet": "CIUDAD REAL",      "lat": 38.99, "lon": -3.93,  "media_anual_mm": 390},
+    {"id": "cuenca",         "nombre": "Cuenca",         "ccaa": "Castilla-La Mancha",  "aemet": "CUENCA",           "lat": 40.07, "lon": -2.14,  "media_anual_mm": 480},
+    {"id": "guadalajara",    "nombre": "Guadalajara",    "ccaa": "Castilla-La Mancha",  "aemet": "GUADALAJARA",      "lat": 40.63, "lon": -3.17,  "media_anual_mm": 450},
+    {"id": "toledo",         "nombre": "Toledo",         "ccaa": "Castilla-La Mancha",  "aemet": "TOLEDO",           "lat": 39.86, "lon": -4.02,  "media_anual_mm": 380},
+    {"id": "avila",          "nombre": "Ávila",          "ccaa": "Castilla y León",     "aemet": "AVILA",            "lat": 40.66, "lon": -4.69,  "media_anual_mm": 420},
+    {"id": "burgos",         "nombre": "Burgos",         "ccaa": "Castilla y León",     "aemet": "BURGOS",           "lat": 42.34, "lon": -3.70,  "media_anual_mm": 590},
+    {"id": "leon",           "nombre": "León",           "ccaa": "Castilla y León",     "aemet": "LEON",             "lat": 42.60, "lon": -5.57,  "media_anual_mm": 580},
+    {"id": "palencia",       "nombre": "Palencia",       "ccaa": "Castilla y León",     "aemet": "PALENCIA",         "lat": 42.01, "lon": -4.53,  "media_anual_mm": 510},
+    {"id": "salamanca",      "nombre": "Salamanca",      "ccaa": "Castilla y León",     "aemet": "SALAMANCA",        "lat": 40.96, "lon": -5.66,  "media_anual_mm": 450},
+    {"id": "segovia",        "nombre": "Segovia",        "ccaa": "Castilla y León",     "aemet": "SEGOVIA",          "lat": 40.95, "lon": -4.12,  "media_anual_mm": 480},
+    {"id": "soria",          "nombre": "Soria",          "ccaa": "Castilla y León",     "aemet": "SORIA",            "lat": 41.77, "lon": -2.46,  "media_anual_mm": 550},
+    {"id": "valladolid",     "nombre": "Valladolid",     "ccaa": "Castilla y León",     "aemet": "VALLADOLID",       "lat": 41.65, "lon": -4.72,  "media_anual_mm": 460},
+    {"id": "zamora",         "nombre": "Zamora",         "ccaa": "Castilla y León",     "aemet": "ZAMORA",           "lat": 41.50, "lon": -5.74,  "media_anual_mm": 430},
+    {"id": "barcelona",      "nombre": "Barcelona",      "ccaa": "Cataluña",            "aemet": "BARCELONA",        "lat": 41.38, "lon":  2.17,  "media_anual_mm": 580},
+    {"id": "girona",         "nombre": "Girona",         "ccaa": "Cataluña",            "aemet": "GIRONA",           "lat": 41.98, "lon":  2.82,  "media_anual_mm": 700},
+    {"id": "lleida",         "nombre": "Lleida",         "ccaa": "Cataluña",            "aemet": "LLEIDA",           "lat": 41.62, "lon":  0.63,  "media_anual_mm": 380},
+    {"id": "tarragona",      "nombre": "Tarragona",      "ccaa": "Cataluña",            "aemet": "TARRAGONA",        "lat": 41.11, "lon":  1.25,  "media_anual_mm": 480},
+    {"id": "badajoz",        "nombre": "Badajoz",        "ccaa": "Extremadura",         "aemet": "BADAJOZ",          "lat": 38.88, "lon": -6.97,  "media_anual_mm": 490},
+    {"id": "caceres",        "nombre": "Cáceres",        "ccaa": "Extremadura",         "aemet": "CACERES",          "lat": 39.47, "lon": -6.37,  "media_anual_mm": 580},
+    {"id": "acoruna",        "nombre": "A Coruña",       "ccaa": "Galicia",             "aemet": "A CORUÑA",         "lat": 43.36, "lon": -8.40,  "media_anual_mm": 1050},
+    {"id": "lugo",           "nombre": "Lugo",           "ccaa": "Galicia",             "aemet": "LUGO",             "lat": 43.01, "lon": -7.55,  "media_anual_mm": 1100},
+    {"id": "ourense",        "nombre": "Ourense",        "ccaa": "Galicia",             "aemet": "OURENSE",          "lat": 42.34, "lon": -7.87,  "media_anual_mm": 850},
+    {"id": "pontevedra",     "nombre": "Pontevedra",     "ccaa": "Galicia",             "aemet": "PONTEVEDRA",       "lat": 42.43, "lon": -8.65,  "media_anual_mm": 1600},
+    {"id": "rioja",          "nombre": "La Rioja",       "ccaa": "La Rioja",            "aemet": "LA RIOJA",         "lat": 42.27, "lon": -2.37,  "media_anual_mm": 500},
+    {"id": "madrid",         "nombre": "Madrid",         "ccaa": "Comunidad de Madrid", "aemet": "MADRID",           "lat": 40.42, "lon": -3.70,  "media_anual_mm": 440},
+    {"id": "murcia",         "nombre": "Murcia",         "ccaa": "Región de Murcia",    "aemet": "MURCIA",           "lat": 37.99, "lon": -1.13,  "media_anual_mm": 300},
+    {"id": "navarra",        "nombre": "Navarra",        "ccaa": "Navarra",             "aemet": "NAVARRA",          "lat": 42.82, "lon": -1.65,  "media_anual_mm": 750},
+    {"id": "alava",          "nombre": "Álava",          "ccaa": "País Vasco",          "aemet": "ARABA/ALAVA",      "lat": 42.85, "lon": -2.67,  "media_anual_mm": 780},
+    {"id": "guipuzcoa",      "nombre": "Gipuzkoa",       "ccaa": "País Vasco",          "aemet": "GIPUZKOA",         "lat": 43.19, "lon": -2.04,  "media_anual_mm": 1500},
+    {"id": "vizcaya",        "nombre": "Bizkaia",        "ccaa": "País Vasco",          "aemet": "BIZKAIA",          "lat": 43.26, "lon": -2.93,  "media_anual_mm": 1200},
+    {"id": "alicante",       "nombre": "Alicante",       "ccaa": "C. Valenciana",       "aemet": "ALICANTE",         "lat": 38.35, "lon": -0.48,  "media_anual_mm": 330},
+    {"id": "castellon",      "nombre": "Castellón",      "ccaa": "C. Valenciana",       "aemet": "CASTELLON",        "lat": 40.00, "lon": -0.05,  "media_anual_mm": 480},
+    {"id": "valencia",       "nombre": "Valencia",       "ccaa": "C. Valenciana",       "aemet": "VALENCIA",         "lat": 39.47, "lon": -0.37,  "media_anual_mm": 450},
+    {"id": "ceuta",          "nombre": "Ceuta",          "ccaa": "Ceuta",               "aemet": "CEUTA",            "lat": 35.89, "lon": -5.32,  "media_anual_mm": 700},
+    {"id": "melilla",        "nombre": "Melilla",        "ccaa": "Melilla",             "aemet": "MELILLA",          "lat": 35.29, "lon": -2.94,  "media_anual_mm": 370},
 ]
 
 def aemet_get(endpoint):
@@ -82,19 +83,28 @@ def fecha_aemet(d):
     return d.strftime("%Y-%m-%dT00:00:00UTC")
 
 def mm_de_registro(obs):
-    """Extrae mm de precipitación de un registro AEMET."""
-    prec_str = str(obs.get("prec", "")).replace(",", ".").strip()
+    """
+    Extrae mm de precipitación de un registro AEMET.
+    Cuando no llueve, AEMET puede:
+      - No incluir el campo 'prec'  → None → devolvemos None (sin dato, no 0)
+      - Incluir "prec": "0,0"       → 0.0
+      - Incluir "prec": "Ip"        → trazas → 0.0
+    Distinguimos None (sin dato) de 0.0 (llovió cero) para no falsear la media.
+    """
+    if "prec" not in obs:
+        return None  # estación no reportó precipitación ese día
+    prec_str = str(obs["prec"]).replace(",", ".").strip()
     if prec_str in ("", "Ip", "Varias", "None", "nan"):
         return 0.0
     try:
         return float(prec_str)
     except ValueError:
-        return 0.0
+        return None
 
 def obtener_precipitacion_periodo(fecha_ini, fecha_fin):
     """
-    Descarga datos diarios y los agrega por provincia usando el campo 'provincia'
-    de AEMET (mayúsculas). Devuelve {nombre_aemet_mayusc: mm_acumulados}.
+    Devuelve {nombre_provincia_aemet: mm_medios}.
+    Solo promedia estaciones que SÍ reportaron precipitación (campo presente).
     """
     datos = aemet_get(
         f"/valores/climatologicos/diarios/datos"
@@ -105,24 +115,27 @@ def obtener_precipitacion_periodo(fecha_ini, fecha_fin):
     if not datos:
         return {}
 
-    # {provincia: {indicativo: mm_acumulados}}
+    # {provincia: {indicativo: mm_acumulados_del_periodo}}
     por_estacion = {}
     for obs in datos:
         prov = obs.get("provincia", "").strip().upper()
         if not prov:
             continue
-        indicativo = obs.get("indicativo", "")
         mm = mm_de_registro(obs)
+        if mm is None:
+            continue  # estación sin dato de lluvia: la ignoramos
+        indicativo = obs.get("indicativo", "")
         if prov not in por_estacion:
             por_estacion[prov] = {}
+        # Acumulamos días por estación (importante para semana/anual)
         por_estacion[prov][indicativo] = por_estacion[prov].get(indicativo, 0.0) + mm
 
     # Media entre estaciones de la provincia
     resultado = {}
     for prov, estaciones in por_estacion.items():
         valores = list(estaciones.values())
-        resultado[prov] = round(sum(valores) / len(valores), 1)
-
+        if valores:
+            resultado[prov] = round(sum(valores) / len(valores), 1)
     return resultado
 
 def calcular_anomalia(real_mm, media_mm):
@@ -157,29 +170,32 @@ def color_anomalia(a):
     return "#0044AA"
 
 def procesar_lluvias():
-    hoy  = datetime.now()
-    # AEMET consolida datos con ~5 días de retraso
-    fin         = hoy - timedelta(days=DIAS_RETRASO)
-    ini_semana  = fin - timedelta(days=6)   # 7 días hasta 'fin'
-    ini_anual   = datetime(fin.year, 1, 1)
+    hoy        = datetime.now()
+    fin        = hoy - timedelta(days=DIAS_RETRASO)
+    ini_semana = fin - timedelta(days=6)
+    ini_anual  = datetime(fin.year, 1, 1)
 
     usar_api = bool(AEMET_API_KEY)
     print(f"{'✓ API AEMET activa' if usar_api else '⚠ Sin API key — modo demo'}")
     if usar_api:
-        print(f"  Período más reciente disponible: {fin.strftime('%d/%m/%Y')}")
+        print(f"  Datos más recientes: {fin.strftime('%d/%m/%Y')}")
 
     if usar_api:
-        print("  → Descargando día más reciente...")
+        print("  → Día más reciente...")
         prec_dia    = obtener_precipitacion_periodo(fin, fin)
-        print(f"     {len(prec_dia)} provincias")
+        print(f"     {len(prec_dia)} provincias con datos")
 
-        print("  → Descargando últimos 7 días...")
+        print("  → Últimos 7 días...")
         prec_semana = obtener_precipitacion_periodo(ini_semana, fin)
-        print(f"     {len(prec_semana)} provincias")
+        print(f"     {len(prec_semana)} provincias con datos")
 
-        print("  → Descargando acumulado anual...")
+        print("  → Acumulado anual...")
         prec_anual  = obtener_precipitacion_periodo(ini_anual, fin)
-        print(f"     {len(prec_anual)} provincias")
+        print(f"     {len(prec_anual)} provincias con datos")
+
+        # Debug: muestra todas las claves de provincia que devuelve AEMET
+        todas = set(prec_dia) | set(prec_semana) | set(prec_anual)
+        print(f"\n  Provincias en AEMET: {sorted(todas)}\n")
     else:
         prec_dia = prec_semana = prec_anual = {}
 
@@ -187,9 +203,10 @@ def procesar_lluvias():
     provincias_resultado = []
 
     for prov in PROVINCIAS:
-        clave = prov["aemet"]  # nombre en mayúsculas tal como devuelve AEMET
+        clave = prov["aemet"]
 
         if usar_api and prec_dia:
+            # Si la provincia no aparece en AEMET ese día → realmente no llovió → 0.0
             mm_dia    = prec_dia.get(clave, 0.0)
             mm_semana = prec_semana.get(clave, 0.0)
             mm_anual  = prec_anual.get(clave, 0.0)
@@ -245,7 +262,7 @@ def procesar_lluvias():
     with open("docs/lluvias_nacional.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✓ docs/lluvias_nacional.json — {len(provincias_resultado)} provincias")
+    print(f"✓ docs/lluvias_nacional.json — {len(provincias_resultado)} provincias")
     print(f"  Datos del: {fin.strftime('%d/%m/%Y')}")
 
 if __name__ == "__main__":
