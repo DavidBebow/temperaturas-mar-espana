@@ -66,40 +66,49 @@ PROVINCIAS = [
 # OPEN-METEO: una sola llamada por provincia devuelve todo el histórico del año
 # ─────────────────────────────────────────────────────────────────────────────
 
-def obtener_datos_provincia(prov, ini_anual, fin):
-    """
-    Una sola llamada al archive de Open-Meteo cubre desde el 1 de enero
-    hasta el último día disponible. De ahí extraemos los tres períodos.
-    El archive tiene datos hasta ~2 días antes de hoy.
-    """
-    ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+def get_daily_prec(url, lat, lon, start, end, timeout=60):
+    """Llamada a Open-Meteo y devuelve lista de mm diarios con reintentos."""
     params = {
-        "latitude":   prov["lat"],
-        "longitude":  prov["lon"],
+        "latitude":   lat, "longitude":  lon,
         "daily":      "precipitation_sum",
         "timezone":   "Europe/Madrid",
-        "start_date": ini_anual.strftime("%Y-%m-%d"),
-        "end_date":   fin.strftime("%Y-%m-%d"),
+        "start_date": start.strftime("%Y-%m-%d"),
+        "end_date":   end.strftime("%Y-%m-%d"),
     }
-    try:
-        r = requests.get(ARCHIVE_URL, params=params, timeout=45)
-        data = r.json()
-        if "daily" not in data:
-            print(f"✗ {prov['nombre']}: {data.get('reason', data.get('error','sin datos'))}")
-            return 0.0, 0.0, 0.0
+    for intento in range(3):
+        try:
+            r = requests.get(url, params=params, timeout=timeout)
+            data = r.json()
+            if "daily" not in data:
+                return []
+            prec = data["daily"]["precipitation_sum"]
+            return [x if x is not None else 0.0 for x in prec]
+        except Exception:
+            if intento < 2:
+                import time; time.sleep(5)
+    return []
 
-        prec = [x if x is not None else 0.0 for x in data["daily"]["precipitation_sum"]]
-        if not prec:
-            return 0.0, 0.0, 0.0
+def obtener_datos_provincia(prov, ini_anual, fin):
+    """
+    Dos llamadas Open-Meteo:
+    - /v1/forecast  → últimos 7 días (datos más recientes, sin lag)
+    - /v1/archive   → acumulado anual (datos históricos consolidados)
+    """
+    FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+    ARCHIVE_URL  = "https://archive-api.open-meteo.com/v1/archive"
 
-        mm_ayer   = round(prec[-1], 1)
-        mm_semana = round(sum(prec[-7:]), 1)
-        mm_anual  = round(sum(prec), 1)
-        return mm_ayer, mm_semana, mm_anual
+    lat, lon = prov["lat"], prov["lon"]
 
-    except Exception as e:
-        print(f"✗ {prov['nombre']}: {e}")
-        return 0.0, 0.0, 0.0
+    # Últimos 7 días desde forecast (sin lag, datos de hace 1-2 días)
+    prec_rec = get_daily_prec(FORECAST_URL, lat, lon, fin - timedelta(days=6), fin)
+    mm_ayer   = round(prec_rec[-1], 1) if prec_rec else 0.0
+    mm_semana = round(sum(prec_rec), 1)
+
+    # Acumulado anual desde archive
+    prec_anual = get_daily_prec(ARCHIVE_URL, lat, lon, ini_anual, fin)
+    mm_anual   = round(sum(prec_anual), 1)
+
+    return mm_ayer, mm_semana, mm_anual
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPERS (igual que antes)
