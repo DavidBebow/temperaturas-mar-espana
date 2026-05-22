@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lluvias en España — Por Provincia</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; background: #0a1218; }
+  #mapa { width: 100%; height: 530px; background: #0a1218; }
+
+  /* ── CABECERA ── */
+  #cabecera {
+    background: #060e14;
+    color: white;
+    padding: 10px 16px;
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 8px;
+    border-bottom: 1px solid #1a3040;
+  }
+  #cabecera h2 { font-size: 14px; font-weight: 500; color: #e0f0ff; }
+  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  #resumen    { font-size: 11px; color: #5a8aaa; }
+  #ultima-act { font-size: 11px; color: #4a6a8a; }
+
+  /* ── CONTROLES ── */
+  #controles {
+    background: #080c12;
+    padding: 8px 16px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    align-items: center;
+    border-bottom: 1px solid #1a3040;
+  }
+
+  /* Selector de período */
+  .btn-periodo {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid #1e3a5a;
+    background: #0d1828;
+    color: #7a9aaa;
+    font-size: 11px; font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-periodo:hover  { border-color: #3a6080; color: #c0dff0; }
+  .btn-periodo.activo { background: #1a4060; border-color: #4a90c0; color: #e0f4ff; }
+
+  /* Toggle litros / anomalía */
+  #toggle-wrap {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; color: #5a8aaa;
+  }
+  .toggle-btn {
+    padding: 5px 14px; border-radius: 20px;
+    border: 1px solid #1e3a5a; background: #0d1828;
+    color: #7a9aaa; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all .2s;
+  }
+  .toggle-btn:hover  { border-color: #3a6080; color: #c0dff0; }
+  .toggle-btn.activo { background: #1a3050; border-color: #4a80b0; color: #e0f4ff; }
+
+  /* ── LEYENDA ── */
+  #leyenda {
+    background: #080c12;
+    padding: 7px 16px;
+    display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #1a3040;
+    font-size: 11px; color: #7a9aaa;
+    transition: opacity .3s;
+  }
+  #leyenda strong { color: #9abccc; font-weight: 500; }
+  .ley-item { display: flex; align-items: center; gap: 4px; }
+  .ley-dot  { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+
+  /* ── POPUP ── */
+  .leaflet-popup-content-wrapper {
+    background: #0a1828 !important;
+    border: 1px solid #1e3a5c !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.8) !important;
+    color: #e0eeff !important;
+  }
+  .leaflet-popup-tip         { background: #0a1828 !important; }
+  .leaflet-popup-close-button{ color: #4a6a8a !important; }
+
+  .popup-titulo { font-weight: 700; font-size: 15px; margin-bottom: 3px; color: #e8f0ff; }
+  .popup-sub    { font-size: 11px; color: #4a6a8a; margin-bottom: 10px; }
+  .popup-valor  { font-size: 28px; font-weight: 300; color: #e8f0ff; letter-spacing: -0.02em; margin: 6px 0 2px; }
+  .popup-barra-wrap {
+    margin: 8px 0 12px; background: #0d1a28;
+    border-radius: 6px; height: 6px; overflow: hidden;
+  }
+  .popup-barra { height: 100%; border-radius: 6px; transition: width .4s ease; }
+  .popup-dato {
+    display: flex; justify-content: space-between;
+    padding: 5px 0; border-bottom: 1px solid #1a2a40;
+    font-size: 12px; color: #7a9aaa;
+  }
+  .popup-dato:last-of-type { border-bottom: none; }
+  .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; }
+  .popup-tag {
+    display: inline-block; margin-top: 10px;
+    padding: 3px 12px; border-radius: 12px;
+    font-size: 10px; font-weight: 700; color: white;
+  }
+  .popup-seccion {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid #1a2a40;
+    font-size: 11px; color: #4a6a8a;
+    font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+  }
+
+  .leaflet-control-zoom a {
+    background: #0a1828 !important; color: #7a9aaa !important;
+    border-color: #1e3a5c !important;
+  }
+  .leaflet-control-attribution {
+    background: rgba(6,8,18,0.85) !important;
+    color: #4a6a8a !important; font-size: 10px !important;
+  }
+</style>
+</head>
+<body>
+
+<!-- CABECERA -->
+<div id="cabecera">
+  <h2>🌧️ Precipitaciones en España — Por Provincia</h2>
+  <div id="info-derecha">
+    <span id="resumen">Cargando datos...</span>
+    <span id="ultima-act"></span>
+  </div>
+</div>
+
+<!-- CONTROLES: período + toggle -->
+<div id="controles">
+  <button class="btn-periodo activo" data-periodo="ayer">Ayer</button>
+  <button class="btn-periodo"       data-periodo="semana">Últimos 7 días</button>
+  <button class="btn-periodo"       data-periodo="anual">Acumulado anual</button>
+
+  <div id="toggle-wrap">
+    <span>Ver como:</span>
+    <button class="toggle-btn activo" data-modo="litros">💧 Litros (mm)</button>
+    <button class="toggle-btn"        data-modo="anomalia">📊 Anomalía histórica</button>
+  </div>
+</div>
+
+<!-- LEYENDA (se actualiza dinámicamente) -->
+<div id="leyenda">
+  <strong id="leyenda-titulo">Precipitación (mm):</strong>
+  <div id="leyenda-items"></div>
+  <span style="margin-left:auto;font-size:10px;color:#4a6a8a">Clic en una provincia para más detalles</span>
+</div>
+
+<div id="mapa"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ─── CONFIGURACIÓN ────────────────────────────────────────────────────────
+const JSON_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/lluvias_nacional.json';
+const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-provinces.geojson';
+
+// Mapa de nombres del GeoJSON → id de provincia en nuestro JSON
+const NOMBRE_A_ID = {
+  'Almería':'almeria','Cádiz':'cadiz','Córdoba':'cordoba','Granada':'granada',
+  'Huelva':'huelva','Jaén':'jaen','Málaga':'malaga','Sevilla':'sevilla',
+  'Huesca':'huesca','Teruel':'teruel','Zaragoza':'zaragoza',
+  'Asturias':'asturias',
+  'Balears, Illes':'baleares','Illes Balears':'baleares',
+  'Palmas, Las':'canarias_las_p','Las Palmas':'canarias_las_p',
+  'Santa Cruz de Tenerife':'canarias_sc_tf',
+  'Cantabria':'cantabria',
+  'Albacete':'albacete','Ciudad Real':'ciudad_real','Cuenca':'cuenca',
+  'Guadalajara':'guadalajara','Toledo':'toledo',
+  'Ávila':'avila','Burgos':'burgos','León':'leon','Palencia':'palencia',
+  'Salamanca':'salamanca','Segovia':'segovia','Soria':'soria',
+  'Valladolid':'valladolid','Zamora':'zamora',
+  'Barcelona':'barcelona','Girona':'girona','Lleida':'lleida','Tarragona':'tarragona',
+  'Badajoz':'badajoz','Cáceres':'caceres',
+  'Coruña, A':'acoruna','A Coruña':'acoruna',
+  'Lugo':'lugo','Ourense':'ourense','Pontevedra':'pontevedra',
+  'Rioja, La':'rioja','La Rioja':'rioja',
+  'Madrid':'madrid',
+  'Murcia':'murcia',
+  'Navarra':'navarra',
+  'Araba/Álava':'alava','Álava':'alava',
+  'Gipuzkoa':'guipuzcoa','Guipúzcoa':'guipuzcoa',
+  'Bizkaia':'vizcaya','Vizcaya':'vizcaya',
+  'Alicante/Alacant':'alicante','Alicante':'alicante',
+  'Castellón/Castelló':'castellon','Castellón':'castellon',
+  'Valencia/València':'valencia','Valencia':'valencia',
+  'Ceuta':'ceuta','Melilla':'melilla',
+};
+
+// ─── ESCALAS DE COLOR ─────────────────────────────────────────────────────
+function colorLitros(mm, periodo) {
+  if (mm === null || mm === undefined) return '#1e2e3a';
+  const umbrales = {
+    ayer:   [0, 1, 3, 8, 15, 30],
+    semana: [0, 5, 15, 30, 60, 120],
+    anual:  [0, 100, 250, 500, 800, 1200],
+  };
+  const u = umbrales[periodo] || umbrales.ayer;
+  const colores = ['#101820','#1e4060','#1e6090','#1e90c0','#22b8e8','#44d4ff','#88eeff'];
+  for (let i = u.length - 1; i >= 0; i--) {
+    if (mm >= u[i]) return colores[i + 1];
+  }
+  return colores[0];
+}
+
+function colorAnomalia(pct) {
+  if (pct === null || pct === undefined) return '#1e2e3a';
+  if (pct < -40)  return '#8B1A1A';
+  if (pct < -15)  return '#CC3300';
+  if (pct <  15)  return '#8a7830';
+  if (pct <  40)  return '#2288CC';
+  return '#0044AA';
+}
+
+// ─── LEYENDAS ─────────────────────────────────────────────────────────────
+const LEYENDAS = {
+  litros_ayer: {
+    titulo: 'Precipitación ayer (mm):',
+    items: [
+      { color:'#101820', label:'0 mm' },
+      { color:'#1e4060', label:'< 1 mm' },
+      { color:'#1e6090', label:'1–3 mm' },
+      { color:'#1e90c0', label:'3–8 mm' },
+      { color:'#22b8e8', label:'8–15 mm' },
+      { color:'#44d4ff', label:'15–30 mm' },
+      { color:'#88eeff', label:'> 30 mm' },
+    ]
+  },
+  litros_semana: {
+    titulo: 'Precipitación 7 días (mm):',
+    items: [
+      { color:'#101820', label:'0 mm' },
+      { color:'#1e4060', label:'< 5 mm' },
+      { color:'#1e6090', label:'5–15 mm' },
+      { color:'#1e90c0', label:'15–30 mm' },
+      { color:'#22b8e8', label:'30–60 mm' },
+      { color:'#44d4ff', label:'60–120 mm' },
+      { color:'#88eeff', label:'> 120 mm' },
+    ]
+  },
+  litros_anual: {
+    titulo: 'Acumulado anual (mm):',
+    items: [
+      { color:'#101820', label:'< 100 mm' },
+      { color:'#1e4060', label:'100–250 mm' },
+      { color:'#1e6090', label:'250–500 mm' },
+      { color:'#1e90c0', label:'500–800 mm' },
+      { color:'#22b8e8', label:'800–1200 mm' },
+      { color:'#88eeff', label:'> 1200 mm' },
+    ]
+  },
+  anomalia: {
+    titulo: 'Anomalía vs media histórica:',
+    items: [
+      { color:'#8B1A1A', label:'Muy seco < −40%' },
+      { color:'#CC3300', label:'Seco −40–−15%' },
+      { color:'#8a7830', label:'Normal ±15%' },
+      { color:'#2288CC', label:'Lluvioso +15–40%' },
+      { color:'#0044AA', label:'Muy lluvioso > +40%' },
+    ]
+  }
+};
+
+function actualizarLeyenda(periodo, modo) {
+  const clave = modo === 'anomalia' ? 'anomalia' : `litros_${periodo}`;
+  const ley = LEYENDAS[clave] || LEYENDAS.litros_ayer;
+  document.getElementById('leyenda-titulo').textContent = ley.titulo;
+  document.getElementById('leyenda-items').innerHTML = ley.items.map(i =>
+    `<span class="ley-item" style="display:inline-flex;align-items:center;gap:4px;margin-right:8px">
+      <span class="ley-dot" style="background:${i.color}"></span>${i.label}
+    </span>`
+  ).join('');
+}
+
+// ─── POPUP ────────────────────────────────────────────────────────────────
+function construirPopup(p, periodo, modo) {
+  const mmKey    = { ayer:'mm_ayer', semana:'mm_semana', anual:'mm_anual' }[periodo];
+  const anomKey  = { ayer:'anomalia_ayer_pct', semana:'anomalia_semana_pct', anual:'anomalia_anual_pct' }[periodo];
+  const etqKey   = { ayer:'etiqueta_ayer', semana:'etiqueta_semana', anual:'etiqueta_anual' }[periodo];
+  const mediaKey = { ayer:'media_diaria_mm', semana:'media_semana_mm', anual:'media_hasta_hoy_mm' }[periodo];
+
+  const mm    = p[mmKey];
+  const anom  = p[anomKey];
+  const etq   = p[etqKey] || '—';
+  const media = p[mediaKey];
+
+  const color  = modo === 'anomalia' ? colorAnomalia(anom) : colorLitros(mm, periodo);
+  const barra  = modo === 'anomalia'
+    ? Math.min(100, Math.abs(anom || 0) * 1.5)
+    : Math.min(100, ((mm || 0) / ({ ayer:40, semana:150, anual:1500 }[periodo])) * 100);
+
+  const periodoLabel = { ayer:'ayer', semana:'últimos 7 días', anual:'acumulado anual' }[periodo];
+
+  const anomStr = anom !== null ? (anom > 0 ? '+' : '') + anom + '%' : '—';
+  const mmStr   = mm !== null ? mm.toFixed(1) + ' mm' : '—';
+
+  return `
+    <div style="min-width:240px">
+      <div class="popup-titulo">🌧️ ${p.nombre}</div>
+      <div class="popup-sub">${p.ccaa}</div>
+      <div class="popup-valor" style="color:${color}">
+        ${modo === 'anomalia' ? anomStr : mmStr}
+      </div>
+      <div style="font-size:11px;color:${color};margin-bottom:4px">${etq} · ${periodoLabel}</div>
+      <div class="popup-barra-wrap">
+        <div class="popup-barra" style="width:${barra}%;background:${color}"></div>
+      </div>
+
+      <div class="popup-dato"><span>Precipitación ${periodoLabel}</span><span>${mmStr}</span></div>
+      <div class="popup-dato"><span>Media histórica (referencia)</span><span>${media !== undefined ? media.toFixed(1) + ' mm' : '—'}</span></div>
+      <div class="popup-dato"><span>Anomalía</span><span style="color:${colorAnomalia(anom)}">${anomStr}</span></div>
+      <div class="popup-dato"><span>Media anual histórica</span><span>${p.media_anual_mm} mm/año</span></div>
+
+      <div class="popup-seccion">Resumen del período</div>
+      <div class="popup-dato"><span>Ayer</span><span>${p.mm_ayer !== null ? p.mm_ayer.toFixed(1) + ' mm' : '—'}</span></div>
+      <div class="popup-dato"><span>Últimos 7 días</span><span>${p.mm_semana !== null ? p.mm_semana.toFixed(1) + ' mm' : '—'}</span></div>
+      <div class="popup-dato"><span>Acumulado anual</span><span>${p.mm_anual !== null ? Math.round(p.mm_anual) + ' mm' : '—'}</span></div>
+
+      <span class="popup-tag" style="background:${color}99;border:1px solid ${color}">${etq}</span>
+    </div>`;
+}
+
+// ─── MAPA ─────────────────────────────────────────────────────────────────
+const mapa = L.map('mapa', { center: [40.0, -3.5], zoom: 5 });
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '© Esri | Datos: AEMET OpenData', maxZoom: 10
+}).addTo(mapa);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 10, opacity: 0.5
+}).addTo(mapa);
+
+let datosMap     = {};
+let capaGeojson  = null;
+let periodoActual = 'ayer';
+let modoActual    = 'litros';
+let datosGlobal   = null;
+
+function estiloCapas(feature) {
+  const nombre = feature.properties.name || feature.properties.NAME || '';
+  const id     = NOMBRE_A_ID[nombre];
+  const p      = id ? datosMap[id] : null;
+  if (!p) return { fillColor:'#1e2e3a', fillOpacity:0.35, color:'#1a3040', weight:0.8, opacity:0.6 };
+
+  const mmKey   = { ayer:'mm_ayer', semana:'mm_semana', anual:'mm_anual' }[periodoActual];
+  const anomKey = { ayer:'anomalia_ayer_pct', semana:'anomalia_semana_pct', anual:'anomalia_anual_pct' }[periodoActual];
+  const color   = modoActual === 'anomalia'
+    ? colorAnomalia(p[anomKey])
+    : colorLitros(p[mmKey], periodoActual);
+
+  return { fillColor:color, fillOpacity:0.80, color:'#1a3040', weight:0.8, opacity:0.7 };
+}
+
+function actualizarMapa() {
+  if (!capaGeojson) return;
+  capaGeojson.setStyle(estiloCapas);
+  actualizarLeyenda(periodoActual, modoActual);
+}
+
+function actualizarPopups() {
+  if (!capaGeojson) return;
+  capaGeojson.eachLayer(layer => {
+    const nombre = layer.feature?.properties?.name || layer.feature?.properties?.NAME || '';
+    const id     = NOMBRE_A_ID[nombre];
+    const p      = id ? datosMap[id] : null;
+    if (p) {
+      layer.setPopupContent(construirPopup(p, periodoActual, modoActual));
+    }
+  });
+}
+
+// ─── CONTROLES ────────────────────────────────────────────────────────────
+document.querySelectorAll('.btn-periodo').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn-periodo').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    periodoActual = btn.dataset.periodo;
+    actualizarMapa();
+    actualizarPopups();
+  });
+});
+
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    modoActual = btn.dataset.modo;
+    actualizarMapa();
+    actualizarPopups();
+  });
+});
+
+// ─── CARGA DE DATOS ───────────────────────────────────────────────────────
+Promise.all([
+  fetch(JSON_URL + '?t=' + Date.now()).then(r => r.json()),
+  fetch(GEOJSON_URL).then(r => r.json())
+])
+.then(([data, geojson]) => {
+  datosGlobal = data;
+  (data.provincias || []).forEach(p => { datosMap[p.id] = p; });
+
+  const total = data.provincias?.length || 0;
+  const demo  = data.demo_mode ? ' · ⚠ Modo demo (sin API key)' : '';
+  document.getElementById('resumen').textContent =
+    `${total} provincias · Fuente: ${data.fuente}${demo}`;
+  document.getElementById('ultima-act').textContent =
+    'Actualizado: ' + (data.fecha_legible || '—');
+
+  actualizarLeyenda(periodoActual, modoActual);
+
+  capaGeojson = L.geoJSON(geojson, {
+    style: estiloCapas,
+    onEachFeature: function(feature, layer) {
+      const nombre = feature.properties.name || feature.properties.NAME || '';
+      const id     = NOMBRE_A_ID[nombre];
+      const p      = id ? datosMap[id] : null;
+      if (!p) return;
+
+      layer.bindPopup(construirPopup(p, periodoActual, modoActual), { maxWidth: 280 });
+      layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1.5 }));
+      layer.on('mouseout',  () => capaGeojson.resetStyle(layer));
+
+      // Abrir Murcia por defecto
+      if (id === 'murcia') {
+        setTimeout(() => layer.openPopup(), 900);
+      }
+    }
+  }).addTo(mapa);
+})
+.catch(err => {
+  console.error(err);
+  document.getElementById('resumen').textContent = 'Error al cargar datos';
+});
+</script>
+</body>
+</html>
