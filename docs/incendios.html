@@ -106,6 +106,13 @@ function formatFechaDeteccion(iso) {
     day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid'
   }).format(new Date(iso));
 }
+function etiquetaConfianza(confianza) {
+  const valor = String(confianza || '').toLowerCase();
+  if (valor === 'h' || valor === 'high') return 'Alta';
+  if (valor === 'n' || valor === 'nominal') return 'Nominal';
+  if (valor === 'l' || valor === 'low') return 'Baja';
+  return confianza || 'No disponible';
+}
 function popupComunidad(c, horas) {
   return `
     <div style="min-width:240px">
@@ -124,6 +131,8 @@ function popupFoco(f) {
   const frpLabel = f.frp > 0 ? f.frp + ' MW' : '< 1 MW';
   const pct = Math.min(100, Math.round((f.frp / 150) * 100));
   const colorFRP = f.frp >= 100 ? '#ff2200' : f.frp >= 30 ? '#ff7733' : f.frp >= 10 ? '#ffaa22' : '#ffcc44';
+  const mapsUrl = `https://www.google.com/maps?q=${f.lat},${f.lon}`;
+  const firmsUrl = `https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@${f.lon},${f.lat},11z`;
   return `
     <div style="min-width:230px">
       <div class="popup-titulo">🔥 Foco reciente</div>
@@ -131,9 +140,14 @@ function popupFoco(f) {
       <div class="popup-dato"><span>Ubicación</span><span>${f.lugar || 'Zona rural'}</span></div>
       <div style="margin:6px 0 8px"><div style="display:flex;justify-content:space-between;font-size:10px;color:#7a5a4a;margin-bottom:3px"><span>Intensidad (FRP)</span><span style="color:${colorFRP};font-weight:700">${f.intensidad || '—'}</span></div><div style="background:#2a1008;border-radius:4px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${colorFRP};border-radius:4px"></div></div></div>
       <div class="popup-dato"><span>Potencia radiativa</span><span class="fuego-val">${frpLabel}</span></div>
+      <div class="popup-dato"><span>Confianza</span><span>${etiquetaConfianza(f.confianza)}</span></div>
       <div class="popup-dato"><span>Detectado</span><span>${formatFechaDeteccion(f.deteccion_utc)}</span></div>
       <div class="popup-dato"><span>Sensor</span><span>${f.sensor || 'VIIRS'}</span></div>
       <div class="popup-dato"><span>Coordenadas</span><span style="font-size:10px">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)}</span></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <a href="${mapsUrl}" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;background:#3a1a0a;color:#ffd0a0;border:1px solid #7a4a2a;border-radius:8px;padding:6px 8px;font-size:11px;font-weight:700">Ver mapa</a>
+        <a href="${firmsUrl}" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;background:#3a1a0a;color:#ffd0a0;border:1px solid #7a4a2a;border-radius:8px;padding:6px 8px;font-size:11px;font-weight:700">NASA FIRMS</a>
+      </div>
     </div>`;
 }
 function crearIconoFoco(frp) {
