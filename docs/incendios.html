@@ -3,361 +3,181 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Incendios en España — Tiempo Real por Comunidad</title>
+<title>Incendios en España — Detecciones recientes por comunidad</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Arial, sans-serif; background: #0a0806; }
   #mapa { width: 100%; height: 530px; background: #0a0806; }
-
-  #cabecera {
-    background: #120804;
-    color: white;
-    padding: 10px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    border-bottom: 1px solid #3a1a0a;
-  }
-  #cabecera h2 {
-    font-size: 14px; font-weight: 500;
-    letter-spacing: 0.04em; color: #fff0e0;
-    display: flex; align-items: center; gap: 8px;
-  }
-  #info-derecha {
-    display: flex; flex-direction: column;
-    align-items: flex-end; gap: 2px;
-  }
+  #cabecera { background: #120804; color: white; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid #3a1a0a; }
+  #cabecera h2 { font-size: 14px; font-weight: 500; letter-spacing: 0.04em; color: #fff0e0; display: flex; align-items: center; gap: 8px; }
+  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
   #resumen-nacional { font-size: 11px; color: #9a6a4a; }
   #resumen-nacional span { color: #ff7733; font-weight: 600; }
   #ultima-actualizacion { font-size: 11px; color: #6a4a3a; }
-
-  #leyenda {
-    background: #0e0604;
-    padding: 7px 16px;
-    display: flex; flex-wrap: wrap; gap: 10px;
-    align-items: center;
-    border-bottom: 1px solid #3a1a0a;
-    font-size: 11px; color: #9a7a6a;
-  }
+  #leyenda { background: #0e0604; padding: 7px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid #3a1a0a; font-size: 11px; color: #9a7a6a; }
   #leyenda strong { color: #cc9a7a; font-weight: 500; }
   .leyenda-item { display: flex; align-items: center; gap: 4px; color: #9a7a6a; }
-  .leyenda-cuadrado {
-    width: 12px; height: 12px;
-    border-radius: 2px;
-    border: 1px solid rgba(255,255,255,0.15);
-    flex-shrink: 0;
-  }
-
-  .leaflet-popup-content-wrapper {
-    background: #1a0a04 !important;
-    border: 1px solid #4a2010 !important;
-    border-radius: 14px !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.8) !important;
-    color: #f0e0d0 !important;
-  }
+  .leyenda-cuadrado { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0; }
+  .leaflet-popup-content-wrapper { background: #1a0a04 !important; border: 1px solid #4a2010 !important; border-radius: 14px !important; box-shadow: 0 8px 32px rgba(0,0,0,0.8) !important; color: #f0e0d0 !important; }
   .leaflet-popup-tip { background: #1a0a04 !important; }
   .leaflet-popup-close-button { color: #7a4a3a !important; }
   .leaflet-popup-close-button:hover { color: #f0e0d0 !important; }
-
   .popup-titulo { font-weight: 700; font-size: 15px; margin-bottom: 3px; color: #fff0e0; }
   .popup-subtitulo { font-size: 11px; color: #7a5a4a; margin-bottom: 10px; }
-  .popup-dato {
-    display: flex; justify-content: space-between;
-    padding: 5px 0; border-bottom: 1px solid #2a1008;
-    font-size: 12px; color: #9a7a6a;
-  }
+  .popup-dato { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid #2a1008; font-size: 12px; color: #9a7a6a; }
   .popup-dato:last-of-type { border-bottom: none; }
-  .popup-dato span:last-child { font-weight: 600; color: #e0c8a8; }
-  .popup-separador {
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: #7a4a3a; padding: 8px 0 4px;
-    border-bottom: 1px solid #2a1008;
-  }
-  .popup-tag {
-    display: inline-block; margin-top: 10px;
-    padding: 3px 12px; border-radius: 12px;
-    font-size: 10px; font-weight: 700; color: white;
-  }
+  .popup-dato span:last-child { font-weight: 600; color: #e0c8a8; text-align: right; }
+  .popup-separador { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #7a4a3a; padding: 8px 0 4px; border-bottom: 1px solid #2a1008; }
+  .popup-tag { display: inline-block; margin-top: 10px; padding: 3px 12px; border-radius: 12px; font-size: 10px; font-weight: 700; color: white; }
   .fuego-val { color: #ff7733; }
-  .ok-val    { color: #88cc88; }
-
-  .leaflet-control-zoom a {
-    background: #1a0a04 !important; color: #9a7a6a !important;
-    border-color: #4a2010 !important;
-  }
-  .leaflet-control-zoom a:hover {
-    background: #2a1008 !important; color: #f0e0d0 !important;
-  }
-  .leaflet-control-attribution {
-    background: rgba(18,8,4,0.85) !important;
-    color: #6a4a3a !important; font-size: 10px !important;
-  }
+  .ok-val { color: #88cc88; }
+  .leaflet-control-zoom a { background: #1a0a04 !important; color: #9a7a6a !important; border-color: #4a2010 !important; }
+  .leaflet-control-zoom a:hover { background: #2a1008 !important; color: #f0e0d0 !important; }
+  .leaflet-control-attribution { background: rgba(18,8,4,0.85) !important; color: #6a4a3a !important; font-size: 10px !important; }
   .leaflet-control-attribution a { color: #aa7a5a !important; }
 </style>
 </head>
 <body>
-
 <div id="cabecera">
-  <h2>🔥 Incendios Forestales en España — Por Comunidad Autónoma</h2>
+  <h2>🔥 Incendios Forestales en España — Detecciones recientes</h2>
   <div id="info-derecha">
     <span id="resumen-nacional">Cargando datos...</span>
     <span id="ultima-actualizacion"></span>
   </div>
 </div>
-
 <div id="leyenda">
   <strong>Comunidades:</strong>
-  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#1a3a1a"></div> Sin incendios</div>
-  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#7a6a10"></div> 1–5 focos</div>
-  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#aa5010"></div> 6–20 focos</div>
-  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#cc2a00"></div> 21–50 focos</div>
+  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#1a3a1a"></div> Sin detecciones</div>
+  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#7a6a10"></div> 1-5 focos</div>
+  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#aa5010"></div> 6-20 focos</div>
+  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#cc2a00"></div> 21-50 focos</div>
   <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#ff0000"></div> +50 focos</div>
   <span style="margin-left:6px;color:#7a5a4a">|</span>
-  <div class="leyenda-item"><span style="font-size:13px">🔥</span> Foco activo (tamaño = intensidad)</div>
+  <div class="leyenda-item"><span style="font-size:13px">🔥</span> Foco reciente (tamaño = FRP)</div>
   <span style="margin-left:auto;font-size:10px;color:#6a4a3a">Clic en comunidad o foco para detalles</span>
 </div>
-
 <div id="mapa"></div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const JSON_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/incendios.json';
+const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/incendios.json';
 const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-communities.geojson';
-
-const mapa = L.map('mapa', {
-  center: [40.0, -3.5],
-  zoom: 5,
-  zoomControl: true
-});
+const mapa = L.map('mapa', { center: [40.0, -3.5], zoom: 5, zoomControl: true });
 
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '© Esri | Datos: NASA FIRMS VIIRS',
-  maxZoom: 16
+  attribution: '© Esri | Datos: NASA FIRMS VIIRS', maxZoom: 16
 }).addTo(mapa);
-
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
   attribution: '', maxZoom: 16, opacity: 0.5
 }).addTo(mapa);
 
 const NOMBRE_A_ID = {
-  'Andalucía': 'andalucia', 'Andalucia': 'andalucia',
-  'Aragón': 'aragon', 'Aragon': 'aragon',
-  'Asturias': 'asturias', 'Principado de Asturias': 'asturias',
-  'Islas Baleares': 'baleares', 'Illes Balears': 'baleares',
-  'Canarias': 'canarias',
-  'Cantabria': 'cantabria',
-  'Castilla-La Mancha': 'castilla_mancha', 'Castilla - La Mancha': 'castilla_mancha',
-  'Castilla y León': 'castilla_leon', 'Castilla y Leon': 'castilla_leon',
-  'Cataluña': 'cataluna', 'Catalunya': 'cataluna', 'Catalonia': 'cataluna',
-  'Comunidad Valenciana': 'c_valenciana', 'País Valencià': 'c_valenciana',
-  'Extremadura': 'extremadura',
-  'Galicia': 'galicia',
-  'La Rioja': 'la_rioja',
-  'Comunidad de Madrid': 'madrid', 'Madrid': 'madrid',
-  'Región de Murcia': 'murcia', 'Murcia': 'murcia',
-  'Navarra': 'navarra', 'Comunidad Foral de Navarra': 'navarra',
-  'País Vasco': 'pais_vasco', 'Euskadi': 'pais_vasco',
-  'Ceuta': 'ceuta', 'Melilla': 'melilla',
+  'Andalucía': 'andalucia', 'Andalucia': 'andalucia', 'Aragón': 'aragon', 'Aragon': 'aragon',
+  'Asturias': 'asturias', 'Principado de Asturias': 'asturias', 'Islas Baleares': 'baleares', 'Illes Balears': 'baleares',
+  'Canarias': 'canarias', 'Cantabria': 'cantabria', 'Castilla-La Mancha': 'castilla_mancha', 'Castilla - La Mancha': 'castilla_mancha',
+  'Castilla y León': 'castilla_leon', 'Castilla y Leon': 'castilla_leon', 'Cataluña': 'cataluna', 'Catalunya': 'cataluna', 'Catalonia': 'cataluna',
+  'Comunidad Valenciana': 'c_valenciana', 'País Valencià': 'c_valenciana', 'Extremadura': 'extremadura', 'Galicia': 'galicia',
+  'La Rioja': 'la_rioja', 'Comunidad de Madrid': 'madrid', 'Madrid': 'madrid', 'Región de Murcia': 'murcia', 'Murcia': 'murcia',
+  'Navarra': 'navarra', 'Comunidad Foral de Navarra': 'navarra', 'País Vasco': 'pais_vasco', 'Euskadi': 'pais_vasco',
+  'Ceuta': 'ceuta', 'Melilla': 'melilla'
 };
 
 function colorFondo(focos) {
-  if (focos === 0)   return '#1a3a1a';
-  if (focos <= 5)    return '#7a6a10';
-  if (focos <= 20)   return '#aa5010';
-  if (focos <= 50)   return '#cc2a00';
+  if (focos === 0) return '#1a3a1a';
+  if (focos <= 5) return '#7a6a10';
+  if (focos <= 20) return '#aa5010';
+  if (focos <= 50) return '#cc2a00';
   return '#ff0000';
 }
-
 function colorBorde(focos) {
-  if (focos === 0)   return '#2a5a2a';
-  if (focos <= 5)    return '#aa9a20';
-  if (focos <= 20)   return '#dd7030';
-  if (focos <= 50)   return '#ff4a20';
+  if (focos === 0) return '#2a5a2a';
+  if (focos <= 5) return '#aa9a20';
+  if (focos <= 20) return '#dd7030';
+  if (focos <= 50) return '#ff4a20';
   return '#ff6666';
 }
-
 function formatDias(n) {
   if (!n) return '0 días';
   return `${n} día${n === 1 ? '' : 's'}`;
 }
-
-function popupComunidad(c) {
+function formatFechaDeteccion(iso) {
+  if (!iso) return 'No disponible';
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid'
+  }).format(new Date(iso));
+}
+function popupComunidad(c, horas) {
   return `
     <div style="min-width:240px">
       <div class="popup-titulo">${c.tiene_fuego ? '🔥' : '✅'} ${c.nombre}</div>
-      <div class="popup-subtitulo">Comunidad Autónoma · Datos de hoy</div>
-      <div class="popup-dato">
-        <span>Focos activos hoy</span>
-        <span class="${c.tiene_fuego ? 'fuego-val' : 'ok-val'}">${c.focos_activos > 0 ? c.focos_activos + ' focos' : 'Sin incendios'}</span>
-      </div>
-      <div class="popup-dato">
-        <span>Nivel de actividad</span>
-        <span>${c.etiqueta}</span>
-      </div>
-      <div class="popup-separador">Histórico de incendios</div>
-      <div class="popup-dato">
-        <span>Días seguidos con incendio</span>
-        <span class="${c.dias_consecutivos > 0 ? 'fuego-val' : ''}">${formatDias(c.dias_consecutivos)}</span>
-      </div>
-      <div class="popup-dato">
-        <span>Días con incendio este año</span>
-        <span>${formatDias(c.dias_anio_actual)}</span>
-      </div>
-      <div class="popup-dato">
-        <span>Récord racha con incendio</span>
-        <span>${formatDias(c.max_racha_con_fuego)}</span>
-      </div>
-      <div>
-        <span class="popup-tag" style="background:${colorFondo(c.focos_activos)}aa;border:1px solid ${colorBorde(c.focos_activos)}">
-          ${c.etiqueta}
-        </span>
-      </div>
+      <div class="popup-subtitulo">Detecciones de las últimas ${horas || 48} horas</div>
+      <div class="popup-dato"><span>Focos recientes</span><span class="${c.tiene_fuego ? 'fuego-val' : 'ok-val'}">${c.focos_activos > 0 ? c.focos_activos + ' focos' : 'Sin detecciones'}</span></div>
+      <div class="popup-dato"><span>Nivel de actividad</span><span>${c.etiqueta}</span></div>
+      <div class="popup-separador">Histórico de detecciones</div>
+      <div class="popup-dato"><span>Días seguidos con detección</span><span class="${c.dias_consecutivos > 0 ? 'fuego-val' : ''}">${formatDias(c.dias_consecutivos)}</span></div>
+      <div class="popup-dato"><span>Días con detección este año</span><span>${formatDias(c.dias_anio_actual)}</span></div>
+      <div class="popup-dato"><span>Récord racha con detección</span><span>${formatDias(c.max_racha_con_fuego)}</span></div>
+      <div><span class="popup-tag" style="background:${colorFondo(c.focos_activos)}aa;border:1px solid ${colorBorde(c.focos_activos)}">${c.etiqueta}</span></div>
     </div>`;
 }
-
 function popupFoco(f) {
-  const lugar    = f.lugar || 'Zona rural';
   const frpLabel = f.frp > 0 ? f.frp + ' MW' : '< 1 MW';
-  const pct      = Math.min(100, Math.round((f.frp / 150) * 100));
+  const pct = Math.min(100, Math.round((f.frp / 150) * 100));
   const colorFRP = f.frp >= 100 ? '#ff2200' : f.frp >= 30 ? '#ff7733' : f.frp >= 10 ? '#ffaa22' : '#ffcc44';
-
-  const barraHTML = `
-    <div style="margin:6px 0 8px">
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:#7a5a4a;margin-bottom:3px">
-        <span>Intensidad (FRP)</span>
-        <span style="color:${colorFRP};font-weight:700">${f.intensidad || '—'}</span>
-      </div>
-      <div style="background:#2a1008;border-radius:4px;height:6px;overflow:hidden">
-        <div style="width:${pct}%;height:100%;background:${colorFRP};border-radius:4px"></div>
-      </div>
-    </div>`;
-
   return `
-    <div style="min-width:220px">
-      <div class="popup-titulo">🔥 Foco activo</div>
+    <div style="min-width:230px">
+      <div class="popup-titulo">🔥 Foco reciente</div>
       <div class="popup-subtitulo">📍 ${f.comunidad}</div>
-      <div class="popup-dato">
-        <span>Ubicación</span>
-        <span>${lugar}</span>
-      </div>
-      ${barraHTML}
-      <div class="popup-dato">
-        <span>Potencia radiativa (FRP)</span>
-        <span class="fuego-val">${frpLabel}</span>
-      </div>
-      <div class="popup-dato">
-        <span>¿Qué es el FRP?</span>
-        <span style="font-size:10px;color:#7a5a4a">Energía emitida por el fuego</span>
-      </div>
-      <div class="popup-dato">
-        <span>Coordenadas</span>
-        <span style="font-size:10px">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)}</span>
-      </div>
+      <div class="popup-dato"><span>Ubicación</span><span>${f.lugar || 'Zona rural'}</span></div>
+      <div style="margin:6px 0 8px"><div style="display:flex;justify-content:space-between;font-size:10px;color:#7a5a4a;margin-bottom:3px"><span>Intensidad (FRP)</span><span style="color:${colorFRP};font-weight:700">${f.intensidad || '—'}</span></div><div style="background:#2a1008;border-radius:4px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${colorFRP};border-radius:4px"></div></div></div>
+      <div class="popup-dato"><span>Potencia radiativa</span><span class="fuego-val">${frpLabel}</span></div>
+      <div class="popup-dato"><span>Detectado</span><span>${formatFechaDeteccion(f.deteccion_utc)}</span></div>
+      <div class="popup-dato"><span>Sensor</span><span>${f.sensor || 'VIIRS'}</span></div>
+      <div class="popup-dato"><span>Coordenadas</span><span style="font-size:10px">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)}</span></div>
     </div>`;
 }
-
 function crearIconoFoco(frp) {
-  let size, shadow;
-  if (frp >= 100) {
-    size   = 22;
-    shadow = 'drop-shadow(0 0 6px rgba(255,34,0,0.9))';
-  } else if (frp >= 30) {
-    size   = 17;
-    shadow = 'drop-shadow(0 0 5px rgba(255,120,50,0.8))';
-  } else if (frp >= 10) {
-    size   = 14;
-    shadow = 'drop-shadow(0 0 4px rgba(255,170,34,0.7))';
-  } else {
-    size   = 11;
-    shadow = 'drop-shadow(0 0 3px rgba(255,200,68,0.6))';
-  }
-
-  return L.divIcon({
-    html: `<div style="font-size:${size}px;line-height:1;filter:${shadow};cursor:pointer;">🔥</div>`,
-    className: '',
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size],
-    popupAnchor: [0, -size - 2]
-  });
+  let size = frp >= 100 ? 22 : frp >= 30 ? 17 : frp >= 10 ? 14 : 11;
+  let shadow = frp >= 100 ? 'drop-shadow(0 0 6px rgba(255,34,0,0.9))' : frp >= 30 ? 'drop-shadow(0 0 5px rgba(255,120,50,0.8))' : frp >= 10 ? 'drop-shadow(0 0 4px rgba(255,170,34,0.7))' : 'drop-shadow(0 0 3px rgba(255,200,68,0.6))';
+  return L.divIcon({ html: `<div style="font-size:${size}px;line-height:1;filter:${shadow};cursor:pointer;">🔥</div>`, className: '', iconSize: [size, size], iconAnchor: [size / 2, size], popupAnchor: [0, -size - 2] });
 }
 
 Promise.all([
   fetch(JSON_URL + '?t=' + Date.now()).then(r => r.json()),
   fetch(GEOJSON_URL).then(r => r.json())
-])
-.then(([data, geojson]) => {
-
+]).then(([data, geojson]) => {
   const datosMap = {};
   data.comunidades.forEach(c => { datosMap[c.id] = c; });
-
   const totalFocos = data.total_focos_espana || 0;
-  const conFuego   = data.comunidades_con_fuego || 0;
-
-  document.getElementById('resumen-nacional').innerHTML =
-    conFuego > 0
-      ? `<span>${conFuego} comunidades</span> con fuego · <span>${totalFocos} focos</span> en España`
-      : `✓ Sin incendios activos en España ahora mismo`;
-
-  document.getElementById('ultima-actualizacion').textContent =
-    'Actualizado: ' + data.fecha_legible;
-
-  let primerConFuego = null;
-  let primerLayer    = null;
-
+  const conFuego = data.comunidades_con_fuego || 0;
+  const horas = data.ventana_activa_horas || 48;
+  document.getElementById('resumen-nacional').innerHTML = conFuego > 0
+    ? `<span>${conFuego} comunidades</span> con detecciones · <span>${totalFocos} focos</span> en ${horas} h`
+    : `✓ Sin detecciones recientes en España`;
+  document.getElementById('ultima-actualizacion').textContent = 'Actualizado: ' + data.fecha_legible;
+  let primerLayer = null;
   const capaGeojson = L.geoJSON(geojson, {
     style: function(feature) {
       const nombre = feature.properties.name || feature.properties.NAME || '';
-      const id     = NOMBRE_A_ID[nombre];
-      const c      = id ? datosMap[id] : null;
-      const focos  = c ? c.focos_activos : 0;
-      return {
-        fillColor:   colorFondo(focos),
-        fillOpacity: 0.72,
-        color:       colorBorde(focos),
-        weight:      1.2,
-        opacity:     0.9
-      };
+      const c = datosMap[NOMBRE_A_ID[nombre]];
+      const focos = c ? c.focos_activos : 0;
+      return { fillColor: colorFondo(focos), fillOpacity: 0.72, color: colorBorde(focos), weight: 1.2, opacity: 0.9 };
     },
     onEachFeature: function(feature, layer) {
       const nombre = feature.properties.name || feature.properties.NAME || '';
-      const id     = NOMBRE_A_ID[nombre];
-      const c      = id ? datosMap[id] : null;
+      const c = datosMap[NOMBRE_A_ID[nombre]];
       if (!c) return;
-
-      layer.bindPopup(popupComunidad(c), { maxWidth: 280 });
-
-      layer.on('mouseover', function() {
-        layer.setStyle({ fillOpacity: 0.90, weight: 2 });
-      });
-      layer.on('mouseout', function() {
-        capaGeojson.resetStyle(layer);
-      });
-
-      if (c.tiene_fuego && !primerConFuego) {
-        primerConFuego = c;
-        primerLayer    = layer;
-      }
+      layer.bindPopup(popupComunidad(c, horas), { maxWidth: 280 });
+      layer.on('mouseover', function() { layer.setStyle({ fillOpacity: 0.90, weight: 2 }); });
+      layer.on('mouseout', function() { capaGeojson.resetStyle(layer); });
+      if (c.tiene_fuego && !primerLayer) primerLayer = layer;
     }
   }).addTo(mapa);
-
-  const focos = data.focos_individuales || [];
-  focos.forEach(f => {
-    const icono = crearIconoFoco(f.frp);
-    L.marker([f.lat, f.lon], { icon: icono })
-      .addTo(mapa)
-      .bindPopup(popupFoco(f), { maxWidth: 260 });
+  (data.focos_individuales || []).forEach(f => {
+    L.marker([f.lat, f.lon], { icon: crearIconoFoco(f.frp) }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270 });
   });
-
-  if (primerLayer) {
-    setTimeout(() => primerLayer.openPopup(), 900);
-  }
-
-})
-.catch(err => {
+  if (primerLayer) setTimeout(() => primerLayer.openPopup(), 900);
+}).catch(err => {
   console.error('Error:', err);
   document.getElementById('resumen-nacional').textContent = 'Error al cargar datos';
 });
