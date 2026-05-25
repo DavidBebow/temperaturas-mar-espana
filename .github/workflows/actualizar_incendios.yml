@@ -39,5 +39,17 @@ jobs:
         run: |
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
+          git pull --rebase
           git add docs/incendios.json docs/historial_incendios.json
-          git diff --staged --quiet || (git commit -m "Incendios actualizados: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
+          if git diff --staged --quiet; then
+            echo "No hay cambios que guardar"
+          else
+            git commit -m "Incendios actualizados: $(date +'%d/%m/%Y %H:%M')"
+            for intento in 1 2 3 4 5; do
+              git push && exit 0
+              echo "Push falló. Reintentando en 15 segundos... intento $intento/5"
+              sleep 15
+            done
+            echo "No se pudo hacer push después de 5 intentos"
+            exit 1
+          fi
