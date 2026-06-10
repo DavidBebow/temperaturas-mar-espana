@@ -1,736 +1,748 @@
 """
-obtener_embalses.py — Embalses España por Provincia
-====================================================
-FUENTE: Boletín Hidrológico Semanal — MITECO
-MÉTODO: Datos ingresados manualmente cada martes desde el Boletín oficial.
+obtener_embalses.py
+===================
+Descarga el Excel semanal oficial del Boletín Hidrológico del MITECO,
+cruza los datos con el diccionario de embalses por provincia y genera:
+  - docs/embalses/{provincia}.json  (un fichero por provincia)
+  - docs/embalses_nacional.json     (resumen nacional para el mapa de España)
 
-Por qué no descarga automáticamente:
-  El fichero BD-Embalses_1988-2022.zip del MITECO NO es descargable
-  mediante script (el servidor devuelve HTML, no el ZIP). No existe
-  API pública con datos dinámicos semanales por embalse individual.
+Fuente: Boletín Hidrológico Semanal — MITECO (datos oficiales)
+URL patrón: https://sede.miteco.gob.es/BoleHWeb/accion/cargador_archivo.htm
+            ?file=cache/xls/{AAAAMM}/{AAAASSNN}_es.xls
 
-Flujo de trabajo cada martes:
-  1. Abrir https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-
-     recursos-hidricos/boletin-hidrologico.html
-  2. Consultar el dashboard ArcGIS o descargar el PDF del Boletín
-  3. Actualizar DATOS_EMBALSES y FECHA_DATOS al inicio de este archivo
-  4. Hacer commit → GitHub Actions ejecuta el script y actualiza los JSON
-
-Genera:
-  docs/embalses_nacional.json      ← mapa España por provincia
-  docs/embalses/{provincia}.json   ← detalle de cada provincia
-
-No requiere dependencias externas (solo Python estándar).
+Ejecución: python scripts/obtener_embalses.py
+Dependencias: pip install requests openpyxl
 """
 
+import requests
 import json
 import os
-from datetime import datetime
+import io
+from datetime import datetime, date, timedelta
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ▶▶▶  ACTUALIZAR AQUÍ CADA MARTES  ◀◀◀
-#
-# Datos del Boletín Hidrológico Semanal del MITECO.
-# Fuente: https://www.miteco.gob.es → Agua → Boletín Hidrológico
-# ═══════════════════════════════════════════════════════════════════════════════
+# ── UTILIDADES ─────────────────────────────────────────────────────────────────
 
-FECHA_DATOS = "11/05/2026"   # ← Fecha del boletín (DD/MM/YYYY)
+def semana_iso(d: date):
+    """Devuelve (año_iso, semana_iso) para una fecha."""
+    iso = d.isocalendar()
+    return iso[0], iso[1]
 
-# Formato: "NOMBRE EN MAYÚSCULAS": {"vol": hm³_actual, "pct": porcentaje}
-# Fuente: embalses.net / Boletín Hidrológico MITECO — semana 19/2026 (11-05-2026)
-# Los nombres deben coincidir con los de PROVINCIAS → embalses → buscar
-DATOS_EMBALSES = {
-    # ── MURCIA ───────────────────────────────────────────────────────────────
-    "ALFONSO XIII":        {"vol":  3.0, "pct": 13.6},
-    "ALGECIRAS":           {"vol": 19.0, "pct": 42.2},
-    "ARGOS":               {"vol":  7.0, "pct": 65.4},
-    "LA CIERVA":           {"vol":  5.0, "pct": 68.5},
-    "PUENTES":             {"vol": 14.0, "pct": 53.8},
-    "SANTOMERA":           {"vol":  2.0, "pct": 11.1},
-    "VALDEINFIERNO":       {"vol":  0.1, "pct":  0.9},
-    "MULA":                {"vol":  1.2, "pct":  5.7},
-    "PLIEGO":              {"vol":  0.2, "pct":  5.5},
-    # ── ANDALUCÍA ────────────────────────────────────────────────────────────
-    "LA MINILLA":          {"vol": 180.3, "pct": 91.5},
-    "EL GERGAL":           {"vol":  72.6, "pct": 88.3},
-    "MELONARES":           {"vol": 151.7, "pct": 90.3},
-    "ARACENA":             {"vol": 109.3, "pct": 86.1},
-    "IZNAJAR":             {"vol": 862.4, "pct": 87.9},
-    "LA BREÑA II":         {"vol": 733.3, "pct": 89.1},
-    "BEMBEZAR":            {"vol": 237.0, "pct": 91.5},
-    "SAN RAFAEL":          {"vol":  49.8, "pct": 85.8},
-    "EL TRANCO":           {"vol": 441.0, "pct": 88.2},
-    "JANDULA":             {"vol": 282.4, "pct": 87.5},
-    "EL RUMBLAR":          {"vol":  78.5, "pct": 87.7},
-    "NEGRATIN":            {"vol": 498.5, "pct": 87.9},
-    "RULES":               {"vol":  98.3, "pct": 81.9},
-    "LOS BERMEJALES":      {"vol":  74.2, "pct": 81.8},
-    "CANALES":             {"vol":  61.6, "pct": 87.6},
-    "ZAHARA":              {"vol": 199.5, "pct": 92.8},
-    "BORNOS":              {"vol": 229.0, "pct": 89.8},
-    "BARBATE":             {"vol": 193.0, "pct": 84.6},
-    "LA VINUELA":          {"vol": 131.3, "pct": 77.7},
-    "GUADALTEBA":          {"vol":  96.4, "pct": 78.9},
-    "CONDE GUADALHORCE":   {"vol": 103.8, "pct": 76.4},
-    "EL ANDEVALO":         {"vol": 138.4, "pct": 87.0},
-    "RIO TINTO":           {"vol":  46.9, "pct": 86.8},
-    "CUEVAS DE ALMANZORA": {"vol": 131.4, "pct": 74.1},
-    "BENINAR":             {"vol":  43.7, "pct": 78.2},
-    # ── MADRID ───────────────────────────────────────────────────────────────
-    "EL ATAZAR":           {"vol": 362.0, "pct": 85.2},
-    "VALMAYOR":            {"vol": 106.0, "pct": 85.2},
-    "SANTILLANA":          {"vol":  77.6, "pct": 85.2},
-    "EL PARDO":            {"vol":  35.5, "pct": 85.2},
-    "PINILLA":             {"vol":  32.4, "pct": 85.2},
-    "RIOSEQUILLO":         {"vol":  35.2, "pct": 85.2},
-    "EL VADO":             {"vol":  47.0, "pct": 85.2},
-    # ── EXTREMADURA ──────────────────────────────────────────────────────────
-    "LA SERENA":           {"vol": 2760.0, "pct": 85.7},
-    "CIJARA":              {"vol": 1386.0, "pct": 85.7},
-    "GARCIA SOLA":         {"vol":  735.0, "pct": 85.7},
-    "ZUJAR":               {"vol":  265.0, "pct": 85.7},
-    "ALCANTARA":           {"vol": 2710.0, "pct": 83.7},
-    "GABRIEL GALAN":       {"vol":  774.0, "pct": 83.7},
-    # ── CASTILLA-LA MANCHA ───────────────────────────────────────────────────
-    "ALARCON":             {"vol":  899.0, "pct": 79.3},
-    "CONTRERAS":           {"vol":  675.0, "pct": 79.3},
-    "BUENDIA":             {"vol": 1299.0, "pct": 79.3},
-    "FUENSANTA":           {"vol":  177.0, "pct": 66.9},
-    "TALAVE":              {"vol":   22.8, "pct": 66.9},
-    "AZUTAN":              {"vol":  209.0, "pct": 66.1},
-    "ENTREPEÑAS":          {"vol": 1320.0, "pct": 66.6},
-    # ── COMUNIDAD VALENCIANA ─────────────────────────────────────────────────
-    "TOUS":                {"vol":  233.0, "pct": 61.8},
-    "FORATA":              {"vol":   23.0, "pct": 61.8},
-    "AMADORIO":            {"vol":    8.5, "pct": 49.8},
-    "GUADALEST":           {"vol":    6.6, "pct": 49.8},
-    "SICHAR":              {"vol":   29.5, "pct": 59.7},
-    # ── ARAGÓN ───────────────────────────────────────────────────────────────
-    "MEQUINENZA":          {"vol": 1315.0, "pct": 94.0},
-    "RIBARROJA":           {"vol":  197.0, "pct": 94.0},
-    "MEDIANO":             {"vol":  373.0, "pct": 85.6},
-    "EL GRADO":            {"vol":  342.0, "pct": 85.6},
-    "YESA":                {"vol":  382.0, "pct": 85.6},
-    "SOTONERA":            {"vol":  162.0, "pct": 85.6},
-    # ── CATALUÑA ─────────────────────────────────────────────────────────────
-    "RIALB":               {"vol":  366.0, "pct": 90.8},
-    "CANELLES":            {"vol":  616.0, "pct": 90.8},
-    "LA BAELLS":           {"vol":  103.0, "pct": 94.2},
-    "SUSQUEDA":            {"vol":  219.0, "pct": 94.2},
-    "SAU":                 {"vol":  153.0, "pct": 90.8},
-    "BOADELLA":            {"vol":   56.0, "pct": 90.8},
-    # ── LA RIOJA ─────────────────────────────────────────────────────────────
-    "MANSILLA":            {"vol":   61.5, "pct": 90.5},
-    # ── NAVARRA ──────────────────────────────────────────────────────────────
-    "ITOIZ":               {"vol":  373.0, "pct": 89.2},
-    "ALLOZ":               {"vol":   59.0, "pct": 89.2},
-    # ── PAÍS VASCO ───────────────────────────────────────────────────────────
-    "ULLIBARRI":           {"vol":  125.8, "pct": 85.6},
-    "URRUNAGA":            {"vol":   61.2, "pct": 85.6},
-    # ── CANTABRIA ────────────────────────────────────────────────────────────
-    "DEL EBRO":            {"vol":  488.0, "pct": 84.9},
-    # ── ASTURIAS ─────────────────────────────────────────────────────────────
-    "TANES":               {"vol":   36.7, "pct": 83.3},
-    "RIOSECO":             {"vol":   27.1, "pct": 83.3},
-    # ── CASTILLA Y LEÓN ──────────────────────────────────────────────────────
-    "BARRIOS DE LUNA":     {"vol":  272.7, "pct": 88.7},
-    "RIANO":               {"vol":  577.0, "pct": 88.7},
-    "RICOBAYO":            {"vol":  960.8, "pct": 82.8},
-    "ALMENDRA":            {"vol": 2854.0, "pct": 89.2},
-    "REQUEJADA":           {"vol":  411.8, "pct": 85.8},
-    # ── GALICIA ──────────────────────────────────────────────────────────────
-    "BELESAR":             {"vol":  588.0, "pct": 90.1},
-    "CASTRELO":            {"vol": 1152.0, "pct": 84.8},
-    "CECEBRE":             {"vol":   49.9, "pct": 74.1},
-    # ── GALICIA — Pontevedra ──────────────────────────────────────────────────
-    "EIRAS":               {"vol":  101.1, "pct": 87.9},
-    "CALDAS":              {"vol":   63.3, "pct": 87.9},
-    # ── CASTILLA Y LEÓN adicional ─────────────────────────────────────────────
-    "EL BURGUILLO":        {"vol":  181.1, "pct": 91.0},
-    "ALBERCHE":            {"vol":   80.1, "pct": 91.0},
-    "PONTON ALTO":         {"vol":   23.2, "pct": 91.0},
-    "LINARES DEL ARROYO":  {"vol":   50.1, "pct": 91.0},
-    "CUERDA DEL POZO":     {"vol":  190.5, "pct": 83.5},
-    "AGUILAR":             {"vol":  208.8, "pct": 85.2},
-    # ── CASTILLA-LA MANCHA adicional ─────────────────────────────────────────
-    "GASSET":              {"vol":   37.0, "pct": 89.6},
-    "PUENTE NUEVO":        {"vol":   44.8, "pct": 89.6},
-    "VEGA DE JABALON":     {"vol":   32.3, "pct": 89.6},
-    # ── ARAGÓN — Teruel ───────────────────────────────────────────────────────
-    "CUEVA FORADADA":      {"vol":   12.8, "pct": 75.6},
-    "GALLIPUEN":           {"vol":   32.0, "pct": 75.6},
-    "PENA":                {"vol":   13.6, "pct": 75.6},
-    # ── CATALUÑA — Tarragona ──────────────────────────────────────────────────
-    "RIUDECANYES":         {"vol":    9.7, "pct": 89.4},
-    "SIURANA":             {"vol":   11.1, "pct": 89.4},
-    # ── PAÍS VASCO — Guipúzcoa / Álava ───────────────────────────────────────
-    "ANARBE":              {"vol":   27.0, "pct": 93.1},
-    # ── CASTILLA Y LEÓN — Burgos/Palencia extra ───────────────────────────────
-    "SOBRÓN":              {"vol":   17.6, "pct": 84.9},
-    "SOBRON":              {"vol":   17.6, "pct": 84.9},
-    "URREZ":               {"vol":   22.1, "pct": 84.9},
-    "BOLARQUE":            {"vol":   21.0, "pct": 66.6},
-    "CAMPORREDONDO":       {"vol":   59.9, "pct": 85.6},
-    # ── PROVINCIAS CON PCT DIRECTO DE EMBALSES.NET ───────────────────────────
-    # Guadalajara (66.62%) — Entrepeñas pertenece en su mayor parte a Guadalajara
-    "ENTREPEÑAS":          {"vol":  556.7, "pct": 66.6},
-    # Palencia (85.63%) — datos directos
-    "REQUEJADA":           {"vol":   78.4, "pct": 85.6},
-}
+def url_boletin(anyo: int, semana: int) -> str:
+    """
+    Construye la URL del Excel del boletín para un año y semana ISO dados.
+    El MITECO usa el patrón:
+        cache/xls/AAAAMM/AAAASSNN_es.xls
+    donde MM = mes del lunes de esa semana ISO, SS = semana con 2 dígitos,
+    NN = número de boletín del año (= semana con 2 dígitos, por lo general igual a SS).
+    """
+    # Calcular el lunes de la semana ISO pedida
+    lunes = date.fromisocalendar(anyo, semana, 1)
+    mes   = lunes.strftime("%m")
+    ss    = f"{semana:02d}"
+    base  = f"https://sede.miteco.gob.es/BoleHWeb/accion/cargador_archivo.htm"
+    ruta  = f"cache/xls/{anyo}{mes}/{anyo}{ss}{ss}_es.xls"
+    return f"{base}?file={ruta}&mimetype=application/vnd.ms-excel"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# DICCIONARIO DE PROVINCIAS Y EMBALSES
-# ═══════════════════════════════════════════════════════════════════════════════
-PROVINCIAS = {
-
-    "murcia": {
-        "nombre": "Murcia", "comunidad": "Región de Murcia",
-        "lat": 37.9, "lon": -1.7,
-        "embalses": [
-            {"id":"alfonso_xiii",  "nombre":"Alfonso XIII",  "buscar":["ALFONSO XIII"],   "rio":"Quípar",       "municipio":"Calasparra",         "cap":22.0,  "lat":38.214,"lon":-1.728},
-            {"id":"algeciras",     "nombre":"Algeciras",     "buscar":["ALGECIRAS"],      "rio":"Guadalentín",  "municipio":"Lorca",              "cap":45.0,  "lat":37.710,"lon":-1.870},
-            {"id":"argos",         "nombre":"Argos",         "buscar":["ARGOS"],          "rio":"Argos",        "municipio":"Caravaca de la Cruz", "cap":10.7,  "lat":38.338,"lon":-1.907},
-            {"id":"la_cierva",     "nombre":"La Cierva",     "buscar":["LA CIERVA"],      "rio":"Segura",       "municipio":"Ojós",               "cap":7.3,   "lat":38.075,"lon":-1.592},
-            {"id":"puentes",       "nombre":"Puentes",       "buscar":["PUENTES"],        "rio":"Guadalentín",  "municipio":"Lorca",              "cap":26.0,  "lat":37.776,"lon":-1.787},
-            {"id":"santomera",     "nombre":"Santomera",     "buscar":["SANTOMERA"],      "rio":"Rambla Salada","municipio":"Santomera",          "cap":17.9,  "lat":38.072,"lon":-1.057},
-            {"id":"valdeinfierno", "nombre":"Valdeinfierno", "buscar":["VALDEINFIERNO"],  "rio":"Luchena",      "municipio":"Lorca",              "cap":11.3,  "lat":37.953,"lon":-1.872},
-            {"id":"mula",          "nombre":"Mula",          "buscar":["MULA"],           "rio":"Mula",         "municipio":"Mula",               "cap":21.0,  "lat":38.052,"lon":-1.496},
-            {"id":"pliego",        "nombre":"Pliego",        "buscar":["PLIEGO"],         "rio":"Pliego",       "municipio":"Pliego",             "cap":3.6,   "lat":38.009,"lon":-1.558},
-        ],
-    },
-
-    "sevilla": {
-        "nombre": "Sevilla", "comunidad": "Andalucía",
-        "lat": 37.4, "lon": -5.9,
-        "embalses": [
-            {"id":"la_minilla", "nombre":"La Minilla", "buscar":["LA MINILLA"], "rio":"Rivera de Huelva","municipio":"Real de la Jara","cap":197.0,"lat":37.803,"lon":-5.913},
-            {"id":"el_gergal",  "nombre":"El Gergal",  "buscar":["EL GERGAL"],  "rio":"Cala",           "municipio":"Guillena",       "cap":82.2, "lat":37.665,"lon":-6.025},
-            {"id":"melonares",  "nombre":"Melonares",  "buscar":["MELONARES"],  "rio":"Rivera de Huelva","municipio":"Guillena",       "cap":168.0,"lat":37.721,"lon":-6.041},
-            {"id":"aracena",    "nombre":"Aracena",    "buscar":["ARACENA"],    "rio":"Rivera de Huelva","municipio":"Aracena",        "cap":127.0,"lat":37.879,"lon":-6.604},
-        ],
-    },
-
-    "cordoba": {
-        "nombre": "Córdoba", "comunidad": "Andalucía",
-        "lat": 37.9, "lon": -4.8,
-        "embalses": [
-            {"id":"iznajar",    "nombre":"Iznájar",    "buscar":["IZNAJAR"],     "rio":"Genil",    "municipio":"Iznájar",    "cap":981.1,"lat":37.267,"lon":-4.310},
-            {"id":"la_breña",   "nombre":"La Breña II","buscar":["LA BREÑA II"], "rio":"Bembézar", "municipio":"Hornachuelos","cap":823.0,"lat":37.885,"lon":-5.164},
-            {"id":"bembezar",   "nombre":"Bembézar",   "buscar":["BEMBEZAR"],    "rio":"Bembézar", "municipio":"Hornachuelos","cap":259.0,"lat":37.834,"lon":-5.247},
-            {"id":"san_rafael", "nombre":"San Rafael", "buscar":["SAN RAFAEL"],  "rio":"Guadalmellato","municipio":"Córdoba","cap":58.0,"lat":37.901,"lon":-4.830},
-        ],
-    },
-
-    "jaen": {
-        "nombre": "Jaén", "comunidad": "Andalucía",
-        "lat": 37.8, "lon": -3.8,
-        "embalses": [
-            {"id":"el_tranco","nombre":"El Tranco","buscar":["EL TRANCO"],"rio":"Guadalquivir","municipio":"Hornos",          "cap":500.0,"lat":38.039,"lon":-2.803},
-            {"id":"jandula",  "nombre":"Jándula",  "buscar":["JANDULA"],  "rio":"Jándula",     "municipio":"Andújar",         "cap":322.6,"lat":38.177,"lon":-4.100},
-            {"id":"el_rumblar","nombre":"El Rumblar","buscar":["EL RUMBLAR"],"rio":"Rumblar",  "municipio":"Baños de la Encina","cap":89.5,"lat":38.228,"lon":-3.796},
-        ],
-    },
-
-    "granada": {
-        "nombre": "Granada", "comunidad": "Andalucía",
-        "lat": 37.2, "lon": -3.6,
-        "embalses": [
-            {"id":"negratin",       "nombre":"Negratín",       "buscar":["NEGRATIN"],        "rio":"Guadiana Menor","municipio":"Freila",         "cap":567.0,"lat":37.656,"lon":-2.981},
-            {"id":"rules",          "nombre":"Rules",          "buscar":["RULES"],           "rio":"Guadalfeo",     "municipio":"Vélez Benaudalla","cap":120.0,"lat":36.814,"lon":-3.573},
-            {"id":"los_bermejales", "nombre":"Los Bermejales", "buscar":["LOS BERMEJALES"],  "rio":"Cacín",         "municipio":"Arenas del Rey",  "cap":90.7, "lat":36.987,"lon":-4.044},
-            {"id":"canales",        "nombre":"Canales",        "buscar":["CANALES"],         "rio":"Genil",         "municipio":"Güéjar Sierra",   "cap":70.3, "lat":37.138,"lon":-3.558},
-        ],
-    },
-
-    "malaga": {
-        "nombre": "Málaga", "comunidad": "Andalucía",
-        "lat": 36.9, "lon": -4.6,
-        "embalses": [
-            {"id":"la_vinuela",  "nombre":"La Viñuela",       "buscar":["LA VINUELA"],         "rio":"Vélez",     "municipio":"La Viñuela","cap":168.9,"lat":36.871,"lon":-4.149},
-            {"id":"guadalteba",  "nombre":"Guadalteba",       "buscar":["GUADALTEBA"],         "rio":"Guadalteba","municipio":"Ardales",   "cap":122.2,"lat":36.887,"lon":-4.885},
-            {"id":"guadalhorce", "nombre":"Conde Guadalhorce","buscar":["CONDE GUADALHORCE"],  "rio":"Guadalhorce","municipio":"Ardales",  "cap":135.8,"lat":36.864,"lon":-4.793},
-        ],
-    },
-
-    "huelva": {
-        "nombre": "Huelva", "comunidad": "Andalucía",
-        "lat": 37.6, "lon": -6.9,
-        "embalses": [
-            {"id":"el_andevalo","nombre":"El Andévalo","buscar":["EL ANDEVALO"],"rio":"Odiel","municipio":"El Granado","cap":159.0,"lat":37.674,"lon":-7.090},
-            {"id":"rio_tinto",  "nombre":"Río Tinto",  "buscar":["RIO TINTO"],  "rio":"Tinto","municipio":"Nerva",    "cap":54.0, "lat":37.695,"lon":-6.555},
-        ],
-    },
-
-    "cadiz": {
-        "nombre": "Cádiz", "comunidad": "Andalucía",
-        "lat": 36.5, "lon": -5.8,
-        "embalses": [
-            {"id":"zahara",  "nombre":"Zahara",  "buscar":["ZAHARA"],  "rio":"Guadalete","municipio":"Zahara","cap":215.0,"lat":36.837,"lon":-5.428},
-            {"id":"bornos",  "nombre":"Bornos",  "buscar":["BORNOS"],  "rio":"Guadalete","municipio":"Bornos", "cap":255.0,"lat":36.803,"lon":-5.715},
-            {"id":"barbate", "nombre":"Barbate", "buscar":["BARBATE"], "rio":"Barbate",  "municipio":"Vejer",  "cap":228.0,"lat":36.253,"lon":-5.830},
-        ],
-    },
-
-    "almeria": {
-        "nombre": "Almería", "comunidad": "Andalucía",
-        "lat": 37.2, "lon": -2.4,
-        "embalses": [
-            {"id":"cuevas", "nombre":"Cuevas Almanzora","buscar":["CUEVAS DE ALMANZORA"],"rio":"Almanzora","municipio":"Cuevas del Almanzora","cap":177.3,"lat":37.328,"lon":-1.884},
-            {"id":"beninar","nombre":"Benínar",          "buscar":["BENINAR"],            "rio":"Adra",      "municipio":"Berja",              "cap":55.9, "lat":36.882,"lon":-2.982},
-        ],
-    },
-
-    "madrid": {
-        "nombre": "Madrid", "comunidad": "Comunidad de Madrid",
-        "lat": 40.45, "lon": -3.70,
-        "embalses": [
-            {"id":"el_atazar",   "nombre":"El Atazar",   "buscar":["EL ATAZAR"],   "rio":"Lozoya",   "municipio":"Patones",      "cap":425.3,"lat":40.903,"lon":-3.578},
-            {"id":"valmayor",    "nombre":"Valmayor",    "buscar":["VALMAYOR"],    "rio":"Aulencia",  "municipio":"Valdemorillo", "cap":124.4,"lat":40.535,"lon":-4.052},
-            {"id":"santillana",  "nombre":"Santillana",  "buscar":["SANTILLANA"],  "rio":"Manzanares","municipio":"Manzanares RV","cap":91.0, "lat":40.727,"lon":-3.891},
-            {"id":"el_pardo",    "nombre":"El Pardo",    "buscar":["EL PARDO"],    "rio":"Manzanares","municipio":"El Pardo",     "cap":41.7, "lat":40.541,"lon":-3.780},
-            {"id":"pinilla",     "nombre":"Pinilla",     "buscar":["PINILLA"],     "rio":"Lozoya",    "municipio":"Pinilla",      "cap":38.0, "lat":40.990,"lon":-3.685},
-            {"id":"riosequillo", "nombre":"Riosequillo", "buscar":["RIOSEQUILLO"], "rio":"Jarama",    "municipio":"Buitrago",     "cap":41.3, "lat":40.974,"lon":-3.519},
-            {"id":"el_vado",     "nombre":"El Vado",     "buscar":["EL VADO"],     "rio":"Jarama",    "municipio":"Campillo",     "cap":55.1, "lat":40.918,"lon":-3.322},
-        ],
-    },
-
-    "badajoz": {
-        "nombre": "Badajoz", "comunidad": "Extremadura",
-        "lat": 38.9, "lon": -6.0,
-        "embalses": [
-            {"id":"la_serena",  "nombre":"La Serena",  "buscar":["LA SERENA"],  "rio":"Zújar",    "municipio":"Zalamea",   "cap":3219.0,"lat":38.857,"lon":-5.470},
-            {"id":"cijara",     "nombre":"Cíjara",     "buscar":["CIJARA"],     "rio":"Guadiana", "municipio":"Herrera",   "cap":1617.0,"lat":39.303,"lon":-5.010},
-            {"id":"garcia_sola","nombre":"García Sola","buscar":["GARCIA SOLA"],"rio":"Guadiana", "municipio":"Orellana",  "cap":858.0, "lat":39.016,"lon":-5.540},
-            {"id":"zujar",      "nombre":"Zújar",      "buscar":["ZUJAR"],      "rio":"Zújar",    "municipio":"Capilla",   "cap":309.0, "lat":38.717,"lon":-5.157},
-        ],
-    },
-
-    "caceres": {
-        "nombre": "Cáceres", "comunidad": "Extremadura",
-        "lat": 39.8, "lon": -6.4,
-        "embalses": [
-            {"id":"alcantara",    "nombre":"Alcántara",     "buscar":["ALCANTARA"],     "rio":"Tajo",  "municipio":"Alcántara",      "cap":3162.0,"lat":39.728,"lon":-6.892},
-            {"id":"gabriel_galan","nombre":"Gabriel y Galán","buscar":["GABRIEL GALAN"],"rio":"Alagón","municipio":"Granadilla",     "cap":925.0, "lat":40.218,"lon":-6.086},
-        ],
-    },
-
-    "cuenca": {
-        "nombre": "Cuenca", "comunidad": "Castilla-La Mancha",
-        "lat": 40.1, "lon": -2.1,
-        "embalses": [
-            {"id":"alarcon",   "nombre":"Alarcón",  "buscar":["ALARCON"],  "rio":"Júcar",   "municipio":"Alarcón","cap":1118.0,"lat":39.554,"lon":-2.100},
-            {"id":"contreras", "nombre":"Contreras","buscar":["CONTRERAS"],"rio":"Cabriel", "municipio":"Contreras","cap":852.0,"lat":39.540,"lon":-1.481},
-            {"id":"buendia",   "nombre":"Buendía",  "buscar":["BUENDIA"],  "rio":"Guadiela","municipio":"Buendía","cap":1640.0,"lat":40.391,"lon":-2.718},
-        ],
-    },
-
-    "albacete": {
-        "nombre": "Albacete", "comunidad": "Castilla-La Mancha",
-        "lat": 38.9, "lon": -1.9,
-        "embalses": [
-            {"id":"fuensanta", "nombre":"Fuensanta","buscar":["FUENSANTA"],"rio":"Segura","municipio":"Yeste","cap":210.7,"lat":38.334,"lon":-2.115},
-            {"id":"talave",    "nombre":"Talave",   "buscar":["TALAVE"],   "rio":"Mundo", "municipio":"Letur","cap":34.0, "lat":38.373,"lon":-2.130},
-        ],
-    },
-
-    "toledo": {
-        "nombre": "Toledo", "comunidad": "Castilla-La Mancha",
-        "lat": 39.8, "lon": -4.0,
-        "embalses": [
-            {"id":"azutan","nombre":"Azután","buscar":["AZUTAN"],"rio":"Tajo","municipio":"Azután","cap":316.0,"lat":39.791,"lon":-5.143},
-        ],
-    },
-
-    "guadalajara": {
-        "nombre": "Guadalajara", "comunidad": "Castilla-La Mancha",
-        "lat": 40.6, "lon": -3.2,
-        "embalses": [
-            {"id":"entrepeñas","nombre":"Entrepeñas","buscar":["ENTREPEÑAS","ENTREPENAS"],"rio":"Tajo","municipio":"Sacedón","cap":835.0,"lat":40.545,"lon":-2.691},
-            {"id":"bolarque",  "nombre":"Bolarque",  "buscar":["BOLARQUE"],               "rio":"Tajo","municipio":"Bolarque","cap":31.5,"lat":40.371,"lon":-2.825},
-        ],
-    },
-
-    "valencia": {
-        "nombre": "Valencia", "comunidad": "Comunidad Valenciana",
-        "lat": 39.5, "lon": -0.6,
-        "embalses": [
-            {"id":"tous",   "nombre":"Tous",  "buscar":["TOUS"],  "rio":"Júcar","municipio":"Tous",  "cap":377.0,"lat":39.194,"lon":-0.832},
-            {"id":"forata", "nombre":"Forata","buscar":["FORATA"],"rio":"Magro","municipio":"Yátova","cap":37.2, "lat":39.392,"lon":-0.946},
-        ],
-    },
-
-    "alicante": {
-        "nombre": "Alicante", "comunidad": "Comunidad Valenciana",
-        "lat": 38.4, "lon": -0.5,
-        "embalses": [
-            {"id":"amadorio",  "nombre":"Amadorio",  "buscar":["AMADORIO"],  "rio":"Amadorio", "municipio":"Villajoyosa","cap":17.0,"lat":38.511,"lon":-0.245},
-            {"id":"guadalest", "nombre":"Guadalest", "buscar":["GUADALEST"], "rio":"Guadalest","municipio":"Guadalest", "cap":13.3,"lat":38.671,"lon":-0.137},
-        ],
-    },
-
-    "castellon": {
-        "nombre": "Castellón", "comunidad": "Comunidad Valenciana",
-        "lat": 40.1, "lon": -0.1,
-        "embalses": [
-            {"id":"sichar","nombre":"Sichar","buscar":["SICHAR"],"rio":"Mijares","municipio":"Espadilla","cap":49.3,"lat":39.971,"lon":-0.446},
-        ],
-    },
-
-    "zaragoza": {
-        "nombre": "Zaragoza", "comunidad": "Aragón",
-        "lat": 41.6, "lon": -0.9,
-        "embalses": [
-            {"id":"mequinenza","nombre":"Mequinenza","buscar":["MEQUINENZA"],"rio":"Ebro","municipio":"Mequinenza","cap":1534.0,"lat":41.381,"lon":0.276},
-            {"id":"ribarroja", "nombre":"Ribarroja", "buscar":["RIBARROJA"], "rio":"Ebro","municipio":"Riba-roja", "cap":209.5, "lat":41.292,"lon":0.490},
-        ],
-    },
-
-    "huesca": {
-        "nombre": "Huesca", "comunidad": "Aragón",
-        "lat": 42.1, "lon": -0.4,
-        "embalses": [
-            {"id":"mediano", "nombre":"Mediano",    "buscar":["MEDIANO"],  "rio":"Cinca",  "municipio":"Mediano", "cap":436.0,"lat":42.269,"lon":0.146},
-            {"id":"el_grado","nombre":"El Grado",   "buscar":["EL GRADO"], "rio":"Cinca",  "municipio":"El Grado","cap":400.0,"lat":42.136,"lon":0.171},
-            {"id":"yesa",    "nombre":"Yesa",        "buscar":["YESA"],     "rio":"Aragón", "municipio":"Yesa",    "cap":446.8,"lat":42.618,"lon":-1.180},
-            {"id":"sotonera","nombre":"La Sotonera", "buscar":["SOTONERA"], "rio":"Sotón",  "municipio":"Gurrea",  "cap":189.4,"lat":42.136,"lon":-0.678},
-        ],
-    },
-
-    "lleida": {
-        "nombre": "Lleida", "comunidad": "Cataluña",
-        "lat": 41.9, "lon": 1.1,
-        "embalses": [
-            {"id":"rialb",   "nombre":"Rialb",   "buscar":["RIALB"],   "rio":"Segre",         "municipio":"Rialb","cap":402.9,"lat":42.013,"lon":1.281},
-            {"id":"canelles","nombre":"Canelles","buscar":["CANELLES"],"rio":"N. Ribagorzana","municipio":"Arén", "cap":678.0,"lat":42.052,"lon":0.627},
-        ],
-    },
-
-    "barcelona": {
-        "nombre": "Barcelona", "comunidad": "Cataluña",
-        "lat": 41.6, "lon": 1.9,
-        "embalses": [
-            {"id":"la_baells","nombre":"La Baells","buscar":["LA BAELLS","BAELLS"],"rio":"Llobregat","municipio":"Berga",    "cap":109.0,"lat":41.955,"lon":1.921},
-            {"id":"susqueda", "nombre":"Susqueda", "buscar":["SUSQUEDA"],           "rio":"Ter",      "municipio":"Susqueda","cap":233.0,"lat":41.968,"lon":2.538},
-        ],
-    },
-
-    "girona": {
-        "nombre": "Girona", "comunidad": "Cataluña",
-        "lat": 42.0, "lon": 2.8,
-        "embalses": [
-            {"id":"sau",     "nombre":"Sau",     "buscar":["SAU"],     "rio":"Ter","municipio":"Vilanova de Sau","cap":168.0,"lat":41.984,"lon":2.427},
-            {"id":"boadella","nombre":"Boadella","buscar":["BOADELLA"],"rio":"Muga","municipio":"Darnius",      "cap":61.5, "lat":42.321,"lon":2.817},
-        ],
-    },
-
-    "la_rioja": {
-        "nombre": "La Rioja", "comunidad": "La Rioja",
-        "lat": 42.3, "lon": -2.4,
-        "embalses": [
-            {"id":"mansilla","nombre":"Mansilla","buscar":["MANSILLA"],"rio":"Najerilla","municipio":"Mansilla Sierra","cap":68.0,"lat":42.175,"lon":-2.905},
-        ],
-    },
-
-    "navarra": {
-        "nombre": "Navarra", "comunidad": "Navarra",
-        "lat": 42.7, "lon": -1.6,
-        "embalses": [
-            {"id":"itoiz","nombre":"Itoiz","buscar":["ITOIZ"],"rio":"Irati", "municipio":"Itoiz",   "cap":417.7,"lat":42.750,"lon":-1.435},
-            {"id":"alloz","nombre":"Alloz","buscar":["ALLOZ"],"rio":"Salado","municipio":"Guesálaz","cap":66.2, "lat":42.693,"lon":-1.950},
-        ],
-    },
-
-
-    "cantabria": {
-        "nombre": "Cantabria", "comunidad": "Cantabria",
-        "lat": 43.1, "lon": -4.0,
-        "embalses": [
-            {"id":"del_ebro","nombre":"Del Ebro","buscar":["DEL EBRO"],"rio":"Ebro","municipio":"Arija","cap":540.0,"lat":42.973,"lon":-4.007},
-        ],
-    },
-
-    "asturias": {
-        "nombre": "Asturias", "comunidad": "Asturias",
-        "lat": 43.3, "lon": -5.9,
-        "embalses": [
-            {"id":"tanes",   "nombre":"Tanes",   "buscar":["TANES"],   "rio":"Nalón", "municipio":"Caso",    "cap":44.0,"lat":43.204,"lon":-5.489},
-            {"id":"rioseco", "nombre":"Rioseco", "buscar":["RIOSECO"], "rio":"Narcea","municipio":"Belmonte","cap":32.5,"lat":43.292,"lon":-6.571},
-        ],
-    },
-
-    "leon": {
-        "nombre": "León", "comunidad": "Castilla y León",
-        "lat": 42.6, "lon": -5.6,
-        "embalses": [
-            {"id":"barrios_luna","nombre":"Barrios de Luna","buscar":["BARRIOS DE LUNA"],"rio":"Luna","municipio":"Los Barrios","cap":307.5,"lat":42.850,"lon":-5.880},
-            {"id":"riano",       "nombre":"Riaño",          "buscar":["RIANO","RIAÑO"],   "rio":"Esla","municipio":"Riaño",      "cap":651.0,"lat":42.979,"lon":-5.005},
-        ],
-    },
-
-    "zamora": {
-        "nombre": "Zamora", "comunidad": "Castilla y León",
-        "lat": 41.5, "lon": -5.8,
-        "embalses": [
-            {"id":"ricobayo","nombre":"Ricobayo","buscar":["RICOBAYO"],"rio":"Esla","municipio":"Ricobayo","cap":1160.0,"lat":41.725,"lon":-5.850},
-        ],
-    },
-
-    "salamanca": {
-        "nombre": "Salamanca", "comunidad": "Castilla y León",
-        "lat": 40.9, "lon": -5.7,
-        "embalses": [
-            {"id":"almendra","nombre":"Almendra","buscar":["ALMENDRA"],"rio":"Tormes","municipio":"Almendra","cap":3585.0,"lat":41.268,"lon":-6.343},
-        ],
-    },
-
-    "palencia": {
-        "nombre": "Palencia", "comunidad": "Castilla y León",
-        "lat": 42.0, "lon": -4.5,
-        "embalses": [
-            {"id":"requejada","nombre":"Requejada","buscar":["REQUEJADA"],"rio":"Pisuerga","municipio":"Cervera","cap":91.5,"lat":42.879,"lon":-4.503},
-            {"id":"camporredondo","nombre":"Camporredondo","buscar":["CAMPORREDONDO"],"rio":"Carrión","municipio":"Alba de los Cardaños","cap":70.0,"lat":42.905,"lon":-4.753},
-        ],
-    },
-
-    "lugo": {
-        "nombre": "Lugo", "comunidad": "Galicia",
-        "lat": 43.0, "lon": -7.6,
-        "embalses": [
-            {"id":"belesar","nombre":"Belesar","buscar":["BELESAR"],"rio":"Miño","municipio":"Chantada","cap":654.0,"lat":42.600,"lon":-7.717},
-        ],
-    },
-
-    "ourense": {
-        "nombre": "Ourense", "comunidad": "Galicia",
-        "lat": 42.3, "lon": -7.9,
-        "embalses": [
-            {"id":"castrelo","nombre":"Castrelo de Miño","buscar":["CASTRELO"],"rio":"Miño","municipio":"Castrelo","cap":1359.0,"lat":42.246,"lon":-8.058},
-        ],
-    },
-
-    "a_coruña": {
-        "nombre": "A Coruña", "comunidad": "Galicia",
-        "lat": 43.3, "lon": -8.4,
-        "embalses": [
-            {"id":"cecebre","nombre":"Cecebre","buscar":["CECEBRE"],"rio":"Mero","municipio":"Cambre","cap":67.4,"lat":43.272,"lon":-8.243},
-        ],
-    },
-
-    "pontevedra": {
-        "nombre": "Pontevedra", "comunidad": "Galicia",
-        "lat": 42.4, "lon": -8.6,
-        "embalses": [
-            {"id":"eiras",  "nombre":"Eiras",  "buscar":["EIRAS"],  "rio":"Verdugo","municipio":"Fornelos","cap":115.0,"lat":42.380,"lon":-8.433},
-            {"id":"caldas", "nombre":"Caldas",  "buscar":["CALDAS"], "rio":"Umia",   "municipio":"Caldas",  "cap":72.0, "lat":42.566,"lon":-8.629},
-        ],
-    },
-
-    "avila": {
-        "nombre": "Ávila", "comunidad": "Castilla y León",
-        "lat": 40.7, "lon": -5.0,
-        "embalses": [
-            {"id":"el_burguillo","nombre":"El Burguillo","buscar":["EL BURGUILLO","BURGUILLO"],"rio":"Alberche","municipio":"El Tiemblo","cap":199.0,"lat":40.413,"lon":-4.650},
-            {"id":"el_alberche", "nombre":"El Alberche",  "buscar":["ALBERCHE"],               "rio":"Alberche","municipio":"Navaluenga","cap":88.0, "lat":40.362,"lon":-4.727},
-        ],
-    },
-
-    "burgos": {
-        "nombre": "Burgos", "comunidad": "Castilla y León",
-        "lat": 42.3, "lon": -3.7,
-        "embalses": [
-            {"id":"sobrón","nombre":"Sobrón","buscar":["SOBRON","SOBRÓN"],"rio":"Ebro","municipio":"Sobrón","cap":20.7,"lat":42.791,"lon":-3.050},
-            {"id":"urrez", "nombre":"Úrrez",  "buscar":["URREZ"],          "rio":"Ausines","municipio":"Hontoria","cap":26.0,"lat":42.307,"lon":-3.649},
-        ],
-    },
-
-    "segovia": {
-        "nombre": "Segovia", "comunidad": "Castilla y León",
-        "lat": 40.9, "lon": -4.1,
-        "embalses": [
-            {"id":"el_ponton_alto","nombre":"El Pontón Alto","buscar":["PONTON ALTO","EL PONTON","PONTÓN"],"rio":"Eresma","municipio":"La Losa","cap":25.5,"lat":40.929,"lon":-4.204},
-            {"id":"linares",       "nombre":"Linares",        "buscar":["LINARES DEL ARROYO","LINARES"],   "rio":"Riaza", "municipio":"Cerezo",  "cap":55.0,"lat":41.302,"lon":-3.556},
-        ],
-    },
-
-    "soria": {
-        "nombre": "Soria", "comunidad": "Castilla y León",
-        "lat": 41.8, "lon": -2.5,
-        "embalses": [
-            {"id":"la_cuerda_del_pozo","nombre":"La Cuerda del Pozo","buscar":["CUERDA DEL POZO","LA CUERDA"],"rio":"Duero","municipio":"Vinuesa","cap":228.0,"lat":41.966,"lon":-2.766},
-        ],
-    },
-
-    "valladolid": {
-        "nombre": "Valladolid", "comunidad": "Castilla y León",
-        "lat": 41.7, "lon": -4.7,
-        "embalses": [
-            {"id":"aguilar","nombre":"Aguilar de Campoo","buscar":["AGUILAR"],"rio":"Pisuerga","municipio":"Aguilar","cap":245.0,"lat":42.795,"lon":-4.266},
-        ],
-    },
-
-    "ciudad_real": {
-        "nombre": "Ciudad Real", "comunidad": "Castilla-La Mancha",
-        "lat": 38.9, "lon": -3.9,
-        "embalses": [
-            {"id":"gasset",      "nombre":"Gasset",       "buscar":["GASSET"],      "rio":"Jabalón", "municipio":"Ciudad Real","cap":41.3,"lat":38.932,"lon":-3.784},
-            {"id":"puente_nuevo","nombre":"Puente Nuevo",  "buscar":["PUENTE NUEVO"],"rio":"Guadiana","municipio":"Puertollano","cap":50.0,"lat":38.646,"lon":-4.148},
-            {"id":"vega_jabalón","nombre":"Vega de Jabalón","buscar":["VEGA DE JABALON","VEGA JABALON"],"rio":"Jabalón","municipio":"Carrión","cap":36.0,"lat":38.834,"lon":-3.793},
-        ],
-    },
-
-    "teruel": {
-        "nombre": "Teruel", "comunidad": "Aragón",
-        "lat": 40.3, "lon": -1.1,
-        "embalses": [
-            {"id":"cueva_foradada","nombre":"Cueva Foradada","buscar":["CUEVA FORADADA"],"rio":"Martín",  "municipio":"Oliete",  "cap":16.9,"lat":40.996,"lon":-0.628},
-            {"id":"gallipuen",     "nombre":"Gallipuén",     "buscar":["GALLIPUEN"],      "rio":"Alfambra","municipio":"Gallipuén","cap":42.3,"lat":40.422,"lon":-0.888},
-            {"id":"pena",          "nombre":"Pena",          "buscar":["PENA","EMBALSE DE PENA"],"rio":"Pena","municipio":"Beceite","cap":18.0,"lat":40.884,"lon":0.013},
-        ],
-    },
-
-    "tarragona": {
-        "nombre": "Tarragona", "comunidad": "Cataluña",
-        "lat": 41.2, "lon": 1.2,
-        "embalses": [
-            {"id":"riudecanyes","nombre":"Riudecanyes","buscar":["RIUDECANYES"],"rio":"Riudecanyes","municipio":"Riudecanyes","cap":10.8,"lat":41.155,"lon":0.927},
-            {"id":"siurana",    "nombre":"Siurana",    "buscar":["SIURANA"],    "rio":"Siurana",    "municipio":"Cornudella",  "cap":12.4,"lat":41.253,"lon":0.912},
-        ],
-    },
-
-    "guipuzcoa": {
-        "nombre": "Guipúzcoa", "comunidad": "País Vasco",
-        "lat": 43.1, "lon": -2.2,
-        "embalses": [
-            {"id":"añarbe","nombre":"Añarbe","buscar":["ANARBE","AÑARBE"],"rio":"Añarbe","municipio":"Hernani","cap":29.0,"lat":43.213,"lon":-1.968},
-        ],
-    },
-
-    "alava": {
-        "nombre": "Álava", "comunidad": "País Vasco",
-        "lat": 42.8, "lon": -2.7,
-        "embalses": [
-            {"id":"ullibarri_alava","nombre":"Ullíbarri-Gamboa","buscar":["ULLIBARRI"],"rio":"Zadorra","municipio":"Ullibarri","cap":147.0,"lat":42.840,"lon":-2.638},
-            {"id":"urrunaga_alava", "nombre":"Urrunaga",        "buscar":["URRUNAGA"], "rio":"Santa Engracia","municipio":"Legutiano","cap":71.5,"lat":42.977,"lon":-2.671},
-        ],
-    },
-}
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def estado(pct):
-    if pct is None:  return "#888888", "Sin datos"
-    if pct < 20:     return "#CC2200", "Crítico"
-    if pct < 40:     return "#FF8822", "Bajo"
-    if pct < 60:     return "#FFCC44", "Moderado"
-    if pct < 80:     return "#44AA66", "Bueno"
-    return "#0066CC", "Muy bueno"
-
-
-def buscar_dato(terminos):
-    """Busca el dato en DATOS_EMBALSES por coincidencia exacta o parcial."""
-    for t in terminos:
-        if t in DATOS_EMBALSES:
-            return DATOS_EMBALSES[t]["vol"], DATOS_EMBALSES[t]["pct"]
-    for t in terminos:
-        for clave, d in DATOS_EMBALSES.items():
-            if t in clave or clave in t:
-                return d["vol"], d["pct"]
+def descargar_excel(max_semanas_atras: int = 4):
+    """
+    Intenta descargar el Excel del boletín más reciente.
+    Prueba desde la semana actual hacia atrás hasta max_semanas_atras.
+    Devuelve (bytes_del_fichero, fecha_lunes) o (None, None).
+    """
+    hoy = date.today()
+    for delta in range(max_semanas_atras):
+        d = hoy - timedelta(weeks=delta)
+        anyo, semana = semana_iso(d)
+        url = url_boletin(anyo, semana)
+        lunes = date.fromisocalendar(anyo, semana, 1)
+        print(f"  Intentando semana {semana}/{anyo} ({lunes.strftime('%d/%m/%Y')}) → {url[:80]}...")
+        try:
+            r = requests.get(url, timeout=30, headers={"User-Agent": "Mozilla/5.0"})
+            if r.status_code == 200 and len(r.content) > 10_000:
+                print(f"  ✓ Descargado ({len(r.content)//1024} KB)")
+                return r.content, lunes
+            else:
+                print(f"    HTTP {r.status_code}, tamaño {len(r.content)} bytes — no válido")
+        except Exception as e:
+            print(f"    Error: {e}")
     return None, None
 
+def leer_excel(contenido: bytes) -> dict:
+    """
+    Lee el Excel del MITECO y devuelve un dict:
+        { nombre_embalse_lower: {"vol": float, "pct": float} }
+    La hoja principal se llama normalmente 'Embalses' o similar.
+    Columnas relevantes: nombre, volumen actual (hm³), % llenado.
+    """
+    import openpyxl
+    wb = openpyxl.load_workbook(io.BytesIO(contenido), read_only=True, data_only=True)
 
-def procesar():
-    ahora = datetime.now()
-    print("=" * 65)
-    print(f"Embalses España — Boletín MITECO {FECHA_DATOS}")
-    print(f"Generado: {ahora.strftime('%d/%m/%Y %H:%M')}")
-    print("=" * 65)
+    # Buscar la hoja correcta (puede llamarse 'Embalses', 'Sheet1', etc.)
+    hoja = None
+    for nombre_hoja in wb.sheetnames:
+        print(f"  Hoja encontrada: '{nombre_hoja}'")
+        if any(k in nombre_hoja.lower() for k in ["embalse", "reserva", "sheet", "datos"]):
+            hoja = wb[nombre_hoja]
+            break
+    if hoja is None:
+        hoja = wb.active
 
+    print(f"  Usando hoja: '{hoja.title}'")
+
+    datos = {}
+    col_nombre = col_vol = col_pct = None
+
+    for fila in hoja.iter_rows(values_only=True):
+        # Detectar cabecera buscando palabras clave
+        if col_nombre is None:
+            fila_lower = [str(c).lower() if c else "" for c in fila]
+            for i, celda in enumerate(fila_lower):
+                if "embalse" in celda or "nombre" in celda or "presa" in celda:
+                    col_nombre = i
+                if "volumen" in celda and ("actual" in celda or "reserva" in celda or col_vol is None):
+                    col_vol = i
+                if "%" in celda or "porcent" in celda or "llenado" in celda:
+                    col_pct = i
+            if col_nombre is not None:
+                print(f"  Cabecera detectada → nombre={col_nombre}, vol={col_vol}, pct={col_pct}")
+            continue
+
+        nombre = fila[col_nombre] if col_nombre is not None and len(fila) > col_nombre else None
+        if not nombre or not isinstance(nombre, str) or len(nombre.strip()) < 2:
+            continue
+
+        vol = None
+        pct = None
+        try:
+            if col_vol is not None and len(fila) > col_vol:
+                v = fila[col_vol]
+                if isinstance(v, (int, float)) and v > 0:
+                    vol = float(v)
+            if col_pct is not None and len(fila) > col_pct:
+                p = fila[col_pct]
+                if isinstance(p, (int, float)) and 0 <= p <= 150:
+                    pct = float(p)
+        except Exception:
+            pass
+
+        # Si tenemos vol pero no pct, calculamos pct más adelante con la capacidad del diccionario
+        clave = nombre.strip().lower()
+        datos[clave] = {"vol": vol, "pct": pct}
+
+    print(f"  Total embalses leídos del Excel: {len(datos)}")
+    return datos
+
+# ── DICCIONARIO MAESTRO ────────────────────────────────────────────────────────
+# Para cada embalse se define:
+#   buscar: lista de términos a buscar en el nombre del Excel (minúsculas, sin acentos)
+#   lat/lon: coordenadas del centro del embalse
+#   cap: capacidad total en hm³ (fuente: estadoembalses.es / MITECO)
+#   rio, municipio: metadatos para el popup del mapa
+
+def norm(s):
+    """Normaliza texto para comparación: minúsculas, sin acentos."""
+    import unicodedata
+    s = s.lower().strip()
+    s = unicodedata.normalize("NFD", s)
+    return "".join(c for c in s if unicodedata.category(c) != "Mn")
+
+PROVINCIAS = {
+    # ══ ANDALUCÍA ══
+    "cadiz": {
+        "nombre": "Cádiz", "comunidad": "Andalucía",
+        "embalses": [
+            {"id":"celemin",       "nombre":"Celemín",        "buscar":["celemi"],            "rio":"Celemín",     "municipio":"Los Barrios",       "cap":44.8,  "lat":36.167,"lon":-5.620},
+            {"id":"guadalcacin",   "nombre":"Guadalcacín",    "buscar":["guadalcacin"],       "rio":"Majaceite",   "municipio":"Jerez de la Frontera","cap":800.3,"lat":36.720,"lon":-5.830},
+            {"id":"arcos",         "nombre":"Arcos",          "buscar":["arcos"],             "rio":"Guadalete",   "municipio":"Arcos de la Frontera","cap":14.6, "lat":36.745,"lon":-5.797},
+            {"id":"guadarranque",  "nombre":"Guadarranque",   "buscar":["guadarranque"],      "rio":"Guadarranque","municipio":"San Roque",          "cap":87.7,  "lat":36.232,"lon":-5.462},
+            {"id":"barbate",       "nombre":"Barbate",        "buscar":["barbate"],           "rio":"Barbate",     "municipio":"Vejer de la Frontera","cap":228.1,"lat":36.253,"lon":-5.830},
+            {"id":"los_hurones",   "nombre":"Los Hurones",    "buscar":["huron"],             "rio":"Majaceite",   "municipio":"Grazalema",          "cap":135.3, "lat":36.760,"lon":-5.590},
+            {"id":"bornos",        "nombre":"Bornos",         "buscar":["bornos"],            "rio":"Guadalete",   "municipio":"Bornos",             "cap":200.2, "lat":36.803,"lon":-5.715},
+            {"id":"charco_redondo","nombre":"Charco Redondo", "buscar":["charco redondo"],    "rio":"Palmones",    "municipio":"Los Barrios",        "cap":81.6,  "lat":36.220,"lon":-5.617},
+            {"id":"almodovar",     "nombre":"Almodóvar",      "buscar":["almodovar"],         "rio":"Bugones",     "municipio":"Castellar",          "cap":5.7,   "lat":36.310,"lon":-5.440},
+            {"id":"zahara",        "nombre":"Zahara-El Gastor","buscar":["zahara"],           "rio":"Guadalete",   "municipio":"Zahara de la Sierra", "cap":222.7, "lat":36.837,"lon":-5.428},
+        ]
+    },
+    "malaga": {
+        "nombre": "Málaga", "comunidad": "Andalucía",
+        "embalses": [
+            {"id":"guadalteba",    "nombre":"Guadalteba",     "buscar":["guadalteba"],        "rio":"Guadalhorce", "municipio":"Ardales",            "cap":154.0, "lat":36.887,"lon":-4.885},
+            {"id":"guadalhorce_e", "nombre":"Guadalhorce",    "buscar":["guadalhorce"],       "rio":"Guadalhorce", "municipio":"Ardales",            "cap":125.7, "lat":36.862,"lon":-4.857},
+            {"id":"la_vinuela",    "nombre":"La Viñuela",     "buscar":["vinuela","viñuela"],  "rio":"Guaro",      "municipio":"La Viñuela",         "cap":165.4, "lat":36.871,"lon":-4.149},
+            {"id":"concepcion",    "nombre":"Concepción",     "buscar":["concepcion"],        "rio":"Verde",       "municipio":"Marbella",           "cap":61.9,  "lat":36.590,"lon":-4.990},
+            {"id":"limonero",      "nombre":"Limonero",       "buscar":["limonero"],          "rio":"Guadalmedina","municipio":"Málaga",             "cap":22.3,  "lat":36.756,"lon":-4.437},
+            {"id":"casasola",      "nombre":"Casasola",       "buscar":["casasola"],          "rio":"Campanillas", "municipio":"Málaga",             "cap":21.7,  "lat":36.726,"lon":-4.614},
+            {"id":"conde_guadalh", "nombre":"Conde Guadalhorce","buscar":["conde guadal"],    "rio":"Turón",       "municipio":"Ardales",            "cap":125.7, "lat":36.864,"lon":-4.793},
+            {"id":"montejaque",    "nombre":"Montejaque",     "buscar":["montejaque"],        "rio":"Guadarés",    "municipio":"Montejaque",         "cap":36.0,  "lat":36.726,"lon":-5.280},
+        ]
+    },
+    "almeria": {
+        "nombre": "Almería", "comunidad": "Andalucía",
+        "embalses": [
+            {"id":"beninar",       "nombre":"Benínar",        "buscar":["beninar","benínar"],  "rio":"Adra",       "municipio":"Berja",              "cap":61.7,  "lat":36.882,"lon":-2.982},
+            {"id":"cuevas",        "nombre":"Cuevas Almanzora","buscar":["cuevas"],           "rio":"Almanzora",   "municipio":"Cuevas del Almanzora","cap":161.3,"lat":37.328,"lon":-1.884},
+        ]
+    },
+    "huelva": {
+        "nombre": "Huelva", "comunidad": "Andalucía",
+        "embalses": [
+            {"id":"olivargas",     "nombre":"Olivargas",      "buscar":["olivargas"],         "rio":"Olivargas",   "municipio":"Calañas",            "cap":29.0,  "lat":37.658,"lon":-6.882},
+            {"id":"corumbel",      "nombre":"Corumbel Bajo",  "buscar":["corumbel"],          "rio":"Corumbel",    "municipio":"Beas",               "cap":18.0,  "lat":37.384,"lon":-6.922},
+            {"id":"zufre",         "nombre":"Zufre",          "buscar":["zufre"],             "rio":"Huelva",      "municipio":"Zufre",              "cap":175.3, "lat":37.836,"lon":-6.334},
+            {"id":"aracena",       "nombre":"Aracena",        "buscar":["aracena"],           "rio":"Huelva",      "municipio":"Aracena",            "cap":128.0, "lat":37.879,"lon":-6.604},
+            {"id":"piedras",       "nombre":"Piedras",        "buscar":["piedras"],           "rio":"Piedras",     "municipio":"El Almendro",        "cap":59.5,  "lat":37.560,"lon":-7.272},
+            {"id":"andevalo",      "nombre":"Andévalo",       "buscar":["andevalo","andévalo"],"rio":"Malagón",    "municipio":"El Granado",         "cap":634.4, "lat":37.674,"lon":-7.090},
+            {"id":"odiel",         "nombre":"Odiel",          "buscar":["odiel"],             "rio":"Odiel",       "municipio":"Valverde del Camino", "cap":8.0,   "lat":37.614,"lon":-6.769},
+            {"id":"chanza",        "nombre":"Chanza",         "buscar":["chanza"],            "rio":"Chanza",      "municipio":"Paymogo",            "cap":341.4, "lat":37.820,"lon":-7.426},
+            {"id":"jarrama",       "nombre":"Jarrama",        "buscar":["jarrama"],           "rio":"Jarrama",     "municipio":"Jabugo",             "cap":42.6,  "lat":37.909,"lon":-6.787},
+            {"id":"sancho",        "nombre":"Sancho",         "buscar":["sancho"],            "rio":"Meca",        "municipio":"Huelva",             "cap":58.0,  "lat":37.267,"lon":-6.967},
+            {"id":"cala",          "nombre":"Cala",           "buscar":["cala"],              "rio":"Cala",        "municipio":"Cala",               "cap":58.8,  "lat":37.990,"lon":-6.280},
+        ]
+    },
+    "granada": {
+        "nombre": "Granada", "comunidad": "Andalucía",
+        "embalses": [
+            {"id":"cubillas",      "nombre":"Cubillas",       "buscar":["cubillas"],          "rio":"Cubillas",    "municipio":"Iznalloz",           "cap":13.5,  "lat":37.481,"lon":-3.634},
+            {"id":"colomera",      "nombre":"Colomera",       "buscar":["colomera"],          "rio":"Colomera",    "municipio":"Colomera",           "cap":40.2,  "lat":37.415,"lon":-3.637},
+            {"id":"el_portillo",   "nombre":"El Portillo",    "buscar":["portillo"],          "rio":"Castril",     "municipio":"Castril",            "cap":31.3,  "lat":37.817,"lon":-2.805},
+            {"id":"quentar",       "nombre":"Quéntar",        "buscar":["quentar","quéntar"], "rio":"Aguas Blancas","municipio":"Quéntar",           "cap":13.6,  "lat":37.196,"lon":-3.569},
+            {"id":"rules",         "nombre":"Rules",          "buscar":["rules"],             "rio":"Guadalfeo",   "municipio":"Vélez de Benaudalla","cap":113.3, "lat":36.814,"lon":-3.573},
+            {"id":"canales",       "nombre":"Canales",        "buscar":["canales"],           "rio":"Genil",       "municipio":"Güéjar Sierra",      "cap":70.0,  "lat":37.138,"lon":-3.558},
+            {"id":"los_bermejales","nombre":"Los Bermejales", "buscar":["bermejal"],          "rio":"Cacín",       "municipio":"Arenas del Rey",     "cap":91.0,  "lat":36.987,"lon":-4.044},
+            {"id":"beznar",        "nombre":"Béznar",         "buscar":["beznar","béznar"],   "rio":"Ízbor",       "municipio":"El Pinar",           "cap":52.9,  "lat":36.915,"lon":-3.548},
+            {"id":"negratin",      "nombre":"Negratín",       "buscar":["negratin","negratín"],"rio":"Guadiana Menor","municipio":"Freila",          "cap":571.0, "lat":37.656,"lon":-2.981},
+            {"id":"fco_abellan",   "nombre":"Francisco Abellán","buscar":["abellan","abellán"],"rio":"Fardes",     "municipio":"Guadix",             "cap":58.1,  "lat":37.394,"lon":-3.125},
+            {"id":"san_clemente",  "nombre":"San Clemente",   "buscar":["san clemente"],      "rio":"Guardal",     "municipio":"Huéscar",            "cap":117.0, "lat":37.892,"lon":-2.701},
+        ]
+    },
+    "sevilla": {
+        "nombre": "Sevilla", "comunidad": "Andalucía",
+        "embalses": [
+            {"id":"el_pintado",    "nombre":"El Pintado",     "buscar":["pintado"],           "rio":"Viar",        "municipio":"El Real de la Jara", "cap":215.0, "lat":37.803,"lon":-5.913},
+            {"id":"los_melonares", "nombre":"Los Melonares",  "buscar":["melonares"],         "rio":"Viar",        "municipio":"Guillena",           "cap":185.6, "lat":37.721,"lon":-6.041},
+            {"id":"el_agrio",      "nombre":"El Agrio",       "buscar":["agrio"],             "rio":"Agrio",       "municipio":"Aznalcóllar",        "cap":20.3,  "lat":37.534,"lon":-6.278},
+            {"id":"jose_toran",    "nombre":"José Torán",     "buscar":["toran","torán"],     "rio":"Guadalbacar", "municipio":"Morón de la Frontera","cap":113.2,"lat":37.148,"lon":-5.422},
+            {"id":"huesna",        "nombre":"Huesna",         "buscar":["huesna"],            "rio":"Huesna",      "municipio":"San Nicolás del Puerto","cap":134.6,"lat":37.979,"lon":-5.739},
+            {"id":"gergal",        "nombre":"El Gergal",      "buscar":["gergal"],            "rio":"Huelva",      "municipio":"Guillena",           "cap":35.0,  "lat":37.665,"lon":-6.025},
+            {"id":"la_puebla_caz", "nombre":"La Puebla de Cazalla","buscar":["puebla de cazalla"],"rio":"Corbones","municipio":"La Puebla de Cazalla","cap":73.7,"lat":37.200,"lon":-5.230},
+            {"id":"la_minilla",    "nombre":"La Minilla",     "buscar":["minilla"],           "rio":"Huelva",      "municipio":"Real de la Jara",    "cap":58.0,  "lat":37.630,"lon":-5.860},
+            {"id":"torre_aguila",  "nombre":"La Torre del Águila","buscar":["torre del aguila","aguila"],"rio":"Salado","municipio":"Utrera",        "cap":64.4,  "lat":37.040,"lon":-5.680},
+        ]
+    },
+    "cordoba": {
+        "nombre": "Córdoba", "comunidad": "Andalucía",
+        "embalses": [
+            {"id":"arenoso",       "nombre":"Arenoso",        "buscar":["arenoso"],           "rio":"Arenoso",     "municipio":"Hornachuelos",       "cap":167.0, "lat":37.860,"lon":-5.320},
+            {"id":"yeguas",        "nombre":"Yeguas",         "buscar":["yeguas"],            "rio":"Yeguas",      "municipio":"Montoro",            "cap":230.0, "lat":38.000,"lon":-4.447},
+            {"id":"bembezar",      "nombre":"Bembézar",       "buscar":["bembezar","bembézar"],"rio":"Bembézar",   "municipio":"Hornachuelos",       "cap":328.0, "lat":37.834,"lon":-5.247},
+            {"id":"san_rafael_nav","nombre":"San Rafael Navallana","buscar":["navallana","san rafael de navallana"],"rio":"Guadalmellato","municipio":"Córdoba","cap":160.1,"lat":37.901,"lon":-4.830},
+            {"id":"puente_nuevo",  "nombre":"Puente Nuevo",   "buscar":["puente nuevo"],      "rio":"Guadiato",    "municipio":"Espiel",             "cap":282.0, "lat":38.053,"lon":-5.101},
+            {"id":"guadalmellato", "nombre":"Guadalmellato",  "buscar":["guadalmellato"],     "rio":"Guadalmellato","municipio":"Córdoba",           "cap":149.0, "lat":37.990,"lon":-4.775},
+            {"id":"vadomojon",     "nombre":"Vadomojón",      "buscar":["vadomojon","vadomojón"],"rio":"Guadajoz", "municipio":"Baena",              "cap":163.2, "lat":37.670,"lon":-4.271},
+            {"id":"la_colada",     "nombre":"La Colada",      "buscar":["la colada"],         "rio":"Guadamatilla","municipio":"Villanueva de Madrid","cap":58.0, "lat":38.250,"lon":-4.770},
+            {"id":"iznajar",       "nombre":"Iznájar",        "buscar":["iznajar","iznájar"], "rio":"Genil",       "municipio":"Iznájar",            "cap":981.0, "lat":37.267,"lon":-4.310},
+            {"id":"la_breña_ii",   "nombre":"La Breña II",    "buscar":["breña"],             "rio":"Guadiato",    "municipio":"Hornachuelos",       "cap":823.0, "lat":37.885,"lon":-5.164},
+        ]
+    },
+    "jaen": {
+        "nombre": "Jaén", "comunidad": "Andalucía",
+        "embalses": [
+            {"id":"quiebrajano",   "nombre":"Quiebrajano",    "buscar":["quiebrajano"],       "rio":"Quiebrajano", "municipio":"Jaén",               "cap":31.6,  "lat":37.795,"lon":-3.745},
+            {"id":"guadalmena",    "nombre":"Guadalmena",     "buscar":["guadalmena"],        "rio":"Guadalmena",  "municipio":"Villanueva del Arzobispo","cap":346.5,"lat":38.375,"lon":-2.936},
+            {"id":"el_tranco",     "nombre":"El Tranco de Beas","buscar":["tranco"],          "rio":"Guadalquivir","municipio":"Hornos",             "cap":505.7, "lat":38.039,"lon":-2.803},
+            {"id":"jandula",       "nombre":"Jándula",        "buscar":["jandula","jándula"], "rio":"Jándula",     "municipio":"Andújar",            "cap":325.1, "lat":38.177,"lon":-4.100},
+            {"id":"guadalen",      "nombre":"Guadalén",       "buscar":["guadalen","guadalén"],"rio":"Guadalén",   "municipio":"Vilches",            "cap":162.6, "lat":38.228,"lon":-3.553},
+            {"id":"giribaile",     "nombre":"Giribaile",      "buscar":["giribaile"],         "rio":"Guadalimar",  "municipio":"Vilches",            "cap":491.1, "lat":38.087,"lon":-3.613},
+            {"id":"la_fernandina", "nombre":"La Fernandina",  "buscar":["fernandina"],        "rio":"Guarrizas",   "municipio":"La Carolina",        "cap":246.0, "lat":38.226,"lon":-3.796},
+            {"id":"rumblar",       "nombre":"Rumblar",        "buscar":["rumblar"],           "rio":"Rumblar",     "municipio":"Baños de la Encina", "cap":126.0, "lat":38.228,"lon":-3.796},
+            {"id":"la_bolera",     "nombre":"La Bolera",      "buscar":["bolera"],            "rio":"Guadalentín", "municipio":"Pozo Alcón",         "cap":54.0,  "lat":37.824,"lon":-2.928},
+        ]
+    },
+    # ══ MURCIA ══
+    "murcia": {
+        "nombre": "Murcia", "comunidad": "Región de Murcia",
+        "embalses": [
+            {"id":"cenajo",        "nombre":"El Cenajo",      "buscar":["cenajo"],            "rio":"Segura",      "municipio":"Hellín",             "cap":437.5, "lat":38.347,"lon":-1.688},
+            {"id":"alfonso_xiii",  "nombre":"Alfonso XIII",   "buscar":["alfonso xiii"],      "rio":"Segura",      "municipio":"Lorca",              "cap":70.0,  "lat":38.214,"lon":-1.728},
+            {"id":"la_cierva",     "nombre":"La Cierva",      "buscar":["cierva"],            "rio":"Segura",      "municipio":"Moratalla",          "cap":12.0,  "lat":38.075,"lon":-1.592},
+            {"id":"valdeinfierno", "nombre":"Valdeinfierno",  "buscar":["valdeinfierno"],     "rio":"Luchena",     "municipio":"Lorca",              "cap":11.3,  "lat":37.953,"lon":-1.872},
+            {"id":"puentes",       "nombre":"Puentes",        "buscar":["puentes"],           "rio":"Guadalentín", "municipio":"Lorca",              "cap":45.3,  "lat":37.776,"lon":-1.787},
+            {"id":"argos",         "nombre":"Argos",          "buscar":["argos"],             "rio":"Argos",       "municipio":"Moratalla",          "cap":11.3,  "lat":38.338,"lon":-1.907},
+            {"id":"santomera",     "nombre":"Santomera",      "buscar":["santomera"],         "rio":"Rambla Salada","municipio":"Santomera",         "cap":17.9,  "lat":38.072,"lon":-1.057},
+        ]
+    },
+    # ══ CLM ══
+    "albacete": {
+        "nombre": "Albacete", "comunidad": "Castilla-La Mancha",
+        "embalses": [
+            {"id":"fuensanta",     "nombre":"Fuensanta",      "buscar":["fuensanta"],         "rio":"Segura",      "municipio":"Yeste",              "cap":210.0, "lat":38.334,"lon":-2.115},
+            {"id":"talave",        "nombre":"Talave",         "buscar":["talave"],            "rio":"Mundo",       "municipio":"Liétor",             "cap":34.9,  "lat":38.373,"lon":-2.130},
+            {"id":"camarillas",    "nombre":"Camarillas",     "buscar":["camarillas"],        "rio":"Mundo",       "municipio":"Isso (Hellín)",      "cap":36.0,  "lat":38.440,"lon":-1.886},
+            {"id":"taibilla",      "nombre":"Taibilla",       "buscar":["taibilla"],          "rio":"Taibilla",    "municipio":"Nerpio",             "cap":9.0,   "lat":38.185,"lon":-2.274},
+        ]
+    },
+    "ciudad_real": {
+        "nombre": "Ciudad Real", "comunidad": "Castilla-La Mancha",
+        "embalses": [
+            {"id":"torre_abraham", "nombre":"Torre de Abraham","buscar":["torre de abraham"], "rio":"Bullaque",    "municipio":"Piedrabuena",        "cap":184.0, "lat":39.030,"lon":-4.422},
+            {"id":"montoro_cr",    "nombre":"Montoro",        "buscar":["montoro"],           "rio":"Montoro",     "municipio":"Montoro de la Sierra","cap":105.0,"lat":38.680,"lon":-3.547},
+            {"id":"vicario",       "nombre":"Vicario",        "buscar":["vicario"],           "rio":"Guadiana",    "municipio":"Almagro",            "cap":32.9,  "lat":38.826,"lon":-3.839},
+            {"id":"gasset",        "nombre":"Gasset",         "buscar":["gasset"],            "rio":"Becea",       "municipio":"Ciudad Real",        "cap":41.7,  "lat":38.932,"lon":-3.784},
+            {"id":"penarroya_cr",  "nombre":"Peñarroya",      "buscar":["peñarroya cr","penarr"],"rio":"Guadiana", "municipio":"Argamasilla de Alba","cap":50.3,  "lat":38.800,"lon":-4.067},
+        ]
+    },
+    "toledo": {
+        "nombre": "Toledo", "comunidad": "Castilla-La Mancha",
+        "embalses": [
+            {"id":"castrejon",     "nombre":"Castrejón",      "buscar":["castrejon","castrejón"],"rio":"Tajo",     "municipio":"La Puebla de Montalbán","cap":42.0,"lat":39.810,"lon":-4.465},
+            {"id":"rosarito",      "nombre":"Rosarito",       "buscar":["rosarito"],          "rio":"Tiétar",      "municipio":"Candeleda",          "cap":86.0,  "lat":40.049,"lon":-5.243},
+            {"id":"guajaraz",      "nombre":"Guajaraz",       "buscar":["guajaraz"],          "rio":"Guajaraz",    "municipio":"Argés",              "cap":18.1,  "lat":39.770,"lon":-4.100},
+            {"id":"azutan",        "nombre":"Azután",         "buscar":["azutan","azután"],   "rio":"Tajo",        "municipio":"Azután",             "cap":84.0,  "lat":39.791,"lon":-5.143},
+            {"id":"navalcan",      "nombre":"Navalcán",       "buscar":["navalcan","navalcán"],"rio":"Porquerizo", "municipio":"Navalcán",           "cap":39.0,  "lat":40.000,"lon":-5.127},
+            {"id":"finisterre",    "nombre":"Finisterre",     "buscar":["finisterre"],        "rio":"Algodor",     "municipio":"Tembleque",          "cap":133.0, "lat":39.590,"lon":-3.430},
+            {"id":"el_castro",     "nombre":"El Castro",      "buscar":["castro to","el castro algodor"],"rio":"Algodor","municipio":"Villamuelas","cap":27.3,   "lat":39.820,"lon":-3.750},
+        ]
+    },
+    "cuenca": {
+        "nombre": "Cuenca", "comunidad": "Castilla-La Mancha",
+        "embalses": [
+            {"id":"contreras",     "nombre":"Contreras",      "buscar":["contreras"],         "rio":"Cabriel",     "municipio":"Contreras",          "cap":361.0, "lat":39.540,"lon":-1.481},
+            {"id":"alarcon",       "nombre":"Alarcón",        "buscar":["alarcon","alarcón"],  "rio":"Júcar",      "municipio":"Alarcón",            "cap":1112.0,"lat":39.554,"lon":-2.100},
+            {"id":"buendia",       "nombre":"Buendía",        "buscar":["buendia","buendía"],  "rio":"Guadiela",   "municipio":"Buendía",            "cap":1651.0,"lat":40.391,"lon":-2.718},
+        ]
+    },
+    "guadalajara": {
+        "nombre": "Guadalajara", "comunidad": "Castilla-La Mancha",
+        "embalses": [
+            {"id":"entrepeñas",    "nombre":"Entrepeñas",     "buscar":["entrepeñas","entrepenas"],"rio":"Tajo",   "municipio":"Sacedón",            "cap":802.6, "lat":40.545,"lon":-2.691},
+            {"id":"alcorlo",       "nombre":"Alcorlo",        "buscar":["alcorlo"],           "rio":"Bornoba",     "municipio":"Cogolludo",          "cap":180.0, "lat":40.991,"lon":-3.060},
+            {"id":"belena",        "nombre":"Beleña",         "buscar":["beleña","belena"],    "rio":"Sorbe",      "municipio":"Tamajón",            "cap":53.0,  "lat":40.844,"lon":-3.123},
+            {"id":"el_vado",       "nombre":"El Vado",        "buscar":["el vado guad","vado guadal"],"rio":"Jarama","municipio":"Campillo de Ranas","cap":56.0,  "lat":40.918,"lon":-3.322},
+            {"id":"la_tajera",     "nombre":"La Tajera",      "buscar":["tajera"],            "rio":"Tajuña",      "municipio":"Cifuentes",          "cap":69.0,  "lat":40.773,"lon":-2.621},
+        ]
+    },
+    # ══ EXTREMADURA ══
+    "badajoz": {
+        "nombre": "Badajoz", "comunidad": "Extremadura",
+        "embalses": [
+            {"id":"la_serena",     "nombre":"La Serena",      "buscar":["la serena"],         "rio":"Zújar",       "municipio":"Zalamea de la Serena","cap":3219.0,"lat":38.857,"lon":-5.470},
+            {"id":"cijara",        "nombre":"Cijara",         "buscar":["cijara"],            "rio":"Guadiana",    "municipio":"Herrera del Duque",  "cap":1505.0,"lat":39.303,"lon":-5.010},
+            {"id":"orellana",      "nombre":"Orellana",       "buscar":["orellana"],          "rio":"Guadiana",    "municipio":"Orellana la Vieja",  "cap":806.0, "lat":39.025,"lon":-5.542},
+            {"id":"garcia_sola",   "nombre":"García de Sola", "buscar":["garcia de sola","garcía de sola"],"rio":"Guadiana","municipio":"Herrera del Duque","cap":554.0,"lat":39.016,"lon":-5.325},
+            {"id":"alange",        "nombre":"Alange",         "buscar":["alange"],            "rio":"Matachel",    "municipio":"Alange",             "cap":852.0, "lat":38.788,"lon":-6.255},
+            {"id":"zujar",         "nombre":"Zújar",          "buscar":["zujar","zújar"],     "rio":"Zújar",       "municipio":"Capilla",            "cap":308.0, "lat":38.727,"lon":-5.205},
+            {"id":"sierra_brava",  "nombre":"Sierra Brava",   "buscar":["sierra brava"],      "rio":"Pizarroso",   "municipio":"Zorita",             "cap":232.0, "lat":39.280,"lon":-5.731},
+            {"id":"villalba",      "nombre":"Villalba",       "buscar":["villalba"],          "rio":"Guadajira",   "municipio":"Villalba de los Barros","cap":106.0,"lat":38.666,"lon":-6.444},
+        ]
+    },
+    "caceres": {
+        "nombre": "Cáceres", "comunidad": "Extremadura",
+        "embalses": [
+            {"id":"alcantara",     "nombre":"Alcántara",      "buscar":["alcantara","alcántara"],"rio":"Tajo",     "municipio":"Alcántara",          "cap":3162.0,"lat":39.728,"lon":-6.892},
+            {"id":"gabriel_galan", "nombre":"Gabriel y Galán","buscar":["gabriel y galan","gabriel galan"],"rio":"Alagón","municipio":"Guijo de Granadilla","cap":925.0,"lat":40.218,"lon":-6.086},
+            {"id":"valdecanas_cac","nombre":"Valdecañas",     "buscar":["valdecañas","valdecanas"],"rio":"Tajo",   "municipio":"Berrocalejo",        "cap":1446.0,"lat":39.817,"lon":-5.440},
+            {"id":"cedillo",       "nombre":"Cedillo",        "buscar":["cedillo"],           "rio":"Tajo",        "municipio":"Cedillo",            "cap":260.0, "lat":39.617,"lon":-7.476},
+            {"id":"torrejon_tajo", "nombre":"Torrejón (Tajo-Tiétar)","buscar":["torrejon tajo","torrejón tajo"],"rio":"Tajo","municipio":"Serrejón","cap":188.0,  "lat":39.821,"lon":-5.748},
+            {"id":"borbollon",     "nombre":"Borbollón",      "buscar":["borbollon","borbollón"],"rio":"Árrago",   "municipio":"Moraleja",           "cap":109.0, "lat":40.141,"lon":-6.557},
+        ]
+    },
+    # ══ MADRID ══
+    "madrid": {
+        "nombre": "Madrid", "comunidad": "Comunidad de Madrid",
+        "embalses": [
+            {"id":"el_atazar",     "nombre":"El Atazar",      "buscar":["atazar"],            "rio":"Lozoya",      "municipio":"Patones",            "cap":426.0, "lat":40.903,"lon":-3.578},
+            {"id":"valmayor",      "nombre":"Valmayor",       "buscar":["valmayor"],          "rio":"Aulencia",    "municipio":"Valdemorillo",       "cap":124.0, "lat":40.535,"lon":-4.052},
+            {"id":"san_juan",      "nombre":"San Juan",       "buscar":["san juan mad","san juan madrid"],"rio":"Alberche","municipio":"Pelayos de la Presa","cap":138.0,"lat":40.371,"lon":-4.355},
+            {"id":"santillana",    "nombre":"Santillana",     "buscar":["santillana"],        "rio":"Manzanares",  "municipio":"Manzanares el Real", "cap":91.0,  "lat":40.727,"lon":-3.891},
+            {"id":"el_vellon",     "nombre":"El Vellón",      "buscar":["vellon","vellón"],   "rio":"Guadalix",    "municipio":"El Vellón",          "cap":41.0,  "lat":40.724,"lon":-3.589},
+            {"id":"puentes_viejas","nombre":"Puentes Viejas", "buscar":["puentes viejas"],    "rio":"Lozoya",      "municipio":"Mangirón",           "cap":53.0,  "lat":40.967,"lon":-3.663},
+            {"id":"riosequillo",   "nombre":"Riosequillo",    "buscar":["riosequillo"],       "rio":"Lozoya",      "municipio":"Buitrago de Lozoya", "cap":50.0,  "lat":40.974,"lon":-3.519},
+            {"id":"el_pardo",      "nombre":"El Pardo",       "buscar":["el pardo"],          "rio":"Manzanares",  "municipio":"El Pardo",           "cap":43.0,  "lat":40.541,"lon":-3.780},
+            {"id":"pinilla",       "nombre":"Pinilla",        "buscar":["pinilla"],           "rio":"Lozoya",      "municipio":"Pinilla del Valle",  "cap":38.0,  "lat":40.990,"lon":-3.685},
+            {"id":"el_villar",     "nombre":"El Villar",      "buscar":["el villar mad","el villar lo"],"rio":"Lozoya","municipio":"Buitrago de Lozoya","cap":23.0,"lat":40.913,"lon":-3.631},
+        ]
+    },
+    # ══ CYL ══
+    "leon": {
+        "nombre": "León", "comunidad": "Castilla y León",
+        "embalses": [
+            {"id":"riano",         "nombre":"Riaño",          "buscar":["riaño","riano"],     "rio":"Esla",        "municipio":"Riaño",              "cap":641.0, "lat":42.979,"lon":-5.005},
+            {"id":"barrios_luna",  "nombre":"Barrios de Luna","buscar":["barrios de luna"],   "rio":"Luna",        "municipio":"Los Barrios de Luna","cap":308.0, "lat":42.850,"lon":-5.880},
+            {"id":"barcena",       "nombre":"Bárcena",        "buscar":["barcena","bárcena"], "rio":"Sil",         "municipio":"Cubillos del Sil",   "cap":340.9, "lat":42.587,"lon":-6.576},
+            {"id":"porma",         "nombre":"Porma",          "buscar":["porma"],             "rio":"Porma",       "municipio":"Valdehuesa",         "cap":318.0, "lat":43.009,"lon":-5.287},
+        ]
+    },
+    "burgos": {
+        "nombre": "Burgos", "comunidad": "Castilla y León",
+        "embalses": [
+            {"id":"uzquiza",       "nombre":"Uzquiza",        "buscar":["uzquiza"],           "rio":"Arlanzón",    "municipio":"Uzquiza",            "cap":71.0,  "lat":42.261,"lon":-3.576},
+            {"id":"ordunte",       "nombre":"Ordunte",        "buscar":["ordunte"],           "rio":"Ordunte",     "municipio":"Valle de Mena",      "cap":22.0,  "lat":43.097,"lon":-3.335},
+        ]
+    },
+    "palencia": {
+        "nombre": "Palencia", "comunidad": "Castilla y León",
+        "embalses": [
+            {"id":"aguilar",       "nombre":"Aguilar de Campoo","buscar":["aguilar de campoo"],"rio":"Pisuerga",   "municipio":"Aguilar de Campoo",  "cap":247.0, "lat":42.795,"lon":-4.266},
+            {"id":"compuerto",     "nombre":"Compuerto",      "buscar":["compuerto"],         "rio":"Carrión",     "municipio":"Velilla del R.Carrión","cap":95.0, "lat":42.905,"lon":-4.753},
+            {"id":"camporredondo", "nombre":"Camporredondo",  "buscar":["camporredondo"],     "rio":"Carrión",     "municipio":"Alba de los Cardaños","cap":70.0,  "lat":42.980,"lon":-4.730},
+        ]
+    },
+    "salamanca": {
+        "nombre": "Salamanca", "comunidad": "Castilla y León",
+        "embalses": [
+            {"id":"almendra",      "nombre":"Almendra",       "buscar":["almendra"],          "rio":"Tormes",      "municipio":"Almendra",           "cap":3585.0,"lat":41.268,"lon":-6.343},
+            {"id":"aldeadavila",   "nombre":"Aldeadávila",    "buscar":["aldeadavila","aldeadávila"],"rio":"Duero","municipio":"Aldeadávila",        "cap":114.3, "lat":41.225,"lon":-6.773},
+            {"id":"saucelle",      "nombre":"Saucelle",       "buscar":["saucelle"],          "rio":"Duero",       "municipio":"Saucelle",           "cap":181.0, "lat":41.026,"lon":-6.747},
+        ]
+    },
+    "zamora": {
+        "nombre": "Zamora", "comunidad": "Castilla y León",
+        "embalses": [
+            {"id":"ricobayo",      "nombre":"Ricobayo",       "buscar":["ricobayo"],          "rio":"Esla",        "municipio":"Ricobayo",           "cap":1145.0,"lat":41.725,"lon":-5.850},
+            {"id":"valparaiso",    "nombre":"Valparaíso",     "buscar":["valparaiso","valparaíso"],"rio":"Tera",   "municipio":"Palacios de Sanabria","cap":162.0,"lat":42.034,"lon":-6.527},
+            {"id":"cernadilla",    "nombre":"Cernadilla",     "buscar":["cernadilla"],        "rio":"Tera",        "municipio":"Cernadilla",         "cap":255.0, "lat":42.026,"lon":-6.612},
+        ]
+    },
+    "avila": {
+        "nombre": "Ávila", "comunidad": "Castilla y León",
+        "embalses": [
+            {"id":"burguillo",     "nombre":"El Burguillo",   "buscar":["burguillo"],         "rio":"Alberche",    "municipio":"El Tiemblo",         "cap":197.7, "lat":40.413,"lon":-4.650},
+            {"id":"castro_cogotas","nombre":"Castro Cogotas", "buscar":["castro de las cogotas","cogotas"],"rio":"Adaja","municipio":"Las Berlanas", "cap":59.0,  "lat":40.728,"lon":-4.895},
+        ]
+    },
+    "segovia": {
+        "nombre": "Segovia", "comunidad": "Castilla y León",
+        "embalses": [
+            {"id":"linares_arroyo","nombre":"Linares del Arroyo","buscar":["linares del arroyo","linares arroyo"],"rio":"Riaza","municipio":"Cerezo de Arriba","cap":59.0,"lat":41.348,"lon":-3.467},
+            {"id":"burgomillodo",  "nombre":"Burgomillodo",   "buscar":["burgomillodo"],      "rio":"Duratón",     "municipio":"Sepúlveda",          "cap":13.7,  "lat":41.302,"lon":-3.556},
+        ]
+    },
+    "soria": {
+        "nombre": "Soria", "comunidad": "Castilla y León",
+        "embalses": [
+            {"id":"cuerda_pozo",   "nombre":"La Cuerda del Pozo","buscar":["cuerda del pozo","cuerda pozo"],"rio":"Duero","municipio":"Vinuesa",     "cap":249.0, "lat":41.966,"lon":-2.766},
+        ]
+    },
+    # ══ ARAGÓN ══
+    "zaragoza": {
+        "nombre": "Zaragoza", "comunidad": "Aragón",
+        "embalses": [
+            {"id":"mequinenza",    "nombre":"Mequinenza",     "buscar":["mequinenza"],        "rio":"Ebro",        "municipio":"Mequinenza",         "cap":1373.0,"lat":41.381,"lon":0.276},
+            {"id":"tranquera",     "nombre":"Tranquera",      "buscar":["tranquera"],         "rio":"Piedra",      "municipio":"La Tranquera",       "cap":81.6,  "lat":41.246,"lon":-1.844},
+            {"id":"caspe",         "nombre":"Caspe",          "buscar":["caspe"],             "rio":"Guadalope",   "municipio":"Caspe",              "cap":82.0,  "lat":41.130,"lon":-0.175},
+            {"id":"la_loteta",     "nombre":"La Loteta",      "buscar":["loteta"],            "rio":"Canal Imperial","municipio":"Gallur",           "cap":104.0, "lat":41.882,"lon":-1.316},
+            {"id":"mularroya",     "nombre":"Mularroya",      "buscar":["mularroya"],         "rio":"Grío",        "municipio":"Mularroya",          "cap":96.9,  "lat":41.340,"lon":-1.544},
+        ]
+    },
+    "huesca": {
+        "nombre": "Huesca", "comunidad": "Aragón",
+        "embalses": [
+            {"id":"canelles",      "nombre":"Canelles",       "buscar":["canelles"],          "rio":"N.Ribagorzana","municipio":"Arén",              "cap":679.0, "lat":42.052,"lon":0.627},
+            {"id":"mediano",       "nombre":"Mediano",        "buscar":["mediano"],           "rio":"Cinca",       "municipio":"Mediano",            "cap":436.0, "lat":42.269,"lon":0.146},
+            {"id":"el_grado",      "nombre":"El Grado",       "buscar":["el grado"],          "rio":"Cinca",       "municipio":"El Grado",           "cap":399.0, "lat":42.136,"lon":0.171},
+            {"id":"sotonera",      "nombre":"Sotonera",       "buscar":["sotonera"],          "rio":"Sotón",       "municipio":"Gurrea de Gállego",  "cap":189.0, "lat":42.136,"lon":-0.678},
+            {"id":"santa_ana",     "nombre":"Santa Ana",      "buscar":["santa ana"],         "rio":"N.Ribagorzana","municipio":"Arén",              "cap":236.0, "lat":42.083,"lon":0.642},
+            {"id":"escales",       "nombre":"Escales",        "buscar":["escales"],           "rio":"N.Ribagorzana","municipio":"Sopeira",           "cap":152.0, "lat":42.186,"lon":0.669},
+            {"id":"barasona",      "nombre":"Barasona",       "buscar":["barasona"],          "rio":"Ésera",       "municipio":"Graus",              "cap":92.0,  "lat":42.186,"lon":0.411},
+        ]
+    },
+    "teruel": {
+        "nombre": "Teruel", "comunidad": "Aragón",
+        "embalses": [
+            {"id":"canon_santolea","nombre":"Cañon-Santolea", "buscar":["canon santolea","cañon santolea","santolea"],"rio":"Guadalope","municipio":"Castellote","cap":82.0,"lat":40.750,"lon":-0.300},
+            {"id":"cueva_foradada","nombre":"Cueva Foradada", "buscar":["cueva foradada"],    "rio":"Martín",      "municipio":"Oliete",             "cap":29.0,  "lat":40.996,"lon":-0.628},
+            {"id":"arquillo",      "nombre":"Arquillo de San Blas","buscar":["arquillo"],     "rio":"Turia",       "municipio":"Gea de Albarracín",  "cap":21.0,  "lat":40.406,"lon":-1.382},
+        ]
+    },
+    # ══ C.VALENCIANA ══
+    "castellon": {
+        "nombre": "Castellón", "comunidad": "Comunitat Valenciana",
+        "embalses": [
+            {"id":"arenos",        "nombre":"Arenós",         "buscar":["arenos","arenós"],   "rio":"Mijares",     "municipio":"Puebla de Arenoso",  "cap":137.0, "lat":40.109,"lon":-0.590},
+            {"id":"sichar",        "nombre":"Sichar",         "buscar":["sichar"],            "rio":"Mijares",     "municipio":"Espadilla",          "cap":49.0,  "lat":39.971,"lon":-0.446},
+        ]
+    },
+    "valencia": {
+        "nombre": "Valencia", "comunidad": "Comunitat Valenciana",
+        "embalses": [
+            {"id":"tous",          "nombre":"Tous",           "buscar":["tous"],              "rio":"Júcar",       "municipio":"Tous",               "cap":379.0, "lat":39.194,"lon":-0.832},
+            {"id":"benageber",     "nombre":"Benagéber",      "buscar":["benageber","benagéber"],"rio":"Turia",    "municipio":"Benagéber",          "cap":228.0, "lat":39.681,"lon":-1.086},
+            {"id":"cortes_ii",     "nombre":"Cortes II",      "buscar":["cortes ii"],         "rio":"Júcar",       "municipio":"Cortes de Pallás",   "cap":118.0, "lat":39.194,"lon":-1.195},
+            {"id":"escalona",      "nombre":"Escalona",       "buscar":["escalona"],          "rio":"Cabriel",     "municipio":"Requena",            "cap":99.0,  "lat":39.440,"lon":-1.370},
+        ]
+    },
+    "alicante": {
+        "nombre": "Alicante", "comunidad": "Comunitat Valenciana",
+        "embalses": [
+            {"id":"la_pedrera",    "nombre":"La Pedrera",     "buscar":["la pedrera","pedrera"],"rio":"Alcorisa",  "municipio":"Orihuela",           "cap":246.0, "lat":37.990,"lon":-0.900},
+            {"id":"beniarres",     "nombre":"Beniarrés",      "buscar":["beniarres","beniarrés"],"rio":"Serpis",   "municipio":"Beniarrés",          "cap":27.0,  "lat":38.781,"lon":-0.330},
+        ]
+    },
+    # ══ CATALUÑA ══
+    "lleida": {
+        "nombre": "Lleida", "comunidad": "Cataluña",
+        "embalses": [
+            {"id":"rialb",         "nombre":"Rialb",          "buscar":["rialb"],             "rio":"Segre",       "municipio":"Peramola",           "cap":403.0, "lat":42.013,"lon":1.281},
+            {"id":"talarn",        "nombre":"Talarn",         "buscar":["talarn"],            "rio":"N.Pallaresa", "municipio":"Tremp",              "cap":227.0, "lat":42.048,"lon":0.907},
+            {"id":"camarasa",      "nombre":"Camarasa",       "buscar":["camarasa"],          "rio":"N.Pallaresa", "municipio":"Camarasa",           "cap":163.0, "lat":41.891,"lon":0.936},
+            {"id":"oliana",        "nombre":"Oliana",         "buscar":["oliana"],            "rio":"Segre",       "municipio":"Oliana",             "cap":84.0,  "lat":42.073,"lon":1.371},
+            {"id":"llosa_cavall",  "nombre":"La Llosa del Cavall","buscar":["llosa del cavall","llosa cavall"],"rio":"Cardener","municipio":"Navès", "cap":80.0,  "lat":42.052,"lon":1.689},
+        ]
+    },
+    "girona": {
+        "nombre": "Girona", "comunidad": "Cataluña",
+        "embalses": [
+            {"id":"susqueda",      "nombre":"Susqueda",       "buscar":["susqueda"],          "rio":"Ter",         "municipio":"Susqueda",           "cap":233.0, "lat":41.968,"lon":2.538},
+            {"id":"boadella",      "nombre":"Boadella",       "buscar":["boadella"],          "rio":"La Muga",     "municipio":"Darnius",            "cap":61.0,  "lat":42.321,"lon":2.817},
+        ]
+    },
+    "barcelona": {
+        "nombre": "Barcelona", "comunidad": "Cataluña",
+        "embalses": [
+            {"id":"sau",           "nombre":"Sau",            "buscar":["sau"],               "rio":"Ter",         "municipio":"Tavèrnoles",         "cap":165.0, "lat":41.984,"lon":2.427},
+            {"id":"la_baells",     "nombre":"La Baells",      "buscar":["baells"],            "rio":"Llobregat",   "municipio":"Cercs",              "cap":115.0, "lat":41.955,"lon":1.921},
+        ]
+    },
+    "tarragona": {
+        "nombre": "Tarragona", "comunidad": "Cataluña",
+        "embalses": [
+            {"id":"ribarroja_tar", "nombre":"Ribarroja",      "buscar":["ribarroja"],         "rio":"Ebro",        "municipio":"Riba-roja d'Ebre",   "cap":210.0, "lat":41.276,"lon":0.487},
+        ]
+    },
+    # ══ GALICIA ══
+    "a_coruna": {
+        "nombre": "A Coruña", "comunidad": "Galicia",
+        "embalses": [
+            {"id":"eume",          "nombre":"Eume",           "buscar":["eume"],              "rio":"Eume",        "municipio":"As Pontes",          "cap":123.0, "lat":43.485,"lon":-7.953},
+            {"id":"fervenza",      "nombre":"Fervenza",       "buscar":["fervenza"],          "rio":"Xallas",      "municipio":"Santa Comba",        "cap":103.0, "lat":42.984,"lon":-8.788},
+            {"id":"cecebre",       "nombre":"Cecebre",        "buscar":["cecebre"],           "rio":"Mero",        "municipio":"Cambre",             "cap":22.0,  "lat":43.272,"lon":-8.243},
+        ]
+    },
+    "lugo": {
+        "nombre": "Lugo", "comunidad": "Galicia",
+        "embalses": [
+            {"id":"belesar",       "nombre":"Belesar",        "buscar":["belesar"],           "rio":"Miño",        "municipio":"Chantada",           "cap":655.0, "lat":42.600,"lon":-7.717},
+            {"id":"los_peares",    "nombre":"Los Peares",     "buscar":["peares"],            "rio":"Miño",        "municipio":"O Carballiño",       "cap":182.0, "lat":42.431,"lon":-7.895},
+        ]
+    },
+    "ourense": {
+        "nombre": "Ourense", "comunidad": "Galicia",
+        "embalses": [
+            {"id":"as_portas",     "nombre":"As Portas",      "buscar":["as portas","portas"], "rio":"Camba",      "municipio":"A Pobra de Trives",  "cap":535.8, "lat":42.337,"lon":-7.161},
+            {"id":"bao",           "nombre":"Bao",            "buscar":["bao"],               "rio":"Bibei",       "municipio":"A Pobra de Trives",  "cap":238.1, "lat":42.260,"lon":-7.018},
+            {"id":"santo_estevo",  "nombre":"Santo Estevo",   "buscar":["santo estevo"],      "rio":"Sil",         "municipio":"Nogueira de Ramuín", "cap":213.0, "lat":42.374,"lon":-7.617},
+            {"id":"prada",         "nombre":"Prada",          "buscar":["prada"],             "rio":"Xares",       "municipio":"A Veiga",            "cap":122.0, "lat":42.232,"lon":-6.832},
+        ]
+    },
+    "pontevedra": {
+        "nombre": "Pontevedra", "comunidad": "Galicia",
+        "embalses": [
+            {"id":"portodemouros", "nombre":"Portodemouros",  "buscar":["portodemouros"],     "rio":"Ulla",        "municipio":"Vila de Cruces",     "cap":297.0, "lat":42.803,"lon":-8.261},
+            {"id":"eiras",         "nombre":"Eiras",          "buscar":["eiras"],             "rio":"Oitavén",     "municipio":"Fornelos de Montes", "cap":22.0,  "lat":42.380,"lon":-8.433},
+        ]
+    },
+    # ══ PAÍS VASCO ══
+    "alava": {
+        "nombre": "Álava", "comunidad": "País Vasco",
+        "embalses": [
+            {"id":"ullivarri",     "nombre":"Ullíbarri-Gamboa","buscar":["ullibarri","ullíbarri"],"rio":"Zadorra",  "municipio":"Ullíbarri-Gamboa",  "cap":146.0, "lat":42.840,"lon":-2.638},
+            {"id":"urrunaga",      "nombre":"Urrunaga",       "buscar":["urrunaga"],          "rio":"Santa Engracia","municipio":"Legutiano",        "cap":72.0,  "lat":42.977,"lon":-2.671},
+        ]
+    },
+    "gipuzkoa": {
+        "nombre": "Guipúzcoa", "comunidad": "País Vasco",
+        "embalses": [
+            {"id":"urkulu",        "nombre":"Urkulu",         "buscar":["urkulu"],            "rio":"Urkulu",      "municipio":"Oñati",              "cap":10.0,  "lat":43.044,"lon":-2.422},
+            {"id":"ibai_eder",     "nombre":"Ibai-Eder",      "buscar":["ibai eder","ibai-eder"],"rio":"Urrestilla","municipio":"Azpeitia",          "cap":11.0,  "lat":43.180,"lon":-2.285},
+        ]
+    },
+    # ══ NAVARRA ══
+    "navarra": {
+        "nombre": "Navarra", "comunidad": "Navarra",
+        "embalses": [
+            {"id":"yesa",          "nombre":"Yesa",           "buscar":["yesa"],              "rio":"Aragón",      "municipio":"Yesa",               "cap":447.0, "lat":42.618,"lon":-1.180},
+            {"id":"itoiz",         "nombre":"Itoiz",          "buscar":["itoiz"],             "rio":"Irati",       "municipio":"Itoiz",              "cap":418.0, "lat":42.750,"lon":-1.435},
+            {"id":"alloz",         "nombre":"Alloz",          "buscar":["alloz"],             "rio":"Salado",      "municipio":"Guesálaz",           "cap":65.0,  "lat":42.693,"lon":-1.950},
+            {"id":"eugui",         "nombre":"Eugi",           "buscar":["eugui","eugi"],      "rio":"Arga",        "municipio":"Eugi",               "cap":22.0,  "lat":42.946,"lon":-1.581},
+        ]
+    },
+    # ══ LA RIOJA ══
+    "la_rioja": {
+        "nombre": "La Rioja", "comunidad": "La Rioja",
+        "embalses": [
+            {"id":"mansilla",      "nombre":"Mansilla",       "buscar":["mansilla"],          "rio":"Najerilla",   "municipio":"Mansilla de la Sierra","cap":68.0, "lat":42.175,"lon":-2.905},
+            {"id":"pajares",       "nombre":"Pajares",        "buscar":["pajares"],           "rio":"Piqueras",    "municipio":"San Pedro Manrique", "cap":35.0,  "lat":42.073,"lon":-2.424},
+            {"id":"enciso",        "nombre":"Enciso",         "buscar":["enciso"],            "rio":"Cidacos",     "municipio":"Enciso",             "cap":46.0,  "lat":42.189,"lon":-2.355},
+        ]
+    },
+    # ══ CANTABRIA ══
+    "cantabria": {
+        "nombre": "Cantabria", "comunidad": "Cantabria",
+        "embalses": [
+            {"id":"ebro_cant",     "nombre":"Del Ebro",       "buscar":["del ebro","embalse del ebro"],"rio":"Ebro","municipio":"Arija",             "cap":540.0, "lat":42.973,"lon":-4.007},
+            {"id":"alsa_mediajo",  "nombre":"Alsa-Mediajo",   "buscar":["alsa","mediajo"],    "rio":"Torina",      "municipio":"Los Corrales de Buelna","cap":22.0,"lat":43.227,"lon":-4.028},
+        ]
+    },
+    # ══ ASTURIAS ══
+    "asturias": {
+        "nombre": "Asturias", "comunidad": "Asturias",
+        "embalses": [
+            {"id":"salime",        "nombre":"Salime",         "buscar":["salime"],            "rio":"Navia",       "municipio":"Grandas de Salime",  "cap":237.8, "lat":43.261,"lon":-6.797},
+            {"id":"doiras",        "nombre":"Doiras",         "rio":"Navia",                  "buscar":["doiras"], "municipio":"Boal",               "cap":100.0, "lat":43.342,"lon":-6.791},
+            {"id":"tanes",         "nombre":"Tanes",          "buscar":["tanes"],             "rio":"Nalón",       "municipio":"Caso",               "cap":33.0,  "lat":43.204,"lon":-5.489},
+        ]
+    },
+}
+
+# ── FUNCIÓN DE CRUCE ───────────────────────────────────────────────────────────
+
+def buscar_en_excel(embalse: dict, datos_excel: dict) -> tuple:
+    """
+    Busca los datos de un embalse en el diccionario del Excel.
+    Devuelve (volumen_hm3, pct) o (None, None) si no encuentra.
+    """
+    for termino in embalse["buscar"]:
+        termino_n = norm(termino)
+        for clave_excel, vals in datos_excel.items():
+            clave_n = norm(clave_excel)
+            if termino_n in clave_n or clave_n in termino_n:
+                return vals.get("vol"), vals.get("pct")
+    return None, None
+
+def calcular_estado(pct):
+    if pct is None:  return "#888888", "Sin datos"
+    p = min(pct, 100)
+    if p < 20:       return "#CC2200", "Crítico"
+    if p < 40:       return "#FF8822", "Bajo"
+    if p < 60:       return "#FFCC44", "Moderado"
+    if p < 80:       return "#44AA66", "Bueno"
+    return "#0066CC", "Muy bueno"
+
+# ── GENERACIÓN DE JSONS ────────────────────────────────────────────────────────
+
+def procesar_todo(datos_excel: dict, fecha_boletin: date):
     os.makedirs("docs/embalses", exist_ok=True)
-
-    provincias_nacional = []
+    fecha_str = fecha_boletin.strftime("%d/%m/%Y")
+    fecha_iso = datetime.now().isoformat()
+    resumen_nacional = []
 
     for id_prov, prov in PROVINCIAS.items():
-        lista_emb = []
-        sum_vol = sum_cap = 0.0
+        lista_embalses = []
+        total_vol = total_cap = 0.0
         tiene_datos = False
 
         for emb in prov["embalses"]:
-            vol, pct = buscar_dato(emb["buscar"])
+            vol, pct = buscar_en_excel(emb, datos_excel)
+
+            # Si el Excel tiene volumen pero no porcentaje, calcularlo
+            if vol is not None and pct is None and emb["cap"] > 0:
+                pct = round(vol / emb["cap"] * 100, 1)
+            # Si tiene porcentaje pero no volumen, calcularlo
+            if pct is not None and vol is None:
+                vol = round(emb["cap"] * pct / 100, 1)
 
             if pct is not None:
                 tiene_datos = True
-                vol = round(float(vol), 2)
-                pct = round(float(pct), 1)
-                sum_vol += vol
-                sum_cap += emb["cap"]
+                total_vol += vol or 0.0
+                total_cap += emb["cap"]
+                pct = round(min(pct, 100), 1)
             else:
-                vol = None
-                sum_cap += emb["cap"]
+                total_cap += emb["cap"]
 
-            col, etq = estado(pct)
-            lista_emb.append({
-                "id": emb["id"], "nombre": emb["nombre"],
-                "rio": emb["rio"], "municipio": emb["municipio"],
-                "provincia": prov["nombre"],
-                "lat": emb["lat"], "lon": emb["lon"],
-                "capacidad_hm3": emb["cap"],
-                "volumen_hm3": vol, "pct": pct,
-                "color": col, "etiqueta": etq,
+            color, etiqueta = calcular_estado(pct)
+            lista_embalses.append({
+                "id":           emb["id"],
+                "nombre":       emb["nombre"],
+                "rio":          emb.get("rio", "—"),
+                "municipio":    emb.get("municipio", "—"),
+                "provincia":    prov["nombre"],
+                "lat":          emb["lat"],
+                "lon":          emb["lon"],
+                "capacidad_hm3":emb["cap"],
+                "volumen_hm3":  round(vol, 1) if vol is not None else None,
+                "pct":          pct,
+                "color":        color,
+                "etiqueta":     etiqueta,
             })
 
-        pct_prov = round((sum_vol / sum_cap) * 100, 1) if (tiene_datos and sum_cap > 0) else None
-        col_p, etq_p = estado(pct_prov)
+        pct_media = round(total_vol / total_cap * 100, 1) if total_cap > 0 and tiene_datos else None
+        color_m, etq_m = calcular_estado(pct_media)
 
-        # JSON de provincia
-        with open(f"docs/embalses/{id_prov}.json", "w", encoding="utf-8") as f:
-            json.dump({
-                "ultima_actualizacion": ahora.isoformat(),
-                "fecha_legible":   FECHA_DATOS,
-                "provincia":       prov["nombre"],
-                "comunidad":       prov["comunidad"],
-                "total_embalses":  len(lista_emb),
-                "capacidad_total_hm3": round(sum_cap, 1),
-                "volumen_total_hm3":   round(sum_vol, 2),
-                "pct_media":       pct_prov,
-                "color":           col_p,
-                "etiqueta":        etq_p,
-                "fuente":          f"Boletín Hidrológico Semanal — MITECO ({FECHA_DATOS})",
-                "embalses":        lista_emb,
-            }, f, ensure_ascii=False, indent=2)
+        json_prov = {
+            "ultima_actualizacion": fecha_iso,
+            "fecha_legible":        fecha_str,
+            "provincia":            prov["nombre"],
+            "comunidad":            prov["comunidad"],
+            "total_embalses":       len(lista_embalses),
+            "capacidad_total_hm3":  round(total_cap, 1),
+            "volumen_total_hm3":    round(total_vol, 1),
+            "pct_media":            pct_media,
+            "color":                color_m,
+            "etiqueta":             etq_m,
+            "fuente":               f"Boletín Hidrológico Semanal — MITECO ({fecha_str})",
+            "embalses":             lista_embalses,
+        }
 
-        # Entrada para el mapa nacional
-        provincias_nacional.append({
-            "id":                id_prov,
-            "nombre":            prov["nombre"],
-            "comunidad":         prov["comunidad"],
-            "lat":               prov["lat"],
-            "lon":               prov["lon"],
-            "pct":               pct_prov,
-            "color":             col_p,
-            "etiqueta":          etq_p,
-            "capacidad_total_hm3": round(sum_cap, 1),
-            "volumen_total_hm3":   round(sum_vol, 2),
-            "total_embalses":    len(lista_emb),
-            "url_detalle":       f"embalses/{id_prov}.html",
-            "datos_disponibles": tiene_datos,
+        ruta = f"docs/embalses/{id_prov}.json"
+        with open(ruta, "w", encoding="utf-8") as f:
+            json.dump(json_prov, f, ensure_ascii=False, indent=2)
+
+        resumen_nacional.append({
+            "id":               id_prov,
+            "nombre":           prov["nombre"],
+            "comunidad":        prov["comunidad"],
+            "pct":              pct_media,
+            "color":            color_m,
+            "etiqueta":         etq_m,
+            "url_detalle":      f"embalses/{id_prov}.html",
+            "datos_disponibles":tiene_datos,
         })
 
-        marca = "✓" if tiene_datos else "·"
-        val   = f"{pct_prov}%" if pct_prov is not None else "sin datos"
-        print(f"  {marca} {prov['nombre']:20s}: {val}")
+        estado_str = f"{pct_media}%" if pct_media else "sin datos"
+        print(f"  ✓ {prov['nombre']:16s} → {estado_str:8s}  "
+              f"({round(total_vol,0):.0f}/{round(total_cap,0):.0f} hm³)  "
+              f"[{len(lista_embalses)} embalses]")
 
-    # JSON nacional
+    # Nacional
+    nacional = {
+        "ultima_actualizacion": fecha_iso,
+        "fecha_legible":        fecha_str,
+        "fuente":               f"Boletín Hidrológico Semanal — MITECO ({fecha_str})",
+        "provincias":           resumen_nacional,
+        "comunidades":          resumen_nacional,
+    }
     with open("docs/embalses_nacional.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "ultima_actualizacion": ahora.isoformat(),
-            "fecha_legible":   FECHA_DATOS,
-            "fuente":          "Boletín Hidrológico Semanal — MITECO",
-            "provincias":      provincias_nacional,
-        }, f, ensure_ascii=False, indent=2)
+        json.dump(nacional, f, ensure_ascii=False, indent=2)
+    print(f"\n✓ docs/embalses_nacional.json actualizado")
+    print(f"✓ {len(PROVINCIAS)} provincias procesadas")
 
-    con_datos = sum(1 for p in provincias_nacional if p["datos_disponibles"])
-    print(f"\n✓ {len(provincias_nacional)} provincias generadas ({con_datos} con datos, {len(provincias_nacional)-con_datos} pendientes)")
-    print("=" * 65)
-
+# ── MAIN ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    procesar()
+    print("=" * 60)
+    print("Boletín Hidrológico Semanal — MITECO")
+    print("=" * 60)
+
+    print("\n1. Descargando Excel del boletín...")
+    contenido, fecha_boletin = descargar_excel(max_semanas_atras=5)
+
+    if contenido is None:
+        print("\n⚠️  No se pudo descargar el Excel.")
+        print("   Posibles causas:")
+        print("   - El MITECO no ha publicado aún el boletín esta semana")
+        print("   - Cambio en la URL del servidor")
+        print("   Revisando la última semana disponible manualmente en:")
+        print("   https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/boletin-hidrologico.html")
+        exit(1)
+
+    print("\n2. Leyendo datos del Excel...")
+    datos_excel = leer_excel(contenido)
+
+    if not datos_excel:
+        print("⚠️  El Excel no contiene datos procesables.")
+        exit(1)
+
+    print(f"\n3. Generando JSONs para {len(PROVINCIAS)} provincias...")
+    procesar_todo(datos_excel, fecha_boletin)
+
+    print("\n✓ Proceso completado correctamente.")
