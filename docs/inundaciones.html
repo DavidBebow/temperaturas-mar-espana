@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>España bajo el agua · Mapa de inundación costera por subida del nivel del mar</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{
+    --bg:#eef3f7; --ink:#0b2030; --soft:#5b7088; --line:rgba(10,40,70,.12);
+    --panel:rgba(255,255,255,.9); --accent:#0b6dc0; --deep:#0b3d91;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  #map{position:absolute;inset:0;z-index:1}
+  .leaflet-container{background:#cfe0ec;font-family:inherit}
+  .leaflet-control-attribution{background:rgba(255,255,255,.75)!important;font-size:10px!important}
+
+  .brand{position:absolute;top:16px;left:0;right:0;z-index:1000;text-align:center;pointer-events:none}
+  .brand .t{font-weight:800;font-size:18px;letter-spacing:-.01em;text-shadow:0 1px 10px rgba(255,255,255,.6)}
+  .brand .t b{color:var(--accent)}
+  .brand .s{font-size:11.5px;color:var(--soft);margin-top:1px;text-shadow:0 1px 8px rgba(255,255,255,.6)}
+
+  .panel{position:absolute;top:16px;left:16px;z-index:1000;width:260px;background:var(--panel);
+    border:1px solid var(--line);border-radius:18px;padding:18px;backdrop-filter:blur(18px) saturate(140%);
+    box-shadow:0 18px 50px rgba(10,40,70,.14)}
+  .panel .k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);font-weight:700}
+  .panel .big{font-size:42px;font-weight:800;letter-spacing:-.03em;line-height:1;margin:6px 0 2px;color:var(--deep)}
+  .panel .big small{font-size:18px;font-weight:700}
+  .panel .scn{font-size:12.5px;color:var(--soft);min-height:34px;line-height:1.4;margin-top:4px}
+  .panel input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0 2px}
+  .ticks{display:flex;justify-content:space-between;font-size:10px;color:var(--soft)}
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .presets button{flex:1;min-width:54px;border:1px solid var(--line);background:#fff;border-radius:9px;
+    padding:7px 4px;font:inherit;font-size:11.5px;font-weight:600;color:var(--ink);cursor:pointer}
+  .presets button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  .places{position:absolute;top:16px;right:16px;z-index:1000;width:190px;background:var(--panel);
+    border:1px solid var(--line);border-radius:16px;padding:12px 13px;backdrop-filter:blur(18px);
+    box-shadow:0 14px 40px rgba(10,40,70,.14)}
+  .places .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);font-weight:700;margin-bottom:8px}
+  .places button{display:block;width:100%;text-align:left;border:0;background:transparent;font:inherit;font-size:13px;
+    color:var(--ink);padding:7px 6px;border-radius:8px;cursor:pointer}
+  .places button:hover{background:rgba(11,109,192,.1);color:var(--accent)}
+
+  .legend{position:absolute;bottom:18px;right:16px;z-index:1000;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:10px 13px;backdrop-filter:blur(18px);box-shadow:0 10px 30px rgba(10,40,70,.14)}
+  .legend .k{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);font-weight:700;margin-bottom:6px}
+  .legend .bar{width:160px;height:11px;border-radius:4px;background:linear-gradient(90deg,#78c3f0,#0b3d91)}
+  .legend .lab{display:flex;justify-content:space-between;font-size:10px;color:var(--soft);margin-top:4px}
+
+  .note{position:absolute;bottom:18px;left:16px;z-index:1000;max-width:300px;font-size:10.5px;color:var(--soft);
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 11px;backdrop-filter:blur(10px)}
+  .demo{display:inline-block;margin-top:6px;font-size:9.5px;letter-spacing:.12em;background:#fff;border:1px solid var(--line);
+    color:var(--accent);padding:3px 9px;border-radius:999px;pointer-events:auto}
+  @media(max-width:720px){.places{display:none}.panel{width:200px}.brand{display:none}.note{display:none}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div class="brand">
+  <div class="t">España <b>bajo el agua</b></div>
+  <div class="s">Inundación costera por subida del nivel del mar</div>
+  <div class="demo">MODELO SIMPLIFICADO · DATOS DE ELEVACIÓN AWS</div>
+</div>
+
+<div class="panel">
+  <div class="k">Subida del nivel del mar</div>
+  <div class="big">+<span id="val">1,0</span><small> m</small></div>
+  <div class="scn" id="scn"></div>
+  <input type="range" id="slider" min="0" max="3" step="0.1" value="1">
+  <div class="ticks"><span>0 m</span><span>1 m</span><span>2 m</span><span>3 m</span></div>
+  <div class="presets" id="presets">
+    <button data-v="0">Hoy</button>
+    <button data-v="0.5">+0,5 m</button>
+    <button data-v="1" class="on">+1 m</button>
+    <button data-v="2">+2 m</button>
+  </div>
+</div>
+
+<div class="places">
+  <div class="k">Ir a una zona</div>
+  <button data-lat="40.72" data-lng="0.73" data-z="11">Delta del Ebro</button>
+  <button data-lat="39.33" data-lng="-0.32" data-z="11">Albufera de Valencia</button>
+  <button data-lat="37.70" data-lng="-0.75" data-z="11">Mar Menor</button>
+  <button data-lat="36.95" data-lng="-6.40" data-z="10">Doñana</button>
+  <button data-lat="36.53" data-lng="-6.28" data-z="11">Bahía de Cádiz</button>
+  <button data-lat="41.32" data-lng="2.10" data-z="11">Barcelona</button>
+  <button data-lat="43.36" data-lng="-8.40" data-z="11">A Coruña</button>
+</div>
+
+<div class="legend">
+  <div class="k">Profundidad de la inundación</div>
+  <div class="bar"></div>
+  <div class="lab"><span>Poca</span><span>Mucha</span></div>
+</div>
+
+<div class="note">
+  Modelo simplificado tipo "bañera": colorea el terreno por debajo del nivel indicado. No tiene en cuenta diques, defensas ni conexión hidráulica real. Elevación: AWS Terrain Tiles (Mapzen/SRTM).
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+window.FLOOD = 1.0;
+const SCN = {
+  0:   "Nivel actual del mar como referencia.",
+  0.5: "≈ escenario de emisiones bajas hacia 2100 (IPCC AR6).",
+  1:   "≈ escenario de emisiones altas hacia 2100.",
+  2:   "Escenario extremo / muy largo plazo (deshielo acelerado).",
+  3:   "Límite superior: para visualizar la exposición del territorio."
+};
+function scnText(v){
+  let best=0; for(const k of [0,0.5,1,2,3]) if(v>=k) best=k;
+  return SCN[best];
+}
+
+const map=L.map('map',{minZoom:5,maxZoom:14,center:[39.33,-0.32],zoom:11,zoomControl:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+  {subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO · Elevación: AWS Terrain Tiles',maxZoom:19}).addTo(map);
+map.createPane('labels'); map.getPane('labels').style.zIndex=650; map.getPane('labels').style.pointerEvents='none';
+
+// ---- capa de inundación: decodifica tiles de elevación (terrarium) en canvas ----
+const FloodLayer = L.GridLayer.extend({
+  createTile: function(coords, done){
+    const tile=document.createElement('canvas'); tile.width=tile.height=256;
+    const ctx=tile.getContext('2d');
+    const img=new Image(); img.crossOrigin='anonymous';
+    img.onload=function(){
+      const tmp=document.createElement('canvas'); tmp.width=tmp.height=256;
+      const tctx=tmp.getContext('2d'); tctx.drawImage(img,0,0,256,256);
+      let src; try{ src=tctx.getImageData(0,0,256,256);}catch(e){ done(e,tile); return; }
+      const out=ctx.createImageData(256,256), d=src.data, o=out.data, lvl=window.FLOOD;
+      for(let i=0;i<d.length;i+=4){
+        const elev=(d[i]*256 + d[i+1] + d[i+2]/256) - 32768;
+        if(elev<=lvl){
+          const t=Math.min(Math.max(lvl-elev,0)/4,1);   // profundidad 0..4 m
+          o[i]   = 120 - t*112;
+          o[i+1] = 195 - t*140;
+          o[i+2] = 245 - t*100;
+          o[i+3] = 150 + t*70;
+        } else { o[i+3]=0; }
+      }
+      ctx.putImageData(out,0,0); done(null,tile);
+    };
+    img.onerror=function(e){ done(e,tile); };
+    img.src='https://s3.amazonaws.com/elevation-tiles-prod/terrarium/'+coords.z+'/'+coords.x+'/'+coords.y+'.png';
+    return tile;
+  }
+});
+const flood=new FloodLayer({opacity:0.85,maxNativeZoom:14,maxZoom:19,tileSize:256,pane:'overlayPane'}).addTo(map);
+
+// etiquetas de costa por encima del agua
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
+  {subdomains:'abcd',opacity:.95,maxZoom:19,pane:'labels'}).addTo(map);
+
+// ---- controles ----
+const slider=document.getElementById('slider');
+function setLevel(v){
+  window.FLOOD=+v;
+  document.getElementById('val').textContent=(+v).toFixed(1).replace('.',',');
+  document.getElementById('scn').textContent=scnText(+v);
+  document.querySelectorAll('#presets button').forEach(b=>b.classList.toggle('on',+b.dataset.v===+v));
+  flood.redraw();
+}
+slider.addEventListener('input',e=>setLevel(e.target.value));
+document.querySelectorAll('#presets button').forEach(b=>b.addEventListener('click',()=>{slider.value=b.dataset.v;setLevel(b.dataset.v);}));
+document.querySelectorAll('.places button').forEach(b=>b.addEventListener('click',()=>{
+  map.flyTo([+b.dataset.lat,+b.dataset.lng],+b.dataset.z,{duration:1.2});
+}));
+setLevel(1);
+</script>
+</body>
+</html>
