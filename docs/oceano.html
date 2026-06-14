@@ -7,47 +7,80 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
   :root{
-    --bg:#0a1020; --ink:#eaf1ff; --muted:#9fb2d0; --line:#22344f; --panel:#0b1220e6;
-    --c0:#1b3a5c; --c1:#fde047; --c2:#fb923c; --c3:#ef4444; --c4:#7f1d1d; --accent:#22d3ee; --ok:#34d399;
+    --bg:#070b14; --ink:#f2f6ff; --muted:#93a4c4; --line:rgba(255,255,255,.10);
+    --glass:rgba(13,20,36,.62); --glass2:rgba(13,20,36,.78);
+    --c1:#fde047; --c2:#fb923c; --c3:#ef4444; --c4:#9f1239; --c0:#1b3a5c;
+    --accent:#38bdf8; --ok:#34d399;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
-    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  #map{position:absolute;inset:0;background:#0a1020;z-index:1}
-  .leaflet-container{background:#0a1020}
-  .brand{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:1000;text-align:center;pointer-events:none}
-  .brand .t{font-weight:800;letter-spacing:.02em;font-size:17px;text-shadow:0 2px 14px #000}
-  .brand .t b{background:linear-gradient(90deg,#fde047,#fb923c,#ef4444);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .brand .s{font-size:11px;color:var(--muted);text-shadow:0 2px 10px #000}
-  .demo{display:none;margin-top:4px;font-size:10px;letter-spacing:.1em;background:#13203a;border:1px solid var(--line);color:var(--accent);padding:2px 8px;border-radius:999px;pointer-events:auto}
-  .hud{position:absolute;top:14px;left:14px;z-index:1000;width:230px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;backdrop-filter:blur(6px);box-shadow:0 14px 40px #0008}
-  .hud .k{font-size:10px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
-  .hud .big{font-size:38px;font-weight:800;line-height:1.05;margin:2px 0;font-variant-numeric:tabular-nums}
-  .hud .cap{font-size:12px;color:var(--muted)}
-  .hud .streak{margin-top:10px;font-size:12.5px;color:var(--ok);font-weight:600}
-  .hud .anom{font-size:11px;color:var(--muted);margin-top:2px}
-  .legend{position:absolute;bottom:96px;left:14px;z-index:1000;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;backdrop-filter:blur(6px)}
-  .legend .k{font-size:10px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
-  .legend .row{display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0}
-  .legend .sw{width:22px;height:12px;border-radius:3px}
-  .time{position:absolute;bottom:14px;left:14px;right:14px;z-index:1000;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;backdrop-filter:blur(6px);display:flex;align-items:center;gap:14px}
-  .time .lab{font-size:12px;color:var(--muted);white-space:nowrap}
-  .time .lab b{color:var(--ink)}
-  .time input{flex:1;accent-color:var(--accent)}
-  .spark{width:160px;height:34px;flex:none}
-  .leaflet-popup-content-wrapper{background:#0b1220;color:var(--ink);border:1px solid var(--accent);border-radius:12px}
-  .leaflet-popup-tip{background:#0b1220;border:1px solid var(--accent)}
-  .leaflet-popup-content{margin:12px 14px}
-  .pop .nm{font-weight:700;color:var(--accent);font-size:14px}
-  .pop .cat{font-weight:700;margin:6px 0 4px}
-  .pop .li{font-size:12.5px;color:#cfe0ff}.pop .li b{color:#fff}
-  #err{position:absolute;inset:0;display:none;z-index:2000;align-items:center;justify-content:center;text-align:center;color:var(--muted);padding:30px}
-  @media(max-width:600px){.hud{width:180px;padding:11px 12px}.hud .big{font-size:30px}.brand{display:none}.legend{bottom:120px}.spark{display:none}}
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  #map{position:absolute;inset:0;background:var(--bg);z-index:1}
+  .leaflet-container{background:var(--bg);font-family:inherit}
+  .leaflet-control-zoom{border:none!important;box-shadow:0 8px 24px #0006!important;border-radius:12px!important;overflow:hidden}
+  .leaflet-control-zoom a{background:var(--glass2)!important;color:var(--ink)!important;border:none!important;backdrop-filter:blur(12px)}
+  .leaflet-control-attribution{background:rgba(7,11,20,.6)!important;color:#7e8db0!important;backdrop-filter:blur(6px);font-size:10px!important}
+  .leaflet-control-attribution a{color:#9bb0d6!important}
+
+  body::before{content:"";position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(120% 60% at 50% -8%,rgba(56,189,248,.10),transparent 60%)}
+
+  .brand{position:absolute;top:18px;left:0;right:0;z-index:1000;text-align:center;pointer-events:none}
+  .brand .t{font-weight:700;font-size:18px;letter-spacing:-.01em;text-shadow:0 2px 22px #000}
+  .brand .t b{font-weight:800;background:linear-gradient(90deg,#fde047,#fb923c,#ef4444);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand .s{font-size:11.5px;color:var(--muted);margin-top:1px;text-shadow:0 2px 16px #000}
+  .demo{display:none;margin-top:6px;font-size:9.5px;letter-spacing:.16em;background:var(--glass2);
+    border:1px solid var(--line);color:var(--accent);padding:3px 10px;border-radius:999px}
+
+  .hud{position:absolute;top:18px;left:18px;z-index:1000;width:244px;
+    background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:18px 20px;
+    backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);
+    box-shadow:0 24px 70px rgba(0,0,0,.45)}
+  .hud .k{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;font-weight:600}
+  .hud .big{font-size:52px;font-weight:800;line-height:1;margin:8px 0 4px;letter-spacing:-.03em;
+    background:linear-gradient(180deg,#fff,#cfe0ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hud .cap{font-size:12.5px;color:var(--muted);line-height:1.4}
+  .hud .div{height:1px;background:var(--line);margin:14px 0 12px}
+  .hud .streak{font-size:12.5px;color:var(--ok);font-weight:600;display:flex;gap:7px;align-items:flex-start}
+  .hud .anom{font-size:11.5px;color:var(--muted);margin-top:6px}
+
+  .legend{position:absolute;bottom:92px;left:18px;z-index:1000;background:var(--glass);
+    border:1px solid var(--line);border-radius:16px;padding:13px 15px;
+    backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);
+    box-shadow:0 18px 50px rgba(0,0,0,.4)}
+  .legend .k{font-size:9.5px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:9px;font-weight:600}
+  .legend .row{display:flex;align-items:center;gap:9px;font-size:12px;margin:5px 0;color:#d7e2f5}
+  .legend .sw{width:24px;height:9px;border-radius:3px;flex:none}
+
+  .time{position:absolute;bottom:18px;left:18px;right:18px;z-index:1000;background:var(--glass);
+    border:1px solid var(--line);border-radius:16px;padding:11px 18px;
+    backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);
+    display:flex;align-items:center;gap:16px;box-shadow:0 18px 50px rgba(0,0,0,.4)}
+  .time .lab{font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .time .lab b{color:var(--ink);font-weight:600}
+  .time input{flex:1;accent-color:var(--accent);height:3px}
+  .spark{width:170px;height:36px;flex:none}
+
+  .leaflet-popup-content-wrapper{background:var(--glass2);color:var(--ink);border:1px solid var(--line);
+    border-radius:16px;backdrop-filter:blur(20px);box-shadow:0 20px 50px #0007}
+  .leaflet-popup-tip{background:var(--glass2);border:1px solid var(--line)}
+  .leaflet-popup-content{margin:14px 16px}
+  .pop .nm{font-weight:700;font-size:14px;letter-spacing:-.01em}
+  .pop .cat{font-weight:700;margin:7px 0 6px;font-size:12.5px}
+  .pop .li{font-size:12.5px;color:#cfe0ff;margin:2px 0}.pop .li b{color:#fff}
+
+  #err{position:absolute;inset:0;display:none;z-index:2000;align-items:center;justify-content:center;
+    text-align:center;color:var(--muted);padding:30px}
+  @media(max-width:620px){
+    .hud{width:172px;padding:13px 15px}.hud .big{font-size:40px}
+    .brand .t{font-size:15px}.legend{bottom:118px;padding:11px 12px}.spark{display:none}
+  }
 </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="err">Cargando datos del océano… si este mensaje persiste, el workflow aún no ha generado <code>oceano.json</code>.</div>
+<div id="err">Cargando datos del océano… si esto persiste, el workflow aún no ha generado <code>oceano.json</code>.</div>
 
 <div class="brand">
   <div class="t">Planeta Vivo · <b>Océano</b></div>
@@ -59,12 +92,13 @@
   <div class="k">El planeta · <span id="fecha">—</span></div>
   <div class="big" id="pct">—</div>
   <div class="cap">de la superficie oceánica<br>en ola de calor marina</div>
+  <div class="div"></div>
   <div class="streak" id="streak">—</div>
   <div class="anom" id="anom">—</div>
 </div>
 
 <div class="legend">
-  <div class="k">Intensidad (escala Hobday)</div>
+  <div class="k">Intensidad · escala Hobday</div>
   <div class="row"><span class="sw" style="background:var(--c1)"></span> I · Moderada</div>
   <div class="row"><span class="sw" style="background:var(--c2)"></span> II · Fuerte</div>
   <div class="row"><span class="sw" style="background:var(--c3)"></span> III · Severa</div>
@@ -74,7 +108,7 @@
 
 <div class="time">
   <div class="lab">Histórico propio · <b id="tlab">hoy</b></div>
-  <svg class="spark" id="spark" viewBox="0 0 160 34" preserveAspectRatio="none"></svg>
+  <svg class="spark" id="spark" viewBox="0 0 170 36" preserveAspectRatio="none"></svg>
   <input type="range" id="slider" min="0" max="100" value="100">
   <div class="lab"><b id="tval">—</b> % océano</div>
 </div>
@@ -82,8 +116,9 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const CAT = {0:{c:'#1b3a5c',n:'Sin ola de calor'},1:{c:'#fde047',n:'I · Moderada'},
-  2:{c:'#fb923c',n:'II · Fuerte'},3:{c:'#ef4444',n:'III · Severa'},4:{c:'#7f1d1d',n:'IV · Extrema'},
-  5:{c:'#5a0c0c',n:'IV+ · Extrema'}};
+  2:{c:'#fb923c',n:'II · Fuerte'},3:{c:'#ef4444',n:'III · Severa'},4:{c:'#9f1239',n:'IV · Extrema'},
+  5:{c:'#7f1d1d',n:'IV+ · Extrema'}};
+const LATMAX = 85.05112878;
 
 async function boot(){
   try{
@@ -95,41 +130,46 @@ async function boot(){
 }
 
 function init(hoy, hist, png){
-  const map = L.map('map',{worldCopyJump:true,minZoom:2,maxZoom:6,center:[20,0],zoom:2});
+  const world = L.latLngBounds([[-LATMAX,-180],[LATMAX,180]]);
+  const map = L.map('map',{
+    minZoom:2, maxZoom:6, zoomSnap:0.25, zoomControl:true,
+    worldCopyJump:false, maxBounds:world, maxBoundsViscosity:1.0,
+    attributionControl:true, center:[15,0], zoom:2
+  });
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
-    {attribution:'© OpenStreetMap, © CARTO · Datos: NOAA Coral Reef Watch',subdomains:'abcd'}).addTo(map);
-  const LATMAX=85.05112878;
-  L.imageOverlay(png,[[-LATMAX,-180],[LATMAX,180]],{opacity:0.86}).addTo(map);
+    {attribution:'© OpenStreetMap, © CARTO · Datos: NOAA Coral Reef Watch',subdomains:'abcd',noWrap:true}).addTo(map);
+  L.imageOverlay(png, world, {opacity:0.9}).addTo(map);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-    {subdomains:'abcd',opacity:0.7}).addTo(map);
+    {subdomains:'abcd',opacity:0.55,noWrap:true}).addTo(map);
+  map.fitBounds(world, {padding:[6,6]});
 
   const g=hoy.global;
   fecha.textContent=new Date(hoy.fecha).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
   pct.textContent=(g.pct_en_mhw??0).toFixed(1).replace('.',',')+'%';
-  streak.textContent=g.racha_dias?('▲ '+g.racha_dias+' días seguidos del océano sobre la media'):'';
-  anom.textContent=(g.anomalia_media!=null)?('Anomalía media global: +'+g.anomalia_media.toFixed(2).replace('.',',')+' °C'):'';
+  streak.innerHTML=g.racha_dias?('<span>▲</span><span>'+g.racha_dias+' días seguidos del océano por encima de la media</span>'):'';
+  anom.textContent=(g.anomalia_media!=null)?('Anomalía media global · +'+g.anomalia_media.toFixed(2).replace('.',',')+' °C'):'';
 
   (hoy.cuencas||[]).filter(c=>c.categoria>=1).forEach(c=>{
     let lon=c.bbox[0]+(((c.bbox[1]-c.bbox[0])%360+360)%360)/2; if(lon>180) lon-=360;
     const lat=(c.bbox[2]+c.bbox[3])/2, col=CAT[c.categoria].c;
-    const anomStr=(c.anomalia!=null)?('<div class="li">Anomalía: <b>+'+c.anomalia.toFixed(1).replace('.',',')+' °C</b></div>'):'';
-    L.circleMarker([lat,lon],{radius:7+c.categoria*2.5,color:'#0a1020',weight:2,fillColor:col,fillOpacity:.95})
+    const aStr=(c.anomalia!=null)?('<div class="li">Anomalía: <b>+'+c.anomalia.toFixed(1).replace('.',',')+' °C</b></div>'):'';
+    L.circleMarker([lat,lon],{radius:6+c.categoria*2.3,color:'#070b14',weight:2,fillColor:col,fillOpacity:.96})
      .addTo(map)
      .bindPopup('<div class="pop"><div class="nm">'+c.nombre+'</div>'+
-       '<div class="cat" style="color:'+col+'">'+CAT[c.categoria].n+'</div>'+anomStr+
+       '<div class="cat" style="color:'+col+'">'+CAT[c.categoria].n+'</div>'+aStr+
        '<div class="li">Racha actual: <b>'+(c.racha??'—')+' días</b></div>'+
        '<div class="li">Récord histórico: <b>'+(c.record??'—')+' días</b></div></div>');
   });
 
   const serie=(hist.serie||[]); const n=serie.length;
   if(n>1){
-    const xs=serie.map(p=>p.pct),mn=Math.min(...xs),mx=Math.max(...xs)||1;
-    const path=serie.map((p,i)=>{const x=i/(n-1)*160,y=32-(p.pct-mn)/((mx-mn)||1)*28-2;return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);}).join(' ');
-    spark.innerHTML='<path d="'+path+'" fill="none" stroke="#22d3ee" stroke-width="1.5"/><circle id="dot" r="2.6" fill="#fde047"/>';
+    const xs=serie.map(p=>p.pct),mn=Math.min(...xs),mx=Math.max(...xs)||1,rng=(mx-mn)||1;
+    const path=serie.map((p,i)=>{const x=i/(n-1)*170,y=34-(p.pct-mn)/rng*30-2;return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);}).join(' ');
+    spark.innerHTML='<path d="'+path+'" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linejoin="round"/><circle id="dot" r="2.8" fill="#fde047"/>';
     const dot=spark.querySelector('#dot');
     function setIdx(i){const p=serie[i];tval.textContent=p.pct.toFixed(1).replace('.',',');
       tlab.textContent=(i===n-1)?'hoy':new Date(p.fecha).toLocaleDateString('es-ES',{day:'numeric',month:'short'});
-      dot.setAttribute('cx',(i/(n-1)*160).toFixed(1));dot.setAttribute('cy',(32-(p.pct-mn)/((mx-mn)||1)*28-2).toFixed(1));}
+      dot.setAttribute('cx',(i/(n-1)*170).toFixed(1));dot.setAttribute('cy',(34-(p.pct-mn)/rng*30-2).toFixed(1));}
     slider.max=n-1;slider.value=n-1;setIdx(n-1);
     slider.addEventListener('input',e=>setIdx(+e.target.value));
   }
