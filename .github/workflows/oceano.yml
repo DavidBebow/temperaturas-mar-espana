@@ -1,0 +1,39 @@
+name: Océano · olas de calor marinas (diario)
+
+on:
+  schedule:
+    - cron: "0 6 * * *"        # cada día a las 06:00 UTC (NOAA CRW ya actualizado)
+  workflow_dispatch:            # lanzar a mano desde la pestaña Actions
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install xarray netCDF4 numpy pillow requests
+
+      - name: 1 · Descargar datos (NOAA Coral Reef Watch)
+        run: python scripts/oceano_ingest.py
+
+      - name: 2 · Rachas y récords (datos propios)
+        run: python scripts/oceano_streaks.py
+
+      - name: 3 · Renderizar capa PNG + tarjeta social
+        run: python scripts/oceano_render.py
+
+      - name: 4 · Publicar en docs/
+        run: |
+          git config user.name  "GitHub Actions Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/oceano.json docs/historial_oceano.json docs/records_oceano.json docs/oceano_hoy.png docs/tarjeta_oceano.png
+          git commit -m "Océano actualizado: $(date -u +'%d/%m/%Y %H:%M')" || echo "Sin cambios"
+          git push
