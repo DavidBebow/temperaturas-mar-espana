@@ -1,0 +1,30 @@
+name: Desertificación (mensual)
+
+on:
+  schedule:
+    - cron: "0 5 1 * *"      # día 1 de cada mes (cambia poco, no hace falta más)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: pip install requests
+      - name: Descargar datos (World Bank CCKP)
+        run: python scripts/desert_ingest.py
+      - name: Publicar en docs/
+        run: |
+          git config user.name  "GitHub Actions Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A docs/
+          git commit -m "Desertificación actualizada: $(date -u +'%d/%m/%Y')" || { echo "Sin cambios"; exit 0; }
+          git pull --rebase --autostash origin main
+          git push origin main
