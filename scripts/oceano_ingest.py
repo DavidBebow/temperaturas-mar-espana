@@ -2,25 +2,18 @@
 """
 OCÉANO · Paso 1 de 3
 Descarga la categoría de ola de calor marina del día desde NOAA Coral Reef Watch.
-
-Estrategia robusta:
-  - Formato .nc de ERDDAP (ligero y rápido) + lectura con varios motores
-    (scipy / netcdf4 / h5netcdf), para no depender de un único backend.
-  - Dos fuentes: PacIOOS (categoría oficial MHW) y, como respaldo, NOAA CoastWatch
-    (anomalía SST -> categoría aproximada) por si PacIOOS no responde.
-  - Si NINGUNA fuente responde, NO rompe el workflow: conserva el dato anterior
-    y lo reintenta en la siguiente ejecución (sale con código 0).
-
-Salidas:
-  docs/oceano.json     -> global + cuencas (las rachas las añade oceano_streaks.py)
-  _grid_oceano.npz     -> rejilla intermedia para oceano_render.py (NO se commitea)
-
-Requiere: numpy, requests, xarray, scipy (netcdf4/h5netcdf opcionales)
 """
-import io, os, sys, json, time, datetime
+import io, os, sys, json, time, datetime, socket
 import numpy as np
 import requests
 import xarray as xr
+
+# GitHub Actions a veces se cuelga al conectar por IPv6 con servidores académicos
+# (PacIOOS, NOAA). Forzamos IPv4 para que la conexión sea rápida y fiable.
+_gai = socket.getaddrinfo
+def _ipv4_only(host, port, family=0, type=0, proto=0, flags=0):
+    return _gai(host, port, socket.AF_INET, type, proto, flags)
+socket.getaddrinfo = _ipv4_only
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from oceano_basins import BASINS
