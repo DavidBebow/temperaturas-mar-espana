@@ -2,8 +2,8 @@ name: Océano · olas de calor marinas (diario)
 
 on:
   schedule:
-    - cron: "0 6 * * *"        # cada día a las 06:00 UTC (NOAA CRW ya actualizado)
-  workflow_dispatch:            # lanzar a mano desde la pestaña Actions
+    - cron: "0 6 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -34,6 +34,6 @@ jobs:
         run: |
           git config user.name  "GitHub Actions Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add docs/oceano.json docs/historial_oceano.json docs/records_oceano.json docs/oceano_hoy.png docs/tarjeta_oceano.png
+          git add -A docs/
           git commit -m "Océano actualizado: $(date -u +'%d/%m/%Y %H:%M')" || echo "Sin cambios"
           git push
