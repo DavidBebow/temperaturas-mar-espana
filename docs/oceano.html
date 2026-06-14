@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planeta Vivo · Océano — Olas de calor marinas en tiempo real</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{
+    --bg:#0a1020; --ink:#eaf1ff; --muted:#9fb2d0; --line:#22344f; --panel:#0b1220e6;
+    --c0:#1b3a5c; --c1:#fde047; --c2:#fb923c; --c3:#ef4444; --c4:#7f1d1d; --accent:#22d3ee; --ok:#34d399;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  #map{position:absolute;inset:0;background:#0a1020;z-index:1}
+  .leaflet-container{background:#0a1020}
+  .brand{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:1000;text-align:center;pointer-events:none}
+  .brand .t{font-weight:800;letter-spacing:.02em;font-size:17px;text-shadow:0 2px 14px #000}
+  .brand .t b{background:linear-gradient(90deg,#fde047,#fb923c,#ef4444);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand .s{font-size:11px;color:var(--muted);text-shadow:0 2px 10px #000}
+  .demo{display:none;margin-top:4px;font-size:10px;letter-spacing:.1em;background:#13203a;border:1px solid var(--line);color:var(--accent);padding:2px 8px;border-radius:999px;pointer-events:auto}
+  .hud{position:absolute;top:14px;left:14px;z-index:1000;width:230px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;backdrop-filter:blur(6px);box-shadow:0 14px 40px #0008}
+  .hud .k{font-size:10px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+  .hud .big{font-size:38px;font-weight:800;line-height:1.05;margin:2px 0;font-variant-numeric:tabular-nums}
+  .hud .cap{font-size:12px;color:var(--muted)}
+  .hud .streak{margin-top:10px;font-size:12.5px;color:var(--ok);font-weight:600}
+  .hud .anom{font-size:11px;color:var(--muted);margin-top:2px}
+  .legend{position:absolute;bottom:96px;left:14px;z-index:1000;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;backdrop-filter:blur(6px)}
+  .legend .k{font-size:10px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+  .legend .row{display:flex;align-items:center;gap:8px;font-size:12px;margin:3px 0}
+  .legend .sw{width:22px;height:12px;border-radius:3px}
+  .time{position:absolute;bottom:14px;left:14px;right:14px;z-index:1000;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;backdrop-filter:blur(6px);display:flex;align-items:center;gap:14px}
+  .time .lab{font-size:12px;color:var(--muted);white-space:nowrap}
+  .time .lab b{color:var(--ink)}
+  .time input{flex:1;accent-color:var(--accent)}
+  .spark{width:160px;height:34px;flex:none}
+  .leaflet-popup-content-wrapper{background:#0b1220;color:var(--ink);border:1px solid var(--accent);border-radius:12px}
+  .leaflet-popup-tip{background:#0b1220;border:1px solid var(--accent)}
+  .leaflet-popup-content{margin:12px 14px}
+  .pop .nm{font-weight:700;color:var(--accent);font-size:14px}
+  .pop .cat{font-weight:700;margin:6px 0 4px}
+  .pop .li{font-size:12.5px;color:#cfe0ff}.pop .li b{color:#fff}
+  #err{position:absolute;inset:0;display:none;z-index:2000;align-items:center;justify-content:center;text-align:center;color:var(--muted);padding:30px}
+  @media(max-width:600px){.hud{width:180px;padding:11px 12px}.hud .big{font-size:30px}.brand{display:none}.legend{bottom:120px}.spark{display:none}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="err">Cargando datos del océano… si este mensaje persiste, el workflow aún no ha generado <code>oceano.json</code>.</div>
+
+<div class="brand">
+  <div class="t">Planeta Vivo · <b>Océano</b></div>
+  <div class="s">Olas de calor marinas en el mundo · en tiempo real</div>
+  <div class="demo" id="demoBadge">DATOS DE DEMOSTRACIÓN</div>
+</div>
+
+<div class="hud">
+  <div class="k">El planeta · <span id="fecha">—</span></div>
+  <div class="big" id="pct">—</div>
+  <div class="cap">de la superficie oceánica<br>en ola de calor marina</div>
+  <div class="streak" id="streak">—</div>
+  <div class="anom" id="anom">—</div>
+</div>
+
+<div class="legend">
+  <div class="k">Intensidad (escala Hobday)</div>
+  <div class="row"><span class="sw" style="background:var(--c1)"></span> I · Moderada</div>
+  <div class="row"><span class="sw" style="background:var(--c2)"></span> II · Fuerte</div>
+  <div class="row"><span class="sw" style="background:var(--c3)"></span> III · Severa</div>
+  <div class="row"><span class="sw" style="background:var(--c4)"></span> IV · Extrema</div>
+  <div class="row"><span class="sw" style="background:var(--c0)"></span> Sin ola de calor</div>
+</div>
+
+<div class="time">
+  <div class="lab">Histórico propio · <b id="tlab">hoy</b></div>
+  <svg class="spark" id="spark" viewBox="0 0 160 34" preserveAspectRatio="none"></svg>
+  <input type="range" id="slider" min="0" max="100" value="100">
+  <div class="lab"><b id="tval">—</b> % océano</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const CAT = {0:{c:'#1b3a5c',n:'Sin ola de calor'},1:{c:'#fde047',n:'I · Moderada'},
+  2:{c:'#fb923c',n:'II · Fuerte'},3:{c:'#ef4444',n:'III · Severa'},4:{c:'#7f1d1d',n:'IV · Extrema'},
+  5:{c:'#5a0c0c',n:'IV+ · Extrema'}};
+
+async function boot(){
+  try{
+    const hoy  = await (await fetch('oceano.json?_='+Date.now())).json();
+    const hist = await (await fetch('historial_oceano.json?_='+Date.now())).json();
+    if((hoy.fuente||'').includes('DEMO')) document.getElementById('demoBadge').style.display='inline-block';
+    init(hoy, hist, 'oceano_hoy.png?_='+Date.now());
+  }catch(e){ document.getElementById('err').style.display='flex'; console.error(e); }
+}
+
+function init(hoy, hist, png){
+  const map = L.map('map',{worldCopyJump:true,minZoom:2,maxZoom:6,center:[20,0],zoom:2});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
+    {attribution:'© OpenStreetMap, © CARTO · Datos: NOAA Coral Reef Watch',subdomains:'abcd'}).addTo(map);
+  const LATMAX=85.05112878;
+  L.imageOverlay(png,[[-LATMAX,-180],[LATMAX,180]],{opacity:0.86}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+    {subdomains:'abcd',opacity:0.7}).addTo(map);
+
+  const g=hoy.global;
+  fecha.textContent=new Date(hoy.fecha).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
+  pct.textContent=(g.pct_en_mhw??0).toFixed(1).replace('.',',')+'%';
+  streak.textContent=g.racha_dias?('▲ '+g.racha_dias+' días seguidos del océano sobre la media'):'';
+  anom.textContent=(g.anomalia_media!=null)?('Anomalía media global: +'+g.anomalia_media.toFixed(2).replace('.',',')+' °C'):'';
+
+  (hoy.cuencas||[]).filter(c=>c.categoria>=1).forEach(c=>{
+    let lon=c.bbox[0]+(((c.bbox[1]-c.bbox[0])%360+360)%360)/2; if(lon>180) lon-=360;
+    const lat=(c.bbox[2]+c.bbox[3])/2, col=CAT[c.categoria].c;
+    const anomStr=(c.anomalia!=null)?('<div class="li">Anomalía: <b>+'+c.anomalia.toFixed(1).replace('.',',')+' °C</b></div>'):'';
+    L.circleMarker([lat,lon],{radius:7+c.categoria*2.5,color:'#0a1020',weight:2,fillColor:col,fillOpacity:.95})
+     .addTo(map)
+     .bindPopup('<div class="pop"><div class="nm">'+c.nombre+'</div>'+
+       '<div class="cat" style="color:'+col+'">'+CAT[c.categoria].n+'</div>'+anomStr+
+       '<div class="li">Racha actual: <b>'+(c.racha??'—')+' días</b></div>'+
+       '<div class="li">Récord histórico: <b>'+(c.record??'—')+' días</b></div></div>');
+  });
+
+  const serie=(hist.serie||[]); const n=serie.length;
+  if(n>1){
+    const xs=serie.map(p=>p.pct),mn=Math.min(...xs),mx=Math.max(...xs)||1;
+    const path=serie.map((p,i)=>{const x=i/(n-1)*160,y=32-(p.pct-mn)/((mx-mn)||1)*28-2;return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);}).join(' ');
+    spark.innerHTML='<path d="'+path+'" fill="none" stroke="#22d3ee" stroke-width="1.5"/><circle id="dot" r="2.6" fill="#fde047"/>';
+    const dot=spark.querySelector('#dot');
+    function setIdx(i){const p=serie[i];tval.textContent=p.pct.toFixed(1).replace('.',',');
+      tlab.textContent=(i===n-1)?'hoy':new Date(p.fecha).toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+      dot.setAttribute('cx',(i/(n-1)*160).toFixed(1));dot.setAttribute('cy',(32-(p.pct-mn)/((mx-mn)||1)*28-2).toFixed(1));}
+    slider.max=n-1;slider.value=n-1;setIdx(n-1);
+    slider.addEventListener('input',e=>setIdx(+e.target.value));
+  }
+}
+boot();
+</script>
+</body>
+</html>
