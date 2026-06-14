@@ -19,7 +19,7 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar dependencias
-        run: pip install numpy pillow requests
+        run: pip install numpy pillow requests xarray scipy netCDF4 h5netcdf
 
       - name: 1 · Descargar datos (NOAA Coral Reef Watch)
         run: python scripts/oceano_ingest.py
