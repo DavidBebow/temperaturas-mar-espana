@@ -52,7 +52,7 @@
 <div class="brand">
   <div class="t">Planeta Vivo · <b>Desertificación</b></div>
   <div class="s">El avance de las zonas áridas · 1980s → 2050</div>
-  <div class="demo" id="demoBadge">DATOS DE DEMOSTRACIÓN</div>
+  <div class="demo" id="demoBadge">ESTIMACIÓN ILUSTRATIVA</div>
 </div>
 
 <div class="hud">
@@ -106,7 +106,7 @@ Promise.all([
   fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r=>r.json())
 ]).then(([data,topo])=>{
   DATA=data; PER=data.periodos; step=PER.findIndex(p=>p.id==='2020s'); if(step<0) step=PER.filter(p=>p.tipo==='obs').length-1;
-  if((data.fuente||'').includes('DEMO')) document.getElementById('demoBadge').style.display='inline-block';
+  if(/DEMO|ilustrativa/i.test(data.fuente||'')) document.getElementById('demoBadge').style.display='inline-block';
   document.getElementById('slider').max=PER.length-1;
   document.getElementById('ticks').innerHTML='<span>'+PER[0].label+'</span><span>'+(PER.find(p=>p.id==="2020s")||{label:""}).label+' · dato</span><span class="p">'+PER[PER.length-1].label+' · escenario</span>';
   draw(topojson.feature(topo,topo.objects.countries));
