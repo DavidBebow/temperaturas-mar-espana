@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planeta Vivo · Desertificación — el avance de las zonas áridas (1980s → 2050)</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{--bg:#fbfaf7;--ink:#1d1d1f;--soft:#6e6e73;--line:#e6e2d8;--panel:rgba(255,255,255,.86);--accent:#b76b22;--proj:#c0500a;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  #map{position:absolute;inset:0;background:var(--bg);z-index:1}
+  .leaflet-container{background:var(--bg);font-family:inherit}
+  .leaflet-control-attribution{background:rgba(255,255,255,.7)!important;font-size:10px!important}
+  .brand{position:absolute;top:16px;left:0;right:0;z-index:1000;text-align:center;pointer-events:none}
+  .brand .t{font-weight:800;font-size:18px;letter-spacing:-.01em}.brand .t b{color:var(--accent)}
+  .brand .s{font-size:11.5px;color:var(--soft);margin-top:1px}
+  .demo{display:none;margin-top:6px;font-size:9.5px;letter-spacing:.14em;background:#fff;border:1px solid var(--line);color:var(--accent);padding:3px 10px;border-radius:999px}
+  .hud{position:absolute;top:16px;left:16px;z-index:1000;width:250px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 18px;backdrop-filter:blur(16px);box-shadow:0 18px 50px rgba(60,50,30,.12)}
+  .hud .k{font-size:10px;letter-spacing:.14em;color:var(--soft);text-transform:uppercase;font-weight:700}
+  .hud .big{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:6px 0 2px}
+  .hud .cap{font-size:12px;color:var(--soft);line-height:1.45}
+  .hud .div{height:1px;background:var(--line);margin:13px 0}
+  .hud .stat{display:flex;gap:9px;align-items:baseline;margin:7px 0}
+  .hud .stat b{font-size:17px;font-weight:800;min-width:62px}.hud .stat span{font-size:11.5px;color:var(--soft);line-height:1.35}
+  .legend{position:absolute;bottom:112px;left:16px;z-index:1000;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;backdrop-filter:blur(16px);box-shadow:0 14px 40px rgba(60,50,30,.12)}
+  .legend .k{font-size:9.5px;letter-spacing:.12em;color:var(--soft);text-transform:uppercase;font-weight:700;margin-bottom:8px}
+  .legend .bar{display:flex;height:11px;border-radius:4px;overflow:hidden;width:210px}.legend .bar i{flex:1}
+  .legend .lab{display:flex;justify-content:space-between;font-size:10.5px;color:var(--soft);margin-top:5px}
+  .time{position:absolute;bottom:16px;left:16px;right:16px;z-index:1000;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 18px;backdrop-filter:blur(16px);display:flex;align-items:center;gap:16px;box-shadow:0 14px 40px rgba(60,50,30,.12)}
+  .play{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);flex:none}
+  .yrwrap{min-width:150px;text-align:center;flex:none}
+  .yr{font-weight:800;font-size:18px;letter-spacing:-.01em}
+  .badge{display:inline-block;font-size:9px;letter-spacing:.1em;font-weight:800;color:#fff;background:var(--proj);border-radius:5px;padding:2px 6px;margin-left:6px;vertical-align:middle;visibility:hidden}
+  .time input{flex:1;accent-color:var(--accent)}
+  .ticks{display:flex;justify-content:space-between;font-size:10px;color:var(--soft);margin-top:3px}.ticks .p{color:var(--proj);font-weight:700}
+  .leaflet-popup-content-wrapper{border-radius:14px}.leaflet-popup-content{margin:12px 14px}
+  .pop .nm{font-weight:800;font-size:14px}.pop .li{font-size:12.5px;color:var(--soft);margin:3px 0}.pop .li b{color:var(--ink)}.pop .pj{color:var(--proj);font-weight:700}
+  .spain{position:absolute;top:16px;right:16px;z-index:1000;width:212px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;backdrop-filter:blur(16px);box-shadow:0 14px 40px rgba(60,50,30,.12)}
+  .spain .k{font-size:9.5px;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;font-weight:700}
+  .spain .h{font-weight:800;font-size:15px;margin:3px 0 7px}.spain p{font-size:12px;color:var(--soft);margin:0;line-height:1.5}
+  .spain .n{font-size:26px;font-weight:800;color:var(--accent);letter-spacing:-.02em}
+  #err{position:absolute;inset:0;display:none;z-index:2000;align-items:center;justify-content:center;text-align:center;color:var(--soft);padding:30px}
+  @media(max-width:720px){.spain{display:none}.hud{width:200px}.brand{display:none}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="err">Cargando datos de desertificación…</div>
+
+<div class="brand">
+  <div class="t">Planeta Vivo · <b>Desertificación</b></div>
+  <div class="s">El avance de las zonas áridas · 1980s → 2050</div>
+  <div class="demo" id="demoBadge">DATOS DE DEMOSTRACIÓN</div>
+</div>
+
+<div class="hud">
+  <div class="k">El planeta · <span id="per">—</span></div>
+  <div class="big"><span id="globalpct">—</span>%</div>
+  <div class="cap">de la superficie terrestre son <b>zonas áridas</b> (drylands)</div>
+  <div class="div"></div>
+  <div class="stat"><b>+4,3M</b><span>km² secándose desde 1961-1990 (era 37,5%)</span></div>
+  <div class="stat"><b>¾</b><span>de la tierra, más seca de forma permanente en 30 años</span></div>
+  <div class="stat"><b>100M</b><span>hectáreas degradadas cada año</span></div>
+  <div class="stat"><b>2.300M</b><span>personas viven en zonas áridas en expansión</span></div>
+</div>
+
+<div class="spain">
+  <div class="k">Foco · España</div>
+  <div class="h">El país más árido de Europa</div>
+  <div class="n">75%</div>
+  <p>del territorio español está expuesto a riesgo de desertificación, según el MITECO. El sureste peninsular es la zona más crítica de la UE.</p>
+</div>
+
+<div class="legend">
+  <div class="k">Riesgo de desertificación / aridez</div>
+  <div class="bar" id="legbar"></div>
+  <div class="lab"><span>Bajo</span><span>Extremo</span></div>
+</div>
+
+<div class="time">
+  <button class="play" id="play">▶</button>
+  <div class="yrwrap"><span class="yr" id="yr">—</span><span class="badge" id="badge">PROYECCIÓN</span></div>
+  <div style="flex:1">
+    <input type="range" id="slider" min="0" max="0" value="0" step="1">
+    <div class="ticks" id="ticks"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
+<script>
+const COLS=["#f5ead0","#eedaa6","#e6c277","#d9a548","#c8842f","#ad6622","#8c4d18","#6b3810"];
+const STOPS=[28,38,46,54,62,72,82];
+function color(v){ if(v==null) return "#e9e6df"; for(let i=0;i<STOPS.length;i++) if(v<STOPS[i]) return COLS[i]; return COLS[COLS.length-1]; }
+document.getElementById('legbar').innerHTML=COLS.map(c=>'<i style="background:'+c+'"></i>').join('');
+
+let DATA, PER, step=0, layer;
+const map=L.map('map',{minZoom:2,maxZoom:6,zoomSnap:.25,worldCopyJump:false,maxBounds:[[-85,-180],[85,180]],maxBoundsViscosity:1,center:[26,12],zoom:2.2});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',noWrap:true,attribution:'© OpenStreetMap, © CARTO · Datos: World Bank CCKP'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',noWrap:true,opacity:.6,pane:'markerPane'}).addTo(map);
+
+Promise.all([
+  fetch('desertificacion.json?_='+Date.now()).then(r=>r.json()),
+  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r=>r.json())
+]).then(([data,topo])=>{
+  DATA=data; PER=data.periodos; step=PER.findIndex(p=>p.id==='2020s'); if(step<0) step=PER.filter(p=>p.tipo==='obs').length-1;
+  if((data.fuente||'').includes('DEMO')) document.getElementById('demoBadge').style.display='inline-block';
+  document.getElementById('slider').max=PER.length-1;
+  document.getElementById('ticks').innerHTML='<span>'+PER[0].label+'</span><span>'+(PER.find(p=>p.id==="2020s")||{label:""}).label+' · dato</span><span class="p">'+PER[PER.length-1].label+' · escenario</span>';
+  draw(topojson.feature(topo,topo.objects.countries));
+  document.getElementById('slider').value=step; render();
+}).catch(e=>{document.getElementById('err').style.display='flex';console.error(e);});
+
+function valAt(name,i){ const a=DATA.paises[name]; return (a&&a[i]!=null)?a[i]:null; }
+function style(f){ const v=valAt(f.properties.name,step), pj=PER[step].tipo==='proj';
+  return {fillColor:color(v),fillOpacity:v==null?.35:(pj?.78:.92),color:pj?'#c0500a':'#fff',weight:pj?.9:.6,dashArray:pj?'3':null}; }
+function draw(geo){
+  layer=L.geoJSON(geo,{style,onEachFeature:(f,l)=>{
+    l.on('mouseover',()=>l.setStyle({weight:1.6,color:'#7c3f12'}));
+    l.on('mouseout',()=>layer.resetStyle(l));
+    l.on('click',()=>{ const n=f.properties.name,a=DATA.paises[n],pj=PER[step].tipo==='proj';
+      let txt='<div class="li">Sin dato</div>';
+      if(a){ const obs=PER.map((p,i)=>p.tipo==='obs'?a[i]:null).filter(x=>x!=null);
+        txt='<div class="li">'+PER[step].label+(pj?' <span class="pj">(proyección)</span>':'')+': <b>'+valAt(n,step)+'</b> / 100</div>'+
+            '<div class="li">Recorrido observado: <b>'+obs[0]+' → '+obs[obs.length-1]+'</b></div>'+
+            '<div class="li">Escenario '+PER[PER.length-1].label+': <b class="pj">'+(a[PER.length-1]??'—')+'</b></div>'; }
+      l.bindPopup('<div class="pop"><div class="nm">'+n+'</div>'+txt+'</div>').openPopup(); });
+  }}).addTo(map);
+}
+function render(){ const p=PER[step], pj=p.tipo==='proj';
+  document.getElementById('yr').textContent=p.label;
+  document.getElementById('yr').style.color=pj?'var(--proj)':'var(--ink)';
+  document.getElementById('badge').style.visibility=pj?'visible':'hidden';
+  document.getElementById('per').textContent=pj?(p.label+' · proyección'+(p.escenario?(' '+p.escenario):'')):p.label;
+  const g=(DATA.global||[]).find(x=>x.periodo===p.id);
+  document.getElementById('globalpct').textContent=g?String(g.drylands_pct).replace('.',','):'—';
+  if(layer) layer.setStyle(style); }
+
+const slider=document.getElementById('slider');
+slider.addEventListener('input',e=>{step=+e.target.value;render();});
+let timer=null;
+document.getElementById('play').onclick=function(){
+  if(timer){clearInterval(timer);timer=null;this.textContent='▶';return;}
+  this.textContent='❚❚'; if(step>=PER.length-1) step=0; const btn=this;
+  timer=setInterval(()=>{ if(step>=PER.length-1){clearInterval(timer);timer=null;btn.textContent='▶';return;}
+    step++;slider.value=step;render(); },700);
+};
+</script>
+</body>
+</html>
