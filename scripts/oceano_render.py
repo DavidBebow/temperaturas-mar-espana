@@ -31,6 +31,9 @@ def to_mercator(img, lats):
     return img[idx]
 
 def main():
+    if not os.path.exists(GRID):
+        print("OMITIDO: no hay rejilla nueva (la descarga se saltó). Se conserva el PNG anterior.")
+        return
     z = np.load(GRID); cat, lats = z["cat"], z["lats"]
     if lats[0] < lats[-1]: cat = cat[::-1]; lats = lats[::-1]
     H, W = cat.shape
