@@ -1,7 +1,7 @@
 name: Municipios 2050 (generación · reanudable)
 
 on:
-  workflow_dispatch:          # se lanza a mano desde la pestaña Actions
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -9,7 +9,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 350       # tope de GitHub (6 h); paramos antes con MAXSECONDS
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
 
@@ -19,9 +19,9 @@ jobs:
 
       - name: Generar municipios.json (hasta 5 h, reanudable)
         env:
-          SRC: scripts/municipios_fuente.csv     # el CSV que subes una vez
-          OUT: docs/municipios.json              # salida (la lee el mapa)
-          MAXSECONDS: "18000"                    # 5 h y para, guardando el avance
+          SRC: scripts/municipios_fuente.csv
+          OUT: docs/municipios.json
+          MAXSECONDS: "18000"
         run: python scripts/gen_municipios_2050.py
 
       - name: Publicar avance
@@ -29,7 +29,7 @@ jobs:
         run: |
           git config user.name  "GitHub Actions Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add -A docs/ scripts/geocode_cache.json
+          git add -A docs/ scripts/
           git commit -m "Municipios 2050: avance $(date -u +'%F %H:%M')" || { echo "sin cambios"; exit 0; }
           git pull --rebase --autostash origin main
           git push origin main
