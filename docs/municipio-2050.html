@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu municipio en 2050 · Cómo será el clima de tu ciudad</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{--ink:#1a1410;--soft:#7a6f66;--line:#ece7df;--bg2:#faf7f2;--card:#fff;--hot:#e0531f;--hot2:#b23410;--accent:#e0531f;}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#fff;color:var(--ink);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:34px 18px 40px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;text-align:center}
+  h1{font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.1;text-align:center;margin:10px 0 8px}
+  .sub{font-size:17px;color:var(--soft);text-align:center;max-width:600px;margin:0 auto 8px}
+  .demo{display:block;text-align:center;font-size:10px;letter-spacing:.12em;color:var(--accent);margin:10px 0 0;font-weight:700}
+  .search{position:relative;max-width:440px;margin:26px auto 0}
+  .search input{width:100%;font:inherit;font-size:17px;padding:15px 18px;border:1px solid var(--line);
+    border-radius:14px;background:var(--bg2);outline:none;transition:border-color .15s,box-shadow .15s}
+  .search input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(224,83,31,.12);background:#fff}
+  .sugg{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:12px;
+    margin-top:6px;box-shadow:0 18px 44px rgba(60,40,20,.14);max-height:300px;overflow:auto;z-index:30;display:none}
+  .sugg div{padding:11px 16px;cursor:pointer;font-size:15px;border-bottom:1px solid #f3efe8}
+  .sugg div:hover,.sugg div.act{background:var(--bg2)}
+  .sugg div small{color:var(--soft);margin-left:6px}
+  .result{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px;align-items:start}
+  @media(max-width:760px){h1{font-size:30px}.result{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 14px 40px rgba(60,40,20,.06)}
+  .card .when{font-size:13px;color:var(--soft);font-weight:600}
+  .card h2{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:2px 0 14px}
+  .analog{background:linear-gradient(135deg,#fff3ec,#ffe7da);border:1px solid #f3d4c4;border-radius:16px;padding:18px;margin-bottom:18px}
+  .analog .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--hot2);font-weight:700}
+  .analog .big{font-size:23px;font-weight:800;letter-spacing:-.01em;margin-top:4px;line-height:1.25}
+  .analog .big b{color:var(--hot)}
+  .metric{margin:16px 0}
+  .metric .top{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;margin-bottom:7px}
+  .metric .top .nm{font-weight:600}
+  .metric .top .delta{font-weight:800;color:var(--hot)}
+  .bars{display:flex;flex-direction:column;gap:5px}
+  .bar{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--soft)}
+  .bar .lab{width:34px;flex:none}
+  .bar .track{flex:1;height:9px;background:#f0ece5;border-radius:5px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:5px}
+  .bar .v{width:54px;flex:none;text-align:right;color:var(--ink);font-weight:600}
+  #map{height:100%;min-height:420px;border-radius:20px;border:1px solid var(--line);z-index:1}
+  .leaflet-container{border-radius:20px;font-family:inherit;background:#eaf0f3}
+  .maptip{font-size:12px;color:var(--soft);text-align:center;margin-top:8px}
+  .src{font-size:12px;color:var(--soft);text-align:center;margin-top:30px;border-top:1px solid var(--line);padding-top:18px}
+  #err{text-align:center;color:var(--soft);padding:30px;font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">🔥 Observatorio climático</div>
+  <h1>Tu municipio en 2050</h1>
+  <p class="sub">Busca tu ciudad y descubre cómo será su clima a mitad de siglo: a qué lugar de hoy se parecerá, cuántos días de calor extremo y noches tropicales tendrá, y cómo cambiará la sequía.</p>
+  <div class="demo" id="demo"></div>
+
+  <div class="search">
+    <input id="q" type="text" placeholder="Escribe tu municipio…" autocomplete="off" disabled>
+    <div class="sugg" id="sugg"></div>
+  </div>
+
+  <div class="result" id="result" style="display:none">
+    <div class="card" id="card"></div>
+    <div><div id="map"></div><div class="maptip" id="maptip"></div></div>
+  </div>
+  <div id="err" style="display:none">Cargando municipios…</div>
+
+  <p class="src">Proyecciones: Open-Meteo Climate API (CMIP6 HighResMIP, escenario de altas emisiones, ~2050) · Mapa: OpenStreetMap &amp; CARTO.</p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+let M=[], MAX={c:60,n:80,s:12}, map, layer;
+
+fetch('municipios.json?_='+Date.now()).then(r=>r.json()).then(j=>{
+  M=j.items||[];
+  if((j.meta&&j.meta.fuente||'').includes('Open-Meteo')) document.getElementById('demo').textContent='DATOS REALES · '+M.length+' MUNICIPIOS · OPEN-METEO CMIP6';
+  MAX={c:Math.max(60,...M.map(x=>x.c5)),n:Math.max(80,...M.map(x=>x.n5)),s:12};
+  initMap();
+  document.getElementById('q').disabled=false;
+  const def=M.find(x=>x.n==='Madrid')||M[0];
+  if(def){document.getElementById('result').style.display='grid';show(def);}
+}).catch(e=>{document.getElementById('err').style.display='block';document.getElementById('err').textContent='No se pudo cargar municipios.json';console.error(e);});
+
+function initMap(){
+  map=L.map('map',{minZoom:4,maxZoom:9}).setView([39.5,-3.5],5);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO'}).addTo(map);
+  layer=L.layerGroup().addTo(map);
+}
+function bar(lab,val,max,col){const w=Math.min(val/max*100,100);
+  return '<div class="bar"><span class="lab">'+lab+'</span><span class="track"><span class="fill" style="width:'+w+'%;background:'+col+'"></span></span><span class="v">'+val+'</span></div>';}
+function metric(icon,name,h,f,max){
+  return '<div class="metric"><div class="top"><span class="nm">'+icon+' '+name+'</span><span class="delta">+'+(Math.round((f-h)*10)/10)+'</span></div>'+
+    '<div class="bars">'+bar('hoy',h,max,'#bdb5ab')+bar('2050',f,max,'#e0531f')+'</div></div>';}
+function show(c){
+  document.getElementById('result').style.display='grid';
+  document.getElementById('card').innerHTML=
+    '<div class="when">El clima de</div><h2>'+c.n+' en 2050</h2>'+
+    '<div class="analog"><div class="k">Se parecerá al de hoy en</div><div class="big">Tendrá un clima parecido al que hoy tiene <b>'+(c.an||'—')+'</b></div></div>'+
+    metric('🔥','Días de calor extremo (&gt;35°C)',c.ch,c.c5,MAX.c)+
+    metric('🌙','Noches tropicales (&gt;20°C)',c.nh,c.n5,MAX.n)+
+    metric('💧','Meses secos al año',c.sh,c.s5,MAX.s);
+  layer.clearLayers();
+  const a=[c.lat,c.lon];
+  L.circleMarker(a,{radius:9,color:'#fff',weight:2,fillColor:'#e0531f',fillOpacity:1}).addTo(layer).bindTooltip(c.n,{permanent:true,direction:'top'});
+  if(c.alat!=null){const b=[c.alat,c.alon];
+    L.polyline([a,b],{color:'#e0531f',weight:2.5,dashArray:'6 6',opacity:.8}).addTo(layer);
+    L.circleMarker(b,{radius:7,color:'#fff',weight:2,fillColor:'#b23410',fillOpacity:1}).addTo(layer).bindTooltip(c.an);
+    map.fitBounds([a,b],{padding:[60,60],maxZoom:7});
+    document.getElementById('maptip').textContent='El clima de '+c.n+' "viaja" hacia el de '+c.an+'.';
+  } else { map.setView(a,8); document.getElementById('maptip').textContent=''; }
+}
+
+const q=document.getElementById('q'), sg=document.getElementById('sugg');
+let idx=-1, list=[];
+function render(){ if(!list.length){sg.style.display='none';return;}
+  sg.innerHTML=list.map((c,i)=>'<div data-i="'+i+'" class="'+(i===idx?'act':'')+'">'+c.n+' <small>'+(c.prov||'')+'</small></div>').join('');
+  sg.style.display='block';}
+q.addEventListener('input',()=>{const v=norm(q.value.trim());
+  list=v?M.filter(c=>norm(c.n).includes(v)).slice(0,10):[]; idx=-1; render();});
+q.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'){idx=Math.min(idx+1,list.length-1);render();e.preventDefault();}
+  else if(e.key==='ArrowUp'){idx=Math.max(idx-1,0);render();e.preventDefault();}
+  else if(e.key==='Enter'&&list.length){pick(list[idx>=0?idx:0]);}});
+sg.addEventListener('click',e=>{const d=e.target.closest('[data-i]');if(d)pick(list[+d.dataset.i]);});
+function pick(c){q.value=c.n;sg.style.display='none';show(c);}
+document.addEventListener('click',e=>{if(!e.target.closest('.search'))sg.style.display='none';});
+</script>
+</body>
+</html>
