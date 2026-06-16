@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "descripcion": "Eventos de desastres meteorologicos/climaticos en España por encima del umbral. Costes en euros CORRIENTES del año del evento (millones de euros). El script desastres_deflactar_ipc.py añade el campo coste_meur_const (euros constantes 2024).",
+    "umbral_meur": 100,
+    "capas": {
+      "asegurado_ccs": "Indemnizaciones del Consorcio de Compensacion de Seguros (riesgos extraordinarios: inundacion, embate de mar, tempestad ciclonica atipica).",
+      "asegurado_seguro": "Pagos del seguro ordinario (UNESPA) cuando el riesgo NO lo cubre el Consorcio (p.ej. nieve).",
+      "estimado_total": "Estimacion de coste economico total (asegurado + no asegurado), informes Aon/Munich Re/EEA o estudios sectoriales."
+    },
+    "nota": "Lista semilla con eventos documentados y verificables. Para la serie completa 1980-2025, exportar la Estadistica de Riesgos Extraordinarios del Consorcio (CSV) y añadirla con scripts/desastres_recopilar_eventos.py."
+  },
+  "eventos": [
+    {
+      "id": "dana-valencia-2024",
+      "anio": 2024,
+      "fecha": "2024-10-29",
+      "nombre": "DANA de Valencia y el este peninsular",
+      "tipo": "inundacion",
+      "ambito": ["Valencia", "Albacete", "Cuenca", "Andalucia oriental", "Cataluna", "Baleares", "Aragon"],
+      "coste_meur": 4000,
+      "capa": "asegurado_ccs",
+      "consolidado": true,
+      "fuente": "Consorcio de Compensacion de Seguros / La Moncloa (nov 2025): +4.000 M€ en 210.106 indemnizaciones",
+      "url": "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/economia-comercio-empresa/paginas/2025/261125-indemnizacion-dana.aspx",
+      "pagina_relacionada": "dana.html"
+    },
+    {
+      "id": "dana-vega-baja-2019",
+      "anio": 2019,
+      "fecha": "2019-09-12",
+      "nombre": "DANA del sureste (Vega Baja)",
+      "tipo": "inundacion",
+      "ambito": ["Alicante", "Murcia", "Almeria", "Valencia"],
+      "coste_meur": 737,
+      "capa": "asegurado_ccs",
+      "consolidado": true,
+      "fuente": "Consorcio de Compensacion de Seguros: indemnizaciones por inundacion en 2019 (87.581 expedientes, 737 M€), mayoritariamente la DANA de septiembre",
+      "url": "https://www.consorseguros.es/",
+      "pagina_relacionada": "dana.html"
+    },
+    {
+      "id": "filomena-2021",
+      "anio": 2021,
+      "fecha": "2021-01-08",
+      "nombre": "Borrasca Filomena (nevada y ola de frio)",
+      "tipo": "temporal_invernal",
+      "ambito": ["Madrid", "Castilla-La Mancha", "Castilla y Leon", "Aragon"],
+      "coste_meur": 230,
+      "capa": "asegurado_seguro",
+      "consolidado": true,
+      "fuente": "UNESPA: el seguro pago 230 M€ (~198.000 actuaciones). La nieve NO la cubre el Consorcio.",
+      "url": "https://www.unespa.es/notasdeprensa/nevada-filomena-2021/",
+      "pagina_relacionada": "ola-de-calor.html"
+    },
+    {
+      "id": "sequia-2023",
+      "anio": 2023,
+      "fecha": "2023-04-01",
+      "nombre": "Sequia de 2023",
+      "tipo": "sequia",
+      "ambito": ["Nacional"],
+      "coste_meur": 2178,
+      "capa": "estimado_total",
+      "consolidado": false,
+      "fuente": "Estimacion sectorial/agraria difundida en prensa: ~2.178 M€ (≈45 € por habitante), 9ª catastrofe climatica mundial de 2023",
+      "url": "https://www.elespanol.com/enclave-ods/historias/20231227/euros-pago-espanol-sequia-abril-ong-situa-novena-catastrofe-climatica/820168076_0.html",
+      "pagina_relacionada": "sequia-flash.html"
+    }
+  ]
+}
