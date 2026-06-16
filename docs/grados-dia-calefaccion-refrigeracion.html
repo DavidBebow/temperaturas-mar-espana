@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grados-día de calefacción y refrigeración en España</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" referrerpolicy="no-referrer"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --text-primary: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #86868b;
+    --bg: #ffffff;
+    --bg-soft: #f5f5f7;
+    --border: #d2d2d7;
+    --cal: #0066CC;   /* calefacción · frío */
+    --ref: #CC2200;   /* refrigeración · calor */
+    --max-width: 760px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 24px 18px 32px;
+  }
+
+  .gd-wrap { max-width: var(--max-width); margin: 0 auto; }
+
+  .gd-head h2 {
+    font-size: clamp(20px, 3.2vw, 26px);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .gd-head p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 22px;
+  }
+
+  /* ——— CONTROLES ——— */
+  .gd-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .gd-field { display: flex; flex-direction: column; gap: 5px; }
+
+  .gd-field label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .gd-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 34px 9px 13px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%236e6e73' stroke-width='1.6'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+
+  .gd-field select:focus { outline: none; border-color: var(--cal); }
+
+  /* ——— TARJETAS DE DATOS ——— */
+  .gd-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .gd-stat {
+    background: var(--bg-soft);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+
+  .gd-stat .k {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 6px;
+  }
+
+  .gd-stat .v {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.05;
+  }
+
+  .gd-stat .s { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.35; }
+  .gd-stat.cal .v { color: var(--cal); }
+  .gd-stat.ref .v { color: var(--ref); }
+
+  /* ——— GRÁFICO ——— */
+  .gd-chart-box {
+    position: relative;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 14px 8px;
+    min-height: 360px;
+  }
+
+  .gd-canvas-holder { position: relative; height: 380px; }
+
+  .gd-status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 24px;
+  }
+
+  .gd-status.hidden { display: none; }
+
+  .gd-spinner {
+    width: 22px; height: 22px;
+    border: 2.5px solid var(--border);
+    border-top-color: var(--cal);
+    border-radius: 50%;
+    animation: gd-spin 0.9s linear infinite;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  @keyframes gd-spin { to { transform: rotate(360deg); } }
+
+  /* ——— PIE ——— */
+  .gd-foot {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.55;
+    margin-top: 18px;
+  }
+
+  .gd-foot strong { color: var(--text-secondary); font-weight: 600; }
+  .gd-foot a { color: var(--cal); text-decoration: none; }
+  .gd-foot a:hover { text-decoration: underline; }
+
+  @media (max-width: 560px) {
+    .gd-stats { grid-template-columns: 1fr; }
+    .gd-canvas-holder { height: 320px; }
+    .gd-controls { flex-direction: column; }
+    .gd-field select { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="gd-wrap">
+
+  <div class="gd-head">
+    <h2>De calentar a enfriar: grados-día en España</h2>
+    <p>Cuánta energía necesita un edificio para calefacción (frío) frente a refrigeración (calor), año a año. Cuando las líneas se acercan o se cruzan, el clima de esa provincia está cambiando de régimen.</p>
+  </div>
+
+  <div class="gd-controls">
+    <div class="gd-field">
+      <label for="gd-prov">Provincia</label>
+      <select id="gd-prov"></select>
+    </div>
+    <div class="gd-field">
+      <label for="gd-base">Base de refrigeración</label>
+      <select id="gd-base">
+        <option value="21" selected>21 °C (confort España)</option>
+        <option value="24">24 °C (estándar Eurostat)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="gd-stats" id="gd-stats" style="visibility:hidden">
+    <div class="gd-stat cal">
+      <div class="k">Calefacción (HDD)</div>
+      <div class="v" id="gd-hdd">—</div>
+      <div class="s" id="gd-hdd-s"></div>
+    </div>
+    <div class="gd-stat ref">
+      <div class="k">Refrigeración (CDD)</div>
+      <div class="v" id="gd-cdd">—</div>
+      <div class="s" id="gd-cdd-s"></div>
+    </div>
+    <div class="gd-stat">
+      <div class="k">Tendencia</div>
+      <div class="v" id="gd-trend">—</div>
+      <div class="s" id="gd-trend-s"></div>
+    </div>
+  </div>
+
+  <div class="gd-chart-box">
+    <div class="gd-canvas-holder">
+      <canvas id="gd-canvas"></canvas>
+      <div class="gd-status" id="gd-status"><span class="gd-spinner"></span> Cargando datos climáticos…</div>
+    </div>
+  </div>
+
+  <p class="gd-foot">
+    <strong>Metodología.</strong> Grados-día anuales calculados sobre la temperatura media diaria.
+    Calefacción (HDD) con base 18 °C: suma anual de máx(0, 18 − T<sub>media</sub>).
+    Refrigeración (CDD) con la base seleccionada: suma anual de máx(0, T<sub>media</sub> − base).
+    Datos de reanálisis ERA5 (1960–último año completo) para la capital de cada provincia.
+    El año en curso se excluye por estar incompleto.
+    Fuente de datos: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo (archivo ERA5)</a>.
+    Elaboración: Calentamiento Global.
+  </p>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Capitales de provincia (lat, lon) — punto de muestreo del reanálisis
+  var PROVINCIAS = [
+    ["A Coruña",43.37,-8.40],["Álava",42.85,-2.67],["Albacete",38.99,-1.86],
+    ["Alicante",38.35,-0.48],["Almería",36.84,-2.46],["Asturias",43.36,-5.85],
+    ["Ávila",40.66,-4.70],["Badajoz",38.88,-6.97],["Barcelona",41.39,2.17],
+    ["Bizkaia",43.26,-2.93],["Burgos",42.34,-3.70],["Cáceres",39.47,-6.37],
+    ["Cádiz",36.53,-6.29],["Cantabria",43.46,-3.81],["Castellón",39.99,-0.04],
+    ["Ciudad Real",38.99,-3.93],["Córdoba",37.89,-4.78],["Cuenca",40.07,-2.13],
+    ["Gipuzkoa",43.32,-1.98],["Girona",41.98,2.82],["Granada",37.18,-3.60],
+    ["Guadalajara",40.63,-3.16],["Huelva",37.26,-6.95],["Huesca",42.13,-0.41],
+    ["Illes Balears",39.57,2.65],["Jaén",37.77,-3.79],["La Rioja",42.47,-2.45],
+    ["Las Palmas",28.12,-15.43],["León",42.60,-5.57],["Lleida",41.62,0.62],
+    ["Lugo",43.01,-7.56],["Madrid",40.42,-3.70],["Málaga",36.72,-4.42],
+    ["Murcia",37.99,-1.13],["Navarra",42.81,-1.65],["Ourense",42.34,-7.86],
+    ["Palencia",42.01,-4.53],["Pontevedra",42.43,-8.64],["Salamanca",40.97,-5.66],
+    ["S. C. de Tenerife",28.47,-16.25],["Segovia",40.95,-4.12],["Sevilla",37.39,-5.99],
+    ["Soria",41.76,-2.46],["Tarragona",41.12,1.25],["Teruel",40.34,-1.11],
+    ["Toledo",39.86,-4.02],["Valencia",39.47,-0.38],["Valladolid",41.65,-4.72],
+    ["Zamora",41.50,-5.74],["Zaragoza",41.65,-0.89],["Ceuta",35.89,-5.31],
+    ["Melilla",35.29,-2.94]
+  ];
+
+  var HDD_BASE = 18;
+  var START_YEAR = 1960;
+  var cache = {}; // key: "lat,lon" -> { years, hdd, dailyByYear }
+  var chart = null;
+
+  var elProv = document.getElementById("gd-prov");
+  var elBase = document.getElementById("gd-base");
+  var elStatus = document.getElementById("gd-status");
+  var elStats = document.getElementById("gd-stats");
+  var fmt = function (n) { return Math.round(n).toLocaleString("es-ES"); };
+
+  PROVINCIAS.forEach(function (p, i) {
+    var o = document.createElement("option");
+    o.value = i; o.textContent = p[0];
+    if (p[0] === "Madrid") o.selected = true;
+    elProv.appendChild(o);
+  });
+
+  function setStatus(msg, spinner) {
+    if (!msg) { elStatus.classList.add("hidden"); return; }
+    elStatus.classList.remove("hidden");
+    elStatus.innerHTML = (spinner ? '<span class="gd-spinner"></span> ' : "") + msg;
+  }
+
+  function lastFullYear() {
+    var now = new Date();
+    return now.getFullYear() - 1; // el año en curso está incompleto
+  }
+
+  function fetchProvincia(lat, lon) {
+    var key = lat + "," + lon;
+    if (cache[key]) return Promise.resolve(cache[key]);
+    var end = lastFullYear() + "-12-31";
+    var url = "https://archive-api.open-meteo.com/v1/archive" +
+      "?latitude=" + lat + "&longitude=" + lon +
+      "&start_date=" + START_YEAR + "-01-01&end_date=" + end +
+      "&daily=temperature_2m_mean&timezone=Europe%2FMadrid";
+
+    return fetch(url).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).then(function (j) {
+      if (!j.daily || !j.daily.time) throw new Error("Sin datos");
+      var times = j.daily.time, temps = j.daily.temperature_2m_mean;
+      var byYear = {}; // year -> { hdd, days, temps:[] }
+      for (var i = 0; i < times.length; i++) {
+        var t = temps[i];
+        if (t === null || t === undefined) continue;
+        var y = +times[i].slice(0, 4);
+        if (!byYear[y]) byYear[y] = { hdd: 0, days: 0, temps: [] };
+        byYear[y].hdd += Math.max(0, HDD_BASE - t);
+        byYear[y].temps.push(t);
+        byYear[y].days++;
+      }
+      var years = [], hdd = [], tempsByYear = {};
+      Object.keys(byYear).map(Number).sort(function (a, b) { return a - b; })
+        .forEach(function (y) {
+          if (byYear[y].days < 350) return; // descarta años con huecos grandes
+          years.push(y);
+          hdd.push(byYear[y].hdd);
+          tempsByYear[y] = byYear[y].temps;
+        });
+      var data = { years: years, hdd: hdd, tempsByYear: tempsByYear };
+      cache[key] = data;
+      return data;
+    });
+  }
+
+  function cddFor(data, base) {
+    return data.years.map(function (y) {
+      var s = 0, arr = data.tempsByYear[y];
+      for (var i = 0; i < arr.length; i++) s += Math.max(0, arr[i] - base);
+      return s;
+    });
+  }
+
+  // media de los primeros y últimos 10 años para tendencia
+  function decadeAvg(years, vals, head) {
+    var idx = years.map(function (_, i) { return i; });
+    var pick = head ? idx.slice(0, 10) : idx.slice(-10);
+    var s = 0; pick.forEach(function (i) { s += vals[i]; });
+    return s / pick.length;
+  }
+
+  function render() {
+    var prov = PROVINCIAS[+elProv.value];
+    var base = +elBase.value;
+    setStatus("Cargando datos climáticos…", true);
+    elStats.style.visibility = "hidden";
+
+    fetchProvincia(prov[1], prov[2]).then(function (data) {
+      if (!data.years.length) { setStatus("No hay datos suficientes para esta provincia."); return; }
+      var cdd = cddFor(data, base);
+      setStatus(null);
+      elStats.style.visibility = "visible";
+
+      var lastYear = data.years[data.years.length - 1];
+      var hddLast = data.hdd[data.hdd.length - 1];
+      var cddLast = cdd[cdd.length - 1];
+
+      document.getElementById("gd-hdd").textContent = fmt(hddLast);
+      document.getElementById("gd-cdd").textContent = fmt(cddLast);
+      document.getElementById("gd-hdd-s").textContent = "grados-día en " + lastYear;
+      document.getElementById("gd-cdd-s").textContent = "grados-día en " + lastYear + " · base " + base + " °C";
+
+      var hddOld = decadeAvg(data.years, data.hdd, true);
+      var hddNew = decadeAvg(data.years, data.hdd, false);
+      var cddOld = decadeAvg(data.years, cdd, true);
+      var cddNew = decadeAvg(data.years, cdd, false);
+      var hddCh = hddOld ? Math.round((hddNew - hddOld) / hddOld * 100) : 0;
+      var cddCh = cddOld ? Math.round((cddNew - cddOld) / cddOld * 100) : 0;
+      var y0 = data.years[0], y1 = lastYear;
+      document.getElementById("gd-trend").innerHTML =
+        '<span style="color:var(--cal)">' + (hddCh <= 0 ? "" : "+") + hddCh + '%</span> / ' +
+        '<span style="color:var(--ref)">' + (cddCh < 0 ? "" : "+") + cddCh + '%</span>';
+      document.getElementById("gd-trend-s").textContent =
+        "calefacción / refrigeración, primera vs. última década (" + y0 + "–" + y1 + ")";
+
+      drawChart(data.years, data.hdd, cdd, prov[0], base);
+    }).catch(function (e) {
+      setStatus("No se han podido cargar los datos. Inténtalo de nuevo en unos segundos.");
+      if (window.console) console.error(e);
+    });
+  }
+
+  function drawChart(years, hdd, cdd, nombre, base) {
+    var ctx = document.getElementById("gd-canvas").getContext("2d");
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: years,
+        datasets: [
+          {
+            label: "Calefacción (HDD, base 18 °C)",
+            data: hdd,
+            borderColor: "#0066CC",
+            backgroundColor: "rgba(0,102,204,0.08)",
+            borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+            tension: 0.25, fill: true
+          },
+          {
+            label: "Refrigeración (CDD, base " + base + " °C)",
+            data: cdd,
+            borderColor: "#CC2200",
+            backgroundColor: "rgba(204,34,0,0.08)",
+            borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+            tension: 0.25, fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            position: "top", align: "start",
+            labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true, pointStyle: "rectRounded",
+              font: { size: 12 }, color: "#1d1d1f" }
+          },
+          tooltip: {
+            backgroundColor: "#0d1f35", borderColor: "#1e4060", borderWidth: 1,
+            padding: 11, titleFont: { size: 13 }, bodyFont: { size: 13 },
+            callbacks: {
+              title: function (it) { return nombre + " · " + it[0].label; },
+              label: function (it) {
+                return it.dataset.label.split(" (")[0] + ": " +
+                  Math.round(it.parsed.y).toLocaleString("es-ES") + " grados-día";
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { maxTicksLimit: 9, color: "#86868b", font: { size: 11 } }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: "#ececef" },
+            ticks: { color: "#86868b", font: { size: 11 },
+              callback: function (v) { return v.toLocaleString("es-ES"); } }
+          }
+        }
+      }
+    });
+  }
+
+  elProv.addEventListener("change", render);
+  elBase.addEventListener("change", render);
+  render();
+})();
+</script>
+</body>
+</html>
