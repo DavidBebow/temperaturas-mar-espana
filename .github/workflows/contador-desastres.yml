@@ -1,0 +1,39 @@
+name: actualizar-contador-desastres
+
+# Cada lunes a las 06:00 UTC y tambien a mano (Run workflow), p.ej. tras una DANA.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 1) Consolidar eventos
+        run: python scripts/desastres_recopilar_eventos.py
+
+      - name: 2) Deflactar a euros constantes (IPC del INE)
+        run: python scripts/desastres_deflactar_ipc.py
+
+      - name: 3) Agregar y generar JSON de la web
+        run: python scripts/desastres_agregar.py
+
+      - name: Guardar los datos actualizados
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/desastres_*.json
+          git commit -m "Contador de desastres actualizado" || echo "Sin cambios que guardar"
+          git push
