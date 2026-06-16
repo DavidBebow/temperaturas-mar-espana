@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contador de Desastres Climáticos de España | CalentamientoGlobal.es</title>
+<meta name="description" content="Cuánto le cuesta a España el clima extremo, en euros constantes, año a año y por territorio. El equivalente español del contador de catástrofes de la NOAA.">
+<style>
+  :root{
+    --bg:#0b1220; --panel:#13203a; --panel2:#172847;
+    --ink:#eaf1ff; --muted:#9fb2d0; --line:#22344f;
+    --inund:#38bdf8; --sequia:#fb923c; --tormenta:#a78bfa; --calor:#ef4444; --incendio:#f59e0b; --otro:#94a3b8;
+    --accent:#22d3ee; --ok:#34d399;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0a1020,#0b1220 30%);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  header{padding:48px 0 26px;text-align:center;border-bottom:1px solid var(--line);
+    background:radial-gradient(800px 280px at 50% -20%,rgba(239,68,68,.18),transparent 65%)}
+  .kicker{letter-spacing:.18em;text-transform:uppercase;font-size:11px;color:var(--accent);font-weight:700}
+  h1{font-size:30px;margin:10px 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);max-width:680px;margin:0 auto;font-size:15px}
+  .src-flag{display:inline-block;margin-top:14px;font-size:11px;padding:5px 12px;border-radius:999px}
+  .src-live{color:#bbf7d0;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4)}
+  .src-demo{color:#ffd9a3;background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.4)}
+  .counter{padding:40px 0 30px;text-align:center;border-bottom:1px solid var(--line)}
+  .counter .label{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+  .odo{font-size:clamp(40px,8vw,76px);font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+    background:linear-gradient(90deg,#fde047,#fb923c,#ef4444);-webkit-background-clip:text;background-clip:text;color:transparent;
+    line-height:1.05;margin:6px 0}
+  .since{color:var(--muted);font-size:14px}
+  .since b{color:var(--ink)}
+  .mini{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+  .chip{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:150px}
+  .chip .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+  .chip .k{color:var(--muted);font-size:12px}
+  section{padding:34px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:21px;margin:0 0 4px}
+  .hint{color:var(--muted);font-size:13px;margin:0 0 16px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .chart-wrap{position:relative;width:100%}
+  svg{width:100%;height:auto;display:block}
+  .bar{cursor:pointer;transition:opacity .15s}
+  .bar:hover{opacity:.82}
+  .axis{stroke:var(--line);stroke-width:1}
+  .gl{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4;opacity:.5}
+  .tl{fill:var(--muted);font-size:11px}
+  .yl{fill:var(--muted);font-size:10px}
+  .tip{position:absolute;pointer-events:none;background:#0a1326;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:12.5px;color:var(--ink);box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;
+    transition:opacity .12s;z-index:5;max-width:260px}
+  .tip b{color:#fff}.tip .row{display:flex;justify-content:space-between;gap:14px;margin-top:3px;color:var(--muted)}
+  .tip .row em{font-style:normal;color:var(--ink);font-variant-numeric:tabular-nums}
+  .controls{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  select{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:14px}
+  .rank{display:grid;gap:8px}
+  .rrow{display:grid;grid-template-columns:130px 1fr auto;gap:12px;align-items:center}
+  .rname{font-size:14px}
+  .rbar{height:22px;background:var(--panel2);border-radius:6px;overflow:hidden;position:relative}
+  .rfill{height:100%;background:linear-gradient(90deg,#fb923c,#ef4444);border-radius:6px;width:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+  .rval{font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;min-width:96px;text-align:right}
+  .rcap{color:var(--muted);font-size:11px}
+  .grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}.rrow{grid-template-columns:96px 1fr auto}}
+  .ev{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;border-left:4px solid var(--c,var(--accent))}
+  .ev .y{font-size:12px;color:var(--muted)}
+  .ev .t{font-weight:700;margin:2px 0 4px}
+  .ev .c{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+  .ev .d{color:var(--muted);font-size:13px;margin-top:4px}
+  .ev a{color:var(--accent);font-size:12px;text-decoration:none}
+  footer{padding:30px 0 60px;color:var(--muted);font-size:12px;text-align:center}
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:13px}
+  .toggle button{background:transparent;color:var(--muted);border:0;padding:8px 16px;cursor:pointer}
+  .toggle button.on{background:var(--accent);color:#04202a;font-weight:700}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">Observatorio climático · CalentamientoGlobal.es</div>
+    <h1>Contador de Desastres Climáticos de España</h1>
+    <p class="sub">El equivalente español del contador de catástrofes de la NOAA: cuánto le cuesta a España el clima extremo, en euros constantes, año a año y por territorio.</p>
+    <div id="srcFlag" class="src-flag src-demo">Cargando datos…</div>
+  </div>
+</header>
+
+<div class="counter">
+  <div class="wrap">
+    <div class="label">Coste acumulado de los desastres climáticos en España (<span id="periodo">1980-2023</span>)</div>
+    <div class="odo" id="odo">0 €</div>
+    <div class="since">≈ <b id="percap">0 €</b> por habitante · actualizado <span id="fecha">—</span> · fuente acumulado: <span id="fuenteAcum">EEA</span></div>
+    <div class="mini" id="mini"></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>Coste anual por tipo de evento</h2>
+    <p class="hint">Euros constantes (deflactados con IPC del INE). Pasa el ratón por cada barra.
+      <span class="toggle" style="float:right">
+        <button id="bAseg">Solo asegurado</button>
+        <button id="bTot" class="on">Total estimado</button>
+      </span>
+    </p>
+    <div class="legend" id="legend"></div>
+    <div class="chart-wrap">
+      <svg id="chart" viewBox="0 0 960 360" preserveAspectRatio="xMidYMid meet" aria-label="Gráfica de coste anual"></svg>
+      <div class="tip" id="tip"></div>
+    </div>
+    <p class="hint" style="margin-top:12px">Serie semilla con eventos documentados (DANA 2024, DANA 2019, Filomena, sequía 2023). Para la serie completa 1980-2025, añade la exportación del Consorcio con <code>scripts/desastres_recopilar_eventos.py</code>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>¿Dónde duele más?</h2>
+    <p class="hint">Ranking de provincias por coste acumulado de riesgos extraordinarios y coste por habitante.</p>
+    <div class="controls">
+      <label class="rcap">Ordenar por:</label>
+      <select id="sortBy">
+        <option value="total">Coste total</option>
+        <option value="cap">Coste por habitante</option>
+      </select>
+    </div>
+    <div class="rank" id="rank"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Eventos destacados</h2>
+    <p class="hint">Cada tarjeta enlaza con tus páginas existentes del observatorio.</p>
+    <div class="grid" id="events"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    CalentamientoGlobal.es · Fuentes: Consorcio de Compensación de Seguros, European Environment Agency, UNESPA, AEMET/MITECO, INE.
+    Distinguimos <b>coste asegurado</b> (dato duro) de <b>coste total estimado</b>. Cifras provisionales hasta consolidación oficial.
+  </div>
+</footer>
+
+<script>
+function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+const TIPO_META = {
+  inundacion:{name:'Inundación / DANA', color:getCSS('--inund')},
+  sequia:{name:'Sequía', color:getCSS('--sequia')},
+  temporal_invernal:{name:'Temporal invernal', color:getCSS('--tormenta')},
+  temporal_costero:{name:'Temporal costero', color:'#818cf8'},
+  ola_de_calor:{name:'Ola de calor', color:getCSS('--calor')},
+  incendio:{name:'Incendio forestal', color:getCSS('--incendio')},
+  viento:{name:'Viento', color:getCSS('--ok')},
+  otro:{name:'Otro', color:getCSS('--otro')},
+};
+const CAPA_ASEG = new Set(['asegurado_ccs','asegurado_seguro']);
+
+// Fallback embebido (para vista local sin servidor). En el sitio se usa /docs via fetch.
+const FB_EVENTOS = [
+  {id:'dana-vega-baja-2019',anio:2019,nombre:'DANA del sureste (Vega Baja)',tipo:'inundacion',coste_meur:737,coste_meur_const:866.8,capa:'asegurado_ccs',fecha:'2019-09-12',pagina_relacionada:'dana.html'},
+  {id:'filomena-2021',anio:2021,nombre:'Borrasca Filomena',tipo:'temporal_invernal',coste_meur:230,coste_meur_const:265.7,capa:'asegurado_seguro',fecha:'2021-01-08',pagina_relacionada:'ola-de-calor.html'},
+  {id:'sequia-2023',anio:2023,nombre:'Sequía de 2023',tipo:'sequia',coste_meur:2178,coste_meur_const:2240.1,capa:'estimado_total',fecha:'2023-04-01',pagina_relacionada:'sequia-flash.html'},
+  {id:'dana-valencia-2024',anio:2024,nombre:'DANA de Valencia',tipo:'inundacion',coste_meur:4000,coste_meur_const:4000,capa:'asegurado_ccs',fecha:'2024-10-29',pagina_relacionada:'dana.html'},
+];
+const FB_META = {actualizado:'2026-06-16',acumulado_total_meur:97000,acumulado_periodo:'1980-2023',coste_por_habitante_eur:1996,poblacion_ref:48600000,fuente_acumulado:'European Environment Agency (1980-2023)'};
+const FB_PROV = {provincias:[
+  {n:'Valencia',coste_meur:4423,poblacion:2600000},{n:'Alicante',coste_meur:475,poblacion:1900000},
+  {n:'Murcia',coste_meur:398,poblacion:1550000},{n:'Malaga',coste_meur:328,poblacion:1700000},
+  {n:'Barcelona',coste_meur:316,poblacion:5700000},{n:'Almeria',coste_meur:210,poblacion:730000},
+  {n:'Castellon',coste_meur:195,poblacion:600000},{n:'Sevilla',coste_meur:180,poblacion:1950000},
+  {n:'Albacete',coste_meur:165,poblacion:390000},{n:'Madrid',coste_meur:150,poblacion:6750000},
+]};
+
+let EVENTOS=[], META={}, PROV=[], MODE='tot';
+
+async function tryFetch(path){
+  try{ const r=await fetch(path,{cache:'no-store'}); if(!r.ok) throw 0; return await r.json(); }
+  catch(e){ return null; }
+}
+async function load(){
+  const en = await tryFetch('desastres_eventos_norm.json');
+  const mt = await tryFetch('desastres_meta.json');
+  const pv = await tryFetch('desastres_provincias.json');
+  const live = !!(en && mt && pv);
+  EVENTOS = en ? en.eventos : FB_EVENTOS;
+  META = mt || FB_META;
+  PROV = (pv ? pv.provincias : FB_PROV.provincias);
+  const flag=document.getElementById('srcFlag');
+  if(live){ flag.className='src-flag src-live'; flag.textContent='● Datos en vivo'; }
+  else { flag.className='src-flag src-demo'; flag.textContent='Vista local (datos embebidos) · en el sitio leerá los JSON en vivo'; }
+  render();
+}
+
+function val(ev){ return ev.coste_meur_const!=null ? ev.coste_meur_const : ev.coste_meur; }
+function fmtM(m){ return m>=1000 ? (m/1000).toLocaleString('es-ES',{maximumFractionDigits:1})+' MM€' : Math.round(m).toLocaleString('es-ES')+' M€'; }
+function eventosFiltrados(){ return MODE==='aseg' ? EVENTOS.filter(e=>CAPA_ASEG.has(e.capa)) : EVENTOS; }
+
+function agruparAnual(){
+  const evs=eventosFiltrados(), byYear={};
+  evs.forEach(e=>{ const a=e.anio; byYear[a]=byYear[a]||{}; byYear[a][e.tipo]=(byYear[a][e.tipo]||0)+val(e); });
+  return Object.keys(byYear).map(Number).sort((a,b)=>a-b).map(a=>({
+    anio:a, tipos:byYear[a], total:Object.values(byYear[a]).reduce((s,v)=>s+v,0)
+  }));
+}
+
+function render(){
+  document.getElementById('periodo').textContent=META.acumulado_periodo||'1980-2023';
+  document.getElementById('fecha').textContent=META.actualizado||'—';
+  document.getElementById('fuenteAcum').textContent=META.fuente_acumulado||'EEA';
+  document.getElementById('percap').textContent=(META.coste_por_habitante_eur||0).toLocaleString('es-ES')+' €';
+  drawMini(); drawLegend(); drawChart(); drawRank(); drawEvents(); animateOdo();
+}
+
+function animateOdo(){
+  const target=(META.acumulado_total_meur||0)*1e6, el=document.getElementById('odo');
+  const t0=performance.now(), dur=1800;
+  (function step(now){ const p=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*e).toLocaleString('es-ES')+' €'; if(p<1) requestAnimationFrame(step); })(t0);
+}
+
+function drawMini(){
+  const an=agruparAnual();
+  const y24=an.find(x=>x.anio===2024), y23=an.find(x=>x.anio===2023);
+  const dana=EVENTOS.find(e=>e.id==='dana-valencia-2024');
+  document.getElementById('mini').innerHTML=`
+    <div class="chip"><div class="v">${y24?fmtM(y24.total):'—'}</div><div class="k">Coste 2024 (DANA)</div></div>
+    <div class="chip"><div class="v">${y23?fmtM(y23.total):'—'}</div><div class="k">Coste 2023 (sequía)</div></div>
+    <div class="chip"><div class="v">${dana?'+'+fmtM(dana.coste_meur):'—'}</div><div class="k">Solo la DANA · Consorcio</div></div>`;
+}
+
+function drawLegend(){
+  const tipos=[...new Set(eventosFiltrados().map(e=>e.tipo))];
+  document.getElementById('legend').innerHTML=tipos.map(t=>{
+    const m=TIPO_META[t]||{name:t,color:getCSS('--otro')};
+    return `<span><i class="sw" style="background:${m.color}"></i>${m.name}</span>`;}).join('');
+}
+
+function drawChart(){
+  const svg=document.getElementById('chart'), data=agruparAnual();
+  const W=960,H=360,padL=52,padR=12,padB=34,padT=14, plotW=W-padL-padR, plotH=H-padT-padB;
+  if(!data.length){ svg.innerHTML=''; return; }
+  const maxV=Math.max(...data.map(d=>d.total))*1.1;
+  const gap=plotW/data.length, bw=Math.min(70, gap*0.55);
+  let s='';
+  const ticks=4;
+  for(let i=0;i<=ticks;i++){ const v=maxV*i/ticks, yy=padT+plotH-(v/maxV)*plotH;
+    s+=`<line class="gl" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/>`;
+    s+=`<text class="yl" x="${padL-6}" y="${yy+3}" text-anchor="end">${fmtM(v)}</text>`; }
+  data.forEach((d,i)=>{
+    const x=padL+gap*i+(gap-bw)/2; let acc=0;
+    Object.keys(d.tipos).forEach(t=>{ const v=d.tipos[t]; if(v<=0)return;
+      const m=TIPO_META[t]||{name:t,color:getCSS('--otro')};
+      const h=(v/maxV)*plotH, y=padT+plotH-(acc/maxV)*plotH-h;
+      s+=`<rect class="bar" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${m.color}" rx="1.5"
+            data-y="${d.anio}" data-t="${m.name}" data-v="${v}" data-tot="${d.total}"></rect>`;
+      acc+=v; });
+    s+=`<text class="tl" x="${(x+bw/2).toFixed(1)}" y="${H-padB+16}" text-anchor="middle">${d.anio}</text>`;
+  });
+  s+=`<line class="axis" x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}"/>`;
+  svg.innerHTML=s;
+  const tip=document.getElementById('tip'), wrap=svg.parentElement;
+  svg.querySelectorAll('.bar').forEach(b=>{
+    b.addEventListener('mousemove',e=>{ const r=wrap.getBoundingClientRect();
+      tip.style.left=(e.clientX-r.left)+'px'; tip.style.top=(e.clientY-r.top)+'px';
+      tip.style.transform='translate(-50%,calc(-100% - 10px))';
+      tip.innerHTML=`<b>${b.dataset.y} · ${fmtM(+b.dataset.tot)}</b>
+        <div class="row"><span>${b.dataset.t}</span><em>${fmtM(+b.dataset.v)}</em></div>`;
+      tip.style.opacity=1; });
+    b.addEventListener('mouseleave',()=>tip.style.opacity=0);
+  });
+}
+
+function drawRank(){
+  const by=document.getElementById('sortBy').value;
+  const arr=PROV.map(p=>({...p,cap:p.coste_meur*1e6/p.poblacion}));
+  arr.sort((a,b)=> by==='cap'? b.cap-a.cap : b.coste_meur-a.coste_meur);
+  const max= by==='cap'? Math.max(...arr.map(a=>a.cap)) : Math.max(...arr.map(a=>a.coste_meur));
+  document.getElementById('rank').innerHTML=arr.map(a=>{
+    const w=(by==='cap'?a.cap:a.coste_meur)/max*100;
+    const v=by==='cap'? Math.round(a.cap).toLocaleString('es-ES')+' €/hab' : fmtM(a.coste_meur);
+    return `<div class="rrow"><div class="rname">${a.n}</div>
+      <div class="rbar"><div class="rfill" data-w="${w}"></div></div><div class="rval">${v}</div></div>`;}).join('');
+  requestAnimationFrame(()=>document.querySelectorAll('.rfill').forEach(f=>f.style.width=f.dataset.w+'%'));
+}
+
+function drawEvents(){
+  const orden=[...EVENTOS].sort((a,b)=>val(b)-val(a)).slice(0,4);
+  document.getElementById('events').innerHTML=orden.map(e=>{
+    const m=TIPO_META[e.tipo]||{color:getCSS('--otro')};
+    const capa = e.capa==='asegurado_ccs'?'asegurado · Consorcio': e.capa==='asegurado_seguro'?'asegurado · seguro':'estimación total';
+    return `<div class="ev" style="--c:${m.color}"><div class="y">${e.fecha||e.anio} · ${capa}</div>
+      <div class="t">${e.nombre}</div><div class="c">${fmtM(e.coste_meur)}</div>
+      <div class="d">${fmtM(val(e))} en € constantes 2024.</div>
+      ${e.pagina_relacionada?`<a href="${e.pagina_relacionada}">Ver en el observatorio →</a>`:''}</div>`;}).join('');
+}
+
+document.getElementById('bAseg').onclick=()=>setMode('aseg');
+document.getElementById('bTot').onclick=()=>setMode('tot');
+function setMode(m){ MODE=m;
+  document.getElementById('bAseg').classList.toggle('on',m==='aseg');
+  document.getElementById('bTot').classList.toggle('on',m==='tot');
+  drawLegend(); drawChart(); drawMini(); }
+document.getElementById('sortBy').onchange=drawRank;
+
+load();
+</script>
+</body>
+</html>
