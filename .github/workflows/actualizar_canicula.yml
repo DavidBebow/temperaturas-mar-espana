@@ -1,0 +1,38 @@
+name: Actualizar canicula
+
+on:
+  schedule:
+    # Dos veces al día en verano: 14:00 y 19:00 UTC (~16h y ~21h en España peninsular)
+    - cron: '0 14 * * *'
+    - cron: '0 19 * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña Actions
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Ejecutar script
+        run: python scripts/obtener_canicula.py
+
+      - name: Guardar cambios
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add docs/canicula.json
+          git diff --staged --quiet || (git commit -m "Canicula actualizada: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
