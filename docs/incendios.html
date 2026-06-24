@@ -5,44 +5,102 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Incendios en España — Detecciones recientes por comunidad</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; background: #0a0806; }
-  #mapa { width: 100%; height: 530px; background: #0a0806; }
-  #cabecera { background: #120804; color: white; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid #3a1a0a; }
-  #cabecera h2 { font-size: 14px; font-weight: 500; letter-spacing: 0.04em; color: #fff0e0; display: flex; align-items: center; gap: 8px; }
-  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-  #resumen-nacional { font-size: 11px; color: #9a6a4a; }
-  #resumen-nacional span { color: #ff7733; font-weight: 600; }
-  #ultima-actualizacion { font-size: 11px; color: #6a4a3a; }
-  #leyenda { background: #0e0604; padding: 7px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid #3a1a0a; font-size: 11px; color: #9a7a6a; }
-  #leyenda strong { color: #cc9a7a; font-weight: 500; }
-  .leyenda-item { display: flex; align-items: center; gap: 4px; color: #9a7a6a; }
-  .leyenda-cuadrado { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0; }
-  .leaflet-popup-content-wrapper { background: #1a0a04 !important; border: 1px solid #4a2010 !important; border-radius: 14px !important; box-shadow: 0 8px 32px rgba(0,0,0,0.8) !important; color: #f0e0d0 !important; }
-  .leaflet-popup-tip { background: #1a0a04 !important; }
-  .leaflet-popup-close-button { color: #7a4a3a !important; }
-  .leaflet-popup-close-button:hover { color: #f0e0d0 !important; }
-  .popup-titulo { font-weight: 700; font-size: 15px; margin-bottom: 3px; color: #fff0e0; }
-  .popup-subtitulo { font-size: 11px; color: #7a5a4a; margin-bottom: 10px; }
-  .popup-dato { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid #2a1008; font-size: 12px; color: #9a7a6a; }
-  .popup-dato:last-of-type { border-bottom: none; }
-  .popup-dato span:last-child { font-weight: 600; color: #e0c8a8; text-align: right; }
-  .popup-separador { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #7a4a3a; padding: 8px 0 4px; border-bottom: 1px solid #2a1008; }
-  .popup-tag { display: inline-block; margin-top: 10px; padding: 3px 12px; border-radius: 12px; font-size: 10px; font-weight: 700; color: white; }
-  .fuego-val { color: #ff7733; }
-  .ok-val { color: #88cc88; }
-  .leaflet-control-zoom a { background: #1a0a04 !important; color: #9a7a6a !important; border-color: #4a2010 !important; }
-  .leaflet-control-zoom a:hover { background: #2a1008 !important; color: #f0e0d0 !important; }
-  .leaflet-control-attribution { background: rgba(18,8,4,0.85) !important; color: #6a4a3a !important; font-size: 10px !important; }
-  .leaflet-control-attribution a { color: #aa7a5a !important; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:'DM Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#0a0806;display:flex;flex-direction:column;overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- CABECERA ---------- */
+  #cabecera{
+    position:relative;z-index:500;
+    background:linear-gradient(180deg,#1b0c05 0%,#130804 100%);
+    color:#fff;padding:13px 20px;display:flex;justify-content:space-between;
+    align-items:center;flex-wrap:wrap;gap:8px;border-bottom:1px solid #3a1a0a;
+  }
+  #cabecera h2{
+    font-size:15px;font-weight:600;letter-spacing:-.01em;color:#fff3e8;
+    display:flex;align-items:center;gap:9px;
+  }
+  #cabecera h2 .dot{
+    width:9px;height:9px;border-radius:50%;background:#ff5a1f;flex-shrink:0;
+    box-shadow:0 0 0 0 rgba(255,90,31,.6);animation:pulso 2.2s infinite;
+  }
+  @keyframes pulso{
+    0%{box-shadow:0 0 0 0 rgba(255,90,31,.55)}
+    70%{box-shadow:0 0 0 9px rgba(255,90,31,0)}
+    100%{box-shadow:0 0 0 0 rgba(255,90,31,0)}
+  }
+  #info-derecha{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  #resumen-nacional{font-size:12px;color:#a87a5c}
+  #resumen-nacional span{color:#ff7a3c;font-weight:700}
+  #ultima-actualizacion{font-size:11px;color:#7a5444}
+
+  /* ---------- LEYENDA ---------- */
+  #leyenda{
+    position:relative;z-index:500;
+    background:#100704;padding:9px 20px;display:flex;flex-wrap:wrap;gap:8px;
+    align-items:center;border-bottom:1px solid #3a1a0a;font-size:11.5px;color:#a8897a;
+  }
+  #leyenda strong{color:#d6a888;font-weight:600;margin-right:2px}
+  .leyenda-item{
+    display:flex;align-items:center;gap:6px;color:#bca08c;
+    background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);
+    border-radius:999px;padding:4px 10px;
+  }
+  .leyenda-cuadrado{width:11px;height:11px;border-radius:3px;border:1px solid rgba(255,255,255,.18);flex-shrink:0}
+  #leyenda .sep{color:#5a3a2a}
+  #leyenda .ayuda{margin-left:auto;font-size:10.5px;color:#7a5444;border:none;background:none;padding:0}
+
+  /* ---------- MAPA ---------- */
+  #mapa{flex:1;min-height:0;width:100%;background:#0a0806}
+
+  /* ---------- POPUPS ---------- */
+  .leaflet-popup-content-wrapper{
+    background:#1a0a04 !important;border:1px solid #4a2010 !important;
+    border-radius:16px !important;box-shadow:0 14px 44px rgba(0,0,0,.85) !important;
+    color:#f0e0d0 !important;
+  }
+  .leaflet-popup-content{margin:15px 17px !important}
+  .leaflet-popup-tip{background:#1a0a04 !important;border:1px solid #4a2010 !important}
+  .leaflet-popup-close-button{color:#7a4a3a !important;font-size:20px !important;padding:8px 9px 0 0 !important}
+  .leaflet-popup-close-button:hover{color:#f0e0d0 !important}
+  .popup-titulo{font-weight:700;font-size:15.5px;margin-bottom:3px;color:#fff3e8;letter-spacing:-.01em}
+  .popup-subtitulo{font-size:11.5px;color:#8a6a5a;margin-bottom:11px}
+  .popup-dato{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid #2a1008;font-size:12.5px;color:#a8897a}
+  .popup-dato:last-of-type{border-bottom:none}
+  .popup-dato span:last-child{font-weight:600;color:#e8d0b0;text-align:right}
+  .popup-separador{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8a4a3a;padding:9px 0 5px;border-bottom:1px solid #2a1008}
+  .popup-tag{display:inline-block;margin-top:11px;padding:4px 13px;border-radius:999px;font-size:10px;font-weight:700;color:#fff;letter-spacing:.02em}
+  .fuego-val{color:#ff7a3c}
+  .ok-val{color:#88cc88}
+
+  /* ---------- CONTROLES ---------- */
+  .leaflet-control-zoom{border:none !important;box-shadow:0 4px 16px rgba(0,0,0,.5) !important;border-radius:12px !important;overflow:hidden}
+  .leaflet-control-zoom a{background:#1a0a04 !important;color:#bca08c !important;border-color:#3a1a0a !important;width:34px !important;height:34px !important;line-height:34px !important;font-size:18px !important}
+  .leaflet-control-zoom a:hover{background:#2a1008 !important;color:#fff3e8 !important}
+  .leaflet-bar a:first-child{border-top-left-radius:12px !important;border-top-right-radius:12px !important}
+  .leaflet-bar a:last-child{border-bottom-left-radius:12px !important;border-bottom-right-radius:12px !important}
+  .leaflet-control-attribution{background:rgba(16,7,4,.82) !important;color:#7a5444 !important;font-size:10px !important;border-radius:8px 0 0 0 !important;padding:2px 8px !important}
+  .leaflet-control-attribution a{color:#b88a6a !important}
+
+  @media(max-width:600px){
+    #cabecera h2{font-size:13px}
+    #leyenda{font-size:10.5px;padding:8px 12px;gap:6px}
+    .leyenda-item{padding:3px 8px}
+    #leyenda .ayuda{display:none}
+  }
 </style>
 </head>
 <body>
 <div id="cabecera">
-  <h2>🔥 Incendios Forestales en España — Detecciones recientes</h2>
+  <h2><span class="dot"></span>Incendios forestales en España — detecciones recientes</h2>
   <div id="info-derecha">
-    <span id="resumen-nacional">Cargando datos...</span>
+    <span id="resumen-nacional">Cargando datos…</span>
     <span id="ultima-actualizacion"></span>
   </div>
 </div>
@@ -53,22 +111,26 @@
   <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#aa5010"></div> 6-20 focos</div>
   <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#cc2a00"></div> 21-50 focos</div>
   <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#ff0000"></div> +50 focos</div>
-  <span style="margin-left:6px;color:#7a5a4a">|</span>
+  <span class="sep">|</span>
   <div class="leyenda-item"><span style="font-size:13px">🔥</span> Foco reciente (tamaño = FRP)</div>
-  <span style="margin-left:auto;font-size:10px;color:#6a4a3a">Clic en comunidad o foco para detalles</span>
+  <span class="ayuda">Clic en comunidad o foco para detalles</span>
 </div>
 <div id="mapa"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/incendios.json';
 const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-communities.geojson';
-const mapa = L.map('mapa', { center: [40.0, -3.5], zoom: 5, zoomControl: true });
+
+const mapa = L.map('mapa', {
+  center: [39.6, -3.5], zoom: 6, zoomControl: true,
+  minZoom: 5, maxZoom: 16, worldCopyJump: false, zoomSnap: 0.25
+});
 
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '© Esri | Datos: NASA FIRMS VIIRS', maxZoom: 16
+  attribution: '© Esri | Datos: NASA FIRMS VIIRS', maxZoom: 16, noWrap: true
 }).addTo(mapa);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '', maxZoom: 16, opacity: 0.5
+  attribution: '', maxZoom: 16, opacity: 0.5, noWrap: true
 }).addTo(mapa);
 
 const NOMBRE_A_ID = {
@@ -138,15 +200,15 @@ function popupFoco(f) {
       <div class="popup-titulo">🔥 Foco reciente</div>
       <div class="popup-subtitulo">📍 ${f.comunidad}</div>
       <div class="popup-dato"><span>Ubicación</span><span>${f.lugar || 'Zona rural'}</span></div>
-      <div style="margin:6px 0 8px"><div style="display:flex;justify-content:space-between;font-size:10px;color:#7a5a4a;margin-bottom:3px"><span>Intensidad (FRP)</span><span style="color:${colorFRP};font-weight:700">${f.intensidad || '—'}</span></div><div style="background:#2a1008;border-radius:4px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${colorFRP};border-radius:4px"></div></div></div>
+      <div style="margin:6px 0 8px"><div style="display:flex;justify-content:space-between;font-size:10px;color:#8a6a5a;margin-bottom:4px"><span>Intensidad (FRP)</span><span style="color:${colorFRP};font-weight:700">${f.intensidad || '—'}</span></div><div style="background:#2a1008;border-radius:5px;height:6px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${colorFRP};border-radius:5px"></div></div></div>
       <div class="popup-dato"><span>Potencia radiativa</span><span class="fuego-val">${frpLabel}</span></div>
       <div class="popup-dato"><span>Confianza</span><span>${etiquetaConfianza(f.confianza)}</span></div>
       <div class="popup-dato"><span>Detectado</span><span>${formatFechaDeteccion(f.deteccion_utc)}</span></div>
       <div class="popup-dato"><span>Sensor</span><span>${f.sensor || 'VIIRS'}</span></div>
       <div class="popup-dato"><span>Coordenadas</span><span style="font-size:10px">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)}</span></div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <a href="${mapsUrl}" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;background:#3a1a0a;color:#ffd0a0;border:1px solid #7a4a2a;border-radius:8px;padding:6px 8px;font-size:11px;font-weight:700">Ver mapa</a>
-        <a href="${firmsUrl}" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;background:#3a1a0a;color:#ffd0a0;border:1px solid #7a4a2a;border-radius:8px;padding:6px 8px;font-size:11px;font-weight:700">NASA FIRMS</a>
+      <div style="display:flex;gap:8px;margin-top:11px">
+        <a href="${mapsUrl}" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;background:#3a1a0a;color:#ffd0a0;border:1px solid #7a4a2a;border-radius:9px;padding:7px 8px;font-size:11px;font-weight:700">Ver mapa</a>
+        <a href="${firmsUrl}" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;background:#3a1a0a;color:#ffd0a0;border:1px solid #7a4a2a;border-radius:9px;padding:7px 8px;font-size:11px;font-weight:700">NASA FIRMS</a>
       </div>
     </div>`;
 }
@@ -187,6 +249,15 @@ Promise.all([
       if (c.tiene_fuego && !primerLayer) primerLayer = layer;
     }
   }).addTo(mapa);
+
+  // Encuadre fijo en España (incluye Canarias y Baleares) — sin vista mundial
+  const limites = capaGeojson.getBounds();
+  if (limites.isValid()) {
+    mapa.fitBounds(limites, { padding: [24, 24] });
+    mapa.setMaxBounds(limites.pad(0.18));
+    mapa.setMinZoom(mapa.getBoundsZoom(limites) - 0.25);
+  }
+
   (data.focos_individuales || []).forEach(f => {
     L.marker([f.lat, f.lon], { icon: crearIconoFoco(f.frp) }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270 });
   });
@@ -195,6 +266,9 @@ Promise.all([
   console.error('Error:', err);
   document.getElementById('resumen-nacional').textContent = 'Error al cargar datos';
 });
+
+// Reajusta el encuadre si cambia el tamaño del marco (responsive iframe)
+window.addEventListener('resize', () => { mapa.invalidateSize(); });
 </script>
 </body>
 </html>
