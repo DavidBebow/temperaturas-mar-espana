@@ -79,6 +79,30 @@
   .fuego-val{color:#ff7a3c}
   .ok-val{color:#88cc88}
 
+  /* ---------- MARCADORES DE FOCO ---------- */
+  .foco-icon{background:transparent !important;border:0 !important}
+  .foco-dot{
+    border-radius:50%;cursor:pointer;
+    background:radial-gradient(circle at 50% 35%, #fff 0%, var(--c) 60%, var(--c) 100%);
+    transition:transform .12s ease;
+  }
+  .foco-dot:hover{transform:scale(1.25)}
+  .foco-dot.pulsa{position:relative}
+  .foco-dot.pulsa::after{
+    content:'';position:absolute;inset:0;border-radius:50%;
+    box-shadow:0 0 0 0 var(--gc);animation:focoPulso 1.9s ease-out infinite;
+  }
+  @keyframes focoPulso{
+    0%{box-shadow:0 0 0 0 var(--gc)}
+    70%{box-shadow:0 0 0 13px rgba(0,0,0,0)}
+    100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}
+  }
+  .foco-leyenda{
+    display:inline-block;width:11px;height:11px;border-radius:50%;
+    background:radial-gradient(circle at 50% 35%, #fff 0%, #ff5a1f 62%);
+    box-shadow:0 0 6px 1px rgba(255,90,25,.85);
+  }
+
   /* ---------- CONTROLES ---------- */
   .leaflet-control-zoom{border:none !important;box-shadow:0 4px 16px rgba(0,0,0,.5) !important;border-radius:12px !important;overflow:hidden}
   .leaflet-control-zoom a{background:#1a0a04 !important;color:#bca08c !important;border-color:#3a1a0a !important;width:34px !important;height:34px !important;line-height:34px !important;font-size:18px !important}
@@ -106,13 +130,13 @@
 </div>
 <div id="leyenda">
   <strong>Comunidades:</strong>
-  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#1a3a1a"></div> Sin detecciones</div>
-  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#7a6a10"></div> 1-5 focos</div>
-  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#aa5010"></div> 6-20 focos</div>
-  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#cc2a00"></div> 21-50 focos</div>
-  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#ff0000"></div> +50 focos</div>
+  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#1f3a26"></div> Sin detecciones</div>
+  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#caa12a"></div> 1-5 focos</div>
+  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#e07b1e"></div> 6-20 focos</div>
+  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#d83a14"></div> 21-50 focos</div>
+  <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#e8160a"></div> +50 focos</div>
   <span class="sep">|</span>
-  <div class="leyenda-item"><span style="font-size:13px">🔥</span> Foco reciente (tamaño = FRP)</div>
+  <div class="leyenda-item"><span class="foco-leyenda"></span> Foco reciente (tamaño = FRP)</div>
   <span class="ayuda">Clic en comunidad o foco para detalles</span>
 </div>
 <div id="mapa"></div>
@@ -145,18 +169,18 @@ const NOMBRE_A_ID = {
 };
 
 function colorFondo(focos) {
-  if (focos === 0) return '#1a3a1a';
-  if (focos <= 5) return '#7a6a10';
-  if (focos <= 20) return '#aa5010';
-  if (focos <= 50) return '#cc2a00';
-  return '#ff0000';
+  if (focos === 0) return '#1f3a26';
+  if (focos <= 5) return '#caa12a';
+  if (focos <= 20) return '#e07b1e';
+  if (focos <= 50) return '#d83a14';
+  return '#e8160a';
 }
 function colorBorde(focos) {
-  if (focos === 0) return '#2a5a2a';
-  if (focos <= 5) return '#aa9a20';
-  if (focos <= 20) return '#dd7030';
-  if (focos <= 50) return '#ff4a20';
-  return '#ff6666';
+  if (focos === 0) return '#356b45';
+  if (focos <= 5) return '#e6c14d';
+  if (focos <= 20) return '#ff9d4a';
+  if (focos <= 50) return '#ff6a3a';
+  return '#ff5252';
 }
 function formatDias(n) {
   if (!n) return '0 días';
@@ -213,9 +237,46 @@ function popupFoco(f) {
     </div>`;
 }
 function crearIconoFoco(frp) {
-  let size = frp >= 100 ? 22 : frp >= 30 ? 17 : frp >= 10 ? 14 : 11;
-  let shadow = frp >= 100 ? 'drop-shadow(0 0 6px rgba(255,34,0,0.9))' : frp >= 30 ? 'drop-shadow(0 0 5px rgba(255,120,50,0.8))' : frp >= 10 ? 'drop-shadow(0 0 4px rgba(255,170,34,0.7))' : 'drop-shadow(0 0 3px rgba(255,200,68,0.6))';
-  return L.divIcon({ html: `<div style="font-size:${size}px;line-height:1;filter:${shadow};cursor:pointer;">🔥</div>`, className: '', iconSize: [size, size], iconAnchor: [size / 2, size], popupAnchor: [0, -size - 2] });
+  const tier = frp >= 100 ? 3 : frp >= 30 ? 2 : frp >= 10 ? 1 : 0;
+  const size  = [9, 12, 16, 20][tier];
+  const core  = ['#ffcf4d', '#ff9a33', '#ff5a1f', '#ff2d0a'][tier];
+  const glow  = ['rgba(255,200,70,.70)', 'rgba(255,140,40,.78)', 'rgba(255,80,25,.82)', 'rgba(255,40,10,.88)'][tier];
+  const blur  = [6, 9, 12, 15][tier];
+  const spread = [1, 2, 2, 3][tier];
+  const pulsa = tier >= 3 ? ' pulsa' : '';
+  const html = `<span class="foco-dot${pulsa}" style="width:${size}px;height:${size}px;--c:${core};--gc:${glow};box-shadow:0 0 ${blur}px ${spread}px ${glow}, 0 1px 2px rgba(0,0,0,.45)"></span>`;
+  return L.divIcon({ html, className: 'foco-icon', iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2 - 3] });
+}
+
+// --- Comunidad real de cada foco por geometría (point-in-polygon) ---
+function puntoEnAnillo(lat, lng, anillo) {
+  let dentro = false;
+  for (let i = 0, j = anillo.length - 1; i < anillo.length; j = i++) {
+    const xi = anillo[i][0], yi = anillo[i][1];
+    const xj = anillo[j][0], yj = anillo[j][1];
+    const corta = ((yi > lat) !== (yj > lat)) && (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+    if (corta) dentro = !dentro;
+  }
+  return dentro;
+}
+function puntoEnGeometria(lat, lng, geom) {
+  if (!geom) return false;
+  const poligonos = geom.type === 'Polygon' ? [geom.coordinates] : geom.type === 'MultiPolygon' ? geom.coordinates : [];
+  for (const poly of poligonos) {
+    if (!puntoEnAnillo(lat, lng, poly[0])) continue;
+    let enHueco = false;
+    for (let k = 1; k < poly.length; k++) { if (puntoEnAnillo(lat, lng, poly[k])) { enHueco = true; break; } }
+    if (!enHueco) return true;
+  }
+  return false;
+}
+function comunidadDePunto(lat, lng, geojson) {
+  for (const feat of geojson.features) {
+    if (puntoEnGeometria(lat, lng, feat.geometry)) {
+      return feat.properties.name || feat.properties.NAME || null;
+    }
+  }
+  return null;
 }
 
 Promise.all([
@@ -237,14 +298,14 @@ Promise.all([
       const nombre = feature.properties.name || feature.properties.NAME || '';
       const c = datosMap[NOMBRE_A_ID[nombre]];
       const focos = c ? c.focos_activos : 0;
-      return { fillColor: colorFondo(focos), fillOpacity: 0.72, color: colorBorde(focos), weight: 1.2, opacity: 0.9 };
+      return { fillColor: colorFondo(focos), fillOpacity: 0.55, color: colorBorde(focos), weight: 1, opacity: 0.95 };
     },
     onEachFeature: function(feature, layer) {
       const nombre = feature.properties.name || feature.properties.NAME || '';
       const c = datosMap[NOMBRE_A_ID[nombre]];
       if (!c) return;
       layer.bindPopup(popupComunidad(c, horas), { maxWidth: 280 });
-      layer.on('mouseover', function() { layer.setStyle({ fillOpacity: 0.90, weight: 2 }); });
+      layer.on('mouseover', function() { layer.setStyle({ fillOpacity: 0.78, weight: 2 }); });
       layer.on('mouseout', function() { capaGeojson.resetStyle(layer); });
       if (c.tiene_fuego && !primerLayer) primerLayer = layer;
     }
@@ -259,6 +320,8 @@ Promise.all([
   }
 
   (data.focos_individuales || []).forEach(f => {
+    const comunidadReal = comunidadDePunto(f.lat, f.lon, geojson);
+    if (comunidadReal) f.comunidad = comunidadReal;
     L.marker([f.lat, f.lon], { icon: crearIconoFoco(f.frp) }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270 });
   });
   if (primerLayer) setTimeout(() => primerLayer.openPopup(), 900);
