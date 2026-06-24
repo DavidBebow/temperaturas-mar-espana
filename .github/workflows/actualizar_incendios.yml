@@ -1,22 +1,19 @@
 name: Actualizar incendios
-
 on:
   schedule:
-    - cron: '1 22 * * *'
-    - cron: '1 23 * * *'
-    - cron: '0 7 * * *'
-    - cron: '0 8 * * *'
-    - cron: '0 12 * * *'
-    - cron: '0 13 * * *'
+    # 6 actualizaciones al día · horas en UTC (verano peninsular = UTC+2)
+    - cron: '0 5 * * *'    # 07:00 hora peninsular
+    - cron: '0 9 * * *'    # 11:00 hora peninsular
+    - cron: '0 12 * * *'   # 14:00 hora peninsular
+    - cron: '0 15 * * *'   # 17:00 hora peninsular
+    - cron: '0 19 * * *'   # 21:00 hora peninsular
+    - cron: '30 22 * * *'  # 00:30 hora peninsular (día siguiente)
   workflow_dispatch:
-
 concurrency:
   group: actualizar-incendios
   cancel-in-progress: false
-
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   actualizar:
     runs-on: ubuntu-latest
@@ -25,20 +22,16 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Instalar dependencias
         run: pip install requests
-
       - name: Ejecutar script
         env:
           NASA_FIRMS_KEY: ${{ secrets.NASA_FIRMS_KEY }}
         run: python scripts/obtener_incendios.py
-
       - name: Guardar cambios
         run: |
           git config --local user.email "accion@github.com"
