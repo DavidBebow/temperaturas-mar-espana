@@ -82,8 +82,8 @@
   /* ---------- MARCADORES DE FOCO ---------- */
   .foco-icon{background:transparent !important;border:0 !important}
   .foco-dot{
-    border-radius:50%;cursor:pointer;
-    background:radial-gradient(circle at 50% 35%, #fff 0%, var(--c) 60%, var(--c) 100%);
+    display:block;border-radius:50%;cursor:pointer;
+    background:radial-gradient(circle at 50% 35%, #fff 0%, var(--c) 58%, var(--c) 100%);
     transition:transform .12s ease;
   }
   .foco-dot:hover{transform:scale(1.25)}
@@ -147,7 +147,8 @@ const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that
 
 const mapa = L.map('mapa', {
   center: [39.6, -3.5], zoom: 6, zoomControl: true,
-  minZoom: 5, maxZoom: 16, worldCopyJump: false, zoomSnap: 0.25
+  minZoom: 5, maxZoom: 16, worldCopyJump: false,
+  preferCanvas: true, zoomSnap: 1, zoomDelta: 1, wheelDebounceTime: 30, wheelPxPerZoomLevel: 90
 });
 
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
@@ -238,11 +239,11 @@ function popupFoco(f) {
 }
 function crearIconoFoco(frp) {
   const tier = frp >= 100 ? 3 : frp >= 30 ? 2 : frp >= 10 ? 1 : 0;
-  const size  = [9, 12, 16, 20][tier];
-  const core  = ['#ffcf4d', '#ff9a33', '#ff5a1f', '#ff2d0a'][tier];
-  const glow  = ['rgba(255,200,70,.70)', 'rgba(255,140,40,.78)', 'rgba(255,80,25,.82)', 'rgba(255,40,10,.88)'][tier];
-  const blur  = [6, 9, 12, 15][tier];
-  const spread = [1, 2, 2, 3][tier];
+  const size  = [11, 15, 20, 26][tier];
+  const core  = ['#ffd24d', '#ff9a33', '#ff5a1f', '#ff2d0a'][tier];
+  const glow  = ['rgba(255,200,70,.80)', 'rgba(255,140,40,.85)', 'rgba(255,80,25,.88)', 'rgba(255,40,10,.92)'][tier];
+  const blur  = [8, 11, 15, 19][tier];
+  const spread = [1, 2, 3, 4][tier];
   const pulsa = tier >= 3 ? ' pulsa' : '';
   const html = `<span class="foco-dot${pulsa}" style="width:${size}px;height:${size}px;--c:${core};--gc:${glow};box-shadow:0 0 ${blur}px ${spread}px ${glow}, 0 1px 2px rgba(0,0,0,.45)"></span>`;
   return L.divIcon({ html, className: 'foco-icon', iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2 - 3] });
@@ -315,8 +316,8 @@ Promise.all([
   const limites = capaGeojson.getBounds();
   if (limites.isValid()) {
     mapa.fitBounds(limites, { padding: [24, 24] });
-    mapa.setMaxBounds(limites.pad(0.18));
-    mapa.setMinZoom(mapa.getBoundsZoom(limites) - 0.25);
+    mapa.setMaxBounds(limites.pad(0.25));
+    mapa.setMinZoom(Math.floor(mapa.getBoundsZoom(limites)));
   }
 
   (data.focos_individuales || []).forEach(f => {
