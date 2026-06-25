@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import os
+import sys
 import time
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -29,11 +30,14 @@ COMUNIDADES = [
     {"id": "ceuta", "nombre": "Ceuta", "lat": 35.89, "lon": -5.31, "bbox_w": -5.40, "bbox_s": 35.84, "bbox_e": -5.27, "bbox_n": 35.93},
     {"id": "melilla", "nombre": "Melilla", "lat": 35.29, "lon": -2.94, "bbox_w": -2.98, "bbox_s": 35.26, "bbox_e": -2.90, "bbox_n": 35.35},
 ]
-
 SENSORES = ["VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT", "VIIRS_NOAA21_NRT"]
 AREA_ESPANA = "-18.5,27.5,4.5,44.0"
 HORAS_ACTIVO = 48
 TZ_ESPANA = ZoneInfo("Europe/Madrid")
+
+# Cuántas veces se reintenta cada llamada a FIRMS antes de darla por fallida.
+REINTENTOS_FIRMS = 3
+ESPERA_REINTENTO = 8  # segundos entre reintentos
 
 
 def ahora_utc():
@@ -42,6 +46,19 @@ def ahora_utc():
 
 def ahora_espana():
     return datetime.now(TZ_ESPANA)
+
+
+def escribir_json_atomico(ruta, data):
+    """Escribe a un fichero temporal y lo renombra. Si el proceso muere a
+    mitad, el JSON antiguo permanece intacto (nunca queda medio escrito)."""
+    directorio = os.path.dirname(ruta) or "."
+    os.makedirs(directorio, exist_ok=True)
+    tmp = ruta + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, ruta)
 
 
 def asignar_comunidad(lat, lon):
@@ -62,77 +79,85 @@ def parsear_deteccion_utc(fecha, hora):
 
 
 def obtener_focos_sensor(api_key, sensor, dias=2):
+    """Devuelve (focos, ok).
+    ok=True  -> la descarga funcionó y el CSV es válido (aunque traiga 0 focos).
+    ok=False -> hubo un error real (red, HTTP, límite de API, clave inválida).
+    Esta distinción es la clave: solo abortamos la actualización cuando la
+    descarga FALLA, nunca cuando simplemente no hay incendios."""
     url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{api_key}/{sensor}/{AREA_ESPANA}/{dias}"
     focos = []
-
-    try:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-
-        texto = r.text.strip()
-        if not texto or "exceeded" in texto.lower() or "invalid map key" in texto.lower():
-            print(f"  {sensor}: sin datos, límite API o clave inválida")
-            return focos
-
-        reader = csv.DictReader(io.StringIO(texto))
-        for row in reader:
-            try:
-                lat = float(row["latitude"])
-                lon = float(row["longitude"])
-                conf = str(row.get("confidence", "n")).strip().lower()
-                frp = float(row.get("frp", 0) or 0)
-                fecha = row.get("acq_date", "")
-                hora = row.get("acq_time", "")
-                deteccion_utc = parsear_deteccion_utc(fecha, hora)
-
-                if conf not in ["n", "h", "nominal", "high"]:
+    for intento in range(1, REINTENTOS_FIRMS + 1):
+        try:
+            r = requests.get(url, timeout=30)
+            r.raise_for_status()
+            texto = r.text.strip()
+            bajo = texto.lower()
+            if not texto or "exceeded" in bajo or "invalid map key" in bajo or "error" in bajo[:80]:
+                print(f"  {sensor}: respuesta no válida (límite API o clave) — intento {intento}/{REINTENTOS_FIRMS}")
+                if intento < REINTENTOS_FIRMS:
+                    time.sleep(ESPERA_REINTENTO)
                     continue
-
-                comunidad = asignar_comunidad(lat, lon)
-                if not comunidad:
+                return focos, False
+            # CSV válido a partir de aquí
+            reader = csv.DictReader(io.StringIO(texto))
+            for row in reader:
+                try:
+                    lat = float(row["latitude"])
+                    lon = float(row["longitude"])
+                    conf = str(row.get("confidence", "n")).strip().lower()
+                    frp = float(row.get("frp", 0) or 0)
+                    fecha = row.get("acq_date", "")
+                    hora = row.get("acq_time", "")
+                    deteccion_utc = parsear_deteccion_utc(fecha, hora)
+                    if conf not in ["n", "h", "nominal", "high"]:
+                        continue
+                    comunidad = asignar_comunidad(lat, lon)
+                    if not comunidad:
+                        continue
+                    focos.append({
+                        "lat": lat,
+                        "lon": lon,
+                        "frp": round(frp, 1),
+                        "confianza": conf,
+                        "fecha": fecha,
+                        "acq_time": str(hora).zfill(4),
+                        "deteccion_utc": deteccion_utc.isoformat() if deteccion_utc else None,
+                        "sensor": sensor,
+                        "comunidad_id": comunidad,
+                    })
+                except (ValueError, KeyError):
                     continue
-
-                focos.append({
-                    "lat": lat,
-                    "lon": lon,
-                    "frp": round(frp, 1),
-                    "confianza": conf,
-                    "fecha": fecha,
-                    "acq_time": str(hora).zfill(4),
-                    "deteccion_utc": deteccion_utc.isoformat() if deteccion_utc else None,
-                    "sensor": sensor,
-                    "comunidad_id": comunidad,
-                })
-            except (ValueError, KeyError):
-                continue
-    except Exception as e:
-        print(f"  {sensor}: error obteniendo focos: {e}")
-
-    print(f"  {sensor}: {len(focos)} detecciones en España")
-    return focos
+            print(f"  {sensor}: {len(focos)} detecciones en España")
+            return focos, True
+        except Exception as e:
+            print(f"  {sensor}: error de descarga ({e}) — intento {intento}/{REINTENTOS_FIRMS}")
+            if intento < REINTENTOS_FIRMS:
+                time.sleep(ESPERA_REINTENTO)
+    return focos, False
 
 
 def obtener_focos(api_key, dias=2):
+    """Devuelve (focos_por_comunidad, dias_con_fuego, sensores_ok)."""
     todos = []
+    sensores_ok = 0
     for sensor in SENSORES:
-        todos.extend(obtener_focos_sensor(api_key, sensor, dias=dias))
-
+        focos, ok = obtener_focos_sensor(api_key, sensor, dias=dias)
+        if ok:
+            sensores_ok += 1
+        todos.extend(focos)
     unicos = {}
     for f in todos:
         clave = (round(f["lat"], 4), round(f["lon"], 4), f["fecha"], f["acq_time"])
         if clave not in unicos or f["frp"] > unicos[clave]["frp"]:
             unicos[clave] = f
-
     focos_por_comunidad = {c["id"]: [] for c in COMUNIDADES}
     dias_con_fuego = {c["id"]: set() for c in COMUNIDADES}
-
     for f in unicos.values():
         cid = f["comunidad_id"]
         focos_por_comunidad[cid].append(f)
         if f["fecha"]:
             dias_con_fuego[cid].add(f["fecha"])
-
-    return focos_por_comunidad, dias_con_fuego
+    return focos_por_comunidad, dias_con_fuego, sensores_ok
 
 
 def reverse_geocode(lat, lon):
@@ -191,36 +216,27 @@ def calcular_max_racha(entradas):
 
 def actualizar_historial(dias_con_fuego_actual):
     ruta = "docs/historial_incendios.json"
-
     if os.path.exists(ruta):
         with open(ruta, "r", encoding="utf-8") as f:
             historial = json.load(f)
     else:
         historial = {}
-
     hoy = ahora_espana().date()
-
     for c in COMUNIDADES:
         cid = c["id"]
         historial.setdefault(cid, [])
         fechas_existentes = {e["fecha"] for e in historial[cid]}
-
         for fecha in dias_con_fuego_actual.get(cid, set()):
             if fecha not in fechas_existentes:
                 historial[cid].append({"fecha": fecha, "tiene_fuego": True})
                 fechas_existentes.add(fecha)
-
         for i in range(7):
             fecha = (hoy - timedelta(days=i)).strftime("%Y-%m-%d")
             if fecha not in fechas_existentes:
                 historial[cid].append({"fecha": fecha, "tiene_fuego": False})
                 fechas_existentes.add(fecha)
-
         historial[cid] = sorted(historial[cid], key=lambda x: x["fecha"], reverse=True)[:730]
-
-    with open(ruta, "w", encoding="utf-8") as f:
-        json.dump(historial, f, ensure_ascii=False, indent=2)
-
+    escribir_json_atomico(ruta, historial)
     return historial
 
 
@@ -228,20 +244,17 @@ def calcular_estadisticas(historial, cid):
     entradas = historial.get(cid, [])
     if not entradas:
         return {"dias_consecutivos": 0, "dias_anio_actual": 0, "max_racha_con_fuego": 0}
-
     anio_actual = ahora_espana().year
     dias_anio_actual = sum(
         1 for e in entradas
         if e["tiene_fuego"] and e["fecha"].startswith(str(anio_actual))
     )
-
     dias_consecutivos = 0
     for entrada in sorted(entradas, key=lambda x: x["fecha"], reverse=True):
         if entrada["tiene_fuego"]:
             dias_consecutivos += 1
         else:
             break
-
     return {
         "dias_consecutivos": dias_consecutivos,
         "dias_anio_actual": dias_anio_actual,
@@ -260,19 +273,29 @@ def generar_json():
     api_key = os.environ.get("NASA_FIRMS_KEY")
     if not api_key:
         print("ERROR: Falta NASA_FIRMS_KEY")
-        return
+        sys.exit(1)
 
     print(f"\n{'=' * 60}")
     print(f"Actualizando incendios — {ahora_espana().strftime('%d/%m/%Y %H:%M')}")
     print(f"{'=' * 60}\n")
-
     print(f"Obteniendo focos recientes de FIRMS, ventana activa: últimas {HORAS_ACTIVO} horas...")
-    focos_actual, dias_actual = obtener_focos(api_key, dias=2)
+
+    focos_actual, dias_actual, sensores_ok = obtener_focos(api_key, dias=2)
+
+    # ---- RED DE SEGURIDAD PRINCIPAL ----
+    # Si NINGÚN sensor respondió bien, NO tocamos ni el historial ni el JSON:
+    # se conserva la última versión buena y el visitante sigue viendo datos.
+    if sensores_ok == 0:
+        print("\n⚠  Todos los sensores de FIRMS fallaron. No se sobreescribe nada.")
+        print("   Se conserva el último incendios.json válido. Saliendo con código 1.\n")
+        sys.exit(1)
+
+    print(f"\nSensores con datos válidos: {sensores_ok}/{len(SENSORES)}")
+
     historial = actualizar_historial(dias_actual)
 
     todos_focos_recientes = []
     focos_recientes_por_comunidad = {}
-
     for c in COMUNIDADES:
         cid = c["id"]
         focos = [f for f in focos_actual.get(cid, []) if es_foco_reciente(f)]
@@ -287,14 +310,12 @@ def generar_json():
                 "deteccion_utc": f["deteccion_utc"],
                 "sensor": f["sensor"],
             })
-
     todos_focos_recientes.sort(key=lambda x: x["frp"], reverse=True)
+
     max_geocode = 40
     focos_geocodificados = []
-
     print(f"\nTotal focos recientes: {len(todos_focos_recientes)}")
     print(f"Geocodificando los {min(max_geocode, len(todos_focos_recientes))} más intensos...")
-
     for i, foco in enumerate(todos_focos_recientes):
         if i < max_geocode:
             nombre = reverse_geocode(foco["lat"], foco["lon"])
@@ -302,7 +323,6 @@ def generar_json():
             print(f"  {i + 1}. {nombre} ({foco['comunidad']}) — FRP: {foco['frp']} MW")
         else:
             nombre = None
-
         focos_geocodificados.append({
             "lat": foco["lat"],
             "lon": foco["lon"],
@@ -322,7 +342,6 @@ def generar_json():
         n_focos = len(focos)
         color, etiqueta = clasificar_actividad(n_focos)
         stats = calcular_estadisticas(historial, cid)
-
         resultados.append({
             "id": cid,
             "nombre": c["nombre"],
@@ -336,11 +355,9 @@ def generar_json():
             "dias_anio_actual": stats["dias_anio_actual"],
             "max_racha_con_fuego": stats["max_racha_con_fuego"],
         })
-
         estado = f"{n_focos} focos recientes" if n_focos > 0 else "sin detecciones recientes"
         print(f"  {c['nombre']}: {estado} | Consec: {stats['dias_consecutivos']}d | Año actual: {stats['dias_anio_actual']}d")
 
-    os.makedirs("docs", exist_ok=True)
     ahora_es = ahora_espana()
     output = {
         "ultima_actualizacion": ahora_es.isoformat(),
@@ -350,13 +367,18 @@ def generar_json():
         "comunidades_con_fuego": sum(1 for r in resultados if r["tiene_fuego"]),
         "total_focos_espana": sum(r["focos_activos"] for r in resultados),
         "fuente": "NASA FIRMS — VIIRS SNPP/NOAA-20/NOAA-21 NRT",
+        "datos_ok": True,
+        "sensores_activos": sensores_ok,
         "focos_individuales": focos_geocodificados,
         "comunidades": resultados,
     }
 
-    with open("docs/incendios.json", "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+    # Validación final antes de publicar: estructura esperada y 19 comunidades.
+    if not output["comunidades"] or len(output["comunidades"]) != len(COMUNIDADES):
+        print("ERROR: el JSON generado no tiene las 19 comunidades. No se publica.")
+        sys.exit(1)
 
+    escribir_json_atomico("docs/incendios.json", output)
     print("\nJSON guardado en docs/incendios.json")
     print(f"{output['comunidades_con_fuego']} comunidades con detecciones recientes")
     print(f"{len(focos_geocodificados)} focos individuales guardados\n")
