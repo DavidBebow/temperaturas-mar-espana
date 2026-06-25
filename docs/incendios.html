@@ -497,11 +497,30 @@ function renderizar(data, geojson, datosDesdeCache) {
     mapa.setMinZoom(Math.floor(mapa.getBoundsZoom(limites)));
   }
 
+  // Une detecciones casi solapadas (mismo fuego en distintas pasadas/sensores):
+  // se conserva la de MAYOR FRP en cada punto, para que el marcador visible sea
+  // siempre el más intenso y no quede uno débil tapando al fuerte.
+  function dedupeFocos(focos) {
+    const ordenados = focos.slice().sort((a, b) => (Number(b.frp) || 0) - (Number(a.frp) || 0));
+    const elegidos = [];
+    const UMBRAL = 0.015; // grados ≈ 1,5 km
+    for (const f of ordenados) {
+      const solapa = elegidos.some(g => Math.abs(g.lat - f.lat) < UMBRAL && Math.abs(g.lon - f.lon) < UMBRAL);
+      if (!solapa) elegidos.push(f);
+    }
+    return elegidos;
+  }
+
   let marcadorTop = null, focoTop = null;
-  (data.focos_individuales || []).forEach(f => {
+  dedupeFocos(data.focos_individuales || []).forEach(f => {
+    f.frp = Number(f.frp) || 0;
     const comunidadReal = comunidadDePunto(f.lat, f.lon, geojson);
     if (comunidadReal) f.comunidad = comunidadReal;
-    const marcador = L.marker([f.lat, f.lon], { icon: crearIconoFoco(f.frp) }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270 });
+    const marcador = L.marker([f.lat, f.lon], {
+      icon: crearIconoFoco(f.frp),
+      zIndexOffset: Math.round(f.frp * 10), // los más intensos, dibujados por encima
+      riseOnHover: true
+    }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270 });
     marcador.on('popupopen', function() {
       registrarInteraccion('foco_click', {
         comunidad: f.comunidad || 'Desconocida',
@@ -513,8 +532,11 @@ function renderizar(data, geojson, datosDesdeCache) {
     if (!focoTop || f.frp > focoTop.frp) { focoTop = f; marcadorTop = marcador; }
   });
 
-  // El foco MÁS intenso recibe un anillo blanco distintivo, identificable de un vistazo.
-  if (marcadorTop) marcadorTop.setIcon(crearIconoFoco(focoTop.frp, true));
+  // El foco MÁS intenso: anillo blanco distintivo y siempre por encima del resto.
+  if (marcadorTop) {
+    marcadorTop.setIcon(crearIconoFoco(focoTop.frp, true));
+    marcadorTop.setZIndexOffset(100000);
+  }
 
   // Tarjeta superior: una sola, con info del foco más intenso, su X y un botón "Ir al foco".
   // (Sin abrir popups automáticos: nada de doble popup ni exceso de información al entrar.)
