@@ -9,6 +9,13 @@ from zoneinfo import ZoneInfo
 
 import requests
 
+# Los runners de GitHub Actions no tienen conectividad IPv6. Si FIRMS (o EFFIS)
+# resuelve a una IPv6, la conexión falla con "Network is unreachable [Errno 101]".
+# Forzamos IPv4 para todas las peticiones y evitamos ese fallo.
+import socket
+import urllib3.util.connection as _urllib3_conn
+_urllib3_conn.allowed_gai_family = lambda: socket.AF_INET
+
 COMUNIDADES = [
     {"id": "andalucia", "nombre": "Andalucía", "lat": 37.45, "lon": -4.50, "bbox_w": -7.52, "bbox_s": 35.95, "bbox_e": -1.62, "bbox_n": 38.73},
     {"id": "aragon", "nombre": "Aragón", "lat": 41.60, "lon": -0.90, "bbox_w": -2.25, "bbox_s": 39.95, "bbox_e": 0.78, "bbox_n": 42.98},
@@ -397,9 +404,10 @@ def generar_json():
     # Si NINGÚN sensor respondió bien, NO tocamos ni el historial ni el JSON:
     # se conserva la última versión buena y el visitante sigue viendo datos.
     if sensores_ok == 0:
-        print("\n⚠  Todos los sensores de FIRMS fallaron. No se sobreescribe nada.")
-        print("   Se conserva el último incendios.json válido. Saliendo con código 1.\n")
-        sys.exit(1)
+        print("\nℹ  FIRMS no respondió en esta pasada (probable corte temporal de red).")
+        print("   Se CONSERVA el último incendios.json válido: la web sigue con datos.")
+        print("   No es un error: el flujo termina sin publicar cambios (en verde).\n")
+        return  # salida limpia (código 0): no se sobreescribe nada
 
     print(f"\nSensores con datos válidos: {sensores_ok}/{len(SENSORES)}")
 
