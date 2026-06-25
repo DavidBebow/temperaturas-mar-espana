@@ -47,14 +47,14 @@ REINTENTOS_FIRMS = 3
 ESPERA_REINTENTO = 8  # segundos entre reintentos
 
 # -------- EFFIS (Copernicus): grandes incendios con superficie quemada --------
-# Servicio WFS de EFFIS. Si dejara de responder o cambiara la capa, basta con
-# ajustar estas constantes; el resto del script sigue funcionando igual.
-# Endpoint y respaldo (se prueban en orden):
+# Servicio WFS de EFFIS. Probamos varias combinaciones de servidor + capa y
+# DEJAMOS DIAGNÓSTICO EN EL LOG (código HTTP, nº de features) para localizar la
+# combinación correcta. En cuanto una devuelva incendios, se usa esa.
 EFFIS_WFS_URLS = [
     "https://maps.effis.emergency.copernicus.eu/effis",
     "https://ies-ows.jrc.ec.europa.eu/effis",
 ]
-EFFIS_CAPA = "ms:modis.ba.poly"   # polígonos de área quemada del año en curso
+EFFIS_CAPAS = ["ms:modis.ba.poly", "modis.ba.poly", "ms:nrt.ba.poly", "nrt.ba.poly"]
 EFFIS_UMBRAL_HA = 30              # solo incendios de 30 ha o más
 EFFIS_MAX = 4                     # cuántas fichas mostrar en el panel
 
@@ -320,49 +320,74 @@ def obtener_grandes_incendios():
     """Descarga de EFFIS los incendios de España con superficie quemada y
     devuelve los EFFIS_MAX mayores (lista de dicts para el panel del mapa).
     Totalmente tolerante a fallos: ante cualquier problema devuelve []."""
-    params = {
-        "service": "WFS",
-        "version": "2.0.0",
-        "request": "GetFeature",
-        "typeNames": EFFIS_CAPA,
-        "outputFormat": "application/json",
-        "srsName": "EPSG:4326",
-        "CQL_FILTER": "COUNTRY='ES'",
-    }
-    fc = None
+    # 1) Descarga: probamos combinaciones servidor+capa y dejamos diagnóstico.
+    features = []
+    usado = ""
     for url in EFFIS_WFS_URLS:
-        try:
-            r = requests.get(url, params=params, timeout=40)
-            r.raise_for_status()
-            fc = r.json()
-            if isinstance(fc, dict) and fc.get("features") is not None:
-                break
-        except Exception as e:
-            print(f"  EFFIS: fallo con {url} ({e})")
-            fc = None
-    if not isinstance(fc, dict):
-        print("  EFFIS: sin datos de grandes incendios (se omite el panel).")
+        if features:
+            break
+        for capa in EFFIS_CAPAS:
+            params = {
+                "service": "WFS", "version": "2.0.0", "request": "GetFeature",
+                "typeNames": capa, "outputFormat": "application/json",
+                "srsName": "EPSG:4326", "count": "300",
+            }
+            try:
+                r = requests.get(url, params=params, timeout=40,
+                                 headers={"User-Agent": "calentamientoglobal.es/incendios"})
+                ct = r.headers.get("Content-Type", "")
+                print(f"  EFFIS probar {url} [{capa}] -> HTTP {r.status_code} | {ct} | {len(r.text)} bytes")
+                if r.status_code != 200:
+                    print(f"    cuerpo: {r.text[:160]!r}")
+                    continue
+                try:
+                    fc = r.json()
+                except Exception:
+                    print(f"    respuesta no-JSON: {r.text[:160]!r}")
+                    continue
+                feats = fc.get("features") if isinstance(fc, dict) else None
+                if feats is None:
+                    print(f"    JSON sin 'features': {str(fc)[:160]!r}")
+                    continue
+                print(f"    features recibidas: {len(feats)}")
+                if feats:
+                    features = feats
+                    usado = f"{url} [{capa}]"
+                    break
+            except Exception as e:
+                print(f"  EFFIS probar {url} [{capa}] -> EXCEPCIÓN: {e}")
+    if not features:
+        print("  EFFIS: ninguna combinación devolvió incendios (panel vacío por ahora).")
         return []
+    print(f"  EFFIS: usando {usado} con {len(features)} features; filtrando España…")
 
+    # 2) Filtrado a España + año en curso + >= umbral, con recuento de descartes.
     anio = str(ahora_espana().year)
     grandes = []
-    for ft in fc.get("features", []) or []:
+    desc = {"sin_ha": 0, "otro_anio": 0, "sin_centroide": 0, "fuera_espana": 0}
+    for ft in features:
         props = ft.get("properties", {}) or {}
         ha = _num(props.get("AREA_HA") or props.get("area_ha")
                   or props.get("AREA") or props.get("area"))
         if ha < EFFIS_UMBRAL_HA:
+            desc["sin_ha"] += 1
             continue
         fecha = str(props.get("FIREDATE") or props.get("firedate")
                     or props.get("INITIALDATE") or props.get("LASTUPDATE") or "")[:10]
         if fecha and not fecha.startswith(anio):
-            continue  # solo año en curso
+            desc["otro_anio"] += 1
+            continue
         lat, lon = _centroide(ft.get("geometry") or {})
         if lat is None:
+            desc["sin_centroide"] += 1
             continue
+        cid = asignar_comunidad(lat, lon)
+        if cid is None:
+            desc["fuera_espana"] += 1
+            continue
+        comunidad = next((c["nombre"] for c in COMUNIDADES if c["id"] == cid), "")
         provincia = props.get("PROVINCE") or props.get("province") or ""
         municipio = props.get("COMMUNE") or props.get("commune") or props.get("place_name") or ""
-        cid = asignar_comunidad(lat, lon)
-        comunidad = next((c["nombre"] for c in COMUNIDADES if c["id"] == cid), "")
         dias = 0
         try:
             d0 = datetime.strptime(fecha, "%Y-%m-%d").date()
@@ -383,7 +408,7 @@ def obtener_grandes_incendios():
         })
 
     grandes.sort(key=lambda x: x["hectareas"], reverse=True)
-    print(f"  EFFIS: {len(grandes)} incendios ≥{EFFIS_UMBRAL_HA} ha; se publican {min(EFFIS_MAX, len(grandes))}")
+    print(f"  EFFIS filtros -> descartes {desc}; válidos en España: {len(grandes)}; se publican {min(EFFIS_MAX, len(grandes))}")
     return grandes[:EFFIS_MAX]
 
 
