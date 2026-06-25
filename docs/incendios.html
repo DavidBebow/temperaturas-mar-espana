@@ -56,6 +56,26 @@
   #leyenda .ayuda{margin-left:auto;font-size:10.5px;color:#7a5444;border:none;background:none;padding:0}
   /* ---------- MAPA ---------- */
   #mapa{flex:1;min-height:0;width:100%;background:#0a0806}
+  /* ---------- RÓTULO SUPERIOR (incendio más intenso) ---------- */
+  #banner-top{
+    position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    z-index:600;max-width:min(92%,560px);text-align:center;pointer-events:auto;
+    background:linear-gradient(180deg,rgba(40,10,4,.96),rgba(26,8,4,.96));
+    border:1px solid #6a2a10;border-radius:14px;padding:9px 18px;
+    box-shadow:0 10px 34px rgba(0,0,0,.7);cursor:pointer;
+    transition:transform .12s ease;display:none;
+  }
+  #banner-top:hover{transform:translateX(-50%) translateY(-1px)}
+  #banner-top .bt-tit{font-size:12px;font-weight:700;letter-spacing:.01em;color:#ffb787;text-transform:uppercase}
+  #banner-top .bt-sub{font-size:13.5px;color:#fff3e8;margin-top:2px}
+  #banner-top .bt-sub b{color:#ff8a4c}
+  #banner-top.ok{cursor:default;border-color:#2d5a36;background:linear-gradient(180deg,rgba(20,40,24,.96),rgba(12,26,16,.96))}
+  #banner-top.ok .bt-tit{color:#8fdc8f}
+  @media(max-width:600px){
+    #banner-top{padding:7px 13px}
+    #banner-top .bt-tit{font-size:10.5px}
+    #banner-top .bt-sub{font-size:12px}
+  }
   /* ---------- POPUPS ---------- */
   .leaflet-popup-content-wrapper{
     background:#1a0a04 !important;border:1px solid #4a2010 !important;
@@ -145,6 +165,40 @@ const GEOJSON_URLS = [
 ];
 const CACHE_INCENDIOS = 'cache_incendios_v1';
 const CACHE_GEOJSON = 'cache_geojson_v1';
+
+// ---------------------------------------------------------------------------
+//  MEDICIÓN EN GOOGLE ANALYTICS (GA4)
+//  Funciona tanto si el mapa está en un <iframe> como si está pegado directo:
+//   · En iframe  -> envía el evento al WordPress padre por postMessage
+//                   (necesita el pequeño snippet del archivo wordpress-tracking-incendios).
+//   · Directo    -> llama a gtag / dataLayer que ya hay en WordPress.
+//  Cada evento lleva 'engagement_time_msec' = tiempo real de interacción,
+//  de modo que GA4 cuenta el tiempo aunque el usuario no cambie de página.
+// ---------------------------------------------------------------------------
+let _tUltimoEvento = Date.now();
+let _primeraInteraccion = true;
+function track(evento, params) {
+  params = params || {};
+  const ahora = Date.now();
+  params.engagement_time_msec = Math.max(1, ahora - _tUltimoEvento);
+  _tUltimoEvento = ahora;
+  if (window.self !== window.top) {
+    try { window.parent.postMessage({ source: 'mapa-incendios', evento: evento, params: params }, '*'); } catch (e) {}
+  } else if (typeof window.gtag === 'function') {
+    window.gtag('event', evento, params);
+  } else {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(Object.assign({ event: evento }, params));
+  }
+}
+// La primera interacción marca la sesión como activa (deja de ser rebote).
+function registrarInteraccion(evento, params) {
+  if (_primeraInteraccion) {
+    _primeraInteraccion = false;
+    track('mapa_interaccion', { etiqueta: 'primera_interaccion' });
+  }
+  track(evento, params);
+}
 
 const mapa = L.map('mapa', {
   center: [39.6, -3.5], zoom: 6, zoomControl: true,
@@ -383,6 +437,9 @@ function renderizar(data, geojson, datosDesdeCache) {
       const c = datosMap[NOMBRE_A_ID[nombre]];
       if (!c) return;
       layer.bindPopup(popupComunidad(c, horas), { maxWidth: 280 });
+      layer.on('popupopen', function() {
+        registrarInteraccion('comunidad_click', { comunidad: c.nombre, focos_activos: c.focos_activos });
+      });
       layer.on('mouseover', function() { layer.setStyle({ fillOpacity: 0.78, weight: 2 }); });
       layer.on('mouseout', function() { capaGeojson.resetStyle(layer); });
       if (c.tiene_fuego && !primerLayer) primerLayer = layer;
@@ -397,13 +454,49 @@ function renderizar(data, geojson, datosDesdeCache) {
     mapa.setMinZoom(Math.floor(mapa.getBoundsZoom(limites)));
   }
 
+  let marcadorTop = null, focoTop = null;
   (data.focos_individuales || []).forEach(f => {
     const comunidadReal = comunidadDePunto(f.lat, f.lon, geojson);
     if (comunidadReal) f.comunidad = comunidadReal;
-    L.marker([f.lat, f.lon], { icon: crearIconoFoco(f.frp) }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270 });
+    const marcador = L.marker([f.lat, f.lon], { icon: crearIconoFoco(f.frp) }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270 });
+    marcador.on('popupopen', function() {
+      registrarInteraccion('foco_click', {
+        comunidad: f.comunidad || 'Desconocida',
+        frp: f.frp,
+        intensidad: f.intensidad || '',
+        sensor: f.sensor || 'VIIRS'
+      });
+    });
+    if (!focoTop || f.frp > focoTop.frp) { focoTop = f; marcadorTop = marcador; }
   });
 
-  if (primerLayer) setTimeout(() => primerLayer.openPopup(), 900);
+  // Rótulo superior + apertura automática del foco más intenso de España.
+  let banner = document.getElementById('banner-top');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'banner-top';
+    mapa.getContainer().appendChild(banner);
+  }
+  if (focoTop && marcadorTop) {
+    banner.classList.remove('ok');
+    banner.innerHTML =
+      '<div class="bt-tit">🔥 Incendio actual de mayor intensidad en España</div>' +
+      '<div class="bt-sub">' + (focoTop.comunidad || 'España') +
+      ' · <b>' + focoTop.frp + ' MW</b>' +
+      (focoTop.intensidad ? ' · ' + focoTop.intensidad : '') + '</div>';
+    banner.style.display = 'block';
+    banner.onclick = function() {
+      mapa.setView(marcadorTop.getLatLng(), Math.max(mapa.getZoom(), 8), { animate: true });
+      marcadorTop.openPopup();
+    };
+    // Abre su popup al entrar (sin perder la vista nacional).
+    setTimeout(() => marcadorTop.openPopup(), 900);
+  } else {
+    banner.classList.add('ok');
+    banner.innerHTML = '<div class="bt-tit">✓ Sin incendios activos en España ahora mismo</div>';
+    banner.style.display = 'block';
+    banner.onclick = null;
+  }
 }
 
 inicializar();
