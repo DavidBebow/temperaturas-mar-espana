@@ -56,24 +56,34 @@
   #leyenda .ayuda{margin-left:auto;font-size:10.5px;color:#7a5444;border:none;background:none;padding:0}
   /* ---------- MAPA ---------- */
   #mapa{flex:1;min-height:0;width:100%;background:#0a0806}
-  /* ---------- RÓTULO SUPERIOR (incendio más intenso) ---------- */
+  /* ---------- TARJETA SUPERIOR (incendio más intenso) ---------- */
   #banner-top{
     position:absolute;top:12px;left:50%;transform:translateX(-50%);
-    z-index:600;max-width:min(92%,560px);text-align:center;pointer-events:auto;
-    background:linear-gradient(180deg,rgba(40,10,4,.96),rgba(26,8,4,.96));
-    border:1px solid #6a2a10;border-radius:14px;padding:9px 18px;
-    box-shadow:0 10px 34px rgba(0,0,0,.7);cursor:pointer;
-    transition:transform .12s ease;display:none;
+    z-index:600;max-width:min(94%,420px);text-align:center;pointer-events:auto;
+    background:linear-gradient(180deg,rgba(40,10,4,.97),rgba(24,8,4,.97));
+    border:1px solid #6a2a10;border-radius:14px;padding:11px 18px 12px;
+    box-shadow:0 12px 38px rgba(0,0,0,.72);display:none;
   }
-  #banner-top:hover{transform:translateX(-50%) translateY(-1px)}
-  #banner-top .bt-tit{font-size:12px;font-weight:700;letter-spacing:.01em;color:#ffb787;text-transform:uppercase}
-  #banner-top .bt-sub{font-size:13.5px;color:#fff3e8;margin-top:2px}
-  #banner-top .bt-sub b{color:#ff8a4c}
-  #banner-top.ok{cursor:default;border-color:#2d5a36;background:linear-gradient(180deg,rgba(20,40,24,.96),rgba(12,26,16,.96))}
+  #banner-top .bt-x{
+    position:absolute;top:4px;right:7px;background:none;border:none;
+    color:#9a6a55;font-size:20px;line-height:1;cursor:pointer;padding:2px 6px;font-family:inherit;
+  }
+  #banner-top .bt-x:hover{color:#fff3e8}
+  #banner-top .bt-tit{font-size:11px;font-weight:700;letter-spacing:.02em;color:#ffb787;text-transform:uppercase;padding:0 14px}
+  #banner-top .bt-sub{font-size:13px;color:#fff3e8;margin-top:4px}
+  #banner-top .bt-sub b{color:#ffd0a8}
+  #banner-top .bt-frp{color:#ff8a4c;font-weight:700}
+  #banner-top .bt-go{
+    margin-top:10px;display:inline-block;background:#ff5a1f;color:#1a0a04;
+    border:none;border-radius:9px;padding:7px 16px;font-size:12px;font-weight:700;
+    cursor:pointer;font-family:inherit;transition:background .12s ease;
+  }
+  #banner-top .bt-go:hover{background:#ff7a3c}
+  #banner-top.ok{border-color:#2d5a36;background:linear-gradient(180deg,rgba(20,40,24,.96),rgba(12,26,16,.96))}
   #banner-top.ok .bt-tit{color:#8fdc8f}
   @media(max-width:600px){
-    #banner-top{padding:7px 13px}
-    #banner-top .bt-tit{font-size:10.5px}
+    #banner-top{padding:9px 14px 11px;max-width:92%}
+    #banner-top .bt-tit{font-size:10px}
     #banner-top .bt-sub{font-size:12px}
   }
   /* ---------- POPUPS ---------- */
@@ -99,24 +109,44 @@
   .foco-icon{background:transparent !important;border:0 !important}
   .foco-dot{
     display:block;border-radius:50%;cursor:pointer;
-    background:radial-gradient(circle at 50% 35%, #fff 0%, var(--c) 58%, var(--c) 100%);
+    background:radial-gradient(circle at 50% 32%, #fff 0%, var(--c) 50%, var(--c) 100%);
+    border:1px solid rgba(0,0,0,.4);
     transition:transform .12s ease;
   }
-  .foco-dot:hover{transform:scale(1.25)}
+  .foco-dot:hover{transform:scale(1.22)}
   .foco-dot.pulsa{position:relative}
   .foco-dot.pulsa::after{
-    content:'';position:absolute;inset:0;border-radius:50%;
+    content:'';position:absolute;inset:-2px;border-radius:50%;
     box-shadow:0 0 0 0 var(--gc);animation:focoPulso 1.9s ease-out infinite;
   }
   @keyframes focoPulso{
     0%{box-shadow:0 0 0 0 var(--gc)}
-    70%{box-shadow:0 0 0 13px rgba(0,0,0,0)}
+    70%{box-shadow:0 0 0 14px rgba(0,0,0,0)}
     100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}
+  }
+  /* Foco de MAYOR intensidad: anillo blanco distintivo, siempre visible */
+  .foco-max-wrap{position:relative;display:flex;align-items:center;justify-content:center}
+  .foco-max-wrap .anillo{
+    position:absolute;border-radius:50%;border:2px solid #fff;
+    box-shadow:0 0 9px 2px rgba(255,255,255,.5);
+    animation:anilloMax 1.8s ease-out infinite;
+  }
+  @keyframes anilloMax{
+    0%{transform:scale(.65);opacity:.95}
+    70%{transform:scale(1.45);opacity:0}
+    100%{transform:scale(1.45);opacity:0}
+  }
+  /* Resalte temporal al pulsar "Ir al foco" */
+  .foco-destacado .foco-dot{animation:focoSalto .55s ease 3}
+  @keyframes focoSalto{
+    0%,100%{transform:translateY(0)}
+    35%{transform:translateY(-9px) scale(1.1)}
+    60%{transform:translateY(0)}
   }
   .foco-leyenda{
     display:inline-block;width:11px;height:11px;border-radius:50%;
     background:radial-gradient(circle at 50% 35%, #fff 0%, #ff5a1f 62%);
-    box-shadow:0 0 6px 1px rgba(255,90,25,.85);
+    box-shadow:0 0 5px 1px rgba(255,90,25,.7);flex-shrink:0;
   }
   /* ---------- CONTROLES ---------- */
   .leaflet-control-zoom{border:none !important;box-shadow:0 4px 16px rgba(0,0,0,.5) !important;border-radius:12px !important;overflow:hidden}
@@ -150,7 +180,13 @@
   <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#d83a14"></div> 21-50 focos</div>
   <div class="leyenda-item"><div class="leyenda-cuadrado" style="background:#e8160a"></div> +50 focos</div>
   <span class="sep">|</span>
-  <div class="leyenda-item"><span class="foco-leyenda"></span> Foco reciente (tamaño = FRP)</div>
+  <div class="leyenda-item" style="gap:7px">
+    <span style="color:#bca08c">Intensidad foco:</span>
+    <span class="foco-leyenda" style="width:8px;height:8px;background:radial-gradient(circle at 50% 35%,#fff 0%,#ffd24d 60%)"></span>
+    <span class="foco-leyenda" style="width:13px;height:13px;background:radial-gradient(circle at 50% 35%,#fff 0%,#ff5a1f 58%)"></span>
+    <span class="foco-leyenda" style="width:19px;height:19px;background:radial-gradient(circle at 50% 35%,#fff 0%,#ff2310 56%)"></span>
+    <span style="color:#8a6a5a;font-size:10.5px">menor → mayor FRP</span>
+  </div>
   <span class="ayuda">Clic en comunidad o foco para detalles</span>
 </div>
 <div id="mapa"></div>
@@ -289,16 +325,23 @@ function popupFoco(f) {
       </div>
     </div>`;
 }
-function crearIconoFoco(frp) {
-  const tier = frp >= 100 ? 3 : frp >= 30 ? 2 : frp >= 10 ? 1 : 0;
-  const size  = [11, 15, 20, 26][tier];
-  const core  = ['#ffd24d', '#ff9a33', '#ff5a1f', '#ff2d0a'][tier];
-  const glow  = ['rgba(255,200,70,.80)', 'rgba(255,140,40,.85)', 'rgba(255,80,25,.88)', 'rgba(255,40,10,.92)'][tier];
-  const blur  = [8, 11, 15, 19][tier];
-  const spread = [1, 2, 3, 4][tier];
-  const pulsa = tier >= 3 ? ' pulsa' : '';
-  const html = `<span class="foco-dot${pulsa}" style="width:${size}px;height:${size}px;--c:${core};--gc:${glow};box-shadow:0 0 ${blur}px ${spread}px ${glow}, 0 1px 2px rgba(0,0,0,.45)"></span>`;
-  return L.divIcon({ html, className: 'foco-icon', iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2 - 3] });
+function crearIconoFoco(frp, esMax) {
+  // 4 niveles de intensidad bien diferenciados por tamaño Y color.
+  const tier   = frp >= 100 ? 3 : frp >= 30 ? 2 : frp >= 10 ? 1 : 0;
+  const size   = [12, 17, 23, 30][tier];
+  const core   = ['#ffd24d', '#ff9430', '#ff5a1f', '#ff2310'][tier];
+  const glow   = ['rgba(255,205,80,.85)', 'rgba(255,148,48,.88)', 'rgba(255,90,31,.9)', 'rgba(255,40,16,.95)'][tier];
+  const blur   = [8, 12, 16, 20][tier];
+  const spread = [1, 2, 3, 5][tier];
+  const pulsa  = (tier >= 3 && !esMax) ? ' pulsa' : '';
+  const dot = `<span class="foco-dot${pulsa}" style="width:${size}px;height:${size}px;--c:${core};--gc:${glow};box-shadow:0 0 ${blur}px ${spread}px ${glow}, 0 1px 2px rgba(0,0,0,.5)"></span>`;
+  if (esMax) {
+    const r = size + 14;
+    const html = `<span class="foco-max-wrap" style="width:${r}px;height:${r}px">`
+      + `<span class="anillo" style="width:${r}px;height:${r}px"></span>` + dot + `</span>`;
+    return L.divIcon({ html, className: 'foco-icon', iconSize: [r, r], iconAnchor: [r / 2, r / 2], popupAnchor: [0, -r / 2 - 2] });
+  }
+  return L.divIcon({ html: dot, className: 'foco-icon', iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2 - 3] });
 }
 // --- Comunidad real de cada foco por geometría (point-in-polygon) ---
 function puntoEnAnillo(lat, lng, anillo) {
@@ -470,7 +513,11 @@ function renderizar(data, geojson, datosDesdeCache) {
     if (!focoTop || f.frp > focoTop.frp) { focoTop = f; marcadorTop = marcador; }
   });
 
-  // Rótulo superior + apertura automática del foco más intenso de España.
+  // El foco MÁS intenso recibe un anillo blanco distintivo, identificable de un vistazo.
+  if (marcadorTop) marcadorTop.setIcon(crearIconoFoco(focoTop.frp, true));
+
+  // Tarjeta superior: una sola, con info del foco más intenso, su X y un botón "Ir al foco".
+  // (Sin abrir popups automáticos: nada de doble popup ni exceso de información al entrar.)
   let banner = document.getElementById('banner-top');
   if (!banner) {
     banner = document.createElement('div');
@@ -480,22 +527,33 @@ function renderizar(data, geojson, datosDesdeCache) {
   if (focoTop && marcadorTop) {
     banner.classList.remove('ok');
     banner.innerHTML =
-      '<div class="bt-tit">🔥 Incendio actual de mayor intensidad en España</div>' +
-      '<div class="bt-sub">' + (focoTop.comunidad || 'España') +
-      ' · <b>' + focoTop.frp + ' MW</b>' +
-      (focoTop.intensidad ? ' · ' + focoTop.intensidad : '') + '</div>';
+      '<button class="bt-x" aria-label="Cerrar">&times;</button>' +
+      '<div class="bt-tit">🔥 Incendio de mayor intensidad en España</div>' +
+      '<div class="bt-sub"><b>' + (focoTop.comunidad || 'España') + '</b>' +
+        (focoTop.lugar ? ' · ' + focoTop.lugar : '') +
+        ' · <span class="bt-frp">' + focoTop.frp + ' MW</span>' +
+        (focoTop.intensidad ? ' · ' + focoTop.intensidad : '') + '</div>' +
+      '<button class="bt-go">Ir al foco en el mapa →</button>';
     banner.style.display = 'block';
-    banner.onclick = function() {
-      mapa.setView(marcadorTop.getLatLng(), Math.max(mapa.getZoom(), 8), { animate: true });
-      marcadorTop.openPopup();
+
+    const irAlFoco = function() {
+      mapa.flyTo(marcadorTop.getLatLng(), 11, { duration: 1.1 });
+      mapa.once('moveend', function() {
+        marcadorTop.openPopup();
+        const el = marcadorTop.getElement();
+        if (el) {
+          el.classList.add('foco-destacado');
+          setTimeout(function() { el.classList.remove('foco-destacado'); }, 2200);
+        }
+      });
+      registrarInteraccion('ver_foco_max', { comunidad: focoTop.comunidad || '', frp: focoTop.frp });
     };
-    // Abre su popup al entrar (sin perder la vista nacional).
-    setTimeout(() => marcadorTop.openPopup(), 900);
+    banner.querySelector('.bt-x').onclick = function() { banner.style.display = 'none'; };
+    banner.querySelector('.bt-go').onclick = irAlFoco;
   } else {
     banner.classList.add('ok');
     banner.innerHTML = '<div class="bt-tit">✓ Sin incendios activos en España ahora mismo</div>';
     banner.style.display = 'block';
-    banner.onclick = null;
   }
 }
 
