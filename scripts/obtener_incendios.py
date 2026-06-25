@@ -39,6 +39,18 @@ TZ_ESPANA = ZoneInfo("Europe/Madrid")
 REINTENTOS_FIRMS = 3
 ESPERA_REINTENTO = 8  # segundos entre reintentos
 
+# -------- EFFIS (Copernicus): grandes incendios con superficie quemada --------
+# Servicio WFS de EFFIS. Si dejara de responder o cambiara la capa, basta con
+# ajustar estas constantes; el resto del script sigue funcionando igual.
+# Endpoint y respaldo (se prueban en orden):
+EFFIS_WFS_URLS = [
+    "https://maps.effis.emergency.copernicus.eu/effis",
+    "https://ies-ows.jrc.ec.europa.eu/effis",
+]
+EFFIS_CAPA = "ms:modis.ba.poly"   # polígonos de área quemada del año en curso
+EFFIS_UMBRAL_HA = 30              # solo incendios de 30 ha o más
+EFFIS_MAX = 4                     # cuántas fichas mostrar en el panel
+
 
 def ahora_utc():
     return datetime.now(timezone.utc)
@@ -269,6 +281,105 @@ def es_foco_reciente(foco):
     return deteccion >= ahora_utc() - timedelta(hours=HORAS_ACTIVO)
 
 
+def _centroide(geometry):
+    """Centroide aproximado (lat, lon) de un polígono/multipolígono GeoJSON:
+    media de los vértices del anillo exterior más grande. Sin dependencias."""
+    try:
+        tipo = geometry.get("type")
+        coords = geometry.get("coordinates")
+        if tipo == "Polygon":
+            anillo = coords[0]
+        elif tipo == "MultiPolygon":
+            anillo = max((poly[0] for poly in coords), key=len)
+        else:
+            return None, None
+        xs = [p[0] for p in anillo]  # lon
+        ys = [p[1] for p in anillo]  # lat
+        if not xs or not ys:
+            return None, None
+        return sum(ys) / len(ys), sum(xs) / len(xs)
+    except Exception:
+        return None, None
+
+
+def _num(valor):
+    try:
+        return float(valor)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def obtener_grandes_incendios():
+    """Descarga de EFFIS los incendios de España con superficie quemada y
+    devuelve los EFFIS_MAX mayores (lista de dicts para el panel del mapa).
+    Totalmente tolerante a fallos: ante cualquier problema devuelve []."""
+    params = {
+        "service": "WFS",
+        "version": "2.0.0",
+        "request": "GetFeature",
+        "typeNames": EFFIS_CAPA,
+        "outputFormat": "application/json",
+        "srsName": "EPSG:4326",
+        "CQL_FILTER": "COUNTRY='ES'",
+    }
+    fc = None
+    for url in EFFIS_WFS_URLS:
+        try:
+            r = requests.get(url, params=params, timeout=40)
+            r.raise_for_status()
+            fc = r.json()
+            if isinstance(fc, dict) and fc.get("features") is not None:
+                break
+        except Exception as e:
+            print(f"  EFFIS: fallo con {url} ({e})")
+            fc = None
+    if not isinstance(fc, dict):
+        print("  EFFIS: sin datos de grandes incendios (se omite el panel).")
+        return []
+
+    anio = str(ahora_espana().year)
+    grandes = []
+    for ft in fc.get("features", []) or []:
+        props = ft.get("properties", {}) or {}
+        ha = _num(props.get("AREA_HA") or props.get("area_ha")
+                  or props.get("AREA") or props.get("area"))
+        if ha < EFFIS_UMBRAL_HA:
+            continue
+        fecha = str(props.get("FIREDATE") or props.get("firedate")
+                    or props.get("INITIALDATE") or props.get("LASTUPDATE") or "")[:10]
+        if fecha and not fecha.startswith(anio):
+            continue  # solo año en curso
+        lat, lon = _centroide(ft.get("geometry") or {})
+        if lat is None:
+            continue
+        provincia = props.get("PROVINCE") or props.get("province") or ""
+        municipio = props.get("COMMUNE") or props.get("commune") or props.get("place_name") or ""
+        cid = asignar_comunidad(lat, lon)
+        comunidad = next((c["nombre"] for c in COMUNIDADES if c["id"] == cid), "")
+        dias = 0
+        try:
+            d0 = datetime.strptime(fecha, "%Y-%m-%d").date()
+            dias = max(0, (ahora_espana().date() - d0).days)
+        except Exception:
+            pass
+        grandes.append({
+            "zona": municipio or provincia or comunidad or "Incendio forestal",
+            "provincia": provincia or comunidad,
+            "comunidad": comunidad,
+            "hectareas": round(ha),
+            "fecha_inicio": fecha or None,
+            "dias_activo": dias,
+            "tipo": props.get("CLASS") or props.get("LANDCOVER") or "",
+            "lat": round(lat, 5),
+            "lon": round(lon, 5),
+            "url": "https://forest-fire.emergency.copernicus.eu/apps/effis.current.situation/",
+        })
+
+    grandes.sort(key=lambda x: x["hectareas"], reverse=True)
+    print(f"  EFFIS: {len(grandes)} incendios ≥{EFFIS_UMBRAL_HA} ha; se publican {min(EFFIS_MAX, len(grandes))}")
+    return grandes[:EFFIS_MAX]
+
+
 def generar_json():
     api_key = os.environ.get("NASA_FIRMS_KEY")
     if not api_key:
@@ -358,6 +469,9 @@ def generar_json():
         estado = f"{n_focos} focos recientes" if n_focos > 0 else "sin detecciones recientes"
         print(f"  {c['nombre']}: {estado} | Consec: {stats['dias_consecutivos']}d | Año actual: {stats['dias_anio_actual']}d")
 
+    print("\nConsultando EFFIS (grandes incendios con superficie quemada)...")
+    grandes_incendios = obtener_grandes_incendios()
+
     ahora_es = ahora_espana()
     output = {
         "ultima_actualizacion": ahora_es.isoformat(),
@@ -369,6 +483,7 @@ def generar_json():
         "fuente": "NASA FIRMS — VIIRS SNPP/NOAA-20/NOAA-21 NRT",
         "datos_ok": True,
         "sensores_activos": sensores_ok,
+        "grandes_incendios": grandes_incendios,
         "focos_individuales": focos_geocodificados,
         "comunidades": resultados,
     }
