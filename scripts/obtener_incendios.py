@@ -52,9 +52,9 @@ ESPERA_REINTENTO = 8  # segundos entre reintentos
 # combinación correcta. En cuanto una devuelva incendios, se usa esa.
 EFFIS_WFS_URLS = [
     "https://maps.effis.emergency.copernicus.eu/effis",
-    "https://ies-ows.jrc.ec.europa.eu/effis",
 ]
 EFFIS_CAPAS = ["ms:modis.ba.poly", "modis.ba.poly", "ms:nrt.ba.poly", "nrt.ba.poly"]
+EFFIS_FORMATOS = ["application/json", "geojson"]  # MapServer a veces solo acepta 'geojson'
 EFFIS_UMBRAL_HA = 30              # solo incendios de 30 ha o más
 EFFIS_MAX = 4                     # cuántas fichas mostrar en el panel
 
@@ -316,50 +316,61 @@ def _num(valor):
         return 0.0
 
 
+def _effis_descargar():
+    """Prueba combinaciones servidor+capa+formato de EFFIS y devuelve la lista
+    de features de la primera que funcione. Pide la respuesta SIN comprimir
+    (Accept-Encoding: identity) y reintenta, para evitar el 'IncompleteRead'
+    típico de ese servidor. Deja diagnóstico detallado en el log."""
+    cabeceras = {
+        "User-Agent": "Mozilla/5.0 (compatible; calentamientoglobal.es/incendios)",
+        "Accept": "application/json, application/geo+json, */*",
+        "Accept-Encoding": "identity",   # clave: sin gzip -> sin IncompleteRead
+        "Referer": "https://forest-fire.emergency.copernicus.eu/",
+    }
+    sesion = requests.Session()
+    for url in EFFIS_WFS_URLS:
+        for capa in EFFIS_CAPAS:
+            for fmt in EFFIS_FORMATOS:
+                params = {
+                    "service": "WFS", "version": "2.0.0", "request": "GetFeature",
+                    "typeNames": capa, "outputFormat": fmt,
+                    "srsName": "EPSG:4326", "count": "300",
+                }
+                for intento in (1, 2):
+                    try:
+                        r = sesion.get(url, params=params, timeout=30, headers=cabeceras)
+                        enc = r.headers.get("Content-Encoding", "—")
+                        cuerpo = r.content  # fuerza la lectura (aquí saltaba IncompleteRead)
+                        print(f"  EFFIS [{capa}] fmt={fmt} i{intento} -> HTTP {r.status_code} | enc={enc} | {len(cuerpo)} bytes")
+                        if r.status_code != 200:
+                            print(f"    cuerpo: {r.text[:220]!r}")
+                            break
+                        try:
+                            fc = r.json()
+                        except Exception:
+                            print(f"    no-JSON (error del servidor): {r.text[:220]!r}")
+                            break
+                        feats = fc.get("features") if isinstance(fc, dict) else None
+                        print(f"    features: {0 if feats is None else len(feats)}")
+                        if feats:
+                            print(f"    -> USANDO {url} [{capa}] fmt={fmt}")
+                            return feats
+                        break  # responde JSON pero sin features: probar otra capa
+                    except Exception as e:
+                        print(f"  EFFIS [{capa}] fmt={fmt} i{intento} EXCEPCIÓN: {e}")
+                        continue
+    return []
+
+
 def obtener_grandes_incendios():
     """Descarga de EFFIS los incendios de España con superficie quemada y
     devuelve los EFFIS_MAX mayores (lista de dicts para el panel del mapa).
     Totalmente tolerante a fallos: ante cualquier problema devuelve []."""
-    # 1) Descarga: probamos combinaciones servidor+capa y dejamos diagnóstico.
-    features = []
-    usado = ""
-    for url in EFFIS_WFS_URLS:
-        if features:
-            break
-        for capa in EFFIS_CAPAS:
-            params = {
-                "service": "WFS", "version": "2.0.0", "request": "GetFeature",
-                "typeNames": capa, "outputFormat": "application/json",
-                "srsName": "EPSG:4326", "count": "300",
-            }
-            try:
-                r = requests.get(url, params=params, timeout=40,
-                                 headers={"User-Agent": "calentamientoglobal.es/incendios"})
-                ct = r.headers.get("Content-Type", "")
-                print(f"  EFFIS probar {url} [{capa}] -> HTTP {r.status_code} | {ct} | {len(r.text)} bytes")
-                if r.status_code != 200:
-                    print(f"    cuerpo: {r.text[:160]!r}")
-                    continue
-                try:
-                    fc = r.json()
-                except Exception:
-                    print(f"    respuesta no-JSON: {r.text[:160]!r}")
-                    continue
-                feats = fc.get("features") if isinstance(fc, dict) else None
-                if feats is None:
-                    print(f"    JSON sin 'features': {str(fc)[:160]!r}")
-                    continue
-                print(f"    features recibidas: {len(feats)}")
-                if feats:
-                    features = feats
-                    usado = f"{url} [{capa}]"
-                    break
-            except Exception as e:
-                print(f"  EFFIS probar {url} [{capa}] -> EXCEPCIÓN: {e}")
+    features = _effis_descargar()
     if not features:
         print("  EFFIS: ninguna combinación devolvió incendios (panel vacío por ahora).")
         return []
-    print(f"  EFFIS: usando {usado} con {len(features)} features; filtrando España…")
+    print(f"  EFFIS: {len(features)} features; filtrando a España…")
 
     # 2) Filtrado a España + año en curso + >= umbral, con recuento de descartes.
     anio = str(ahora_espana().year)
