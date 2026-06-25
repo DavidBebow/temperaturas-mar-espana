@@ -86,6 +86,40 @@
     #banner-top .bt-tit{font-size:10px}
     #banner-top .bt-sub{font-size:12px}
   }
+  /* ---------- PANEL IZQUIERDO: GRANDES INCENDIOS (EFFIS) ---------- */
+  #panel-grandes{
+    position:absolute;top:14px;left:12px;z-index:550;width:238px;max-width:44%;
+    display:flex;flex-direction:column;gap:8px;pointer-events:auto;
+  }
+  #panel-grandes .pg-cab{
+    font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+    color:#ffb787;background:rgba(20,8,4,.93);border:1px solid #5a2410;
+    border-radius:10px;padding:6px 11px;
+  }
+  #panel-grandes .pg-cab small{display:block;color:#8a6a5a;font-weight:500;text-transform:none;letter-spacing:0;margin-top:1px;font-size:10px}
+  .pg-card{
+    background:linear-gradient(180deg,rgba(32,12,6,.95),rgba(22,8,4,.95));
+    border:1px solid #5a2410;border-radius:12px;padding:9px 11px;cursor:pointer;
+    transition:transform .12s ease,border-color .12s ease;
+  }
+  .pg-card:hover{transform:translateX(2px);border-color:#a8521f}
+  .pg-card .pg-zona{font-size:12.5px;font-weight:700;color:#fff3e8;line-height:1.15}
+  .pg-card .pg-prov{font-size:10.5px;color:#8a6a5a;margin-bottom:5px}
+  .pg-card .pg-ha{font-size:18px;font-weight:700;color:#ff7a3c;line-height:1}
+  .pg-card .pg-ha span{font-size:11px;color:#a8897a;font-weight:500}
+  .pg-card .pg-meta{font-size:10.5px;color:#a8897a;margin-top:5px;display:flex;flex-wrap:wrap;gap:3px 8px}
+  .pg-card .pg-ir{font-size:10.5px;color:#ffb787;margin-top:6px;font-weight:600}
+  /* En móvil: las fichas pasan a una franja inferior del mapa con scroll horizontal */
+  @media(max-width:760px){
+    #panel-grandes{
+      top:auto;bottom:0;left:0;right:0;width:auto;max-width:none;
+      flex-direction:row;gap:8px;overflow-x:auto;overflow-y:hidden;
+      padding:8px 10px 10px;-webkit-overflow-scrolling:touch;
+      background:linear-gradient(0deg,rgba(8,5,3,.96) 35%,rgba(8,5,3,0));
+    }
+    #panel-grandes .pg-cab{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;max-width:150px}
+    .pg-card{flex:0 0 auto;min-width:158px}
+  }
   /* ---------- POPUPS ---------- */
   .leaflet-popup-content-wrapper{
     background:#1a0a04 !important;border:1px solid #4a2010 !important;
@@ -375,6 +409,53 @@ function comunidadDePunto(lat, lng, geojson) {
 }
 
 // ---------------------------------------------------------------------------
+//  PANEL IZQUIERDO — GRANDES INCENDIOS (datos de EFFIS, superficie quemada).
+//  Lee data.grandes_incendios cuando el script lo provea. Para PREVISUALIZAR el
+//  diseño sin EFFIS aún conectado, abre el mapa con ?demo=1 y verás datos de ejemplo.
+// ---------------------------------------------------------------------------
+const GRANDES_EJEMPLO = [
+  { zona: 'Sant Quirze Safaja', provincia: 'Barcelona', hectareas: 1240, fecha_inicio: '2026-06-22', dias_activo: 3, tipo: 'Forestal', lat: 41.725, lon: 2.165, url: 'https://forest-fire.emergency.copernicus.eu/' },
+  { zona: 'Verín', provincia: 'Ourense', hectareas: 870, fecha_inicio: '2026-06-23', dias_activo: 2, tipo: 'Forestal / matorral', lat: 41.94, lon: -7.44, url: 'https://forest-fire.emergency.copernicus.eu/' },
+  { zona: 'Andújar', provincia: 'Jaén', hectareas: 560, fecha_inicio: '2026-06-21', dias_activo: 4, tipo: 'Forestal', lat: 38.27, lon: -4.05, url: 'https://forest-fire.emergency.copernicus.eu/' },
+  { zona: 'San Millán', provincia: 'Álava', hectareas: 310, fecha_inicio: '2026-06-24', dias_activo: 1, tipo: 'Matorral', lat: 42.93, lon: -2.35, url: 'https://forest-fire.emergency.copernicus.eu/' }
+];
+function formatFechaCorta(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: '2-digit' }).format(d);
+}
+function renderPanelGrandes(grandes) {
+  const previo = document.getElementById('panel-grandes');
+  if (previo) previo.remove();
+  if (!grandes || !grandes.length) return;
+  const panel = document.createElement('div');
+  panel.id = 'panel-grandes';
+  let html = '<div class="pg-cab">Grandes incendios activos<small>Superficie quemada · EFFIS</small></div>';
+  grandes.slice(0, 4).forEach((g, i) => {
+    const ha = Number(g.hectareas) || 0;
+    html += '<div class="pg-card" data-i="' + i + '">' +
+      '<div class="pg-zona">🔥 ' + (g.zona || 'Zona sin nombre') + '</div>' +
+      '<div class="pg-prov">' + (g.provincia || '') + '</div>' +
+      '<div class="pg-ha">' + ha.toLocaleString('es-ES') + ' <span>ha quemadas</span></div>' +
+      '<div class="pg-meta"><span>Inicio: ' + formatFechaCorta(g.fecha_inicio) + '</span>' +
+        '<span>' + (g.dias_activo || 0) + ' días activo</span>' +
+        (g.tipo ? '<span>' + g.tipo + '</span>' : '') + '</div>' +
+      '<div class="pg-ir">Ver en el mapa →</div>' +
+    '</div>';
+  });
+  panel.innerHTML = html;
+  mapa.getContainer().appendChild(panel);
+  panel.querySelectorAll('.pg-card').forEach(card => {
+    card.onclick = function() {
+      const g = grandes[+card.dataset.i];
+      if (g && g.lat && g.lon) mapa.flyTo([g.lat, g.lon], 10, { duration: 1.1 });
+      registrarInteraccion('gran_incendio_click', { zona: g.zona || '', hectareas: g.hectareas || 0 });
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
 //  CARGA RESILIENTE: timeout + reintentos + caché en el navegador.
 //  Si la descarga falla, se usa la última copia buena guardada localmente,
 //  de modo que el visitante SIEMPRE ve datos (aunque sean algo antiguos).
@@ -577,6 +658,12 @@ function renderizar(data, geojson, datosDesdeCache) {
     banner.innerHTML = '<div class="bt-tit">✓ Sin incendios activos en España ahora mismo</div>';
     banner.style.display = 'block';
   }
+
+  // Panel izquierdo de grandes incendios (EFFIS). Usa datos reales cuando existan;
+  // con ?demo=1 muestra datos de ejemplo para previsualizar el diseño.
+  let grandes = data.grandes_incendios;
+  if ((!grandes || !grandes.length) && /[?&]demo=1/.test(location.search)) grandes = GRANDES_EJEMPLO;
+  renderPanelGrandes(grandes);
 }
 
 inicializar();
