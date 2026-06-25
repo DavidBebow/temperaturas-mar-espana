@@ -14,7 +14,6 @@
     background:#0a0806;display:flex;flex-direction:column;overflow:hidden;
     -webkit-font-smoothing:antialiased;
   }
-
   /* ---------- CABECERA ---------- */
   #cabecera{
     position:relative;z-index:500;
@@ -39,7 +38,7 @@
   #resumen-nacional{font-size:12px;color:#a87a5c}
   #resumen-nacional span{color:#ff7a3c;font-weight:700}
   #ultima-actualizacion{font-size:11px;color:#7a5444}
-
+  #ultima-actualizacion.cache{color:#caa12a}
   /* ---------- LEYENDA ---------- */
   #leyenda{
     position:relative;z-index:500;
@@ -55,10 +54,8 @@
   .leyenda-cuadrado{width:11px;height:11px;border-radius:3px;border:1px solid rgba(255,255,255,.18);flex-shrink:0}
   #leyenda .sep{color:#5a3a2a}
   #leyenda .ayuda{margin-left:auto;font-size:10.5px;color:#7a5444;border:none;background:none;padding:0}
-
   /* ---------- MAPA ---------- */
   #mapa{flex:1;min-height:0;width:100%;background:#0a0806}
-
   /* ---------- POPUPS ---------- */
   .leaflet-popup-content-wrapper{
     background:#1a0a04 !important;border:1px solid #4a2010 !important;
@@ -78,7 +75,6 @@
   .popup-tag{display:inline-block;margin-top:11px;padding:4px 13px;border-radius:999px;font-size:10px;font-weight:700;color:#fff;letter-spacing:.02em}
   .fuego-val{color:#ff7a3c}
   .ok-val{color:#88cc88}
-
   /* ---------- MARCADORES DE FOCO ---------- */
   .foco-icon{background:transparent !important;border:0 !important}
   .foco-dot{
@@ -102,7 +98,6 @@
     background:radial-gradient(circle at 50% 35%, #fff 0%, #ff5a1f 62%);
     box-shadow:0 0 6px 1px rgba(255,90,25,.85);
   }
-
   /* ---------- CONTROLES ---------- */
   .leaflet-control-zoom{border:none !important;box-shadow:0 4px 16px rgba(0,0,0,.5) !important;border-radius:12px !important;overflow:hidden}
   .leaflet-control-zoom a{background:#1a0a04 !important;color:#bca08c !important;border-color:#3a1a0a !important;width:34px !important;height:34px !important;line-height:34px !important;font-size:18px !important}
@@ -111,7 +106,6 @@
   .leaflet-bar a:last-child{border-bottom-left-radius:12px !important;border-bottom-right-radius:12px !important}
   .leaflet-control-attribution{background:rgba(16,7,4,.82) !important;color:#7a5444 !important;font-size:10px !important;border-radius:8px 0 0 0 !important;padding:2px 8px !important}
   .leaflet-control-attribution a{color:#b88a6a !important}
-
   @media(max-width:600px){
     #cabecera h2{font-size:13px}
     #leyenda{font-size:10.5px;padding:8px 12px;gap:6px}
@@ -143,21 +137,26 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/incendios.json';
-const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-communities.geojson';
+// El geojson de límites se intenta primero desde tu propio dominio (súbelo una
+// vez a docs/) y, si no estuviera, desde la fuente externa de respaldo.
+const GEOJSON_URLS = [
+  'https://davidbebow.github.io/temperaturas-mar-espana/spain-communities.geojson',
+  'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-communities.geojson'
+];
+const CACHE_INCENDIOS = 'cache_incendios_v1';
+const CACHE_GEOJSON = 'cache_geojson_v1';
 
 const mapa = L.map('mapa', {
   center: [39.6, -3.5], zoom: 6, zoomControl: true,
   minZoom: 5, maxZoom: 16, worldCopyJump: false,
   preferCanvas: true, zoomSnap: 1, zoomDelta: 1, wheelDebounceTime: 30, wheelPxPerZoomLevel: 90
 });
-
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
   attribution: '© Esri | Datos: NASA FIRMS VIIRS', maxZoom: 16, noWrap: true
 }).addTo(mapa);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
   attribution: '', maxZoom: 16, opacity: 0.5, noWrap: true
 }).addTo(mapa);
-
 const NOMBRE_A_ID = {
   'Andalucía': 'andalucia', 'Andalucia': 'andalucia', 'Aragón': 'aragon', 'Aragon': 'aragon',
   'Asturias': 'asturias', 'Principado de Asturias': 'asturias', 'Islas Baleares': 'baleares', 'Illes Balears': 'baleares',
@@ -168,7 +167,6 @@ const NOMBRE_A_ID = {
   'Navarra': 'navarra', 'Comunidad Foral de Navarra': 'navarra', 'País Vasco': 'pais_vasco', 'Euskadi': 'pais_vasco',
   'Ceuta': 'ceuta', 'Melilla': 'melilla'
 };
-
 function colorFondo(focos) {
   if (focos === 0) return '#1f3a26';
   if (focos <= 5) return '#caa12a';
@@ -248,7 +246,6 @@ function crearIconoFoco(frp) {
   const html = `<span class="foco-dot${pulsa}" style="width:${size}px;height:${size}px;--c:${core};--gc:${glow};box-shadow:0 0 ${blur}px ${spread}px ${glow}, 0 1px 2px rgba(0,0,0,.45)"></span>`;
   return L.divIcon({ html, className: 'foco-icon', iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2 - 3] });
 }
-
 // --- Comunidad real de cada foco por geometría (point-in-polygon) ---
 function puntoEnAnillo(lat, lng, anillo) {
   let dentro = false;
@@ -280,19 +277,99 @@ function comunidadDePunto(lat, lng, geojson) {
   return null;
 }
 
-Promise.all([
-  fetch(JSON_URL + '?t=' + Date.now()).then(r => r.json()),
-  fetch(GEOJSON_URL).then(r => r.json())
-]).then(([data, geojson]) => {
+// ---------------------------------------------------------------------------
+//  CARGA RESILIENTE: timeout + reintentos + caché en el navegador.
+//  Si la descarga falla, se usa la última copia buena guardada localmente,
+//  de modo que el visitante SIEMPRE ve datos (aunque sean algo antiguos).
+// ---------------------------------------------------------------------------
+function leerCache(clave) {
+  try {
+    const txt = localStorage.getItem(clave);
+    return txt ? JSON.parse(txt) : null;
+  } catch (e) { return null; }
+}
+function guardarCache(clave, data) {
+  try { localStorage.setItem(clave, JSON.stringify(data)); } catch (e) {}
+}
+async function fetchConTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally {
+    clearTimeout(t);
+  }
+}
+// Intenta varias URLs en orden, con un reintento cada una. Devuelve null si todas fallan.
+async function cargarRemoto(urls, { reintentos = 2, timeout = 12000 } = {}) {
+  for (const url of urls) {
+    for (let i = 0; i < reintentos; i++) {
+      try {
+        return await fetchConTimeout(url, timeout);
+      } catch (e) {
+        console.warn('Fallo al cargar', url, '(intento', i + 1, ')', e.message);
+      }
+    }
+  }
+  return null;
+}
+
+async function inicializar() {
+  // 1) Datos de incendios: remoto -> caché.
+  let data = await cargarRemoto([JSON_URL + '?t=' + Date.now()], { reintentos: 2 });
+  let datosDesdeCache = false;
+  if (data && Array.isArray(data.comunidades)) {
+    guardarCache(CACHE_INCENDIOS, data);
+  } else {
+    data = leerCache(CACHE_INCENDIOS);
+    datosDesdeCache = !!data;
+  }
+
+  // 2) Límites de comunidades: propio -> externo -> caché.
+  let geojson = await cargarRemoto(GEOJSON_URLS, { reintentos: 2 });
+  if (geojson && Array.isArray(geojson.features)) {
+    guardarCache(CACHE_GEOJSON, geojson);
+  } else {
+    geojson = leerCache(CACHE_GEOJSON);
+  }
+
+  // Sin límites no se puede dibujar el mapa de comunidades.
+  if (!geojson) {
+    document.getElementById('resumen-nacional').textContent = 'No se pudo cargar el mapa. Reintentando…';
+    setTimeout(inicializar, 20000); // reintento automático en segundo plano
+    return;
+  }
+  // Si no hay datos de incendios, pintamos el mapa vacío (todo "sin detecciones")
+  // en vez de dejar la pantalla en blanco.
+  if (!data || !Array.isArray(data.comunidades)) {
+    data = { comunidades: [], focos_individuales: [], total_focos_espana: 0, comunidades_con_fuego: 0, ventana_activa_horas: 48, fecha_legible: '' };
+    datosDesdeCache = false;
+  }
+
+  renderizar(data, geojson, datosDesdeCache);
+}
+
+function renderizar(data, geojson, datosDesdeCache) {
   const datosMap = {};
   data.comunidades.forEach(c => { datosMap[c.id] = c; });
   const totalFocos = data.total_focos_espana || 0;
   const conFuego = data.comunidades_con_fuego || 0;
   const horas = data.ventana_activa_horas || 48;
+
   document.getElementById('resumen-nacional').innerHTML = conFuego > 0
     ? `<span>${conFuego} comunidades</span> con detecciones · <span>${totalFocos} focos</span> en ${horas} h`
     : `✓ Sin detecciones recientes en España`;
-  document.getElementById('ultima-actualizacion').textContent = 'Actualizado: ' + data.fecha_legible;
+
+  const elFecha = document.getElementById('ultima-actualizacion');
+  if (data.fecha_legible) {
+    elFecha.textContent = (datosDesdeCache ? '⚠ Última copia guardada: ' : 'Actualizado: ') + data.fecha_legible;
+  } else {
+    elFecha.textContent = '';
+  }
+  elFecha.classList.toggle('cache', datosDesdeCache);
+
   let primerLayer = null;
   const capaGeojson = L.geoJSON(geojson, {
     style: function(feature) {
@@ -325,11 +402,11 @@ Promise.all([
     if (comunidadReal) f.comunidad = comunidadReal;
     L.marker([f.lat, f.lon], { icon: crearIconoFoco(f.frp) }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270 });
   });
+
   if (primerLayer) setTimeout(() => primerLayer.openPopup(), 900);
-}).catch(err => {
-  console.error('Error:', err);
-  document.getElementById('resumen-nacional').textContent = 'Error al cargar datos';
-});
+}
+
+inicializar();
 
 // Reajusta el encuadre si cambia el tamaño del marco (responsive iframe)
 window.addEventListener('resize', () => { mapa.invalidateSize(); });
