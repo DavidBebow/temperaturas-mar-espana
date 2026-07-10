@@ -74,7 +74,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-let M=[], MAX={c:60,n:80,s:12}, map, layer;
+let M=[], MAX={c:60,n:80,s:12}, map, layer, current=null;
 
 fetch('municipios.json?_='+Date.now()).then(r=>r.json()).then(j=>{
   M=j.items||[];
@@ -84,8 +84,15 @@ fetch('municipios.json?_='+Date.now()).then(r=>r.json()).then(j=>{
   const def=M.find(x=>x.n==='Madrid')||M[0];
   if(def) document.getElementById('result').style.display='grid';
   initMap();
-  if(def){show(def); setTimeout(()=>map.invalidateSize(),200);}
+  if(def) show(def);
+  [80,300,800,1500].forEach(t=>setTimeout(refreshMap,t));
 }).catch(e=>{document.getElementById('err').style.display='block';document.getElementById('err').textContent='No se pudo cargar municipios.json';console.error(e);});
+window.addEventListener('load',refreshMap);
+window.addEventListener('resize',refreshMap);
+function recenter(){ if(!map||!current) return;
+  if(current.alat!=null) map.fitBounds([[current.lat,current.lon],[current.alat,current.alon]],{padding:[60,60],maxZoom:7});
+  else map.setView([current.lat,current.lon],8); }
+function refreshMap(){ if(map){ map.invalidateSize(); recenter(); } }
 
 function initMap(){
   map=L.map('map',{minZoom:4,maxZoom:9}).setView([39.5,-3.5],5);
@@ -98,23 +105,26 @@ function metric(icon,name,h,f,max){
   return '<div class="metric"><div class="top"><span class="nm">'+icon+' '+name+'</span><span class="delta">+'+(Math.round((f-h)*10)/10)+'</span></div>'+
     '<div class="bars">'+bar('hoy',h,max,'#bdb5ab')+bar('2050',f,max,'#e0531f')+'</div></div>';}
 function show(c){
+  current=c;
   document.getElementById('result').style.display='grid';
-  if(map) map.invalidateSize();
   document.getElementById('card').innerHTML=
     '<div class="when">El clima de</div><h2>'+c.n+' en 2050</h2>'+
     '<div class="analog"><div class="k">Se parecerá al de hoy en</div><div class="big">Tendrá un clima parecido al que hoy tiene <b>'+(c.an||'—')+'</b></div></div>'+
     metric('🔥','Días de calor extremo (&gt;35°C)',c.ch,c.c5,MAX.c)+
     metric('🌙','Noches tropicales (&gt;20°C)',c.nh,c.n5,MAX.n)+
     metric('💧','Meses secos al año',c.sh,c.s5,MAX.s);
+  if(!map) return;
+  map.invalidateSize();
   layer.clearLayers();
   const a=[c.lat,c.lon];
   L.circleMarker(a,{radius:9,color:'#fff',weight:2,fillColor:'#e0531f',fillOpacity:1}).addTo(layer).bindTooltip(c.n,{permanent:true,direction:'top'});
   if(c.alat!=null){const b=[c.alat,c.alon];
     L.polyline([a,b],{color:'#e0531f',weight:2.5,dashArray:'6 6',opacity:.8}).addTo(layer);
     L.circleMarker(b,{radius:7,color:'#fff',weight:2,fillColor:'#b23410',fillOpacity:1}).addTo(layer).bindTooltip(c.an);
-    map.fitBounds([a,b],{padding:[60,60],maxZoom:7});
     document.getElementById('maptip').textContent='El clima de '+c.n+' "viaja" hacia el de '+c.an+'.';
-  } else { map.setView(a,8); document.getElementById('maptip').textContent=''; }
+  } else { document.getElementById('maptip').textContent=''; }
+  recenter();
+  setTimeout(refreshMap,150);
 }
 
 const q=document.getElementById('q'), sg=document.getElementById('sugg');
