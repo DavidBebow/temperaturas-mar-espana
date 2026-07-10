@@ -46,6 +46,10 @@ TZ_ESPANA = ZoneInfo("Europe/Madrid")
 REINTENTOS_FIRMS = 3
 ESPERA_REINTENTO = 8  # segundos entre reintentos
 
+# Interruptor de EFFIS: APARCADO por ahora (su servidor WFS no responde de forma
+# fiable). El código se conserva intacto; para reactivarlo, pon True.
+EFFIS_ACTIVO = False
+
 # -------- EFFIS (Copernicus): grandes incendios con superficie quemada --------
 # Servicio WFS de EFFIS. Probamos varias combinaciones de servidor + capa y
 # DEJAMOS DIAGNÓSTICO EN EL LOG (código HTTP, nº de features) para localizar la
@@ -57,6 +61,13 @@ EFFIS_CAPAS = ["ms:modis.ba.poly", "modis.ba.poly", "ms:nrt.ba.poly", "nrt.ba.po
 EFFIS_FORMATOS = ["application/json", "geojson"]  # MapServer a veces solo acepta 'geojson'
 EFFIS_UMBRAL_HA = 30              # solo incendios de 30 ha o más
 EFFIS_MAX = 4                     # cuántas fichas mostrar en el panel
+
+# -------- Histórico de intensidad (FRP) por celda para la gráfica temporal ----
+# Cada foco se asigna a una celda de ~2 km; por celda guardamos la serie de FRP
+# (máximo por instante de detección) para poder dibujar su evolución en el tiempo.
+FRP_CELDA_GRADOS = 0.02      # tamaño de celda (~2 km)
+FRP_HISTORIAL_DIAS = 14      # cuánto histórico se conserva por celda
+FRP_MAX_PUNTOS = 300         # tope de puntos por celda
 
 
 def ahora_utc():
@@ -259,6 +270,69 @@ def actualizar_historial(dias_con_fuego_actual):
     return historial
 
 
+def celda_frp(lat, lon):
+    """Identificador de celda (~2 km) estable para agrupar detecciones del mismo
+    fuego entre pasadas. La página usa el mismo id (viene en cada foco)."""
+    return f"{round(lat / FRP_CELDA_GRADOS)}_{round(lon / FRP_CELDA_GRADOS)}"
+
+
+def actualizar_historial_frp(focos_recientes):
+    """Acumula, por celda, la serie temporal de FRP (máximo por instante de
+    detección) en docs/historial_frp.json. Recorta a FRP_HISTORIAL_DIAS días.
+    Tolerante a fallos: ante cualquier problema no rompe el resto."""
+    ruta = "docs/historial_frp.json"
+    try:
+        if os.path.exists(ruta):
+            with open(ruta, "r", encoding="utf-8") as f:
+                hist = json.load(f)
+        else:
+            hist = {}
+    except Exception:
+        hist = {}
+
+    # índice {celda: {t: frp_max}} a partir de lo ya guardado
+    idx = {}
+    for celda, puntos in (hist.items() if isinstance(hist, dict) else []):
+        idx[celda] = {p["t"]: p["frp"] for p in puntos if isinstance(p, dict) and "t" in p and "frp" in p}
+
+    # mezclar las detecciones de esta pasada (máximo por celda+instante)
+    for f in focos_recientes:
+        t = f.get("deteccion_utc")
+        if not t:
+            continue
+        try:
+            celda = celda_frp(f["lat"], f["lon"])
+            frp = float(f.get("frp") or 0)
+        except (KeyError, TypeError, ValueError):
+            continue
+        d = idx.setdefault(celda, {})
+        if t not in d or frp > d[t]:
+            d[t] = frp
+
+    # recorte temporal + serialización ordenada
+    limite = ahora_utc() - timedelta(days=FRP_HISTORIAL_DIAS)
+    nuevo = {}
+    for celda, d in idx.items():
+        serie = []
+        for t, frp in d.items():
+            try:
+                ti = datetime.fromisoformat(str(t).replace("Z", "+00:00"))
+            except Exception:
+                continue
+            if ti >= limite:
+                serie.append({"t": t, "frp": round(float(frp), 1)})
+        if serie:
+            serie.sort(key=lambda x: x["t"])
+            nuevo[celda] = serie[-FRP_MAX_PUNTOS:]
+
+    try:
+        escribir_json_atomico(ruta, nuevo)
+        print(f"  Histórico FRP: {len(nuevo)} celdas con serie temporal")
+    except Exception as e:
+        print(f"  Histórico FRP: no se pudo guardar ({e})")
+    return nuevo
+
+
 def calcular_estadisticas(historial, cid):
     entradas = historial.get(cid, [])
     if not entradas:
@@ -321,6 +395,9 @@ def _effis_descargar():
     de features de la primera que funcione. Pide la respuesta SIN comprimir
     (Accept-Encoding: identity) y reintenta, para evitar el 'IncompleteRead'
     típico de ese servidor. Deja diagnóstico detallado en el log."""
+    if not EFFIS_ACTIVO:
+        print("  EFFIS: desactivado (aparcado). Para reactivar: EFFIS_ACTIVO = True.")
+        return []
     cabeceras = {
         "User-Agent": "Mozilla/5.0 (compatible; calentamientoglobal.es/incendios)",
         "Accept": "application/json, application/geo+json, */*",
@@ -488,7 +565,11 @@ def generar_json():
             "lugar": nombre,
             "deteccion_utc": foco["deteccion_utc"],
             "sensor": foco["sensor"],
+            "celda": celda_frp(foco["lat"], foco["lon"]),
         })
+
+    # Acumula la serie temporal de FRP por celda (para la gráfica del popup).
+    actualizar_historial_frp(todos_focos_recientes)
 
     resultados = []
     for c in COMUNIDADES:
