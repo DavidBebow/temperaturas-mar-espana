@@ -67,7 +67,7 @@ jobs:
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
           git pull --rebase --autostash
-          git add docs/incendios.json docs/historial_incendios.json
+          git add docs/incendios.json docs/historial_incendios.json docs/historial_frp.json
           if git diff --staged --quiet; then
             echo "No hay cambios que guardar"
           else
