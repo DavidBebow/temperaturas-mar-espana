@@ -80,10 +80,11 @@ fetch('municipios.json?_='+Date.now()).then(r=>r.json()).then(j=>{
   M=j.items||[];
   if((j.meta&&j.meta.fuente||'').includes('Open-Meteo')) document.getElementById('demo').textContent='DATOS REALES · '+M.length+' MUNICIPIOS · OPEN-METEO CMIP6';
   MAX={c:Math.max(60,...M.map(x=>x.c5)),n:Math.max(80,...M.map(x=>x.n5)),s:12};
-  initMap();
   document.getElementById('q').disabled=false;
   const def=M.find(x=>x.n==='Madrid')||M[0];
-  if(def){document.getElementById('result').style.display='grid';show(def);}
+  if(def) document.getElementById('result').style.display='grid';
+  initMap();
+  if(def){show(def); setTimeout(()=>map.invalidateSize(),200);}
 }).catch(e=>{document.getElementById('err').style.display='block';document.getElementById('err').textContent='No se pudo cargar municipios.json';console.error(e);});
 
 function initMap(){
@@ -98,6 +99,7 @@ function metric(icon,name,h,f,max){
     '<div class="bars">'+bar('hoy',h,max,'#bdb5ab')+bar('2050',f,max,'#e0531f')+'</div></div>';}
 function show(c){
   document.getElementById('result').style.display='grid';
+  if(map) map.invalidateSize();
   document.getElementById('card').innerHTML=
     '<div class="when">El clima de</div><h2>'+c.n+' en 2050</h2>'+
     '<div class="analog"><div class="k">Se parecerá al de hoy en</div><div class="big">Tendrá un clima parecido al que hoy tiene <b>'+(c.an||'—')+'</b></div></div>'+
