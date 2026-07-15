@@ -1,0 +1,33 @@
+name: firma-precalculo-climatologias
+
+# Se lanza A MANO (Run workflow). Solo hace falta una vez,
+# y repetirlo una vez al año (enero) para incorporar el año cerrado.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  precalcular:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Precalcular climatologías (52 capitales, ERA5 1940–2025)
+        run: python scripts/firma_precalcular.py
+
+      - name: Guardar climatologías
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/firma_clim/
+          git commit -m "Firma Climática: climatologías precalculadas" || echo "Sin cambios"
+          git push
