@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El tiempo en la Antártida en tiempo real · Temperatura y clima hoy</title>
+<meta name="description" content="Temperatura y clima de la Antártida en tiempo real: qué grados hace hoy en el Polo Sur, Vostok, la base Esperanza y las bases españolas Juan Carlos I y Gabriel de Castilla. Datos actualizados con Open-Meteo.">
+<style>
+  :root{--ink:#1a1410;--soft:#7a6f66;--line:#ece7df;--bg2:#faf7f2;--card:#fff;--hot:#e0531f;--accent:#e0531f;
+    --ice:#2b7bb5;--ice2:#1a5c8f;--icebg:#eef6fc;--iceline:#cfe4f3;--cold:#3a8fce;--warm:#e0531f;}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#fff;color:var(--ink);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:34px 18px 40px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice);font-weight:700;text-align:center}
+  h1{font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.1;text-align:center;margin:10px 0 8px}
+  .sub{font-size:17px;color:var(--soft);text-align:center;max-width:640px;margin:0 auto 8px}
+  .live{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;letter-spacing:.12em;
+    color:var(--ice);margin:14px 0 0;font-weight:700;text-transform:uppercase}
+  .dot{width:8px;height:8px;border-radius:50%;background:#2fbf6b;box-shadow:0 0 0 0 rgba(47,191,107,.5);animation:p 2s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(47,191,107,.5)}70%{box-shadow:0 0 0 8px rgba(47,191,107,0)}100%{box-shadow:0 0 0 0 rgba(47,191,107,0)}}
+
+  .extremes{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:640px;margin:26px auto 0}
+  @media(max-width:620px){.extremes{grid-template-columns:1fr}}
+  .ex{border-radius:16px;padding:16px 18px;border:1px solid var(--line)}
+  .ex.cold{background:linear-gradient(135deg,#eef6fc,#dcecf8);border-color:var(--iceline)}
+  .ex.warm{background:linear-gradient(135deg,#fff3ec,#ffe7da);border-color:#f3d4c4}
+  .ex .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+  .ex.cold .k{color:var(--ice2)}.ex.warm .k{color:#b23410}
+  .ex .big{font-size:22px;font-weight:800;letter-spacing:-.01em;margin-top:4px;line-height:1.2}
+  .ex .who{font-size:13px;color:var(--soft);margin-top:2px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:30px}
+  @media(max-width:720px){h1{font-size:30px}.grid{grid-template-columns:1fr}}
+  .st{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px 22px;box-shadow:0 14px 40px rgba(60,40,20,.06);position:relative;overflow:hidden}
+  .st .flag{font-size:20px}
+  .st .name{font-size:18px;font-weight:800;letter-spacing:-.01em;margin:2px 0 1px}
+  .st .place{font-size:12.5px;color:var(--soft)}
+  .st .row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:14px;gap:10px}
+  .st .temp{font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .st .cond{font-size:13px;color:var(--soft);text-align:right}
+  .st .cond .ico{font-size:26px;display:block}
+  .st .meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:16px;font-size:13px;border-top:1px solid var(--line);padding-top:12px}
+  .st .meta b{font-weight:700}
+  .st .meta .lab{color:var(--soft)}
+  .st .htitle{grid-column:1 / -1;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ice2);font-weight:700;margin-top:6px}
+  .st .meta .cd{color:var(--ice2);font-weight:700}
+  .st .meta .wm{color:var(--warm);font-weight:700}
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;margin-top:10px}
+  .badge.night{background:#eceff4;color:#4c5a6b}
+  .badge.day{background:#fff4d6;color:#a6790a}
+  .badge.es{background:#eef6fc;color:var(--ice2);border:1px solid var(--iceline)}
+  .st .load{color:var(--soft);font-size:14px;padding:8px 0}
+  .note{max-width:820px;margin:34px auto 0;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:18px 20px;font-size:14px;color:#40372f}
+  .note b{color:var(--ink)}
+  h2.sec{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:44px 0 4px;text-align:center}
+  .sec-sub{font-size:15px;color:var(--soft);text-align:center;margin:0 auto 20px;max-width:600px}
+  .recs{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:820px;margin:0 auto}
+  @media(max-width:620px){.recs{grid-template-columns:1fr}}
+  .rec{border-radius:16px;padding:18px;border:1px solid var(--line);background:#fff}
+  .rec .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--soft)}
+  .rec .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
+  .rec.cold .v{color:var(--ice2)}.rec.warm .v{color:var(--warm)}
+  .rec .d{font-size:13px;color:var(--soft)}
+  .faq{max-width:820px;margin:12px auto 0}
+  .faq details{border-bottom:1px solid var(--line);padding:4px 0}
+  .faq summary{cursor:pointer;font-weight:700;font-size:16px;padding:14px 4px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:'+';color:var(--ice);font-weight:800;font-size:20px}
+  .faq details[open] summary::after{content:'–'}
+  .faq p{margin:0 4px 14px;color:#40372f}
+  .src{font-size:12px;color:var(--soft);text-align:center;margin-top:34px;border-top:1px solid var(--line);padding-top:18px}
+  .src a{color:var(--ice2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">🧊 Observatorio climático</div>
+  <h1>El tiempo en la Antártida, en tiempo real</h1>
+  <p class="sub">Qué temperatura hace ahora mismo en el continente más frío del planeta: del Polo Sur y Vostok a la base Esperanza y las dos bases científicas españolas. Datos actualizados en directo.</p>
+  <div class="live"><span class="dot"></span><span id="updated">Cargando datos…</span></div>
+
+  <div class="extremes">
+    <div class="ex cold"><div class="k">🥶 El punto más frío ahora</div><div class="big" id="coldV">—</div><div class="who" id="coldW"></div></div>
+    <div class="ex warm"><div class="k">🌡️ El menos frío ahora</div><div class="big" id="warmV">—</div><div class="who" id="warmW"></div></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="note" id="polarnote"></div>
+
+  <h2 class="sec">Los récords de temperatura de la Antártida</h2>
+  <p class="sec-sub">El continente que guarda a la vez el mayor frío y algunos de los calentamientos más rápidos de la Tierra.</p>
+  <div class="recs">
+    <div class="rec cold"><div class="k">Temperatura más baja registrada</div><div class="v">−89,2 °C</div><div class="d">Base Vostok · 21 de julio de 1983. El registro más frío de la superficie terrestre. Por satélite se han estimado −93 °C en la meseta antártica.</div></div>
+    <div class="rec warm"><div class="k">Temperatura más alta registrada</div><div class="v">+18,3 °C</div><div class="d">Base Esperanza · 6 de febrero de 2020, récord del continente antártico validado por la OMM. En junio de 2026 la misma base marcó 15,4 °C en pleno invierno austral, +20 °C sobre lo normal.</div></div>
+  </div>
+
+  <h2 class="sec">Preguntas frecuentes</h2>
+  <div class="faq">
+    <details open><summary>¿Qué temperatura hace hoy en la Antártida?</summary><p>Depende de la zona: la costa de la Península Antártica (donde están las bases españolas y la argentina Esperanza) es mucho más templada que el interior. En invierno austral la costa suele moverse entre 0 y −25 °C, mientras que la meseta interior —Vostok, Concordia, el Polo Sur— baja habitualmente de −60 °C. Arriba tienes el valor exacto de cada estación, actualizado en directo.</p></details>
+    <details><summary>¿Cuál es la temperatura más baja de la Antártida?</summary><p>El récord oficial de temperatura del aire en superficie es de −89,2 °C, medido en la base rusa Vostok el 21 de julio de 1983. Es también la temperatura más baja jamás registrada en la Tierra. Mediciones por satélite han estimado incluso −93 °C en zonas de la meseta antártica oriental.</p></details>
+    <details><summary>¿Cuál es la temperatura más alta registrada en la Antártida?</summary><p>El récord del continente antártico es de 18,3 °C, registrado en la base Esperanza el 6 de febrero de 2020 y validado por la Organización Meteorológica Mundial. La Península Antártica es una de las regiones que más rápido se calienta del planeta.</p></details>
+    <details><summary>¿Por qué la Antártida está tan oscura ahora?</summary><p>Porque en julio es pleno invierno austral. En latitudes altas del sur el Sol no llega a salir durante semanas o meses: es la noche polar. Por eso muchas estaciones marcan «noche polar» aunque sea de día en España. La luz volverá con la primavera austral, hacia septiembre-octubre.</p></details>
+    <details><summary>¿Tiene España bases en la Antártida?</summary><p>Sí. España opera dos bases antárticas de campaña, activas sobre todo durante el verano austral: la Base Juan Carlos I, en la Isla Livingston (Islas Shetland del Sur), y la Base Gabriel de Castilla, en la Isla Decepción, un volcán activo. Ambas realizan investigación científica y aparecen en la parte superior de esta página.</p></details>
+    <details><summary>¿De dónde salen estos datos?</summary><p>De la API meteorológica de Open-Meteo, que combina modelos globales de predicción y reanálisis para ofrecer el tiempo actual de cualquier punto del planeta. Los récords históricos proceden de la Organización Meteorológica Mundial (OMM) y del Servicio Meteorológico Nacional argentino.</p></details>
+  </div>
+
+  <p class="src">Datos en tiempo real: <a href="https://open-meteo.com/" rel="nofollow">Open-Meteo</a> · Récords: <a href="https://public.wmo.int/es" rel="nofollow">Organización Meteorológica Mundial</a> · Parte del <a href="https://calentamientoglobal.es/observatorio-climatico/">Observatorio climático de calentamientoglobal.es</a>.</p>
+</div>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"¿Qué temperatura hace hoy en la Antártida?","acceptedAnswer":{"@type":"Answer","text":"Depende de la zona. La costa de la Península Antártica es mucho más templada que el interior. En invierno austral la costa suele moverse entre 0 y −25 °C, mientras que la meseta interior (Vostok, Concordia, Polo Sur) baja habitualmente de −60 °C."}},
+{"@type":"Question","name":"¿Cuál es la temperatura más baja de la Antártida?","acceptedAnswer":{"@type":"Answer","text":"El récord oficial es de −89,2 °C, medido en la base Vostok el 21 de julio de 1983, la temperatura del aire más baja registrada en la Tierra."}},
+{"@type":"Question","name":"¿Cuál es la temperatura más alta registrada en la Antártida?","acceptedAnswer":{"@type":"Answer","text":"El récord del continente antártico es de 18,3 °C, en la base Esperanza el 6 de febrero de 2020, validado por la OMM."}},
+{"@type":"Question","name":"¿Tiene España bases en la Antártida?","acceptedAnswer":{"@type":"Answer","text":"Sí: la Base Juan Carlos I en la Isla Livingston y la Base Gabriel de Castilla en la Isla Decepción, ambas de campaña y activas sobre todo en verano austral."}}
+]}
+</script>
+
+<script>
+const STATIONS=[
+  {n:"Base Juan Carlos I",p:"España · Isla Livingston",fl:"🇪🇸",lat:-62.663,lon:-60.389,es:true},
+  {n:"Base Gabriel de Castilla",p:"España · Isla Decepción",fl:"🇪🇸",lat:-62.977,lon:-60.675,es:true},
+  {n:"Base Esperanza",p:"Argentina · Península Antártica",fl:"🇦🇷",lat:-63.4,lon:-56.99},
+  {n:"Polo Sur (Amundsen-Scott)",p:"EE. UU. · 90° Sur",fl:"🇺🇸",lat:-89.99,lon:0},
+  {n:"Base Vostok",p:"Rusia · Meseta antártica",fl:"🇷🇺",lat:-78.46,lon:106.84},
+  {n:"Concordia (Dome C)",p:"Francia / Italia · Interior",fl:"🇪🇺",lat:-75.10,lon:123.33},
+  {n:"McMurdo",p:"EE. UU. · Mar de Ross",fl:"🇺🇸",lat:-77.85,lon:166.67}
+];
+const WMO={0:["Despejado","☀️"],1:["Poco nuboso","🌤️"],2:["Parcialmente nuboso","⛅"],3:["Nuboso","☁️"],
+  45:["Niebla","🌫️"],48:["Niebla helada","🌫️"],51:["Llovizna","🌧️"],53:["Llovizna","🌧️"],55:["Llovizna intensa","🌧️"],
+  56:["Llovizna helada","🌧️"],57:["Llovizna helada","🌧️"],61:["Lluvia","🌧️"],63:["Lluvia","🌧️"],65:["Lluvia intensa","🌧️"],
+  66:["Lluvia helada","🌧️"],67:["Lluvia helada","🌧️"],71:["Nieve","🌨️"],73:["Nieve","🌨️"],75:["Nieve intensa","❄️"],
+  77:["Cristales de hielo","❄️"],80:["Chubascos","🌦️"],81:["Chubascos","🌦️"],82:["Chubascos fuertes","🌦️"],
+  85:["Chubascos de nieve","🌨️"],86:["Chubascos de nieve","🌨️"],95:["Tormenta","⛈️"],99:["Tormenta con granizo","⛈️"]};
+const fmt=t=>(t>0?"+":"")+(Math.round(t*10)/10).toString().replace(".",",")+" °C";
+const grid=document.getElementById('grid');
+let results=[];
+
+STATIONS.forEach((s,i)=>{
+  const el=document.createElement('div');el.className='st';el.id='st'+i;
+  el.innerHTML=`<span class="flag">${s.fl}</span> <span class="place">${s.p}</span>
+    <div class="name">${s.n}</div>${s.es?'<span class="badge es">Base española</span>':''}
+    <div class="load">Cargando el tiempo…</div>`;
+  grid.appendChild(el);
+});
+
+const pair=(mx,mn)=>`<b><span class="wm">${mx!=null?fmt(mx):'—'}</span> / <span class="cd">${mn!=null?fmt(mn):'—'}</span></b>`;
+function mm(arr){const v=(arr||[]).filter(x=>x!=null&&!isNaN(x));return v.length?{max:Math.max(...v),min:Math.min(...v)}:{max:null,min:null};}
+
+function card(s,i,o){
+  const c=o.cur||{};
+  const wc=WMO[c.weather_code]||["—","🌡️"];
+  const night=c.is_day===0;
+  const lt=c.time?c.time.slice(11,16):"—";
+  return `<span class="flag">${s.fl}</span> <span class="place">${s.p}</span>
+    <div class="name">${s.n}</div>
+    ${s.es?'<span class="badge es">Base española</span>':''}
+    <span class="badge ${night?'night':'day'}">${night?'🌑 Noche polar':'☀️ Con luz'}</span>
+    <div class="row"><div class="temp">${fmt(c.temperature_2m)}</div>
+      <div class="cond"><span class="ico">${wc[1]}</span>${wc[0]}</div></div>
+    <div class="meta">
+      <div><span class="lab">Sensación</span> <b>${fmt(c.apparent_temperature)}</b></div>
+      <div><span class="lab">Viento</span> <b>${Math.round(c.wind_speed_10m)} km/h</b></div>
+      <div><span class="lab">Máx./mín. hoy</span> ${pair(o.todayMax,o.todayMin)}</div>
+      <div><span class="lab">Hora local</span> <b>${lt}</b></div>
+      <div class="htitle">Máx. / mín. históricas</div>
+      <div><span class="lab">Ayer</span> ${pair(o.yMax,o.yMin)}</div>
+      <div><span class="lab">Este mes</span> ${pair(o.monthMax,o.monthMin)}</div>
+      <div><span class="lab">Este año</span> ${pair(o.yearMax,o.yearMin)}</div>
+    </div>`;
+}
+
+const iso=d=>d.toISOString().slice(0,10);
+
+async function load(){
+  const now=new Date();
+  const yStart=iso(new Date(now.getFullYear(),0,1));
+  const end=iso(now);
+  const curMonth=now.getMonth();
+  await Promise.all(STATIONS.map(async (s,i)=>{
+    const fUrl=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lon}`+
+      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_gusts_10m`+
+      `&daily=temperature_2m_max,temperature_2m_min&timezone=auto&past_days=2&forecast_days=1`;
+    const aUrl=`https://archive-api.open-meteo.com/v1/archive?latitude=${s.lat}&longitude=${s.lon}`+
+      `&start_date=${yStart}&end_date=${end}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+    try{
+      const [fr,ar]=await Promise.all([fetch(fUrl),fetch(aUrl).catch(()=>null)]);
+      const f=await fr.json();
+      const a=ar?await ar.json().catch(()=>null):null;
+      const fd=f.daily||{}, ft=fd.time||[];
+      // hoy = última fecha; ayer = penúltima disponible
+      const todayStr=iso(now);
+      let ti=ft.indexOf(todayStr); if(ti<0) ti=ft.length-1;
+      const yi=ti-1;
+      const o={cur:f.current||{},
+        todayMax:fd.temperature_2m_max?fd.temperature_2m_max[ti]:null,
+        todayMin:fd.temperature_2m_min?fd.temperature_2m_min[ti]:null,
+        yMax:(yi>=0&&fd.temperature_2m_max)?fd.temperature_2m_max[yi]:null,
+        yMin:(yi>=0&&fd.temperature_2m_min)?fd.temperature_2m_min[yi]:null};
+      if(a&&a.daily&&a.daily.time){
+        const at=a.daily.time, amx=a.daily.temperature_2m_max, amn=a.daily.temperature_2m_min;
+        const yr=mm(amx), yrn=mm(amn);
+        o.yearMax=yr.max; o.yearMin=yrn.min;
+        const mMax=[],mMin=[];
+        at.forEach((ds,k)=>{ if(new Date(ds+'T00:00').getMonth()===curMonth){mMax.push(amx[k]);mMin.push(amn[k]);} });
+        o.monthMax=mm(mMax).max; o.monthMin=mm(mMin).min;
+      }
+      document.getElementById('st'+i).innerHTML=card(s,i,o);
+      if(o.cur&&o.cur.temperature_2m!=null) results.push({s,t:o.cur.temperature_2m});
+    }catch(e){
+      document.getElementById('st'+i).innerHTML=
+        `<span class="flag">${s.fl}</span> <span class="place">${s.p}</span><div class="name">${s.n}</div>
+         <div class="load">No se pudo cargar ahora mismo.</div>`;
+    }
+  }));
+  if(results.length){
+    results.sort((a,b)=>a.t-b.t);
+    const cold=results[0], warm=results[results.length-1];
+    document.getElementById('coldV').textContent=fmt(cold.t);
+    document.getElementById('coldW').textContent=cold.s.n;
+    document.getElementById('warmV').textContent=fmt(warm.t);
+    document.getElementById('warmW').textContent=warm.s.n;
+    const diff=Math.round(warm.t-cold.t);
+    document.getElementById('polarnote').innerHTML=
+      `<b>Ahora mismo hay unos ${diff} °C de diferencia</b> entre el punto más frío y el menos frío de estas estaciones. `+
+      `Esa brecha ilustra por qué no existe «una» temperatura de la Antártida: la costa de la Península —donde están las bases españolas— `+
+      `puede rondar valores casi templados mientras el interior, en la meseta, se hunde decenas de grados por debajo. `+
+      `En julio, además, buena parte del continente vive la <b>noche polar</b>: el Sol no sale durante semanas.`;
+  }
+  document.getElementById('updated').textContent='Datos actualizados · '+
+    new Date().toLocaleString('es-ES',{day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'});
+}
+load();
+</script>
+</body>
+</html>
