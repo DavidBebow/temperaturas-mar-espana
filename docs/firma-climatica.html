@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firma Climática · ¿Cuánto cambio climático hay en el calor de hoy?</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#13203a; --panel2:#172847; --ink:#eaf1ff; --muted:#9fb2d0;
+    --line:#22344f; --accent:#22d3ee;
+    --c-neg:#38bdf8; --c-0:#94a3b8; --c-1:#fde047; --c-2:#facc15;
+    --c-3:#fb923c; --c-4:#ef4444; --c-5:#7f1d1d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:860px;margin:0 auto;padding:26px 16px 60px}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+  .titular{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:20px 22px;margin:16px 0}
+  .titular .big{font-size:22px;font-weight:800;line-height:1.3}
+  .titular .big em{font-style:normal;color:var(--c-3)}
+  .kpis{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .kpi{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    padding:8px 14px;font-size:13px;color:var(--muted)}
+  .kpi b{color:var(--ink);font-size:16px}
+  .buscador{width:100%;margin:18px 0 8px;padding:11px 14px;font-size:15px;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+    position:sticky;top:0;background:var(--bg)}
+  td.num{font-variant-numeric:tabular-nums;text-align:right}
+  th.num{text-align:right}
+  .chip{display:inline-block;min-width:44px;text-align:center;padding:3px 8px;
+    border-radius:8px;font-weight:800;color:#0a1020}
+  .racha{font-size:11px;color:var(--c-3);font-weight:700}
+  .pie{color:var(--muted);font-size:12px;margin-top:22px;line-height:1.7}
+  .pie a{color:var(--accent)}
+  .leyenda{display:flex;gap:0;border-radius:8px;overflow:hidden;margin:14px 0 4px;
+    font-size:10.5px;text-align:center}
+  .leyenda div{flex:1;padding:5px 2px;color:#0a1020;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Firma Climática</h1>
+  <p class="sub">¿Cuánto cambio climático hay en el calor de hoy? · Índice diario por capital de provincia</p>
+
+  <div class="titular" id="titular">Cargando el dato del día…</div>
+
+  <div class="leyenda">
+    <div style="background:var(--c-neg)">−5…−1 menos probable</div>
+    <div style="background:var(--c-0)">0 sin señal</div>
+    <div style="background:var(--c-1)">+1</div>
+    <div style="background:var(--c-2)">+2</div>
+    <div style="background:var(--c-3)">+3 señal fuerte</div>
+    <div style="background:var(--c-4)">+4</div>
+    <div style="background:var(--c-5);color:#fff">+5 excepcional</div>
+  </div>
+
+  <input class="buscador" id="buscador" placeholder="Busca tu capital… (ej. Sevilla)" autocomplete="off">
+
+  <table>
+    <thead><tr>
+      <th>#</th><th>Capital</th><th class="num">Tmax</th><th class="num">IFC</th>
+      <th class="num">× más probable</th><th class="num">°C añadidos</th><th class="num">Racha ≥+3</th>
+    </tr></thead>
+    <tbody id="cuerpo"></tbody>
+  </table>
+
+  <p class="pie">
+    <b>Método:</b> índice de desplazamiento climático observado. Compara la probabilidad de la
+    máxima de hoy en el clima actual (1996–2025) frente al clima de antes (1951–1980), con datos
+    ERA5 para cada capital y día del calendario. IFC = log₂ de la razón de probabilidades,
+    acotado a ±5. «°C añadidos»: un día igual de raro en el clima de antes habría sido esos grados
+    más fresco. No es una atribución formal con modelos climáticos: es estadística sobre datos
+    observados, con <a href="#">metodología abierta</a>.<br>
+    Datos: ERA5 (Copernicus) vía Open-Meteo · Licencia CC-BY 4.0 ·
+    <b>Cita: calentamientoglobal.es</b> · <span id="actualizado"></span>
+  </p>
+</div>
+
+<script>
+const COLORES = {"-5":"var(--c-neg)","-4":"var(--c-neg)","-3":"var(--c-neg)","-2":"var(--c-neg)",
+  "-1":"var(--c-neg)","0":"var(--c-0)","1":"var(--c-1)","2":"var(--c-2)",
+  "3":"var(--c-3)","4":"var(--c-4)","5":"var(--c-5)"};
+
+function chip(ifc){
+  const c = COLORES[String(ifc)] || "var(--c-0)";
+  const txt = ifc > 0 ? "+" + ifc : String(ifc);
+  const col = ifc >= 5 ? "#fff" : "#0a1020";
+  return `<span class="chip" style="background:${c};color:${col}">${txt}</span>`;
+}
+
+let CIUDADES = [];
+
+function pinta(filtro = "") {
+  const f = filtro.trim().toLowerCase();
+  const cuerpo = document.getElementById("cuerpo");
+  cuerpo.innerHTML = CIUDADES
+    .filter(c => !f || c.nombre.toLowerCase().includes(f) || c.provincia.toLowerCase().includes(f))
+    .map((c, i) => `<tr>
+      <td>${i + 1}</td>
+      <td><b>${c.nombre}</b></td>
+      <td class="num">${c.tmax.toFixed(1)} °C</td>
+      <td class="num">${chip(c.ifc)}</td>
+      <td class="num">${c.ifc <= 0 ? "—" : "×" + c.pr.toFixed(1) + (c.pr_tope ? "+" : "")}</td>
+      <td class="num">${c.delta > 0 ? "+" : ""}${c.delta.toFixed(1)}</td>
+      <td class="num">${c.racha_ifc3 >= 2 ? `<span class="racha">${c.racha_ifc3} días</span>` : "—"}</td>
+    </tr>`).join("");
+}
+
+fetch("firma_climatica.json")
+  .then(r => r.json())
+  .then(d => {
+    CIUDADES = d.ciudades;
+    const r = d.resumen;
+    const top = d.ciudades[0];
+    const fecha = new Date(d.fecha + "T12:00:00")
+      .toLocaleDateString("es-ES", {weekday: "long", day: "numeric", month: "long"});
+    let frase;
+    if (r.ifc_max >= 3) {
+      frase = `El calor de hoy en <em>${top.nombre}</em> es <em>×${top.pr.toFixed(0)}${top.pr_tope ? "+" : ""} veces más probable</em> por el cambio climático, con <em>${top.delta > 0 ? "+" : ""}${top.delta.toFixed(1)} °C añadidos</em>.`;
+    } else if (r.ifc_max >= 1) {
+      frase = `Hoy la firma del cambio climático es moderada: máxima en <em>${top.nombre}</em> (IFC ${top.ifc > 0 ? "+" + top.ifc : top.ifc}).`;
+    } else {
+      frase = `Hoy el cambio climático no deja firma detectable en las temperaturas: un día dentro de lo normal.`;
+    }
+    document.getElementById("titular").innerHTML = `
+      <div style="color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.1em">${fecha}</div>
+      <div class="big">${frase}</div>
+      <div class="kpis">
+        <div class="kpi"><b>${r.capitales_ifc3}</b> capitales con señal fuerte (IFC ≥ +3)</div>
+        <div class="kpi">IFC medio nacional <b>${r.ifc_medio > 0 ? "+" + r.ifc_medio : r.ifc_medio}</b></div>
+        <div class="kpi">Máx. añadido <b>${r.delta_max > 0 ? "+" : ""}${r.delta_max} °C</b></div>
+      </div>`;
+    document.getElementById("actualizado").textContent = "Actualizado: " + d.generado_utc + " UTC";
+    pinta();
+  })
+  .catch(() => {
+    document.getElementById("titular").innerHTML =
+      "Aún no hay datos: ejecuta el workflow <b>firma-climatica-diaria</b> en GitHub Actions.";
+  });
+
+document.getElementById("buscador").addEventListener("input", e => pinta(e.target.value));
+</script>
+</body>
+</html>
