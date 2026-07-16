@@ -1,21 +1,17 @@
-name: firma-climatica-diaria
+name: firma-precalculo-climatologias
 
-# Dos veces al día: 05:30 UTC (con la previsión de la mañana)
-# y 17:30 UTC (con la máxima del día ya casi consolidada).
-# También a mano (Run workflow) cuando quieras regenerarlo.
+# Se lanza A MANO (Run workflow). Solo hace falta una vez,
+# y repetirlo una vez al año (enero) para incorporar el año cerrado.
 on:
-  schedule:
-    - cron: "30 5 * * *"
-    - cron: "30 17 * * *"
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
 jobs:
-  calcular:
+  precalcular:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 120
     steps:
       - name: Descargar el repositorio
         uses: actions/checkout@v4
@@ -25,13 +21,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Calcular la Firma Climática del día
-        run: python scripts/firma_diaria.py
+      - name: Precalcular climatologías (52 capitales, ERA5 1940–2025)
+        run: python scripts/firma_precalcular.py
 
-      - name: Guardar los datos del día
+      # Se ejecuta SIEMPRE (aunque el paso anterior falle por límite de tasa):
+      # así el progreso parcial queda guardado y el próximo Run retoma donde quedó.
+      - name: Guardar climatologías (incluido progreso parcial)
+        if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/firma_climatica.json docs/firma_historico.json
-          git commit -m "Firma Climática actualizada" || echo "Sin cambios que guardar"
+          git add docs/firma_clim/
+          git commit -m "Firma Climática: climatologías precalculadas (progreso)" || echo "Sin cambios"
           git push
