@@ -42,8 +42,9 @@ VENTANA_DIAS = 10                # ±10 días alrededor de cada día del calenda
 REJILLA = [1, 2.5, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50,
            55, 60, 65, 70, 75, 80, 85, 90, 95, 97.5, 99, 99.5]
 
+LOTE = 5                         # capitales por petición (menos peticiones = menos 429)
 API_ARCHIVO = ("https://archive-api.open-meteo.com/v1/archive"
-               "?latitude={lat}&longitude={lon}"
+               "?latitude={lats}&longitude={lons}"
                "&start_date={ini}&end_date={fin}"
                "&daily=temperature_2m_max&timezone=Europe%2FMadrid")
 
@@ -54,17 +55,27 @@ def leer_capitales(ruta):
         return list(csv.DictReader(f))
 
 
-def descargar_json(url, intentos=4, espera=15):
-    """Descarga con reintentos (la API a veces devuelve 429/503 puntuales)."""
+def descargar_json(url, intentos=8):
+    """
+    Descarga con reintentos y espera creciente. El 429 (límite de tasa de la API
+    gratuita) recibe esperas largas: 30, 60, 120, 240s… hasta que la API se libera.
+    """
     for i in range(intentos):
         try:
             with urllib.request.urlopen(url, timeout=180) as r:
                 return json.loads(r.read().decode("utf-8"))
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
+        except urllib.error.HTTPError as e:
             if i == intentos - 1:
                 raise
-            print(f"    · reintento {i + 1} ({e}) — espero {espera}s", flush=True)
+            espera = 30 * (2 ** i) if e.code == 429 else 15
+            espera = min(espera, 600)
+            print(f"    · reintento {i + 1} (HTTP {e.code}) — espero {espera}s", flush=True)
             time.sleep(espera)
+        except (urllib.error.URLError, TimeoutError) as e:
+            if i == intentos - 1:
+                raise
+            print(f"    · reintento {i + 1} ({e}) — espero 15s", flush=True)
+            time.sleep(15)
 
 
 def percentil(muestra_ordenada, p):
@@ -132,18 +143,31 @@ def construir_climatologia(serie):
     return dias
 
 
-def procesar_capital(cap):
-    url = API_ARCHIVO.format(lat=cap["lat"], lon=cap["lon"],
+def descargar_lote(lote):
+    """
+    Descarga la serie de varias capitales en UNA sola petición (la API acepta
+    coordenadas separadas por comas y devuelve una lista de resultados en orden).
+    Devuelve {slug: {date: tmax}}.
+    """
+    lats = ",".join(str(c["lat"]) for c in lote)
+    lons = ",".join(str(c["lon"]) for c in lote)
+    url = API_ARCHIVO.format(lats=lats, lons=lons,
                              ini=INICIO_DESCARGA, fin=FIN_DESCARGA)
     datos = descargar_json(url)
-    fechas = datos["daily"]["time"]
-    tmax = datos["daily"]["temperature_2m_max"]
-    serie = {date.fromisoformat(f): t for f, t in zip(fechas, tmax)}
-    n_validos = sum(1 for t in serie.values() if t is not None)
-    print(f"    · {n_validos} días descargados", flush=True)
+    if isinstance(datos, dict):
+        datos = [datos]  # la API devuelve objeto si el lote es de una sola capital
+    series = {}
+    for cap, d in zip(lote, datos):
+        fechas = d["daily"]["time"]
+        tmax = d["daily"]["temperature_2m_max"]
+        series[cap["slug"]] = {date.fromisoformat(f): t for f, t in zip(fechas, tmax)}
+    return series
 
+
+def montar_climatologia(cap, serie):
+    n_validos = sum(1 for t in serie.values() if t is not None)
     dias = construir_climatologia(serie)
-    return {
+    return n_validos, {
         "slug": cap["slug"],
         "nombre": cap["nombre"],
         "provincia": cap["provincia"],
@@ -166,20 +190,39 @@ def main():
 
     capitales = leer_capitales(RUTA_CAPITALES)
     os.makedirs(RUTA_SALIDA, exist_ok=True)
+    rehacer = "--rehacer" in sys.argv  # fuerza recálculo aunque ya exista el JSON
 
-    for i, cap in enumerate(capitales, 1):
+    # Solo las capitales pendientes (permite reanudar tras un corte)
+    pendientes = []
+    for cap in capitales:
         if solo and cap["slug"] not in solo:
             continue
         destino = os.path.join(RUTA_SALIDA, f"{cap['slug']}.json")
-        print(f"[{i}/{len(capitales)}] {cap['nombre']}", flush=True)
-        clim = procesar_capital(cap)
-        with open(destino, "w", encoding="utf-8") as f:
-            json.dump(clim, f, ensure_ascii=False, separators=(",", ":"))
-        print(f"    · guardado {os.path.basename(destino)} "
-              f"({len(clim['dias'])} días de calendario)", flush=True)
-        time.sleep(2)  # cortesía con la API
+        if os.path.exists(destino) and not rehacer:
+            print(f"· {cap['nombre']} ya existe, se salta", flush=True)
+            continue
+        pendientes.append(cap)
 
-    print("Precálculo terminado.")
+    print(f"{len(pendientes)} capitales pendientes · lotes de {LOTE}", flush=True)
+
+    hechas = 0
+    for inicio in range(0, len(pendientes), LOTE):
+        lote = pendientes[inicio:inicio + LOTE]
+        nombres = ", ".join(c["nombre"] for c in lote)
+        print(f"[lote {inicio // LOTE + 1}] {nombres}", flush=True)
+        series = descargar_lote(lote)
+        for cap in lote:
+            destino = os.path.join(RUTA_SALIDA, f"{cap['slug']}.json")
+            n_validos, clim = montar_climatologia(cap, series[cap["slug"]])
+            with open(destino, "w", encoding="utf-8") as f:
+                json.dump(clim, f, ensure_ascii=False, separators=(",", ":"))
+            hechas += 1
+            print(f"    · {cap['nombre']}: {n_validos} días → "
+                  f"{os.path.basename(destino)} ({len(clim['dias'])} días de calendario)",
+                  flush=True)
+        time.sleep(8)  # pausa entre lotes: cortesía con la API
+
+    print(f"Precálculo terminado · {hechas} capitales nuevas.")
 
 
 if __name__ == "__main__":
