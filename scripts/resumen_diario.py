@@ -59,12 +59,23 @@ def norm(s):
 
 
 def fetch(nombre):
-    url = BASE + nombre + "?t=" + datetime.now().strftime("%Y%m%d%H%M")
+    # 1º: archivo local del propio repo (en Actions el repo ya está clonado
+    # y estos JSON viven en docs/ — sin red, sin 404 posibles).
+    local = os.path.join(os.path.dirname(__file__), "..", "docs", nombre)
+    if os.path.exists(local):
+        try:
+            with open(local, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[aviso] {nombre} local ilegible: {e}", file=sys.stderr)
+    # 2º: respaldo por HTTP (GitHub Pages), con user-agent de navegador.
+    url = BASE + nombre
     try:
-        with urllib.request.urlopen(url, timeout=30) as r:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (resumen-semanal calentamientoglobal.es)"})
+        with urllib.request.urlopen(req, timeout=30) as r:
             return json.load(r)
     except Exception as e:
-        print(f"[aviso] no se pudo leer {nombre}: {e}", file=sys.stderr)
+        print(f"[aviso] no se pudo leer {nombre} (local ni web): {e}", file=sys.stderr)
         return None
 
 
