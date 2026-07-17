@@ -1,0 +1,40 @@
+name: Resumen semanal por comunidad
+
+on:
+  schedule:
+    - cron: "45 5 * * *"    # todos los días 05:45 UTC (07:45 Madrid): foto diaria
+    - cron: "30 6 * * 1"    # lunes 06:30 UTC (08:30 Madrid): resumen semanal
+  workflow_dispatch:
+    inputs:
+      generar_semanal:
+        description: "Generar también el resumen semanal ahora"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  resumen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Foto diaria
+        run: python scripts/resumen_diario.py
+
+      - name: Resumen semanal (lunes o manual)
+        if: github.event.schedule == '30 6 * * 1' || inputs.generar_semanal == true
+        run: python scripts/resumen_semanal.py
+
+      - name: Publicar cambios
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/resumen_semanal
+          git diff --cached --quiet || git commit -m "Resumen semanal: datos $(date -u +%F)"
+          git push
