@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel de copiado · Resumen semanal por comunidad</title>
+<style>
+  :root { --verde:#1a7a4a; --fondo:#f4f6f5; --tinta:#1d2b25; }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:var(--fondo); color:var(--tinta); margin:0; padding:24px; }
+  h1 { font-size:1.35rem; margin:0 0 4px; }
+  .sub { color:#5b6b64; font-size:.9rem; margin-bottom:20px; }
+  .tarjetas { display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
+  .tarjeta { background:#fff; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,.08); padding:16px; display:flex; flex-direction:column; }
+  .tarjeta h2 { font-size:1.05rem; margin:0 0 10px; }
+  textarea { width:100%; min-height:260px; border:1px solid #d7ddda; border-radius:8px; padding:10px; font:.85rem/1.45 ui-monospace,Menlo,monospace; resize:vertical; }
+  button { margin-top:10px; align-self:flex-start; background:var(--verde); color:#fff; border:0; border-radius:8px; padding:10px 18px; font-size:.95rem; cursor:pointer; }
+  button.copiado { background:#0d5c36; }
+  .error { background:#fff3f0; border:1px solid #e8b3a6; padding:14px; border-radius:8px; }
+</style>
+</head>
+<body>
+<h1>📋 Resumen semanal por comunidad</h1>
+<div class="sub" id="meta">Cargando…</div>
+<div class="tarjetas" id="tarjetas"></div>
+<script>
+(async () => {
+  const meta = document.getElementById('meta');
+  const cont = document.getElementById('tarjetas');
+  try {
+    const r = await fetch('resumen_semanal/ultima_semana.json?t=' + Date.now());
+    const d = await r.json();
+    meta.textContent = `Semana ${d.semana.etiqueta} (${d.semana.inicio} → ${d.semana.fin}) · generado ${d.generado} · ${d.dias_con_datos} días con datos. Pulsa "Copiar" y pega en el canal de WhatsApp de cada comunidad.`;
+    for (const [slug, c] of Object.entries(d.comunidades)) {
+      const t = document.createElement('div');
+      t.className = 'tarjeta';
+      t.innerHTML = `<h2>${c.nombre}</h2><textarea readonly></textarea><button>Copiar</button>`;
+      t.querySelector('textarea').value = c.texto;
+      const btn = t.querySelector('button');
+      btn.onclick = async () => {
+        await navigator.clipboard.writeText(c.texto);
+        btn.textContent = '✓ Copiado'; btn.classList.add('copiado');
+        setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copiado'); }, 2000);
+      };
+      cont.appendChild(t);
+    }
+  } catch (e) {
+    meta.textContent = '';
+    cont.innerHTML = '<div class="error">Aún no hay resumen generado. Lanza el workflow "Resumen semanal por comunidad" desde la pestaña Actions (marca "Generar también el resumen semanal ahora").</div>';
+  }
+})();
+</script>
+</body>
+</html>
