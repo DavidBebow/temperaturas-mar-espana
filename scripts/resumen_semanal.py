@@ -18,7 +18,7 @@ import os
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from resumen_diario import COMUNIDADES  # misma configuración de comunidades
+from resumen_diario import COMUNIDADES, PROVINCIAS, slug_prov  # misma configuración
 
 DIR_BASE = os.path.join(os.path.dirname(__file__), "..", "docs", "resumen_semanal")
 DIR_DIARIO = os.path.join(DIR_BASE, "diario")
@@ -147,6 +147,63 @@ def lineas_una_linea(a, mar, cfg):
     return {"calor": limpiar(calor), "incendios": limpiar(incendios), "mar": limpiar(linea_mar)}
 
 
+def agregar_provincia(fotos, slug):
+    """Agrega la semana para una provincia (datos de su capital)."""
+    a = {"tmax": None, "capital": None, "tmax_dia": None, "ifc_max": None, "ifc_dia": None,
+         "pr": None, "delta": None, "dias_ifc3": 0, "dias_con_datos": 0}
+    for f in fotos:
+        p = (f.get("provincias") or {}).get(slug)
+        if not p:
+            continue
+        a["dias_con_datos"] += 1
+        if p.get("tmax") is not None and (a["tmax"] is None or p["tmax"] > a["tmax"]):
+            a["tmax"], a["capital"], a["tmax_dia"] = p["tmax"], p.get("capital"), f["fecha"]
+        ifc = p.get("ifc")
+        if ifc is not None:
+            if a["ifc_max"] is None or ifc > a["ifc_max"]:
+                a["ifc_max"], a["ifc_dia"] = ifc, f["fecha"]
+                a["pr"], a["delta"] = p.get("pr"), p.get("delta")
+            if ifc >= 3:
+                a["dias_ifc3"] += 1
+    return a
+
+
+def componer_provincia(nombre, a, a_com, nombre_com, mar, inicio, fin):
+    """Texto del email semanal para una provincia."""
+    lineas = [f"*🌍 El clima de la semana en {nombre}*",
+              f"_Semana del {inicio.day} al {fin.day} de {MESES[fin.month-1]} · calentamientoglobal.es_", ""]
+    l1 = {}  # versión de una línea para la plantilla de WhatsApp
+    if a["tmax"] is not None:
+        linea = f"🌡️ *Calor:* máxima de la semana, *{a['tmax']:.1f} °C* en {a['capital']} ({fecha_bonita(a['tmax_dia'])})."
+        if a["pr"] and a["pr"] >= 2:
+            linea += f" El cambio climático hizo ese calor *{a['pr']:.0f}× más probable*."
+        lineas.append(linea)
+        if a["dias_ifc3"] > 0:
+            lineas.append(f"🔬 *Firma climática:* {a['dias_ifc3']} día(s) con huella clara del cambio climático (índice ≥3), hasta *+{a['delta']:.1f} °C* añadidos al día. {URL_FIRMA}")
+        l1["calor"] = f"Máxima de la semana: {a['tmax']:.1f} °C en {a['capital']} ({fecha_bonita(a['tmax_dia'])})" + \
+                      (f". {a['pr']:.0f}× más probable por el cambio climático." if a["pr"] and a["pr"] >= 2 else ".")
+    else:
+        l1["calor"] = "Sin datos de calor esta semana."
+    if a_com and a_com["focos_total"] > 0:
+        lineas.append(f"🔥 *Incendios en {nombre_com}:* {a_com['focos_total']} focos detectados por satélite; pico de {a_com['focos_max']} el {fecha_bonita(a_com['focos_max_dia'])}. Mapa en directo: {URL_INCENDIOS}")
+        l1["incendios"] = f"En {nombre_com}: {a_com['focos_total']} focos detectados por satélite esta semana."
+    elif a_com and a_com["dias_con_datos"] > 0:
+        lineas.append(f"🔥 *Incendios en {nombre_com}:* ✓ sin focos detectados por satélite esta semana.")
+        l1["incendios"] = f"En {nombre_com}: sin focos detectados por satélite."
+    else:
+        l1["incendios"] = "Sin datos de incendios esta semana."
+    if mar and (mar.get("anomalia") or 0) >= 1:
+        nombre_mar = mar.get("nombre") or "el mar"
+        lineas.append(f"🌊 *Mar:* {nombre_mar} sigue en ola de calor marina: anomalía de *+{mar['anomalia']:.1f} °C*, {mar.get('racha', '?')} días seguidos.")
+        l1["mar"] = f"{nombre_mar} en ola de calor marina: +{mar['anomalia']:.1f} °C, {mar.get('racha', '?')} días seguidos."
+    else:
+        l1["mar"] = "Sin ola de calor marina destacable."
+    lineas += ["", f"📊 Todos los datos, en directo: {URL_OBS}",
+               "_Fuentes: NASA FIRMS, Copernicus/ERA5, NOAA · Observatorio Climático de calentamientoglobal.es_"]
+    limpiar = lambda s: " ".join(str(s).split())
+    return "\n".join(lineas), {k: limpiar(v) for k, v in l1.items()}
+
+
 def main():
     hoy = datetime.now(ZoneInfo("Europe/Madrid")).date()
     fotos = cargar_semana(hoy)
@@ -164,16 +221,34 @@ def main():
                  "dias_con_datos": len(fotos),
                  "comunidades": {}}
 
+    semana_legible = f"Semana del {inicio.day} al {fin.day} de {MESES[fin.month-1]}"
+
+    # 1) Nivel comunidad (para los canales de WhatsApp) — también guarda el
+    #    agregado de incendios que reutilizan las provincias.
+    agregados_com = {}
     for slug, cfg in COMUNIDADES.items():
         a = agregar(fotos, slug)
+        agregados_com[slug] = a
         mar = agregar_mar(fotos, cfg.get("mar")) if cfg.get("mar") else None
         texto = componer(slug, cfg, a, mar, inicio, fin)
         resultado["comunidades"][slug] = {"nombre": cfg["nombre"], "texto": texto,
                                           "lineas": lineas_una_linea(a, mar, cfg),
-                                          "semana_legible": f"Semana del {inicio.day} al {fin.day} de {MESES[fin.month-1]}",
+                                          "semana_legible": semana_legible,
                                           "agregado": a}
         with open(os.path.join(dir_semana, slug + ".txt"), "w", encoding="utf-8") as f:
             f.write(texto)
+
+    # 2) Nivel provincia (para el email y la WhatsApp API por suscriptor).
+    resultado["provincias"] = {}
+    for nombre_prov, (com_slug, mar_clave) in PROVINCIAS.items():
+        slug = slug_prov(nombre_prov)
+        a = agregar_provincia(fotos, slug)
+        mar = agregar_mar(fotos, mar_clave) if mar_clave else None
+        nombre_com = COMUNIDADES.get(com_slug, {}).get("nombre", com_slug)
+        texto, l1 = componer_provincia(nombre_prov, a, agregados_com.get(com_slug), nombre_com, mar, inicio, fin)
+        resultado["provincias"][slug] = {"nombre": nombre_prov, "comunidad": com_slug,
+                                         "texto": texto, "lineas": l1,
+                                         "semana_legible": semana_legible}
 
     with open(os.path.join(DIR_BASE, "ultima_semana.json"), "w", encoding="utf-8") as f:
         json.dump(resultado, f, ensure_ascii=False, indent=1)
