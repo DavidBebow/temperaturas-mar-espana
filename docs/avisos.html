@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avisos meteorológicos activos en España · calentamientoglobal.es</title>
+<style>
+  :root{--tinta:#1d1d1f;--gris:#6e6e73;--borde:#e8e8ed;
+        --amarillo:#eab308;--naranja:#f97316;--rojo:#dc2626;--verde:#1a7a4a}
+  *{box-sizing:border-box}
+  body{margin:0;padding:20px 14px 28px;background:#fbfbfd;color:var(--tinta);
+       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif}
+  .cab{max-width:860px;margin:0 auto 16px;text-align:center}
+  .cab h1{font-size:1.35rem;letter-spacing:-.015em;margin:0 0 4px}
+  .cab .act{font-size:.8rem;color:var(--gris)}
+  .chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0 6px}
+  .chip{border:1.5px solid var(--borde);background:#fff;border-radius:980px;padding:8px 16px;
+        font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .chip .n{font-weight:700}
+  .chip.sel{border-color:var(--tinta)}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .lista{max-width:860px;margin:14px auto 0}
+  .grupo h2{font-size:1rem;margin:22px 0 8px;letter-spacing:-.01em}
+  .cards{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+  .card{background:#fff;border:1px solid var(--borde);border-left-width:5px;border-radius:12px;padding:12px 14px}
+  .card.amarillo{border-left-color:var(--amarillo)}
+  .card.naranja{border-left-color:var(--naranja)}
+  .card.rojo{border-left-color:var(--rojo)}
+  .card .tipo{font-weight:600;font-size:.95rem;display:flex;align-items:center;gap:7px}
+  .card .nivel{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+               padding:2px 8px;border-radius:980px;color:#fff;margin-left:auto}
+  .nivel.amarillo{background:var(--amarillo)}.nivel.naranja{background:var(--naranja)}.nivel.rojo{background:var(--rojo)}
+  .card .zona{font-size:.86rem;margin:6px 0 2px}
+  .card .vig{font-size:.78rem;color:var(--gris)}
+  .vacio{max-width:520px;margin:40px auto;text-align:center;background:#e8f5ee;color:#0d5c36;
+         border-radius:16px;padding:26px 20px;font-weight:600}
+  .pie{max-width:860px;margin:26px auto 0;text-align:center;font-size:.75rem;color:#a1a1a6}
+  .pie a{color:var(--gris)}
+</style>
+</head>
+<body>
+<div class="cab">
+  <h1>⚠️ Avisos meteorológicos activos en España</h1>
+  <div class="act" id="actualizado">Cargando avisos oficiales…</div>
+  <div class="chips" id="chips"></div>
+</div>
+<div class="lista" id="lista"></div>
+<div class="pie">Avisos oficiales de <strong>AEMET</strong> distribuidos vía
+  <strong>MeteoAlarm</strong> (EUMETNET) · Actualización horaria ·
+  <a href="https://calentamientoglobal.es/observatorio-climatico/" target="_top">Observatorio Climático de calentamientoglobal.es</a></div>
+<script>
+(async () => {
+  const $ = id => document.getElementById(id);
+  let filtro = 'todos', datos = null;
+  const NIV = {rojo:'#dc2626', naranja:'#f97316', amarillo:'#eab308'};
+
+  function hora(iso){
+    const d = new Date(iso);
+    const dias = ['dom','lun','mar','mié','jue','vie','sáb'];
+    return dias[d.getDay()] + ' ' + d.getDate() + ', ' +
+           String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function pintar(){
+    const cont = $('lista'); cont.innerHTML = '';
+    const avisos = datos.avisos.filter(a => filtro === 'todos' || a.nivel === filtro);
+    if (!avisos.length){
+      cont.innerHTML = '<div class="vacio">✓ ' + (filtro === 'todos'
+        ? 'Sin avisos meteorológicos activos ahora mismo en España.'
+        : 'Sin avisos de nivel ' + filtro + ' ahora mismo.') + '</div>';
+      return;
+    }
+    const grupos = {};
+    avisos.forEach(a => { (grupos[a.comunidad || 'Otras zonas'] ||= []).push(a); });
+    Object.keys(grupos).sort().forEach(com => {
+      const g = document.createElement('div'); g.className = 'grupo';
+      g.innerHTML = '<h2>' + com + '</h2><div class="cards"></div>';
+      const cards = g.querySelector('.cards');
+      grupos[com].forEach(a => {
+        const c = document.createElement('div');
+        c.className = 'card ' + a.nivel;
+        c.innerHTML = '<div class="tipo">' + a.icono + ' ' + a.tipo +
+          '<span class="nivel ' + a.nivel + '">' + a.nivel + '</span></div>' +
+          '<div class="zona"><strong>' + a.zona + '</strong>' +
+          (a.provincia && a.provincia !== a.zona ? ' · ' + a.provincia : '') + '</div>' +
+          '<div class="vig">' + (a.activo_ya ? 'En vigor' : 'Desde ' + hora(a.inicio)) +
+          ' · hasta ' + hora(a.fin) + '</div>';
+        cards.appendChild(c);
+      });
+      cont.appendChild(g);
+    });
+  }
+
+  function chips(){
+    const c = $('chips'); c.innerHTML = '';
+    const n = datos.por_nivel;
+    const defs = [['todos', datos.total, null], ['rojo', n.rojo, NIV.rojo],
+                  ['naranja', n.naranja, NIV.naranja], ['amarillo', n.amarillo, NIV.amarillo]];
+    defs.forEach(([clave, num, color]) => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (filtro === clave ? ' sel' : '');
+      b.innerHTML = (color ? '<span class="dot" style="background:' + color + '"></span>' : '') +
+                    (clave === 'todos' ? 'Todos' : clave[0].toUpperCase() + clave.slice(1)) +
+                    ' <span class="n">' + num + '</span>';
+      b.onclick = () => { filtro = clave; chips(); pintar(); };
+      c.appendChild(b);
+    });
+  }
+
+  try {
+    const r = await fetch('avisos.json?t=' + Date.now(), {cache: 'no-store'});
+    datos = await r.json();
+    $('actualizado').textContent = 'Datos oficiales AEMET · actualizado ' +
+      new Date(datos.generado).toLocaleString('es-ES', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'});
+    chips(); pintar();
+  } catch (e) {
+    $('actualizado').textContent = 'No se han podido cargar los avisos. Inténtalo en unos minutos.';
+  }
+})();
+</script>
+</body>
+</html>
