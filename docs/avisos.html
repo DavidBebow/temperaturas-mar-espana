@@ -207,12 +207,15 @@
 
   // ── carga ──
   try{
-    const [rA, rG] = await Promise.all([
-      fetch('avisos.json?t=' + Date.now(), {cache:'no-store'}),
-      fetch('spain-communities.geojson')
-    ]);
+    const rA = await fetch('avisos.json?t=' + Date.now(), {cache:'no-store'});
     datos = await rA.json();
-    const geo = await rG.json();
+    // geojson: primero el propio docs/, si no existe, el respaldo externo
+    let geo;
+    for (const u of ['spain-communities.geojson',
+                     'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-communities.geojson']){
+      try { const r = await fetch(u); if (r.ok) { geo = await r.json(); break; } } catch(e){}
+    }
+    if (!geo) throw new Error('geojson');
     recalcular();
 
     $('actualizado').textContent = 'Datos oficiales AEMET · actualizado ' +
