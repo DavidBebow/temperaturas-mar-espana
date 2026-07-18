@@ -4,116 +4,244 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Avisos meteorológicos activos en España · calentamientoglobal.es</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root{--tinta:#1d1d1f;--gris:#6e6e73;--borde:#e8e8ed;
-        --amarillo:#eab308;--naranja:#f97316;--rojo:#dc2626;--verde:#1a7a4a}
+        --ama:#eab308;--nar:#f97316;--roj:#dc2626;--sin:#dfe4e1;--verde:#1a7a4a}
   *{box-sizing:border-box}
-  body{margin:0;padding:20px 14px 28px;background:#fbfbfd;color:var(--tinta);
+  html,body{height:100%}
+  body{margin:0;display:flex;flex-direction:column;background:#fbfbfd;color:var(--tinta);
        font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif}
-  .cab{max-width:860px;margin:0 auto 16px;text-align:center}
-  .cab h1{font-size:1.35rem;letter-spacing:-.015em;margin:0 0 4px}
-  .cab .act{font-size:.8rem;color:var(--gris)}
-  .chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0 6px}
-  .chip{border:1.5px solid var(--borde);background:#fff;border-radius:980px;padding:8px 16px;
-        font-size:.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px}
-  .chip .n{font-weight:700}
+  /* cabecera */
+  .cab{padding:14px 14px 10px;text-align:center}
+  .cab h1{font-size:1.15rem;letter-spacing:-.015em;margin:0 0 2px}
+  .cab .act{font-size:.75rem;color:var(--gris)}
+  .controles{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .chip{border:1.5px solid var(--borde);background:#fff;border-radius:980px;padding:7px 13px;
+        font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--tinta)}
   .chip.sel{border-color:var(--tinta)}
-  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-  .lista{max-width:860px;margin:14px auto 0}
-  .grupo h2{font-size:1rem;margin:22px 0 8px;letter-spacing:-.01em}
-  .cards{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
-  .card{background:#fff;border:1px solid var(--borde);border-left-width:5px;border-radius:12px;padding:12px 14px}
-  .card.amarillo{border-left-color:var(--amarillo)}
-  .card.naranja{border-left-color:var(--naranja)}
-  .card.rojo{border-left-color:var(--rojo)}
-  .card .tipo{font-weight:600;font-size:.95rem;display:flex;align-items:center;gap:7px}
-  .card .nivel{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
-               padding:2px 8px;border-radius:980px;color:#fff;margin-left:auto}
-  .nivel.amarillo{background:var(--amarillo)}.nivel.naranja{background:var(--naranja)}.nivel.rojo{background:var(--rojo)}
-  .card .zona{font-size:.86rem;margin:6px 0 2px}
-  .card .vig{font-size:.78rem;color:var(--gris)}
-  .vacio{max-width:520px;margin:40px auto;text-align:center;background:#e8f5ee;color:#0d5c36;
-         border-radius:16px;padding:26px 20px;font-weight:600}
-  .pie{max-width:860px;margin:26px auto 0;text-align:center;font-size:.75rem;color:#a1a1a6}
+  .chip .dot{width:9px;height:9px;border-radius:50%}
+  .chip .n{font-weight:700}
+  select{padding:8px 30px 8px 12px;font-size:.86rem;font-weight:600;color:var(--tinta);background:#fff;
+         border:1.5px solid var(--borde);border-radius:980px;-webkit-appearance:none;appearance:none;cursor:pointer;
+         background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236e6e73' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+         background-repeat:no-repeat;background-position:right 12px center;outline:none}
+  /* mapa */
+  .mapa-zona{position:relative;flex:1;min-height:420px}
+  #mapa{position:absolute;inset:0;background:#eef1f4}
+  .leaflet-container{font:inherit}
+  .aviso-vacio{position:absolute;z-index:800;top:14px;left:50%;transform:translateX(-50%);
+     background:#e8f5ee;color:#0d5c36;font-weight:600;font-size:.85rem;border-radius:980px;padding:8px 18px;
+     box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  /* panel de detalle */
+  .panel{position:absolute;z-index:900;top:12px;right:12px;bottom:12px;width:min(330px,88vw);
+     background:#fff;border-radius:16px;box-shadow:0 10px 34px rgba(0,0,0,.18);
+     display:none;flex-direction:column;overflow:hidden}
+  .panel.abierto{display:flex}
+  .panel-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;
+     padding:14px 16px;border-bottom:1px solid var(--borde)}
+  .panel-cab h2{font-size:1rem;margin:0;letter-spacing:-.01em}
+  .panel-cab .sub{font-size:.75rem;color:var(--gris);margin-top:2px}
+  .panel-cerrar{border:0;background:#f1f3f2;border-radius:50%;width:28px;height:28px;font-size:16px;
+     color:var(--gris);cursor:pointer;line-height:1}
+  .panel-lista{overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+  .card{background:#fff;border:1px solid var(--borde);border-left-width:5px;border-radius:12px;padding:11px 13px}
+  .card.amarillo{border-left-color:var(--ama)}.card.naranja{border-left-color:var(--nar)}.card.rojo{border-left-color:var(--roj)}
+  .card .tipo{font-weight:600;font-size:.9rem;display:flex;align-items:center;gap:6px}
+  .card .nivel{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+     padding:2px 8px;border-radius:980px;color:#fff;margin-left:auto}
+  .nivel.amarillo{background:var(--ama)}.nivel.naranja{background:var(--nar)}.nivel.rojo{background:var(--roj)}
+  .card .zona{font-size:.82rem;margin:5px 0 2px}
+  .card .vig{font-size:.74rem;color:var(--gris)}
+  .panel-vacio{padding:26px 16px;text-align:center;color:#0d5c36;font-weight:600;font-size:.9rem}
+  /* leyenda */
+  .leyenda{position:absolute;z-index:800;left:12px;bottom:12px;background:#fff;border-radius:12px;
+     box-shadow:0 2px 12px rgba(0,0,0,.14);padding:10px 13px;font-size:.75rem;display:flex;gap:12px}
+  .leyenda span{display:flex;align-items:center;gap:5px;color:var(--gris)}
+  .leyenda i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .pie{padding:8px 12px;text-align:center;font-size:.7rem;color:#a1a1a6}
   .pie a{color:var(--gris)}
+  @media(max-width:640px){
+    .panel{top:auto;left:8px;right:8px;bottom:8px;max-height:55%;width:auto}
+    .leyenda{bottom:auto;top:12px;left:12px;flex-direction:column;gap:5px}
+  }
 </style>
 </head>
 <body>
 <div class="cab">
   <h1>⚠️ Avisos meteorológicos activos en España</h1>
-  <div class="act" id="actualizado">Cargando avisos oficiales…</div>
-  <div class="chips" id="chips"></div>
+  <div class="act" id="actualizado">Cargando avisos oficiales de AEMET…</div>
+  <div class="controles">
+    <select id="selCom"><option value="">Todas las comunidades</option></select>
+    <span id="chips" style="display:contents"></span>
+  </div>
 </div>
-<div class="lista" id="lista"></div>
-<div class="pie">Avisos oficiales de <strong>AEMET</strong> distribuidos vía
-  <strong>MeteoAlarm</strong> (EUMETNET) · Actualización horaria ·
+<div class="mapa-zona">
+  <div id="mapa"></div>
+  <div class="aviso-vacio" id="vacio" hidden>✓ Sin avisos meteorológicos activos en España</div>
+  <div class="panel" id="panel">
+    <div class="panel-cab">
+      <div><h2 id="panelTitulo"></h2><div class="sub" id="panelSub"></div></div>
+      <button class="panel-cerrar" id="panelCerrar" aria-label="Cerrar">×</button>
+    </div>
+    <div class="panel-lista" id="panelLista"></div>
+  </div>
+  <div class="leyenda">
+    <span><i style="background:var(--roj)"></i>Rojo</span>
+    <span><i style="background:var(--nar)"></i>Naranja</span>
+    <span><i style="background:var(--ama)"></i>Amarillo</span>
+    <span><i style="background:var(--sin)"></i>Sin avisos</span>
+  </div>
+</div>
+<div class="pie">Avisos oficiales de <strong>AEMET</strong> vía <strong>MeteoAlarm</strong> (EUMETNET) · Actualización horaria ·
   <a href="https://calentamientoglobal.es/observatorio-climatico/" target="_top">Observatorio Climático de calentamientoglobal.es</a></div>
+
 <script>
 (async () => {
   const $ = id => document.getElementById(id);
-  let filtro = 'todos', datos = null;
-  const NIV = {rojo:'#dc2626', naranja:'#f97316', amarillo:'#eab308'};
-
-  function hora(iso){
-    const d = new Date(iso);
-    const dias = ['dom','lun','mar','mié','jue','vie','sáb'];
+  const COLOR = {rojo:'#dc2626', naranja:'#f97316', amarillo:'#eab308', ninguno:'#dfe4e1'};
+  const ORDEN = {rojo:3, naranja:2, amarillo:1};
+  // claves para casar el nombre del geojson con nuestras comunidades
+  const COMUNIDADES = {
+    'andalucia':['andalucia'], 'aragon':['aragon'], 'asturias':['asturias'],
+    'baleares':['balear'], 'canarias':['canaria'], 'cantabria':['cantabria'],
+    'castilla-la-mancha':['mancha'], 'castilla-y-leon':['castilla y leon','castilla-leon'],
+    'cataluna':['catalu'], 'ceuta':['ceuta'], 'comunidad-valenciana':['valencia'],
+    'extremadura':['extremadura'], 'galicia':['galicia'], 'la-rioja':['rioja'],
+    'madrid':['madrid'], 'melilla':['melilla'], 'murcia':['murcia'],
+    'navarra':['navarra'], 'pais-vasco':['vasco','euskadi']
+  };
+  const norm = s => (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  const slugDe = nombre => {
+    const n = norm(nombre);
+    for (const [slug, claves] of Object.entries(COMUNIDADES))
+      if (claves.some(k => n.includes(k))) return slug;
+    return null;
+  };
+  const hora = iso => {
+    const d = new Date(iso), dias = ['dom','lun','mar','mié','jue','vie','sáb'];
     return dias[d.getDay()] + ' ' + d.getDate() + ', ' +
            String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-  }
+  };
 
-  function pintar(){
-    const cont = $('lista'); cont.innerHTML = '';
-    const avisos = datos.avisos.filter(a => filtro === 'todos' || a.nivel === filtro);
-    if (!avisos.length){
-      cont.innerHTML = '<div class="vacio">✓ ' + (filtro === 'todos'
-        ? 'Sin avisos meteorológicos activos ahora mismo en España.'
-        : 'Sin avisos de nivel ' + filtro + ' ahora mismo.') + '</div>';
-      return;
+  let datos, capa, filtro = 'todos', seleccion = '';
+  const porCom = {};      // slug -> [avisos] (según filtro)
+  const nombreCom = {};   // slug -> nombre bonito del geojson
+
+  function avisosFiltrados(){ return datos.avisos.filter(a => filtro==='todos' || a.nivel===filtro); }
+  function recalcular(){
+    Object.keys(porCom).forEach(k => delete porCom[k]);
+    for (const a of avisosFiltrados()){
+      const slug = slugDe(a.comunidad) || slugDe(a.provincia);
+      if (slug) (porCom[slug] ||= []).push(a);
     }
-    const grupos = {};
-    avisos.forEach(a => { (grupos[a.comunidad || 'Otras zonas'] ||= []).push(a); });
-    Object.keys(grupos).sort().forEach(com => {
-      const g = document.createElement('div'); g.className = 'grupo';
-      g.innerHTML = '<h2>' + com + '</h2><div class="cards"></div>';
-      const cards = g.querySelector('.cards');
-      grupos[com].forEach(a => {
-        const c = document.createElement('div');
-        c.className = 'card ' + a.nivel;
-        c.innerHTML = '<div class="tipo">' + a.icono + ' ' + a.tipo +
-          '<span class="nivel ' + a.nivel + '">' + a.nivel + '</span></div>' +
-          '<div class="zona"><strong>' + a.zona + '</strong>' +
-          (a.provincia && a.provincia !== a.zona ? ' · ' + a.provincia : '') + '</div>' +
-          '<div class="vig">' + (a.activo_ya ? 'En vigor' : 'Desde ' + hora(a.inicio)) +
-          ' · hasta ' + hora(a.fin) + '</div>';
-        cards.appendChild(c);
-      });
-      cont.appendChild(g);
-    });
+  }
+  const nivelMax = slug => {
+    const lst = porCom[slug] || [];
+    if (!lst.length) return 'ninguno';
+    return lst.reduce((m,a) => ORDEN[a.nivel] > ORDEN[m] ? a.nivel : m, 'amarillo');
+  };
+
+  function estilo(f){
+    const slug = slugDe(f.properties.name || f.properties.NAME);
+    const sel = seleccion && slug === seleccion;
+    return {color: sel ? '#1d1d1f' : '#ffffff', weight: sel ? 2.5 : 1.2,
+            fillColor: COLOR[nivelMax(slug)], fillOpacity: .85};
   }
 
-  function chips(){
-    const c = $('chips'); c.innerHTML = '';
-    const n = datos.por_nivel;
-    const defs = [['todos', datos.total, null], ['rojo', n.rojo, NIV.rojo],
-                  ['naranja', n.naranja, NIV.naranja], ['amarillo', n.amarillo, NIV.amarillo]];
-    defs.forEach(([clave, num, color]) => {
+  function abrirPanel(slug){
+    seleccion = slug; capa.setStyle(estilo);
+    const lst = (porCom[slug] || []).slice().sort((a,b) => ORDEN[b.nivel]-ORDEN[a.nivel]);
+    $('panelTitulo').textContent = nombreCom[slug] || slug;
+    $('panelSub').textContent = lst.length
+      ? lst.length + ' aviso' + (lst.length>1?'s':'') + ' activo' + (lst.length>1?'s':'')
+      : 'Sin avisos con el filtro actual';
+    const cont = $('panelLista'); cont.innerHTML = '';
+    if (!lst.length){
+      cont.innerHTML = '<div class="panel-vacio">✓ Sin avisos meteorológicos activos<br>en esta comunidad</div>';
+    } else lst.forEach(a => {
+      const c = document.createElement('div');
+      c.className = 'card ' + a.nivel;
+      c.innerHTML = '<div class="tipo">' + a.icono + ' ' + a.tipo +
+        '<span class="nivel ' + a.nivel + '">' + a.nivel + '</span></div>' +
+        '<div class="zona"><strong>' + a.zona + '</strong>' +
+        (a.provincia && a.provincia !== a.zona ? ' · ' + a.provincia : '') + '</div>' +
+        '<div class="vig">' + (a.activo_ya ? 'En vigor' : 'Desde ' + hora(a.inicio)) +
+        ' · hasta ' + hora(a.fin) + '</div>';
+      cont.appendChild(c);
+    });
+    $('panel').classList.add('abierto');
+    $('selCom').value = slug;
+  }
+  function cerrarPanel(){
+    seleccion = ''; $('panel').classList.remove('abierto');
+    $('selCom').value = ''; if (capa) capa.setStyle(estilo);
+  }
+
+  function pintarControles(){
+    const n = {rojo:0, naranja:0, amarillo:0};
+    datos.avisos.forEach(a => n[a.nivel]++);
+    const chips = $('chips'); chips.innerHTML = '';
+    [['todos', datos.avisos.length, null], ['rojo', n.rojo, COLOR.rojo],
+     ['naranja', n.naranja, COLOR.naranja], ['amarillo', n.amarillo, COLOR.amarillo]]
+    .forEach(([clave, num, col]) => {
       const b = document.createElement('button');
-      b.className = 'chip' + (filtro === clave ? ' sel' : '');
-      b.innerHTML = (color ? '<span class="dot" style="background:' + color + '"></span>' : '') +
-                    (clave === 'todos' ? 'Todos' : clave[0].toUpperCase() + clave.slice(1)) +
-                    ' <span class="n">' + num + '</span>';
-      b.onclick = () => { filtro = clave; chips(); pintar(); };
-      c.appendChild(b);
+      b.className = 'chip' + (filtro===clave ? ' sel' : '');
+      b.innerHTML = (col ? '<span class="dot" style="background:'+col+'"></span>' : '') +
+        (clave==='todos' ? 'Todos' : clave[0].toUpperCase()+clave.slice(1)) + ' <span class="n">'+num+'</span>';
+      b.onclick = () => { filtro = clave; recalcular(); pintarControles();
+        capa.setStyle(estilo); if (seleccion) abrirPanel(seleccion); };
+      chips.appendChild(b);
     });
+    // desplegable con recuento
+    const sel = $('selCom'); const previa = sel.value; sel.innerHTML = '<option value="">Todas las comunidades</option>';
+    Object.entries(nombreCom).sort((a,b) => a[1].localeCompare(b[1])).forEach(([slug, nom]) => {
+      const cnt = (porCom[slug]||[]).length;
+      const o = document.createElement('option');
+      o.value = slug; o.textContent = nom + (cnt ? ' · ' + cnt : '');
+      sel.appendChild(o);
+    });
+    sel.value = previa;
   }
 
-  try {
-    const r = await fetch('avisos.json?t=' + Date.now(), {cache: 'no-store'});
-    datos = await r.json();
+  // ── carga ──
+  try{
+    const [rA, rG] = await Promise.all([
+      fetch('avisos.json?t=' + Date.now(), {cache:'no-store'}),
+      fetch('spain-communities.geojson')
+    ]);
+    datos = await rA.json();
+    const geo = await rG.json();
+    recalcular();
+
     $('actualizado').textContent = 'Datos oficiales AEMET · actualizado ' +
       new Date(datos.generado).toLocaleString('es-ES', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'});
-    chips(); pintar();
-  } catch (e) {
+    if (!datos.avisos.length) $('vacio').hidden = false;
+
+    const mapa = L.map('mapa', {zoomControl:true, attributionControl:false, scrollWheelZoom:false});
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {maxZoom:10}).addTo(mapa);
+    capa = L.geoJSON(geo, {
+      style: estilo,
+      onEachFeature: (f, l) => {
+        const nombre = f.properties.name || f.properties.NAME;
+        const slug = slugDe(nombre);
+        if (slug && !(slug in nombreCom)) nombreCom[slug] = nombre;
+        l.on('click', () => slug && abrirPanel(slug));
+        l.on('mouseover', () => l.setStyle({weight:2.5, color:'#1d1d1f'}));
+        l.on('mouseout', () => capa.resetStyle(l) || capa.setStyle(estilo));
+        const cnt = () => (porCom[slug]||[]).length;
+        l.bindTooltip(() => '<strong>' + nombre + '</strong><br>' +
+          (cnt() ? cnt() + ' aviso' + (cnt()>1?'s':'') + ' · nivel máx. ' + nivelMax(slug) : 'Sin avisos activos'),
+          {sticky:true});
+      }
+    }).addTo(mapa);
+    mapa.fitBounds(capa.getBounds(), {padding:[10,10]});
+
+    pintarControles();
+    $('selCom').onchange = e => e.target.value ? abrirPanel(e.target.value) : cerrarPanel();
+    $('panelCerrar').onclick = cerrarPanel;
+  }catch(e){
     $('actualizado').textContent = 'No se han podido cargar los avisos. Inténtalo en unos minutos.';
   }
 })();
