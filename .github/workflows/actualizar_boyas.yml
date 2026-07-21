@@ -53,7 +53,7 @@ jobs:
         env:
           BOYAS_DATOS: privado/datos/boyas_historico.json
           COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUS_USER }}
-          COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUS_PASS }}
+          COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
         run: python privado/obtener_boyas_historico.py
 
       - name: Entrenar modelo, backtesting y predicciones
