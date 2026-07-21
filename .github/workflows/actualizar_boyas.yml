@@ -25,6 +25,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"          # ver el progreso de los print en directo
 
 jobs:
   actualizar:
@@ -62,20 +63,8 @@ jobs:
           BOYAS_PUBLICO: docs
         run: python privado/modelo_boyas.py
 
-      - name: Guardar histórico en el repo privado
-        run: |
-          cd privado
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add datos/boyas_historico.json
-          if git diff --cached --quiet; then
-            echo "Histórico sin cambios"
-          else
-            git commit -m "Histórico boyas $(date -u +%F)"
-            git pull --rebase
-            git push
-          fi
-
+      # Publicamos PRIMERO el JSON público (lo que necesita el mapa): usa el
+      # GITHUB_TOKEN de este repo, siempre tiene permiso de escritura aquí.
       - name: Publicar JSON agregados en este repo
         run: |
           git config user.name "github-actions"
@@ -87,4 +76,23 @@ jobs:
             git commit -m "Actualización boyas y modelo $(date -u +%F)"
             git pull --rebase
             git push
+          fi
+
+      # Guardar el histórico incremental en el privado es deseable pero NO
+      # crítico: si el token no tiene permiso de escritura, no debe tumbar el
+      # job (el mapa ya se ha publicado). Con SCRIPTS_TOKEN en Read+Write,
+      # este paso pasa a verde y las siguientes ejecuciones son incrementales.
+      - name: Guardar histórico en el repo privado
+        continue-on-error: true
+        run: |
+          cd privado
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add datos/boyas_historico.json
+          if git diff --cached --quiet; then
+            echo "Histórico sin cambios"
+          else
+            git commit -m "Histórico boyas $(date -u +%F)"
+            git pull --rebase
+            git push || echo "AVISO: sin permiso de escritura en el privado (revisa SCRIPTS_TOKEN)"
           fi
