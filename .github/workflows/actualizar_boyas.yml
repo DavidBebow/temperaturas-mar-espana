@@ -47,11 +47,13 @@ jobs:
           python-version: "3.11"
 
       - name: Dependencias
-        run: pip install numpy
+        run: pip install numpy netCDF4 copernicusmarine
 
       - name: Descargar histórico de boyas (incremental)
         env:
           BOYAS_DATOS: privado/datos/boyas_historico.json
+          COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUS_USER }}
+          COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUS_PASS }}
         run: python privado/obtener_boyas_historico.py
 
       - name: Entrenar modelo, backtesting y predicciones
