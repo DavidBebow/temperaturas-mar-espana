@@ -1,0 +1,88 @@
+# temperaturas-mar-espana/.github/workflows/actualizar_boyas.yml
+# PATRÓN AVISOS: el Action corre en el repo PÚBLICO y accede al privado
+# clima-scripts con el secreto SCRIPTS_TOKEN.
+#
+# - Scripts e histórico diario completo: clima-scripts (privado)
+# - Publicado en este repo (docs/): solo boyas_mapa.json y
+#   boyas_modelo_metricas.json, los agregados que necesita el mapa
+#
+# IMPORTANTE: SCRIPTS_TOKEN necesita Contents: Read AND WRITE sobre
+# clima-scripts, porque el histórico incremental se guarda de vuelta en el
+# privado tras cada ejecución. Si tu token actual es de solo lectura,
+# amplíalo o crea otro.
+#
+# Semanal (lunes 06:30 UTC) + botón manual. La primera ejecución baja todo
+# el histórico y puede tardar 1-3 h; las siguientes, minutos.
+name: Actualizar boyas y modelo
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 6 * * 1"
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Checkout público (este repo)
+        uses: actions/checkout@v4
+
+      - name: Checkout privado (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Dependencias
+        run: pip install numpy
+
+      - name: Descargar histórico de boyas (incremental)
+        env:
+          BOYAS_DATOS: privado/datos/boyas_historico.json
+        run: python privado/obtener_boyas_historico.py
+
+      - name: Entrenar modelo, backtesting y predicciones
+        env:
+          BOYAS_DATOS: privado/datos/boyas_historico.json
+          BOYAS_PUBLICO: docs
+        run: python privado/modelo_boyas.py
+
+      - name: Guardar histórico en el repo privado
+        run: |
+          cd privado
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add datos/boyas_historico.json
+          if git diff --cached --quiet; then
+            echo "Histórico sin cambios"
+          else
+            git commit -m "Histórico boyas $(date -u +%F)"
+            git pull --rebase
+            git push
+          fi
+
+      - name: Publicar JSON agregados en este repo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/boyas_mapa.json docs/boyas_modelo_metricas.json
+          if git diff --cached --quiet; then
+            echo "Público sin cambios"
+          else
+            git commit -m "Actualización boyas y modelo $(date -u +%F)"
+            git pull --rebase
+            git push
+          fi
