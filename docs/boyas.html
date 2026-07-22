@@ -3,394 +3,381 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Temperatura del mar en España por boyas · histórico y predicción</title>
+<title>Temperatura del mar en España por boyas · actual y predicción</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; background: #0a1218; }
-  #mapa { width: 100%; height: 480px; background: #0a1218; }
+  :root{
+    --bg:#080b10; --panel:rgba(255,255,255,.045); --panel2:rgba(255,255,255,.07);
+    --line:rgba(255,255,255,.09); --txt:#eaf1f8; --mut:#8ba0b3; --mut2:#5f7385;
+    --live:#38e08f; --ember:#ff8a3d; --gold:#f0b429;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased}
+  #app{position:relative;background:
+    radial-gradient(1200px 600px at 70% -10%,rgba(56,120,200,.10),transparent 60%),
+    radial-gradient(900px 500px at 10% 110%,rgba(255,138,61,.07),transparent 55%),var(--bg);
+    border:1px solid var(--line);border-radius:20px;overflow:hidden}
 
-  #cabecera {
-    background: #060e14; color: white; padding: 10px 16px;
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 6px; border-bottom: 1px solid #1a3040;
-  }
-  #cabecera h2 { font-size: 14px; font-weight: 500; letter-spacing: .04em; color: #e0f0ff; }
-  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-  #resumen { font-size: 11px; color: #5a8aaa; }
-  #ultima-act { font-size: 11px; color: #4a6a8a; }
+  /* ---------- cabecera ---------- */
+  #top{display:flex;justify-content:space-between;align-items:center;gap:14px;
+    padding:16px 20px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+  #top h1{font-size:15px;font-weight:600;letter-spacing:.01em;display:flex;align-items:center;gap:9px}
+  #top h1 .dot{width:8px;height:8px;border-radius:50%;background:var(--live);
+    box-shadow:0 0 0 4px rgba(56,224,143,.18);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  #chips{display:flex;gap:10px;flex-wrap:wrap}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:8px 13px;min-width:96px;backdrop-filter:blur(8px)}
+  .kpi .lab{font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--mut2);font-weight:600}
+  .kpi .val{font-size:17px;font-weight:600;margin-top:2px;letter-spacing:-.01em}
+  .kpi .val small{font-size:11px;color:var(--mut);font-weight:500}
 
-  #leyenda {
-    background: #080c12; padding: 7px 16px; display: flex; flex-wrap: wrap;
-    gap: 12px; align-items: center; border-bottom: 1px solid #1a3040;
-    font-size: 11px; color: #7a9aaa;
-  }
-  #leyenda strong { color: #9abccc; font-weight: 500; }
-  #grad {
-    width: 150px; height: 10px; border-radius: 5px;
-    background: linear-gradient(90deg,#2159c1,#1e9be0,#27c1a7,#a8cf3f,#e8b325,#e0661f,#CC2200);
-    border: 1px solid rgba(255,255,255,.12);
-  }
-  .chip-pred {
-    padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700;
-    letter-spacing: .06em; color: #ffd9a8; background: #2a1d08;
-    border: 1px dashed #c98a2b;
-  }
+  /* ---------- mapa ---------- */
+  #mapa{width:100%;height:430px;background:#0a0e13}
+  .leaflet-container{background:#0a0e13}
 
-  /* ------ barra temporal ------ */
-  #barra {
-    background: #060e14; border-top: 1px solid #1a3040;
-    padding: 10px 16px 14px; color: #cfe6f5;
-  }
-  #barra-fila1 { display: flex; align-items: center; gap: 12px; }
-  #btn-play {
-    width: 34px; height: 34px; border-radius: 50%; border: 1px solid #1e3a5c;
-    background: #0a1828; color: #9fc6e0; font-size: 14px; cursor: pointer;
-    flex-shrink: 0; transition: background .2s;
-  }
-  #btn-play:hover { background: #123049; }
-  #slider-zona { flex: 1; position: relative; }
-  #slider {
-    width: 100%; -webkit-appearance: none; appearance: none; height: 8px;
-    border-radius: 4px; outline: none; cursor: pointer;
-    background: linear-gradient(90deg, #1e3a5c var(--pct-hist), #6b4a12 var(--pct-hist));
-  }
-  #slider::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
-    background: #e8f0ff; border: 2px solid #0a1828; cursor: pointer;
-  }
-  #slider::-moz-range-thumb {
-    width: 16px; height: 16px; border-radius: 50%;
-    background: #e8f0ff; border: 2px solid #0a1828; cursor: pointer;
-  }
-  #etiquetas { display: flex; justify-content: space-between; font-size: 10px; color: #4a6a8a; margin-top: 4px; }
-  #eti-futuro { color: #c98a2b; font-weight: 700; }
-  #mes-actual {
-    min-width: 150px; text-align: center; font-size: 13px; font-weight: 600;
-    color: #e8f0ff; background: #0a1828; border: 1px solid #1e3a5c;
-    border-radius: 10px; padding: 6px 10px; flex-shrink: 0;
-  }
-  #mes-actual .sub { display: block; font-size: 9px; font-weight: 700; letter-spacing: .08em; color: #c98a2b; }
+  .boya-pin{background:none!important;border:none!important}
+  .pin{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+    color:#08111a;border-radius:999px;padding:3px 8px;white-space:nowrap;cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,.5);border:1.5px solid rgba(255,255,255,.35);
+    transition:transform .12s}
+  .pin:hover{transform:scale(1.12)}
+  .pin.pred{color:#2a1400;border:1.5px dashed rgba(255,255,255,.6)}
+  .pin.live::after{content:"";position:absolute;inset:-4px;border-radius:999px;
+    border:1.5px solid rgba(56,224,143,.55)}
+  .pin.sel{outline:2px solid #fff;outline-offset:2px}
 
-  /* ------ popups ------ */
-  .leaflet-popup-content-wrapper {
-    background: #0a1828 !important; border: 1px solid #1e3a5c !important;
-    border-radius: 14px !important; box-shadow: 0 8px 32px rgba(0,0,0,.8) !important;
-    color: #e0eeff !important;
-  }
-  .leaflet-popup-content { margin: 14px 16px !important; width: 270px !important; }
-  .leaflet-popup-tip { background: #0a1828 !important; }
-  .leaflet-popup-close-button { color: #4a6a8a !important; }
-  .popup-titulo { font-weight: 700; font-size: 15px; color: #e8f0ff; }
-  .popup-red   { font-size: 10px; color: #5a8aaa; letter-spacing: .05em; margin: 2px 0 8px; }
-  .popup-temp  { font-size: 28px; font-weight: 300; color: #e8f0ff; letter-spacing: -.02em; }
-  .popup-etiq  { font-size: 11px; color: #7a9aaa; margin-bottom: 8px; }
-  .popup-rango { font-size: 11px; color: #ffd9a8; margin: -4px 0 8px; }
-  .popup-dato  {
-    display: flex; justify-content: space-between; padding: 4px 0;
-    border-bottom: 1px solid #1a2a40; font-size: 11.5px; color: #7a9aaa;
-  }
-  .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; text-align: right; }
-  .popup-dato .rec { color: #ff9d7a; }
-  .popup-modelo {
-    margin-top: 10px; padding: 7px 9px; background: #0d1a28; border: 1px solid #1a3040;
-    border-radius: 8px; font-size: 10.5px; color: #6a92ac; line-height: 1.5;
-  }
-  .popup-modelo b { color: #9fc6e0; }
-  canvas.spark { width: 100%; height: 74px; margin: 6px 0 2px; display: block; }
+  .leaflet-control-zoom{border:none!important;box-shadow:none!important}
+  .leaflet-control-zoom a{background:var(--panel2)!important;color:var(--txt)!important;
+    border:1px solid var(--line)!important;backdrop-filter:blur(8px)}
+  .leaflet-control-attribution{background:rgba(8,11,16,.7)!important;color:var(--mut2)!important;font-size:9px!important}
+  .leaflet-control-attribution a{color:var(--mut)!important}
 
-  .leaflet-control-zoom a {
-    background: #0a1828 !important; color: #7a9aaa !important; border-color: #1e3a5c !important;
-  }
-  .leaflet-control-attribution {
-    background: rgba(6,14,20,.8) !important; color: #4a6a8a !important; font-size: 9px !important;
-  }
-  .leaflet-control-attribution a { color: #5a8aaa !important; }
-  .leaflet-tooltip.temp-tip {
-    background: #0a1828; border: 1px solid #1e3a5c; color: #e8f0ff;
-    font-weight: 700; font-size: 11px; border-radius: 8px; padding: 2px 8px;
-  }
-  .leaflet-tooltip.temp-tip:before { display: none; }
+  #legenda{position:absolute;left:16px;bottom:14px;z-index:500;background:rgba(8,11,16,.66);
+    border:1px solid var(--line);border-radius:12px;padding:8px 11px;backdrop-filter:blur(10px);
+    display:flex;align-items:center;gap:9px;font-size:10.5px;color:var(--mut)}
+  #legenda .bar{width:120px;height:8px;border-radius:5px;border:1px solid rgba(255,255,255,.12);
+    background:linear-gradient(90deg,#2159c1,#1e9be0,#27c1a7,#a8cf3f,#f0b429,#ff8a3d,#e0331e)}
 
-  @media (max-width: 560px) {
-    #mapa { height: 400px; }
-    #mes-actual { min-width: 118px; font-size: 11.5px; }
-    #leyenda { gap: 8px; }
+  /* ---------- timeline ---------- */
+  #time{display:flex;align-items:center;gap:14px;padding:14px 20px;border-top:1px solid var(--line)}
+  .rbtn{flex-shrink:0;height:38px;border-radius:12px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--txt);cursor:pointer;font-size:13px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s;backdrop-filter:blur(8px)}
+  .rbtn:hover{background:rgba(255,255,255,.12)}
+  #b-ahora{padding:0 15px;color:var(--live)}
+  #b-ahora .dot{width:7px;height:7px;border-radius:50%;background:var(--live)}
+  #b-play{width:38px}
+  #track-wrap{flex:1;position:relative}
+  #track{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:6px;outline:none;cursor:pointer;
+    background:linear-gradient(90deg,#24405e var(--ph),var(--live) var(--ph),var(--live) var(--pa),rgba(240,180,41,.5) var(--pa))}
+  #track::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+    background:#fff;border:3px solid #0a0e13;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.6)}
+  #track::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #0a0e13;cursor:pointer}
+  #tlabels{display:flex;justify-content:space-between;font-size:9.5px;color:var(--mut2);margin-top:5px}
+  #tlabels .now{color:var(--live);font-weight:700}
+  #tlabels .fut{color:var(--gold);font-weight:700}
+  #when{flex-shrink:0;min-width:132px;text-align:center;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:7px 12px;backdrop-filter:blur(8px)}
+  #when .w{font-size:14px;font-weight:700;letter-spacing:-.01em}
+  #when .s{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:1px}
+  #when .s.live{color:var(--live)} #when .s.pred{color:var(--gold)} #when .s.hist{color:var(--mut2)}
+
+  /* ---------- tarjetas ---------- */
+  #cards{display:flex;gap:10px;overflow-x:auto;padding:14px 20px 18px;scroll-snap-type:x proximity;
+    border-top:1px solid var(--line)}
+  #cards::-webkit-scrollbar{height:7px}
+  #cards::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+  .card{scroll-snap-align:start;flex:0 0 148px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;padding:12px 13px;cursor:pointer;transition:border-color .15s,transform .15s,background .15s}
+  .card:hover{background:var(--panel2);transform:translateY(-2px)}
+  .card.sel{border-color:rgba(255,255,255,.4)}
+  .card .nom{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .red{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut2);margin-top:1px}
+  .card .big{font-size:30px;font-weight:300;letter-spacing:-.03em;margin:8px 0 2px;line-height:1}
+  .card .big small{font-size:14px;color:var(--mut);font-weight:400}
+  .card .tag{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .card .tag.live{color:var(--live)} .card .tag.pred{color:var(--gold)} .card .tag.hist{color:var(--mut2)}
+  .card .rows{margin-top:9px;display:flex;flex-direction:column;gap:4px}
+  .card .r{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mut)}
+  .card .r b{font-weight:600}
+  .up{color:#ff7a5c} .down{color:#5cc8ff}
+
+  /* ---------- panel detalle ---------- */
+  #det{position:absolute;left:0;right:0;bottom:0;z-index:1200;transform:translateY(101%);
+    transition:transform .28s cubic-bezier(.22,.61,.36,1);background:rgba(11,15,21,.92);
+    border-top:1px solid var(--line);backdrop-filter:blur(16px);border-radius:20px 20px 0 0;
+    padding:18px 20px 20px;max-height:86%;overflow-y:auto}
+  #det.open{transform:translateY(0)}
+  #det .close{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:50%;
+    border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font-size:15px}
+  #det .dnom{font-size:19px;font-weight:700}
+  #det .dred{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut2);margin:3px 0 12px}
+  #det .dtemp{font-size:44px;font-weight:200;letter-spacing:-.03em;line-height:1}
+  #det .dtemp small{font-size:18px;color:var(--mut)}
+  #det .dsub{font-size:12px;color:var(--mut);margin:4px 0 2px}
+  #det .dsub b{color:var(--live)}
+  #det .drange{font-size:12px;color:#ffcf9a;margin-top:2px}
+  #det canvas{width:100%;height:120px;margin:14px 0 6px;display:block}
+  #det .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  #det .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 11px}
+  #det .box .l{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut2);font-weight:600}
+  #det .box .v{font-size:15px;font-weight:600;margin-top:3px}
+  #det .box .v.rec{color:#ff9d7a}
+  #det .model{margin-top:12px;font-size:11px;color:var(--mut);background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:10px 12px;line-height:1.55}
+  #det .model b{color:#a9c6e0}
+
+  @media(max-width:600px){
+    #mapa{height:360px}
+    #top h1{font-size:13px}
+    .kpi{min-width:0;padding:6px 10px}
+    #when{min-width:110px}
   }
 </style>
 </head>
 <body>
-
-<div id="cabecera">
-  <h2>🌊 TEMPERATURA DEL MAR EN ESPAÑA · BOYAS DE PUERTOS DEL ESTADO</h2>
-  <div id="info-derecha">
-    <div id="resumen">Cargando…</div>
-    <div id="ultima-act"></div>
+<div id="app">
+  <div id="top">
+    <h1><span class="dot"></span>Temperatura del mar en España · boyas de Puertos del Estado</h1>
+    <div id="chips"></div>
   </div>
-</div>
 
-<div id="leyenda">
-  <strong>Temperatura del agua</strong>
-  <span>11&nbsp;°C</span><div id="grad"></div><span>29&nbsp;°C</span>
-  <span class="chip-pred">TRAMO FUTURO = PREDICCIÓN DEL MODELO</span>
-</div>
-
-<div id="mapa"></div>
-
-<div id="barra">
-  <div id="barra-fila1">
-    <button id="btn-play" title="Reproducir">▶</button>
-    <div id="slider-zona">
-      <input type="range" id="slider" min="0" max="1" value="0" step="1">
-      <div id="etiquetas">
-        <span id="eti-inicio"></span>
-        <span id="eti-futuro">⟶ predicción 12 meses</span>
-      </div>
+  <div style="position:relative">
+    <div id="mapa"></div>
+    <div id="legenda"><span>11°</span><div class="bar"></div><span>29°</span></div>
+    <div id="det">
+      <button class="close" id="det-close">×</button>
+      <div id="det-body"></div>
     </div>
-    <div id="mes-actual"><span id="mes-txt">—</span><span class="sub" id="mes-sub"></span></div>
   </div>
+
+  <div id="time">
+    <button class="rbtn" id="b-ahora"><span class="dot"></span>Ahora</button>
+    <button class="rbtn" id="b-play">▶</button>
+    <div id="track-wrap">
+      <input type="range" id="track" min="0" max="1" value="0" step="1">
+      <div id="tlabels"><span id="tl-ini"></span><span class="now">hoy</span><span class="fut">predicción ⟶</span></div>
+    </div>
+    <div id="when"><div class="w" id="when-w">—</div><div class="s" id="when-s"></div></div>
+  </div>
+
+  <div id="cards"></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-(function () {
-  var URL_DATOS = 'boyas_mapa.json?v=' + Date.now();
-  var MESES_ES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  var datos = null, mapa = null, marcadores = {}, idx = 0, total = 0, nHist = 0;
-  var reproduciendo = false, timer = null, popupAbierto = null;
+(function(){
+  var URL_MAPA='boyas_mapa.json?v='+Date.now();
+  var URL_ACTUAL='boyas_actual.json?v='+Date.now();
+  var MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  var datos=null,actual=null,mapa=null,marc={},idx=0,total=0,nHist=0,IDX=0,sel=null;
+  var playing=false,timer=null;
 
-  // ---- escala de color 11..29 °C
-  var PARADAS = [
-    [11, [33, 89, 193]], [14, [30, 155, 224]], [17, [39, 193, 167]],
-    [20, [168, 207, 63]], [23, [232, 179, 37]], [26, [224, 102, 31]],
-    [29, [204, 34, 0]]
-  ];
-  function color(t) {
-    if (t == null) return '#3a4a5a';
-    if (t <= PARADAS[0][0]) return rgb(PARADAS[0][1]);
-    for (var i = 1; i < PARADAS.length; i++) {
-      if (t <= PARADAS[i][0]) {
-        var a = PARADAS[i-1], b = PARADAS[i];
-        var f = (t - a[0]) / (b[0] - a[0]);
-        return rgb([0,1,2].map(function (k) { return Math.round(a[1][k] + f * (b[1][k] - a[1][k])); }));
-      }
-    }
-    return rgb(PARADAS[PARADAS.length-1][1]);
+  var STOPS=[[11,[33,89,193]],[14,[30,155,224]],[17,[39,193,167]],[20,[168,207,63]],
+             [23,[240,180,41]],[26,[255,138,61]],[29,[224,51,30]]];
+  function color(t){
+    if(t==null)return '#3a4a5a';
+    if(t<=STOPS[0][0])return rgb(STOPS[0][1]);
+    for(var i=1;i<STOPS.length;i++){if(t<=STOPS[i][0]){var a=STOPS[i-1],b=STOPS[i],f=(t-a[0])/(b[0]-a[0]);
+      return rgb([0,1,2].map(function(k){return Math.round(a[1][k]+f*(b[1][k]-a[1][k]))}));}}
+    return rgb(STOPS[STOPS.length-1][1]);
   }
-  function rgb(c) { return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')'; }
+  function rgb(c){return 'rgb('+c[0]+','+c[1]+','+c[2]+')'}
+  function nMes(ym){var p=ym.split('-');return MES[+p[1]-1]+' '+p[0]}
+  function fBonita(iso){var p=iso.split('-');return p[2]+' '+MES[+p[1]-1]+' '+p[0]}
 
-  function nombreMes(ym) {
-    var p = ym.split('-');
-    return MESES_ES[+p[1] - 1] + ' ' + p[0];
-  }
-
-  // ---- valor de una boya en el índice global (histórico o predicción)
-  function valorEn(b, i) {
-    if (i < nHist) return b.serie[i] != null ? { v: b.serie[i], pred: false } : null;
-    var j = i - nHist;
-    if (b.prediccion && b.prediccion.central[j] != null) {
-      return { v: b.prediccion.central[j], pred: true,
-               p10: b.prediccion.p10[j], p90: b.prediccion.p90[j] };
+  function valorEn(b,i){
+    if(i<nHist)return b.serie[i]!=null?{v:b.serie[i],tipo:'hist'}:null;
+    if(i===IDX){
+      var a=actual&&actual.boyas?actual.boyas[b.id]:null;
+      if(a)return {v:a.temp,tipo:'live',fecha:a.fecha};
+      for(var k=nHist-1;k>=0;k--)if(b.serie[k]!=null)return{v:b.serie[k],tipo:'hist'};
+      return null;
     }
+    var j=i-IDX-1;
+    if(b.prediccion&&b.prediccion.central[j]!=null)
+      return{v:b.prediccion.central[j],tipo:'pred',p10:b.prediccion.p10[j],p90:b.prediccion.p90[j]};
     return null;
   }
-
-  function pintar() {
-    var ym = (idx < nHist) ? datos.meses[idx] : datos.meses_futuro[idx - nHist];
-    document.getElementById('mes-txt').textContent = nombreMes(ym);
-    document.getElementById('mes-sub').textContent = (idx < nHist) ? '' : 'PREDICCIÓN';
-    Object.keys(datos.boyas).forEach(function (id) {
-      var b = datos.boyas[id], m = marcadores[id];
-      var r = valorEn(b, idx);
-      m.setStyle({
-        fillColor: r ? color(r.v) : '#3a4a5a',
-        fillOpacity: r ? 0.92 : 0.35,
-        dashArray: r && r.pred ? '3,3' : null,
-        color: r && r.pred ? '#ffd9a8' : '#06121c'
-      });
-      m.setTooltipContent(b.nombre + ': ' + (r ? r.v.toFixed(1) + ' °C' + (r.pred ? ' (pred.)' : '') : 'sin dato'));
-    });
-    if (popupAbierto) { abrirFicha(popupAbierto, false); }
+  function etq(i){
+    if(i===IDX)return{w:'AHORA',s:'dato de hoy',c:'live'};
+    if(i<nHist)return{w:nMes(datos.meses[i]),s:'observado',c:'hist'};
+    return{w:nMes(datos.meses_futuro[i-IDX-1]),s:'predicción',c:'pred'};
   }
 
-  // ---- sparkline: últimos 24 meses + 12 de predicción con banda
-  function sparkline(cv, b) {
-    var ctx = cv.getContext('2d');
-    var W = cv.width = cv.clientWidth * 2, H = cv.height = 148;
-    ctx.clearRect(0, 0, W, H);
-    var hist = [], fechas = [];
-    for (var i = Math.max(0, nHist - 24); i < nHist; i++) { hist.push(b.serie[i]); fechas.push(datos.meses[i]); }
-    var pred = b.prediccion;
-    var vals = hist.slice();
-    if (pred) { vals = vals.concat(pred.central, pred.p10, pred.p90); }
-    var num = vals.filter(function (x) { return x != null; });
-    if (!num.length) return;
-    var mn = Math.min.apply(null, num) - 0.5, mx = Math.max.apply(null, num) + 0.5;
-    var n = hist.length + (pred ? 12 : 0);
-    function X(i) { return 8 + i * (W - 16) / (n - 1); }
-    function Y(v) { return H - 12 - (v - mn) * (H - 24) / (mx - mn); }
-    // banda de predicción p10-p90
-    if (pred) {
-      ctx.beginPath();
-      var empieza = false;
-      for (var j = 0; j < 12; j++) if (pred.p90[j] != null) {
-        var x = X(hist.length + j);
-        if (!empieza) { ctx.moveTo(x, Y(pred.p90[j])); empieza = true; } else ctx.lineTo(x, Y(pred.p90[j]));
-      }
-      for (var j = 11; j >= 0; j--) if (pred.p10[j] != null) ctx.lineTo(X(hist.length + j), Y(pred.p10[j]));
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(201,138,43,0.20)';
-      ctx.fill();
-    }
-    // línea histórica
-    ctx.beginPath(); ctx.strokeStyle = '#7ab8e0'; ctx.lineWidth = 2.4;
-    var open = false;
-    hist.forEach(function (v, i) {
-      if (v == null) { open = false; return; }
-      var x = X(i), y = Y(v);
-      if (!open) { ctx.moveTo(x, y); open = true; } else ctx.lineTo(x, y);
+  function pinHtml(b,r){
+    var t=r?r.v.toFixed(1)+'°':'—';
+    var cls='pin '+(r?r.tipo:'')+(sel===b.id?' sel':'');
+    var bg=r?color(r.v):'#3a4a5a';
+    return '<div class="'+cls+'" style="background:'+bg+';position:relative">'+t+'</div>';
+  }
+
+  function pintar(){
+    var e=etq(idx);
+    document.getElementById('when-w').textContent=e.w;
+    var ws=document.getElementById('when-s');ws.textContent=e.s;ws.className='s '+e.c;
+    Object.keys(datos.boyas).forEach(function(id){
+      var b=datos.boyas[id],r=valorEn(b,idx);
+      marc[id].setIcon(L.divIcon({className:'boya-pin',html:pinHtml(b,r),iconSize:[46,24],iconAnchor:[23,12]}));
     });
+    renderCards();
+  }
+
+  function tendChip(b){
+    var t=(b.stats||{}).tendencia_decada;
+    if(t==null)return '';
+    var cl=t>0?'up':'down',ar=t>0?'↑':'↓';
+    return '<span class="'+cl+'">'+ar+' '+(t>0?'+':'')+t.toFixed(2)+'°/déc</span>';
+  }
+
+  function renderCards(){
+    var cont=document.getElementById('cards');
+    var arr=Object.keys(datos.boyas).map(function(id){return datos.boyas[id]});
+    arr.sort(function(a,b){var ra=valorEn(a,idx),rb=valorEn(b,idx);
+      return (rb?rb.v:-99)-(ra?ra.v:-99)});
+    var html='';
+    arr.forEach(function(b){
+      var r=valorEn(b,idx),s=b.stats||{};
+      var tag=r?(r.tipo==='live'?'<span class="tag live">● ahora</span>':
+                 r.tipo==='pred'?'<span class="tag pred">predicción</span>':
+                 '<span class="tag hist">observado</span>'):'';
+      var anom=s.anomalia_reciente;
+      html+='<div class="card'+(sel===b.id?' sel':'')+'" data-id="'+b.id+'">'+
+        '<div class="nom">'+b.nombre+'</div><div class="red">'+(b.red||'')+'</div>'+
+        '<div class="big">'+(r?r.v.toFixed(1):'—')+'<small>°C</small></div>'+tag+
+        '<div class="rows">'+
+          '<div class="r"><span>Tendencia</span><b>'+(tendChip(b)||'—')+'</b></div>'+
+          '<div class="r"><span>Anomalía</span><b>'+(anom!=null?(anom>0?'+':'')+anom.toFixed(1)+'°':'—')+'</b></div>'+
+        '</div></div>';
+    });
+    cont.innerHTML=html;
+    Array.prototype.forEach.call(cont.querySelectorAll('.card'),function(c){
+      c.addEventListener('click',function(){focar(c.getAttribute('data-id'))});
+    });
+  }
+
+  function focar(id){
+    sel=id;var b=datos.boyas[id];
+    mapa.panTo([b.lat,b.lon],{animate:true});
+    abrirDet(id);pintar();
+  }
+
+  function sparkline(cv,b){
+    var ctx=cv.getContext('2d');var W=cv.width=cv.clientWidth*2,H=cv.height=240;
+    ctx.clearRect(0,0,W,H);
+    var hist=[];for(var i=Math.max(0,nHist-24);i<nHist;i++)hist.push(b.serie[i]);
+    var pred=b.prediccion,vals=hist.slice();
+    if(pred)vals=vals.concat(pred.central,pred.p10,pred.p90);
+    var num=vals.filter(function(x){return x!=null});if(!num.length)return;
+    var mn=Math.min.apply(null,num)-.5,mx=Math.max.apply(null,num)+.5;
+    var n=hist.length+(pred?12:0);
+    function X(i){return 10+i*(W-20)/(n-1)}function Y(v){return H-16-(v-mn)*(H-32)/(mx-mn)}
+    if(pred){ctx.beginPath();var op=false;
+      for(var j=0;j<12;j++)if(pred.p90[j]!=null){var x=X(hist.length+j);if(!op){ctx.moveTo(x,Y(pred.p90[j]));op=true}else ctx.lineTo(x,Y(pred.p90[j]))}
+      for(var j2=11;j2>=0;j2--)if(pred.p10[j2]!=null)ctx.lineTo(X(hist.length+j2),Y(pred.p10[j2]));
+      ctx.closePath();ctx.fillStyle='rgba(240,180,41,.18)';ctx.fill();}
+    ctx.beginPath();ctx.strokeStyle='#5aa9e0';ctx.lineWidth=2.6;var o=false;
+    hist.forEach(function(v,i){if(v==null){o=false;return}var x=X(i),y=Y(v);if(!o){ctx.moveTo(x,y);o=true}else ctx.lineTo(x,y)});
     ctx.stroke();
-    // línea de predicción discontinua
-    if (pred) {
-      ctx.beginPath(); ctx.setLineDash([6, 5]); ctx.strokeStyle = '#e8b325'; ctx.lineWidth = 2.4;
-      var last = null;
-      for (var i = hist.length - 1; i >= 0; i--) if (hist[i] != null) { last = i; break; }
-      if (last != null) ctx.moveTo(X(last), Y(hist[last]));
-      for (var j = 0; j < 12; j++) if (pred.central[j] != null) ctx.lineTo(X(hist.length + j), Y(pred.central[j]));
-      ctx.stroke(); ctx.setLineDash([]);
-    }
-    // separador hoy
-    ctx.beginPath(); ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1;
-    ctx.moveTo(X(hist.length - 1), 6); ctx.lineTo(X(hist.length - 1), H - 6); ctx.stroke();
+    if(pred){ctx.beginPath();ctx.setLineDash([6,5]);ctx.strokeStyle='#f0b429';ctx.lineWidth=2.6;
+      var last=null;for(var i2=hist.length-1;i2>=0;i2--)if(hist[i2]!=null){last=i2;break}
+      if(last!=null)ctx.moveTo(X(last),Y(hist[last]));
+      for(var j3=0;j3<12;j3++)if(pred.central[j3]!=null)ctx.lineTo(X(hist.length+j3),Y(pred.central[j3]));
+      ctx.stroke();ctx.setLineDash([]);}
+    ctx.beginPath();ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1;
+    ctx.moveTo(X(hist.length-1),8);ctx.lineTo(X(hist.length-1),H-8);ctx.stroke();
   }
 
-  function abrirFicha(id, centrar) {
-    var b = datos.boyas[id];
-    popupAbierto = id;
-    var r = valorEn(b, idx);
-    var s = b.stats || {};
-    var h = '<div class="popup-titulo">' + b.nombre + '</div>' +
-      '<div class="popup-red">' + b.red + (b.codigo_bd ? ' · boya ' + b.codigo_bd : '') +
-      ' · serie desde ' + (s.inicio || '—').slice(0, 4) + '</div>';
-    if (r) {
-      h += '<div class="popup-temp">' + r.v.toFixed(1) + ' °C</div>';
-      h += '<div class="popup-etiq">' + (r.pred ? 'predicción para ' : 'media de ') +
-           nombreMes(idx < nHist ? datos.meses[idx] : datos.meses_futuro[idx - nHist]) + '</div>';
-      if (r.pred && r.p10 != null) {
-        h += '<div class="popup-rango">rango probable (80%): ' + r.p10.toFixed(1) + ' – ' + r.p90.toFixed(1) + ' °C</div>';
-      }
-    } else {
-      h += '<div class="popup-etiq">sin dato para este mes</div>';
+  function abrirDet(id){
+    var b=datos.boyas[id],s=b.stats||{},r=valorEn(b,idx),a=actual&&actual.boyas?actual.boyas[id]:null;
+    var h='<div class="dnom">'+b.nombre+'</div>'+
+      '<div class="dred">'+(b.red||'')+(b.codigo_bd?' · boya '+b.codigo_bd:'')+' · serie desde '+((s.inicio||'—').slice(0,4))+'</div>';
+    if(r){
+      h+='<div class="dtemp">'+r.v.toFixed(1)+'<small>°C</small></div>';
+      if(r.tipo==='live')h+='<div class="dsub"><b>ahora</b> · medido el '+fBonita(r.fecha)+'</div>';
+      else if(r.tipo==='pred'){h+='<div class="dsub">predicción para '+nMes(datos.meses_futuro[idx-IDX-1])+'</div>';
+        if(r.p10!=null)h+='<div class="drange">rango probable (80%): '+r.p10.toFixed(1)+' – '+r.p90.toFixed(1)+' °C</div>';}
+      else h+='<div class="dsub">media de '+nMes(datos.meses[idx])+'</div>';
     }
-    h += '<canvas class="spark" id="spark-' + id + '"></canvas>';
-    if (s.record_max) {
-      h += '<div class="popup-dato"><span>Récord histórico</span><span class="rec">' +
-           s.record_max.valor.toFixed(1) + ' °C · ' + s.record_max.fecha + '</span></div>';
-    }
-    if (s.record_min) {
-      h += '<div class="popup-dato"><span>Mínimo histórico</span><span>' +
-           s.record_min.valor.toFixed(1) + ' °C · ' + s.record_min.fecha + '</span></div>';
-    }
-    if (s.tendencia_decada != null) {
-      h += '<div class="popup-dato"><span>Calentamiento</span><span>' +
-           (s.tendencia_decada > 0 ? '+' : '') + s.tendencia_decada.toFixed(2) + ' °C/década</span></div>';
-    }
-    if (s.anio_mas_calido) {
-      h += '<div class="popup-dato"><span>Año más cálido</span><span>' +
-           s.anio_mas_calido.anio + ' (' + s.anio_mas_calido.media.toFixed(1) + ' °C)</span></div>';
-    }
-    if (s.anomalia_reciente != null) {
-      h += '<div class="popup-dato"><span>Anomalía últimas semanas</span><span>' +
-           (s.anomalia_reciente > 0 ? '+' : '') + s.anomalia_reciente.toFixed(1) + ' °C vs normal</span></div>';
-    }
-    if (s.record_dias25) {
-      h += '<div class="popup-dato"><span>Récord días ≥ 25 °C</span><span>' +
-           s.record_dias25.dias + ' días (' + s.record_dias25.anio + ')</span></div>';
-    }
-    if (b.metricas && b.metricas.mae_1m != null) {
-      h += '<div class="popup-modelo">Fiabilidad del modelo en esta boya (validación con datos reales): ' +
-           'error medio de <b>±' + b.metricas.mae_1m.toFixed(2) + ' °C</b> a 1 mes' +
-           (b.metricas.mae_3m != null ? ' y <b>±' + b.metricas.mae_3m.toFixed(2) + ' °C</b> a 3 meses' : '') +
-           '.</div>';
-    } else if (!b.prediccion) {
-      h += '<div class="popup-modelo">Serie aún corta: esta boya muestra solo observaciones, sin predicción.</div>';
-    }
-    var m = marcadores[id];
-    m.bindPopup(h, { maxWidth: 300 });
-    m.openPopup();
-    setTimeout(function () {
-      var cv = document.getElementById('spark-' + id);
-      if (cv) sparkline(cv, b);
-    }, 60);
+    h+='<canvas id="det-spark"></canvas>';
+    h+='<div class="grid">';
+    if(a)h+='<div class="box"><div class="l">Temperatura hoy</div><div class="v" style="color:#8effc0">'+a.temp.toFixed(1)+' °C</div></div>';
+    if(s.record_max)h+='<div class="box"><div class="l">Récord histórico</div><div class="v rec">'+s.record_max.valor.toFixed(1)+' °C</div><div class="l" style="margin-top:2px">'+s.record_max.fecha+'</div></div>';
+    if(s.record_min)h+='<div class="box"><div class="l">Mínimo histórico</div><div class="v">'+s.record_min.valor.toFixed(1)+' °C</div><div class="l" style="margin-top:2px">'+s.record_min.fecha+'</div></div>';
+    if(s.tendencia_decada!=null)h+='<div class="box"><div class="l">Calentamiento</div><div class="v">'+(s.tendencia_decada>0?'+':'')+s.tendencia_decada.toFixed(2)+' °C<small style="font-size:11px;color:var(--mut)">/déc</small></div></div>';
+    if(s.anio_mas_calido)h+='<div class="box"><div class="l">Año más cálido</div><div class="v">'+s.anio_mas_calido.anio+'</div><div class="l" style="margin-top:2px">'+s.anio_mas_calido.media.toFixed(1)+' °C</div></div>';
+    if(s.anomalia_reciente!=null)h+='<div class="box"><div class="l">Anomalía reciente</div><div class="v">'+(s.anomalia_reciente>0?'+':'')+s.anomalia_reciente.toFixed(1)+' °C</div><div class="l" style="margin-top:2px">vs normal</div></div>';
+    if(s.record_dias25)h+='<div class="box"><div class="l">Récord días ≥25°</div><div class="v">'+s.record_dias25.dias+'</div><div class="l" style="margin-top:2px">en '+s.record_dias25.anio+'</div></div>';
+    h+='</div>';
+    if(b.metricas&&b.metricas.mae_1m!=null)
+      h+='<div class="model">Fiabilidad del modelo aquí (validado con datos reales): error de <b>±'+b.metricas.mae_1m.toFixed(2)+' °C</b> a 1 mes'+(b.metricas.mae_3m!=null?' y <b>±'+b.metricas.mae_3m.toFixed(2)+' °C</b> a 3 meses':'')+'.</div>';
+    else if(!b.prediccion)
+      h+='<div class="model">Serie aún corta: esta boya muestra solo observaciones, sin predicción.</div>';
+    document.getElementById('det-body').innerHTML=h;
+    document.getElementById('det').classList.add('open');
+    setTimeout(function(){var cv=document.getElementById('det-spark');if(cv)sparkline(cv,b)},60);
+  }
+  function cerrarDet(){document.getElementById('det').classList.remove('open');sel=null;pintar()}
+
+  function kpis(){
+    var vs=[];Object.keys(datos.boyas).forEach(function(id){var r=valorEn(datos.boyas[id],IDX);if(r)vs.push({n:datos.boyas[id].nombre,v:r.v})});
+    var media=vs.length?vs.reduce(function(a,b){return a+b.v},0)/vs.length:null;
+    var cal=vs.slice().sort(function(a,b){return b.v-a.v})[0];
+    var fri=vs.slice().sort(function(a,b){return a.v-b.v})[0];
+    var fecha=actual&&actual.generado?actual.generado.replace('T',' ').replace('Z',''):(datos.generado||'');
+    document.getElementById('chips').innerHTML=
+      '<div class="kpi"><div class="lab">Media ahora</div><div class="val">'+(media!=null?media.toFixed(1):'—')+'<small> °C</small></div></div>'+
+      (cal?'<div class="kpi"><div class="lab">Más cálida</div><div class="val">'+cal.v.toFixed(1)+'<small> °C · '+cal.n.split(' ')[0]+'</small></div></div>':'')+
+      (fri?'<div class="kpi"><div class="lab">Más fría</div><div class="val">'+fri.v.toFixed(1)+'<small> °C · '+fri.n.split(' ')[0]+'</small></div></div>':'')+
+      '<div class="kpi"><div class="lab">Boyas</div><div class="val">'+vs.length+'</div></div>';
+    document.getElementById('top').setAttribute('title','Actualizado '+fecha);
   }
 
-  function iniciar(json) {
-    datos = json;
-    nHist = datos.meses.length;
-    total = nHist + datos.meses_futuro.length;
-    idx = nHist - 1;                       // arranca en el último mes observado
+  function iniciar(j,act){
+    datos=j;actual=act;
+    Object.keys(datos.boyas).forEach(function(id){datos.boyas[id].id=id});
+    nHist=datos.meses.length;IDX=nHist;total=nHist+1+datos.meses_futuro.length;idx=IDX;
 
-    mapa = L.map('mapa', { zoomControl: true, scrollWheelZoom: false })
-            .setView([37.7, -4.5], 5);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      { attribution: 'Esri · Puertos del Estado vía Copernicus Marine / EMODnet', maxZoom: 10 }).addTo(mapa);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-      { maxZoom: 10 }).addTo(mapa);
+    mapa=L.map('mapa',{zoomControl:true,scrollWheelZoom:false,attributionControl:true}).setView([38.5,-3.5],5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      {attribution:'© OpenStreetMap · © CARTO · Puertos del Estado vía Copernicus Marine',subdomains:'abcd',maxZoom:12}).addTo(mapa);
 
-    Object.keys(datos.boyas).forEach(function (id) {
-      var b = datos.boyas[id];
-      var m = L.circleMarker([b.lat, b.lon], {
-        radius: 9, weight: 2, color: '#06121c', fillColor: '#3a4a5a', fillOpacity: .9
-      }).addTo(mapa);
-      m.bindTooltip('', { className: 'temp-tip', direction: 'top', offset: [0, -8] });
-      m.on('click', function () { abrirFicha(id, true); });
-      m.on('popupclose', function () { if (popupAbierto === id) popupAbierto = null; });
-      marcadores[id] = m;
+    Object.keys(datos.boyas).forEach(function(id){
+      var b=datos.boyas[id];
+      var m=L.marker([b.lat,b.lon],{icon:L.divIcon({className:'boya-pin',html:'<div class="pin">—</div>',iconSize:[46,24],iconAnchor:[23,12]})}).addTo(mapa);
+      m.on('click',function(){focar(id)});
+      marc[id]=m;
     });
 
-    var slider = document.getElementById('slider');
-    slider.max = total - 1;
-    slider.value = idx;
-    slider.style.setProperty('--pct-hist', (nHist / total * 100).toFixed(1) + '%');
-    slider.addEventListener('input', function () { idx = +this.value; pintar(); });
+    var tr=document.getElementById('track');
+    tr.max=total-1;tr.value=idx;
+    tr.style.setProperty('--ph',(nHist/(total-1)*100).toFixed(1)+'%');
+    tr.style.setProperty('--pa',((IDX+1)/(total-1)*100).toFixed(1)+'%');
+    tr.addEventListener('input',function(){idx=+this.value;pintar();kpisIf()});
 
-    document.getElementById('eti-inicio').textContent = nombreMes(datos.meses[0]);
-    document.getElementById('ultima-act').textContent = 'Actualizado: ' + (datos.generado || '');
+    document.getElementById('tl-ini').textContent=nMes(datos.meses[0]);
+    document.getElementById('b-ahora').addEventListener('click',function(){idx=IDX;tr.value=idx;pintar();kpis()});
+    document.getElementById('det-close').addEventListener('click',cerrarDet);
 
-    // resumen: media del último mes observado
-    var suma = 0, nn = 0;
-    Object.keys(datos.boyas).forEach(function (id) {
-      var v = datos.boyas[id].serie[nHist - 1];
-      if (v != null) { suma += v; nn++; }
-    });
-    document.getElementById('resumen').textContent =
-      nn + ' boyas · media ' + (nn ? (suma / nn).toFixed(1) : '—') + ' °C en ' + nombreMes(datos.meses[nHist - 1]);
-
-    var btn = document.getElementById('btn-play');
-    btn.addEventListener('click', function () {
-      reproduciendo = !reproduciendo;
-      btn.textContent = reproduciendo ? '❚❚' : '▶';
-      if (reproduciendo) {
-        if (idx >= total - 1) idx = 0;
-        timer = setInterval(function () {
-          idx++;
-          if (idx >= total) { idx = total - 1; reproduciendo = false; btn.textContent = '▶'; clearInterval(timer); }
-          slider.value = idx; pintar();
-        }, 260);
-      } else { clearInterval(timer); }
+    var pb=document.getElementById('b-play');
+    pb.addEventListener('click',function(){
+      playing=!playing;pb.textContent=playing?'❚❚':'▶';
+      if(playing){if(idx>=total-1)idx=0;
+        timer=setInterval(function(){idx++;if(idx>=total){idx=total-1;playing=false;pb.textContent='▶';clearInterval(timer)}tr.value=idx;pintar()},220);
+      }else clearInterval(timer);
     });
 
-    pintar();
+    kpis();pintar();
   }
+  function kpisIf(){if(idx===IDX)kpis()}
 
-  fetch(URL_DATOS)
-    .then(function (r) { return r.json(); })
-    .then(iniciar)
-    .catch(function (e) {
-      document.getElementById('resumen').textContent = 'Error cargando datos';
-      console.error(e);
-    });
+  Promise.all([
+    fetch(URL_MAPA).then(function(r){return r.json()}),
+    fetch(URL_ACTUAL).then(function(r){return r.ok?r.json():null}).catch(function(){return null})
+  ]).then(function(res){iniciar(res[0],res[1])})
+   .catch(function(e){document.getElementById('chips').innerHTML='<div class="kpi"><div class="val">Error cargando datos</div></div>';console.error(e)});
 })();
 </script>
 </body>
