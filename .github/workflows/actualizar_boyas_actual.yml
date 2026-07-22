@@ -1,0 +1,61 @@
+# temperaturas-mar-espana/.github/workflows/actualizar_boyas_actual.yml
+# CAPA "AHORA": temperatura actual de las boyas, 3 veces al día.
+# Rápido (~1-2 min): solo baja los ficheros NRT y publica boyas_actual.json.
+# Requiere que el workflow semanal ya haya generado docs/boyas_mapa.json.
+name: Actualizar temperatura actual boyas
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6,13,20 * * *"     # 06:00, 13:00 y 20:00 UTC
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  actual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout público (este repo)
+        uses: actions/checkout@v4
+
+      - name: Checkout privado (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Dependencias
+        run: pip install numpy netCDF4 copernicusmarine
+
+      - name: Calcular temperatura actual
+        env:
+          BOYAS_MAPA: docs/boyas_mapa.json
+          BOYAS_ACTUAL: docs/boyas_actual.json
+          COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUS_USER }}
+          COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
+        run: python privado/boyas_actual.py
+
+      - name: Publicar temperatura actual
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/boyas_actual.json
+          if git diff --cached --quiet; then
+            echo "Sin cambios"
+          else
+            git commit -m "Temperatura actual boyas $(date -u +'%F %H:%M')"
+            git pull --rebase
+            git push
+          fi
