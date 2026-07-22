@@ -3,291 +3,317 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Temperatura del mar en España por boyas · tiempo real y predicción</title>
+<title>Planeta Vivo · Temperatura del mar en España (boyas, tiempo real y predicción)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  :root{
-    --bg:#08111c; --ink:#eef4fb; --mut:#93a8bf; --mut2:#5f7288; --line:rgba(255,255,255,.09);
-    --glass:rgba(255,255,255,.055); --glass2:rgba(255,255,255,.10);
-    --live:#2ee08f; --gold:#f2b632; --ember:#ff7a3c;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
-  #app{position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:var(--bg)}
-  #wrap{position:relative}
-  #mapa{width:100%;height:520px;background:#070e18}
-  .leaflet-container{background:#070e18;font-family:inherit}
-  .leaflet-control-zoom{border:none!important;box-shadow:none!important;margin:14px!important}
-  .leaflet-control-zoom a{background:rgba(12,22,34,.85)!important;color:var(--ink)!important;
-    border:1px solid var(--line)!important;backdrop-filter:blur(8px);width:32px;height:32px;line-height:32px;font-size:17px}
-  .leaflet-control-zoom a:first-child{border-radius:10px 10px 0 0}
-  .leaflet-control-zoom a:last-child{border-radius:0 0 10px 10px}
-  .leaflet-control-attribution{background:rgba(8,17,28,.75)!important;color:var(--mut2)!important;font-size:9px!important}
-  .leaflet-control-attribution a{color:var(--mut)!important}
+  :root{--bg:#fbfaf7;--ink:#1d1d1f;--soft:#6e6e73;--line:#e6e2d8;--panel:rgba(255,255,255,.86);
+    --accent:#b76b22;--proj:#c0500a;--live:#0a8f52;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  #map{position:absolute;inset:0;background:var(--bg);z-index:1}
+  .leaflet-container{background:var(--bg);font-family:inherit}
+  .leaflet-control-attribution{background:rgba(255,255,255,.7)!important;font-size:10px!important}
+  .leaflet-control-zoom{border:none!important;box-shadow:0 10px 30px rgba(60,50,30,.12)!important}
+  .leaflet-control-zoom a{background:rgba(255,255,255,.92)!important;color:var(--ink)!important;border-color:var(--line)!important}
 
-  /* ---------- fichas de boya (adaptativas al zoom) ---------- */
-  .boya-pin{background:none!important;border:none!important;width:0!important;height:0!important}
-  .fx{position:absolute;transform:translate(-50%,-50%);cursor:pointer;transition:transform .14s}
-  .fx:hover{transform:translate(-50%,-50%) scale(1.06);z-index:9999}
+  .brand{position:absolute;top:16px;left:0;right:0;z-index:1000;text-align:center;pointer-events:none}
+  .brand .t{font-weight:800;font-size:18px;letter-spacing:-.01em}.brand .t b{color:var(--accent)}
+  .brand .s{font-size:11.5px;color:var(--soft);margin-top:1px}
 
-  /* lejos: burbuja compacta */
-  .bub{display:flex;align-items:center;justify-content:center;min-width:44px;height:26px;padding:0 9px;
-    border-radius:999px;font-size:12.5px;font-weight:800;letter-spacing:-.01em;color:#06121e;
-    border:2px solid rgba(255,255,255,.5);box-shadow:0 3px 12px rgba(0,0,0,.55)}
-
-  /* cerca: ficha con nombre */
-  .fic{min-width:104px;background:rgba(11,20,32,.93);border:1px solid var(--line);border-radius:12px;
-    box-shadow:0 6px 20px rgba(0,0,0,.6);backdrop-filter:blur(10px);overflow:hidden}
-  .fic .bar{height:3px;width:100%}
-  .fic .in{padding:6px 10px 7px}
-  .fic .nm{font-size:10.5px;font-weight:600;color:#c9dcee;white-space:nowrap;letter-spacing:.01em}
-  .fic .bt{display:flex;align-items:baseline;gap:3px;margin-top:1px}
-  .fic .bt .v{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.05}
-  .fic .bt .u{font-size:10px;color:var(--mut)}
-  .fic .tag{font-size:8.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-top:2px}
-  .fic .tag.live{color:var(--live)} .fic .tag.pred{color:var(--gold)} .fic .tag.hist{color:var(--mut2)}
-  .fx.sel .fic{border-color:rgba(255,255,255,.55);box-shadow:0 0 0 2px rgba(255,255,255,.22),0 8px 26px rgba(0,0,0,.7)}
-  .fx.sel .bub{border-color:#fff}
-
-  /* ---------- paneles flotantes ---------- */
-  #hud{position:absolute;top:14px;left:14px;z-index:600;background:rgba(10,19,30,.82);
-    border:1px solid var(--line);border-radius:14px;padding:11px 14px;backdrop-filter:blur(12px);max-width:290px}
-  #hud .bg{display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:800;letter-spacing:.12em;
-    text-transform:uppercase;color:var(--live);background:rgba(46,224,143,.13);border:1px solid rgba(46,224,143,.3);
-    border-radius:999px;padding:3px 9px}
-  #hud .bg .d{width:6px;height:6px;border-radius:50%;background:var(--live);animation:pl 2.4s infinite}
+  .hud{position:absolute;top:16px;left:16px;z-index:1000;width:250px;background:var(--panel);
+    border:1px solid var(--line);border-radius:18px;padding:16px 18px;backdrop-filter:blur(16px);
+    box-shadow:0 18px 50px rgba(60,50,30,.12)}
+  .hud .k{font-size:10px;letter-spacing:.14em;color:var(--soft);text-transform:uppercase;font-weight:700}
+  .hud .k .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--live);margin-right:5px;
+    animation:pl 2.4s infinite;vertical-align:middle}
   @keyframes pl{0%,100%{opacity:1}50%{opacity:.35}}
-  #hud .big{font-size:26px;font-weight:200;letter-spacing:-.03em;margin-top:8px;line-height:1}
-  #hud .big small{font-size:13px;color:var(--mut)}
-  #hud .li{font-size:11px;color:var(--mut);margin-top:5px;line-height:1.5}
-  #hud .li b{color:var(--ink);font-weight:600}
+  .hud .big{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:6px 0 2px}
+  .hud .cap{font-size:12px;color:var(--soft);line-height:1.45}
+  .hud .div{height:1px;background:var(--line);margin:13px 0}
+  .hud .stat{display:flex;gap:9px;align-items:baseline;margin:7px 0}
+  .hud .stat b{font-size:17px;font-weight:800;min-width:58px}
+  .hud .stat span{font-size:11.5px;color:var(--soft);line-height:1.35}
 
-  #leg{position:absolute;left:14px;bottom:14px;z-index:600;background:rgba(10,19,30,.82);
-    border:1px solid var(--line);border-radius:12px;padding:8px 12px;backdrop-filter:blur(12px);
-    display:flex;align-items:center;gap:9px;font-size:10.5px;color:var(--mut)}
-  #leg .bar{width:118px;height:8px;border-radius:5px;border:1px solid rgba(255,255,255,.14);
-    background:linear-gradient(90deg,#2159c1,#1e9be0,#27c1a7,#a8cf3f,#f2b632,#ff7a3c,#e0331e)}
+  .side{position:absolute;top:16px;right:16px;z-index:1000;width:264px;background:var(--panel);
+    border:1px solid var(--line);border-radius:16px;padding:15px 17px;backdrop-filter:blur(16px);
+    box-shadow:0 14px 40px rgba(60,50,30,.12);max-height:calc(100% - 150px);overflow-y:auto}
+  .side .k{font-size:9.5px;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;font-weight:700}
+  .side .h{font-weight:800;font-size:16px;margin:3px 0 2px;letter-spacing:-.01em}
+  .side .meta{font-size:10.5px;color:var(--soft);margin-bottom:9px}
+  .side .n{font-size:33px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .side .n small{font-size:15px;font-weight:700;color:var(--soft)}
+  .side .when{font-size:11.5px;color:var(--soft);margin-top:2px}
+  .side .when b{color:var(--live)}
+  .side .rng{font-size:11.5px;color:var(--proj);font-weight:600;margin-top:2px}
+  .side canvas{width:100%;height:74px;display:block;margin:10px 0 4px}
+  .side .row{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--line)}
+  .side .row:last-of-type{border-bottom:none}
+  .side .row span{color:var(--soft)}.side .row b{font-weight:700;text-align:right}
+  .side .row b.rec{color:var(--proj)}
+  .side .pred{margin-top:10px;background:#fff7ef;border:1px solid #f0dcc4;border-radius:11px;padding:10px 12px}
+  .side .pred .k2{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--proj)}
+  .side .pred .l{display:flex;justify-content:space-between;font-size:11.5px;margin-top:5px}
+  .side .pred .l b{font-weight:700}
+  .side .note{font-size:10.5px;color:var(--soft);line-height:1.45;margin-top:9px}
+  .side .cta{font-size:11px;color:var(--soft);margin-top:9px;font-style:italic}
 
-  /* ---------- timeline ---------- */
-  #tl{padding:14px 18px 6px;border-top:1px solid var(--line);background:rgba(255,255,255,.02)}
-  .btns{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .rb{height:34px;border-radius:10px;border:1px solid var(--line);background:var(--glass2);color:var(--ink);
-    cursor:pointer;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 12px;
-    transition:background .15s,border-color .15s}
-  .rb:hover{background:rgba(255,255,255,.15)}
-  .rb.on{border-color:currentColor}
-  .rb.a{color:var(--live)} .rb.p{color:var(--gold)} .rb.pl{width:34px;padding:0;justify-content:center}
-  .rb .d{width:7px;height:7px;border-radius:50%;background:currentColor}
-  #when{margin-left:auto;text-align:right;line-height:1.25}
-  #when .w{font-size:14px;font-weight:700}
-  #when .s{font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase}
-  #when .s.live{color:var(--live)} #when .s.pred{color:var(--gold)} #when .s.hist{color:var(--mut2)}
-  #tw{position:relative;margin-top:12px}
-  #trk{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:6px;outline:none;cursor:pointer;
-    background:linear-gradient(90deg,#22405f 0 var(--ph),var(--live) var(--ph) var(--pa),rgba(242,182,50,.5) var(--pa) 100%)}
-  #trk::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:#fff;
-    border:3px solid #08111c;cursor:pointer;box-shadow:0 2px 9px rgba(0,0,0,.6)}
-  #trk::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:#fff;border:3px solid #08111c}
-  #tick{position:absolute;top:-4px;width:2px;height:13px;background:var(--live);border-radius:2px;transform:translateX(-50%);pointer-events:none}
-  #tlab{display:flex;justify-content:space-between;font-size:9.5px;color:var(--mut2);margin-top:7px}
-  #tlab .n{color:var(--live);font-weight:700} #tlab .f{color:var(--gold);font-weight:700}
-  #hint{font-size:10.5px;color:var(--mut2);text-align:center;padding:4px 18px 13px}
+  .legend{position:absolute;bottom:104px;left:16px;z-index:1000;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:12px 14px;backdrop-filter:blur(16px);box-shadow:0 14px 40px rgba(60,50,30,.12)}
+  .legend .k{font-size:9.5px;letter-spacing:.12em;color:var(--soft);text-transform:uppercase;font-weight:700;margin-bottom:8px}
+  .legend .bar{display:flex;height:11px;border-radius:4px;overflow:hidden;width:210px}.legend .bar i{flex:1}
+  .legend .lab{display:flex;justify-content:space-between;font-size:10.5px;color:var(--soft);margin-top:5px}
 
-  /* ---------- ficha detalle ---------- */
-  #det{position:absolute;inset:0;z-index:1500;display:flex;align-items:flex-end;justify-content:center;
-    background:rgba(4,9,15,.6);opacity:0;pointer-events:none;transition:opacity .24s}
-  #det.open{opacity:1;pointer-events:auto}
-  #sh{position:relative;width:100%;max-width:540px;background:rgba(11,19,30,.98);border:1px solid var(--line);
-    border-radius:18px 18px 0 0;padding:20px 22px 24px;transform:translateY(24px);
-    transition:transform .26s cubic-bezier(.22,.61,.36,1);max-height:94%;overflow-y:auto;backdrop-filter:blur(18px)}
-  #det.open #sh{transform:translateY(0)}
-  #sh .x{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);
-    background:var(--glass2);color:var(--ink);cursor:pointer;font-size:15px;line-height:1}
-  .dn{font-size:20px;font-weight:700} .dr{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut2);margin:3px 0 12px}
-  .dt{font-size:46px;font-weight:200;letter-spacing:-.03em;line-height:1}.dt small{font-size:19px;color:var(--mut)}
-  .ds{font-size:12.5px;color:var(--mut);margin-top:5px}.ds b{color:var(--live)}
-  .dg{font-size:12.5px;color:#ffd3a3;margin-top:3px}
-  #sh canvas{width:100%;height:132px;margin:15px 0 6px;display:block}
-  .gr{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-  .bx{background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-  .bx .l{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut2);font-weight:700}
-  .bx .v{font-size:16px;font-weight:600;margin-top:3px}.bx .v.r{color:#ff9d7a}
-  .bx .l2{font-size:10px;color:var(--mut2);margin-top:2px}
-  .md{margin-top:12px;font-size:11px;color:var(--mut);background:var(--glass);border:1px solid var(--line);
-    border-radius:12px;padding:10px 12px;line-height:1.55}.md b{color:#a9c6e0}
+  .time{position:absolute;bottom:16px;left:16px;right:16px;z-index:1000;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:12px 18px;backdrop-filter:blur(16px);display:flex;align-items:center;gap:14px;
+    box-shadow:0 14px 40px rgba(60,50,30,.12)}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font:inherit;font-size:13px;
+    font-weight:600;cursor:pointer;color:var(--ink);flex:none}
+  .btn:hover{background:#f6f2ea}
+  .btn.now{color:var(--live)}.btn.pj{color:var(--proj)}
+  .btn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:5px}
+  .yrwrap{min-width:150px;text-align:center;flex:none}
+  .yr{font-weight:800;font-size:18px;letter-spacing:-.01em}
+  .badge{display:inline-block;font-size:9px;letter-spacing:.1em;font-weight:800;color:#fff;background:var(--proj);
+    border-radius:5px;padding:2px 6px;margin-left:6px;vertical-align:middle;visibility:hidden}
+  .badge.live{background:var(--live)}
+  .time input{flex:1;accent-color:var(--accent)}
+  .ticks{display:flex;justify-content:space-between;font-size:10px;color:var(--soft);margin-top:3px}
+  .ticks .n{color:var(--live);font-weight:700}.ticks .p{color:var(--proj);font-weight:700}
 
-  @media(max-width:640px){#mapa{height:430px}#hud{max-width:200px;padding:9px 11px}#hud .big{font-size:21px}#hud .li{font-size:10px}}
+  /* marcadores */
+  .bp{background:none!important;border:none!important;width:0!important;height:0!important}
+  .fx{position:absolute;transform:translate(-50%,-50%);cursor:pointer;transition:transform .13s}
+  .fx:hover{transform:translate(-50%,-50%) scale(1.07);z-index:9999}
+  .bub{display:flex;align-items:center;justify-content:center;min-width:42px;height:25px;padding:0 8px;border-radius:999px;
+    font-size:12px;font-weight:800;color:#fff;border:2px solid #fff;box-shadow:0 3px 10px rgba(60,50,30,.28)}
+  .fic{min-width:98px;background:#fff;border:1px solid var(--line);border-radius:11px;
+    box-shadow:0 6px 20px rgba(60,50,30,.16);overflow:hidden}
+  .fic .bar{height:3px;width:100%}
+  .fic .in{padding:5px 9px 6px}
+  .fic .nm{font-size:10.5px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .fic .v{font-size:18px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+  .fic .v small{font-size:9.5px;color:var(--soft);font-weight:700}
+  .fx.sel .fic{border-color:var(--accent);box-shadow:0 0 0 2px rgba(183,107,34,.25),0 8px 24px rgba(60,50,30,.22)}
+  .fx.sel .bub{border-color:var(--accent)}
+
+  #err{position:absolute;inset:0;display:none;z-index:2000;align-items:center;justify-content:center;
+    text-align:center;color:var(--soft);padding:30px}
+
+  @media(max-width:860px){.side{display:none}.hud{width:196px;padding:13px 14px}.hud .big{font-size:27px}.brand{display:none}
+    .legend{bottom:96px}.yrwrap{min-width:110px}
+    .side.open{display:block;top:auto;bottom:96px;left:16px;right:16px;width:auto;max-height:52%}}
 </style>
 </head>
 <body>
-<div id="app">
-  <div id="wrap">
-    <div id="mapa"></div>
-    <div id="hud">
-      <span class="bg"><span class="d"></span>En directo</span>
-      <div class="big" id="h-med">—<small> °C</small></div>
-      <div class="li" id="h-li">Cargando boyas…</div>
-    </div>
-    <div id="leg"><span>11°</span><div class="bar"></div><span>29°</span></div>
-    <div id="det"><div id="sh"><button class="x" id="x">×</button><div id="sb"></div></div></div>
-  </div>
+<div id="map"></div>
+<div id="err">Cargando datos de las boyas…</div>
 
-  <div id="tl">
-    <div class="btns">
-      <button class="rb a on" id="b-a"><span class="d"></span>Ahora</button>
-      <button class="rb pl" id="b-pl">▶</button>
-      <button class="rb p" id="b-p">Predicción ▸</button>
-      <div id="when"><div class="w" id="w-w">—</div><div class="s" id="w-s"></div></div>
-    </div>
-    <div id="tw">
-      <input type="range" id="trk" min="0" max="1" value="0" step="1">
-      <div id="tick"></div>
-      <div id="tlab"><span id="t-i"></span><span class="n">hoy</span><span class="f">+12 meses</span></div>
-    </div>
+<div class="brand">
+  <div class="t">Planeta Vivo · <b>Temperatura del mar</b></div>
+  <div class="s">Boyas de Puertos del Estado · dato de hoy y predicción a 12 meses</div>
+</div>
+
+<div class="hud">
+  <div class="k"><span class="dot"></span><span id="k-est">En directo</span></div>
+  <div class="big"><span id="h-med">—</span>°</div>
+  <div class="cap">de media en <b id="h-n">—</b> boyas de la costa española</div>
+  <div class="div"></div>
+  <div class="stat"><b id="h-cal">—</b><span id="h-caln">la más cálida ahora mismo</span></div>
+  <div class="stat"><b id="h-fri">—</b><span id="h-frin">la más fría ahora mismo</span></div>
+  <div class="stat"><b id="h-anom">—</b><span>de anomalía media frente a lo normal de la época</span></div>
+  <div class="stat"><b id="h-upd">—</b><span>última actualización · se refresca 3 veces al día</span></div>
+</div>
+
+<div class="side" id="side"></div>
+
+<div class="legend">
+  <div class="k">Temperatura del agua</div>
+  <div class="bar" id="legbar"></div>
+  <div class="lab"><span>11 °C</span><span>29 °C</span></div>
+</div>
+
+<div class="time">
+  <button class="btn now" id="b-now"><span class="dot"></span>Ahora</button>
+  <button class="btn" id="play">▶</button>
+  <button class="btn pj" id="b-pred">Predicción ▸</button>
+  <div class="yrwrap"><span class="yr" id="yr">—</span><span class="badge" id="badge">PREDICCIÓN</span></div>
+  <div style="flex:1">
+    <input type="range" id="slider" min="0" max="0" value="0" step="1">
+    <div class="ticks" id="ticks"></div>
   </div>
-  <div id="hint">Acércate con <b>+</b> para ver la ficha de cada boya · toca una boya para todos sus datos · pulsa <b>Predicción</b> o ▶ para el futuro que estima el modelo</div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-(function(){
-  var U_M='boyas_mapa.json?v='+Date.now(), U_A='boyas_actual.json?v='+Date.now();
-  var MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  var D=null,A=null,map=null,mk={},idx=0,tot=0,nH=0,IX=0,sel=null,play=false,tm=null,ZC=6;
+var COLS=["#2159c1","#1e9be0","#27c1a7","#7fc44a","#d9a548","#e07a2b","#c0500a","#a32d12"];
+var STOPS=[13,16,18.5,21,23,25,27];
+function color(v){if(v==null)return "#d8d3c8";for(var i=0;i<STOPS.length;i++)if(v<STOPS[i])return COLS[i];return COLS[COLS.length-1]}
+document.getElementById('legbar').innerHTML=COLS.map(function(c){return '<i style="background:'+c+'"></i>'}).join('');
 
-  var S=[[11,[33,89,193]],[14,[30,155,224]],[17,[39,193,167]],[20,[168,207,63]],[23,[242,182,50]],[26,[255,122,60]],[29,[224,51,30]]];
-  function col(t){if(t==null)return '#46586c';if(t<=S[0][0])return rgb(S[0][1]);
-    for(var i=1;i<S.length;i++){if(t<=S[i][0]){var a=S[i-1],b=S[i],f=(t-a[0])/(b[0]-a[0]);
-      return rgb([0,1,2].map(function(k){return Math.round(a[1][k]+f*(b[1][k]-a[1][k]))}))}}return rgb(S[6][1])}
-  function rgb(c){return 'rgb('+c[0]+','+c[1]+','+c[2]+')'}
-  function nM(y){var p=y.split('-');return MES[+p[1]-1]+' '+p[0]}
-  function fB(i){var p=i.split('-');return p[2]+' '+MES[+p[1]-1]+' '+p[0]}
-  function cor(n){return n.replace(' (costera)','')}
+var MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+var D,A,map,mk={},idx=0,tot=0,nH=0,IX=0,sel=null,timer=null,ZC=6;
 
-  function val(b,i){
-    if(i<nH)return b.serie[i]!=null?{v:b.serie[i],t:'hist'}:null;
-    if(i===IX){var a=A&&A.boyas?A.boyas[b.id]:null;if(a)return{v:a.temp,t:'live',f:a.fecha};
-      for(var k=nH-1;k>=0;k--)if(b.serie[k]!=null)return{v:b.serie[k],t:'hist'};return null}
-    var j=i-IX-1;
-    if(b.prediccion&&b.prediccion.central[j]!=null)return{v:b.prediccion.central[j],t:'pred',p10:b.prediccion.p10[j],p90:b.prediccion.p90[j]};
-    return null}
-  function etq(i){if(i===IX)return{w:'Ahora',s:'dato de hoy',c:'live'};
-    if(i<nH)return{w:nM(D.meses[i]),s:'observado',c:'hist'};
-    return{w:nM(D.meses_futuro[i-IX-1]),s:'predicción',c:'pred'}}
+function nM(y){var p=y.split('-');return MES[+p[1]-1]+' '+p[0]}
+function fB(i){var p=i.split('-');return p[2]+' '+MES[+p[1]-1]+' '+p[0]}
+function cor(n){return n.replace(' (costera)','')}
+function f1(v){return v.toFixed(1).replace('.',',')}
 
-  function html(b,r,z){
-    var c=r?col(r.v):'#46586c', s=(sel===b.id?' sel':'');
-    if(z<ZC){
-      return '<div class="fx'+s+'"><div class="bub" style="background:'+c+'">'+(r?r.v.toFixed(1)+'°':'—')+'</div></div>';
-    }
-    var tag=r?(r.t==='live'?'<div class="tag live">● ahora</div>':r.t==='pred'?'<div class="tag pred">predicción</div>':'<div class="tag hist">observado</div>'):'';
-    return '<div class="fx'+s+'"><div class="fic"><div class="bar" style="background:'+c+'"></div>'+
-      '<div class="in"><div class="nm">'+cor(b.nombre)+'</div>'+
-      '<div class="bt"><span class="v" style="color:'+c+'">'+(r?r.v.toFixed(1):'—')+'</span><span class="u">°C</span></div>'+
-      tag+'</div></div></div>';
+function val(b,i){
+  if(i<nH)return b.serie[i]!=null?{v:b.serie[i],t:'hist'}:null;
+  if(i===IX){var a=A&&A.boyas?A.boyas[b.id]:null;if(a)return{v:a.temp,t:'live',f:a.fecha};
+    for(var k=nH-1;k>=0;k--)if(b.serie[k]!=null)return{v:b.serie[k],t:'hist'};return null}
+  var j=i-IX-1;
+  if(b.prediccion&&b.prediccion.central[j]!=null)
+    return{v:b.prediccion.central[j],t:'pred',p10:b.prediccion.p10[j],p90:b.prediccion.p90[j]};
+  return null}
+function etq(i){if(i===IX)return{w:'Ahora',t:'live'};
+  if(i<nH)return{w:nM(D.meses[i]),t:'hist'};return{w:nM(D.meses_futuro[i-IX-1]),t:'pred'}}
+
+function markHtml(b,r,z){
+  var c=r?color(r.v):'#d8d3c8', s=(sel===b.id?' sel':'');
+  if(z<ZC)return '<div class="fx'+s+'" onclick="__ab(\''+b.id+'\')"><div class="bub" style="background:'+c+'">'+(r?f1(r.v)+'°':'—')+'</div></div>';
+  return '<div class="fx'+s+'" onclick="__ab(\''+b.id+'\')"><div class="fic"><div class="bar" style="background:'+c+'"></div>'+
+    '<div class="in"><div class="nm">'+cor(b.nombre)+'</div>'+
+    '<div class="v" style="color:'+c+'">'+(r?f1(r.v):'—')+'<small> °C</small></div></div></div></div>';
+}
+
+function render(){
+  var e=etq(idx),z=map?map.getZoom():5;
+  document.getElementById('yr').textContent=e.w;
+  document.getElementById('yr').style.color=e.t==='pred'?'var(--proj)':(e.t==='live'?'var(--live)':'var(--ink)');
+  var bg=document.getElementById('badge');
+  bg.style.visibility=(e.t==='hist')?'hidden':'visible';
+  bg.textContent=e.t==='live'?'DATO DE HOY':'PREDICCIÓN';
+  bg.className='badge'+(e.t==='live'?' live':'');
+  Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id],r=val(b,idx);
+    mk[id].setIcon(L.divIcon({className:'bp',html:markHtml(b,r,z),iconSize:[0,0],iconAnchor:[0,0]}))});
+  hud();
+  if(sel)panel(sel);
+}
+
+function hud(){
+  var vs=[],an=[];
+  Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id],r=val(b,idx);
+    if(r)vs.push({n:cor(b.nombre),v:r.v});
+    if(b.stats&&b.stats.anomalia_reciente!=null)an.push(b.stats.anomalia_reciente)});
+  if(!vs.length)return;
+  var m=vs.reduce(function(a,b){return a+b.v},0)/vs.length;
+  var c=vs.slice().sort(function(a,b){return b.v-a.v})[0],f=vs.slice().sort(function(a,b){return a.v-b.v})[0];
+  var e=etq(idx);
+  document.getElementById('k-est').textContent=e.t==='live'?'En directo · ahora':(e.t==='pred'?'Predicción · '+e.w:'Observado · '+e.w);
+  document.getElementById('h-med').textContent=f1(m);
+  document.getElementById('h-n').textContent=vs.length;
+  document.getElementById('h-cal').textContent=f1(c.v)+'°';
+  document.getElementById('h-caln').textContent=c.n+' · la más cálida';
+  document.getElementById('h-fri').textContent=f1(f.v)+'°';
+  document.getElementById('h-frin').textContent=f.n+' · la más fría';
+  var ma=an.length?an.reduce(function(a,b){return a+b},0)/an.length:null;
+  document.getElementById('h-anom').textContent=ma!=null?((ma>0?'+':'')+f1(ma)+'°'):'—';
+  document.getElementById('h-upd').textContent=A&&A.generado?A.generado.slice(8,10)+'/'+A.generado.slice(5,7):(D.generado||'—').slice(8,10)+'/'+(D.generado||'—').slice(5,7);
+}
+
+function spark(cv,b){
+  var x=cv.getContext('2d'),W=cv.width=cv.clientWidth*2,H=cv.height=148;x.clearRect(0,0,W,H);
+  var h=[];for(var i=Math.max(0,nH-24);i<nH;i++)h.push(b.serie[i]);
+  var p=b.prediccion,vl=h.slice();if(p)vl=vl.concat(p.central,p.p10,p.p90);
+  var nu=vl.filter(function(q){return q!=null});if(!nu.length)return;
+  var mn=Math.min.apply(null,nu)-.5,mx=Math.max.apply(null,nu)+.5,n=h.length+(p?12:0);
+  function X(i){return 6+i*(W-12)/(n-1)}function Y(v){return H-12-(v-mn)*(H-24)/(mx-mn)}
+  if(p){x.beginPath();var o=false;
+    for(var j=0;j<12;j++)if(p.p90[j]!=null){var q=X(h.length+j);if(!o){x.moveTo(q,Y(p.p90[j]));o=true}else x.lineTo(q,Y(p.p90[j]))}
+    for(var j2=11;j2>=0;j2--)if(p.p10[j2]!=null)x.lineTo(X(h.length+j2),Y(p.p10[j2]));
+    x.closePath();x.fillStyle='rgba(192,80,10,.14)';x.fill()}
+  x.beginPath();x.strokeStyle='#3f7fb5';x.lineWidth=2.4;var op=false;
+  h.forEach(function(v,i){if(v==null){op=false;return}var q=X(i),y=Y(v);if(!op){x.moveTo(q,y);op=true}else x.lineTo(q,y)});x.stroke();
+  if(p){x.beginPath();x.setLineDash([5,4]);x.strokeStyle='#c0500a';x.lineWidth=2.4;var la=null;
+    for(var i2=h.length-1;i2>=0;i2--)if(h[i2]!=null){la=i2;break}
+    if(la!=null)x.moveTo(X(la),Y(h[la]));
+    for(var j3=0;j3<12;j3++)if(p.central[j3]!=null)x.lineTo(X(h.length+j3),Y(p.central[j3]));x.stroke();x.setLineDash([])}
+  x.beginPath();x.strokeStyle='rgba(0,0,0,.14)';x.lineWidth=1;x.moveTo(X(h.length-1),4);x.lineTo(X(h.length-1),H-4);x.stroke();
+}
+
+function panel(id){
+  var b=D.boyas[id],s=b.stats||{},r=val(b,idx),a=A&&A.boyas?A.boyas[id]:null,p=b.prediccion;
+  var h='<div class="k">Ficha de la boya</div><div class="h">'+b.nombre+'</div>'+
+    '<div class="meta">'+(b.red||'')+(b.codigo_bd?' · nº '+b.codigo_bd:'')+' · midiendo desde '+((s.inicio||'—').slice(0,4))+
+    (s.n_anios?' · '+String(s.n_anios).replace('.',',')+' años de serie':'')+'</div>';
+  if(r){
+    h+='<div class="n" style="color:'+color(r.v)+'">'+f1(r.v)+'<small> °C</small></div>';
+    if(r.t==='live')h+='<div class="when"><b>Ahora</b> · medido el '+fB(r.f)+'</div>';
+    else if(r.t==='pred'){h+='<div class="when">Predicción para '+nM(D.meses_futuro[idx-IX-1])+'</div>';
+      if(r.p10!=null)h+='<div class="rng">rango probable 80%: '+f1(r.p10)+' – '+f1(r.p90)+' °C</div>'}
+    else h+='<div class="when">Media de '+nM(D.meses[idx])+'</div>';
   }
-
-  function pintar(){
-    var e=etq(idx),z=map?map.getZoom():5;
-    document.getElementById('w-w').textContent=e.w;
-    var ws=document.getElementById('w-s');ws.textContent=e.s;ws.className='s '+e.c;
-    document.getElementById('b-a').classList.toggle('on',idx===IX);
-    document.getElementById('b-p').classList.toggle('on',idx>IX);
-    Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id],r=val(b,idx);
-      mk[id].setIcon(L.divIcon({className:'boya-pin',html:html(b,r,z),iconSize:[0,0],iconAnchor:[0,0]}))});
-    hud();
-  }
-
-  function hud(){
-    var vs=[];Object.keys(D.boyas).forEach(function(id){var r=val(D.boyas[id],idx);if(r)vs.push({n:cor(D.boyas[id].nombre),v:r.v})});
-    if(!vs.length)return;
-    var m=vs.reduce(function(a,b){return a+b.v},0)/vs.length;
-    var c=vs.slice().sort(function(a,b){return b.v-a.v})[0], f=vs.slice().sort(function(a,b){return a.v-b.v})[0];
-    var e=etq(idx);
-    document.getElementById('h-med').innerHTML=m.toFixed(1)+'<small> °C de media</small>';
-    document.getElementById('h-li').innerHTML='Más cálida <b>'+c.n+' '+c.v.toFixed(1)+'°</b> · más fría <b>'+f.n+' '+f.v.toFixed(1)+'°</b><br>'+
-      vs.length+' boyas · '+(e.c==='live'?('actualizado '+(A&&A.generado?A.generado.slice(0,10):(D.generado||''))):e.w);
-  }
-
-  function spark(cv,b){
-    var x=cv.getContext('2d'),W=cv.width=cv.clientWidth*2,H=cv.height=264;x.clearRect(0,0,W,H);
-    var h=[];for(var i=Math.max(0,nH-24);i<nH;i++)h.push(b.serie[i]);
-    var p=b.prediccion,vl=h.slice();if(p)vl=vl.concat(p.central,p.p10,p.p90);
-    var nu=vl.filter(function(q){return q!=null});if(!nu.length)return;
-    var mn=Math.min.apply(null,nu)-.5,mx=Math.max.apply(null,nu)+.5,n=h.length+(p?12:0);
-    function X(i){return 10+i*(W-20)/(n-1)}function Y(v){return H-18-(v-mn)*(H-36)/(mx-mn)}
-    if(p){x.beginPath();var o=false;for(var j=0;j<12;j++)if(p.p90[j]!=null){var q=X(h.length+j);if(!o){x.moveTo(q,Y(p.p90[j]));o=true}else x.lineTo(q,Y(p.p90[j]))}
-      for(var j2=11;j2>=0;j2--)if(p.p10[j2]!=null)x.lineTo(X(h.length+j2),Y(p.p10[j2]));x.closePath();x.fillStyle='rgba(242,182,50,.18)';x.fill()}
-    x.beginPath();x.strokeStyle='#5aa9e0';x.lineWidth=2.6;var op=false;
-    h.forEach(function(v,i){if(v==null){op=false;return}var q=X(i),y=Y(v);if(!op){x.moveTo(q,y);op=true}else x.lineTo(q,y)});x.stroke();
-    if(p){x.beginPath();x.setLineDash([6,5]);x.strokeStyle='#f2b632';x.lineWidth=2.6;var la=null;
-      for(var i2=h.length-1;i2>=0;i2--)if(h[i2]!=null){la=i2;break}if(la!=null)x.moveTo(X(la),Y(h[la]));
-      for(var j3=0;j3<12;j3++)if(p.central[j3]!=null)x.lineTo(X(h.length+j3),Y(p.central[j3]));x.stroke();x.setLineDash([])}
-    x.beginPath();x.strokeStyle='rgba(255,255,255,.2)';x.lineWidth=1;x.moveTo(X(h.length-1),8);x.lineTo(X(h.length-1),H-8);x.stroke();
-  }
-
-  function abrir(id){
-    sel=id;pintar();var b=D.boyas[id],s=b.stats||{},r=val(b,idx),a=A&&A.boyas?A.boyas[id]:null;
-    var h='<div class="dn">'+b.nombre+'</div><div class="dr">'+(b.red||'')+(b.codigo_bd?' · boya '+b.codigo_bd:'')+' · serie desde '+((s.inicio||'—').slice(0,4))+'</div>';
-    if(r){h+='<div class="dt">'+r.v.toFixed(1)+'<small>°C</small></div>';
-      if(r.t==='live')h+='<div class="ds"><b>ahora</b> · medido el '+fB(r.f)+'</div>';
-      else if(r.t==='pred'){h+='<div class="ds">predicción para '+nM(D.meses_futuro[idx-IX-1])+'</div>';
-        if(r.p10!=null)h+='<div class="dg">rango probable (80%): '+r.p10.toFixed(1)+' – '+r.p90.toFixed(1)+' °C</div>'}
-      else h+='<div class="ds">media de '+nM(D.meses[idx])+'</div>'}
-    h+='<canvas id="spk"></canvas><div class="gr">';
-    if(a)h+='<div class="bx"><div class="l">Temperatura hoy</div><div class="v" style="color:#8effc0">'+a.temp.toFixed(1)+' °C</div><div class="l2">'+fB(a.fecha)+'</div></div>';
-    if(s.record_max)h+='<div class="bx"><div class="l">Récord histórico</div><div class="v r">'+s.record_max.valor.toFixed(1)+' °C</div><div class="l2">'+s.record_max.fecha+'</div></div>';
-    if(s.record_min)h+='<div class="bx"><div class="l">Mínimo histórico</div><div class="v">'+s.record_min.valor.toFixed(1)+' °C</div><div class="l2">'+s.record_min.fecha+'</div></div>';
-    if(s.tendencia_decada!=null)h+='<div class="bx"><div class="l">Calentamiento</div><div class="v">'+(s.tendencia_decada>0?'+':'')+s.tendencia_decada.toFixed(2)+' °C</div><div class="l2">por década</div></div>';
-    if(s.anio_mas_calido)h+='<div class="bx"><div class="l">Año más cálido</div><div class="v">'+s.anio_mas_calido.anio+'</div><div class="l2">'+s.anio_mas_calido.media.toFixed(1)+' °C de media</div></div>';
-    if(s.anomalia_reciente!=null)h+='<div class="bx"><div class="l">Anomalía reciente</div><div class="v">'+(s.anomalia_reciente>0?'+':'')+s.anomalia_reciente.toFixed(1)+' °C</div><div class="l2">frente a lo normal</div></div>';
-    if(s.record_dias25)h+='<div class="bx"><div class="l">Récord días ≥25°</div><div class="v">'+s.record_dias25.dias+'</div><div class="l2">en '+s.record_dias25.anio+'</div></div>';
+  h+='<canvas id="spk"></canvas>';
+  if(a&&idx!==IX)h+='<div class="row"><span>Temperatura hoy</span><b style="color:var(--live)">'+f1(a.temp)+' °C</b></div>';
+  if(s.anomalia_reciente!=null)h+='<div class="row"><span>Anomalía reciente</span><b>'+(s.anomalia_reciente>0?'+':'')+f1(s.anomalia_reciente)+' °C</b></div>';
+  if(s.record_max)h+='<div class="row"><span>Récord histórico</span><b class="rec">'+f1(s.record_max.valor)+' °C · '+s.record_max.fecha.slice(0,4)+'</b></div>';
+  if(s.record_min)h+='<div class="row"><span>Mínimo histórico</span><b>'+f1(s.record_min.valor)+' °C · '+s.record_min.fecha.slice(0,4)+'</b></div>';
+  if(s.tendencia_decada!=null)h+='<div class="row"><span>Calentamiento</span><b>'+(s.tendencia_decada>0?'+':'')+f1(s.tendencia_decada)+' °C/década</b></div>';
+  if(s.anio_mas_calido)h+='<div class="row"><span>Año más cálido</span><b>'+s.anio_mas_calido.anio+' ('+f1(s.anio_mas_calido.media)+'°)</b></div>';
+  if(s.record_dias25)h+='<div class="row"><span>Récord días ≥25 °C</span><b>'+s.record_dias25.dias+' ('+s.record_dias25.anio+')</b></div>';
+  if(p){
+    h+='<div class="pred"><div class="k2">Predicción del modelo</div>';
+    [0,2,5,11].forEach(function(j){ if(p.central[j]==null)return;
+      h+='<div class="l"><span>'+nM(D.meses_futuro[j])+'</span><b>'+f1(p.central[j])+'° <span style="color:var(--soft);font-weight:600">('+f1(p.p10[j])+'–'+f1(p.p90[j])+')</span></b></div>'});
     h+='</div>';
-    if(b.metricas&&b.metricas.mae_1m!=null)h+='<div class="md">Fiabilidad del modelo en esta boya (validado contra datos reales): error medio de <b>±'+b.metricas.mae_1m.toFixed(2)+' °C</b> a 1 mes'+(b.metricas.mae_3m!=null?' y <b>±'+b.metricas.mae_3m.toFixed(2)+' °C</b> a 3 meses':'')+'.</div>';
-    else if(!b.prediccion)h+='<div class="md">Serie aún corta: esta boya muestra solo observaciones, sin predicción.</div>';
-    document.getElementById('sb').innerHTML=h;
-    document.getElementById('det').classList.add('open');
-    setTimeout(function(){var cv=document.getElementById('spk');if(cv)spark(cv,b)},70);
   }
-  function cerrar(){document.getElementById('det').classList.remove('open');sel=null;pintar()}
+  if(b.metricas&&b.metricas.mae_1m!=null)
+    h+='<div class="note">Fiabilidad aquí: error medio de <b>±'+f1(b.metricas.mae_1m)+' °C</b> a 1 mes'+(b.metricas.mae_3m!=null?' y <b>±'+f1(b.metricas.mae_3m)+' °C</b> a 3 meses</b>':'')+', medido contra datos reales.</div>';
+  else if(!p)h+='<div class="note">Serie todavía corta: esta boya muestra observaciones y estadísticas, pero aún no predicción.</div>';
+  var sd=document.getElementById('side');
+  sd.innerHTML=h;sd.classList.add('open');
+  var cv=document.getElementById('spk');if(cv)spark(cv,b);
+}
 
-  function init(j,act){
-    D=j;A=act;Object.keys(D.boyas).forEach(function(id){D.boyas[id].id=id});
-    nH=D.meses.length;IX=nH;tot=nH+1+D.meses_futuro.length;idx=IX;
+function destacado(){
+  var mejor=null;
+  Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id],s=b.stats||{};
+    if(s.tendencia_decada!=null&&(!mejor||s.tendencia_decada>mejor.t))mejor={n:cor(b.nombre),t:s.tendencia_decada,id:id}});
+  var sd=document.getElementById('side');
+  sd.innerHTML='<div class="k">Foco · el dato</div><div class="h">El mar se está calentando</div>'+
+    (mejor?'<div class="n" style="color:var(--proj)">+'+f1(mejor.t)+'<small> °C/década</small></div>'+
+    '<p style="font-size:12px;color:var(--soft);margin:6px 0 0;line-height:1.5">es el ritmo al que se calienta <b>'+mejor.n+'</b>, la boya con la tendencia más alta de la red. En mayo de 2026, 12 de las 15 boyas de aguas profundas batieron su récord de temperatura para ese mes.</p>':'')+
+    '<div class="cta">Toca cualquier boya del mapa para ver su ficha completa: récords, tendencia y predicción.</div>';
+  sd.classList.remove('open');
+}
 
-    map=L.map('mapa',{zoomControl:true,scrollWheelZoom:false,minZoom:4,maxZoom:11}).setView([39.4,-3.2],5);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      {attribution:'© OpenStreetMap · © CARTO · Puertos del Estado vía Copernicus Marine',subdomains:'abcd',maxZoom:11}).addTo(map);
+window.__ab=function(id){sel=id;render();panel(id);
+  var b=D.boyas[id];if(window.innerWidth>860)map.panTo([b.lat,b.lon],{animate:true})};
 
-    Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id];
-      var m=L.marker([b.lat,b.lon],{icon:L.divIcon({className:'boya-pin',html:'',iconSize:[0,0],iconAnchor:[0,0]}),riseOnHover:true}).addTo(map);
-      m.on('click',function(){abrir(id)});mk[id]=m});
-    map.on('zoomend',pintar);
+Promise.all([
+  fetch('boyas_mapa.json?_='+Date.now()).then(function(r){return r.json()}),
+  fetch('boyas_actual.json?_='+Date.now()).then(function(r){return r.ok?r.json():null}).catch(function(){return null})
+]).then(function(res){
+  D=res[0];A=res[1];
+  Object.keys(D.boyas).forEach(function(id){D.boyas[id].id=id});
+  nH=D.meses.length;IX=nH;tot=nH+1+D.meses_futuro.length;idx=IX;
 
-    var t=document.getElementById('trk');t.max=tot-1;t.value=idx;
-    t.style.setProperty('--ph',(nH/(tot-1)*100).toFixed(1)+'%');
-    t.style.setProperty('--pa',((IX+1)/(tot-1)*100).toFixed(1)+'%');
-    document.getElementById('tick').style.left=(nH/(tot-1)*100).toFixed(1)+'%';
-    t.addEventListener('input',function(){idx=+this.value;pintar()});
-    document.getElementById('t-i').textContent=nM(D.meses[0]);
-    document.getElementById('b-a').addEventListener('click',function(){idx=IX;t.value=idx;pintar()});
-    document.getElementById('b-p').addEventListener('click',function(){idx=Math.min(tot-1,IX+6);t.value=idx;pintar()});
-    document.getElementById('x').addEventListener('click',cerrar);
-    document.getElementById('det').addEventListener('click',function(e){if(e.target.id==='det')cerrar()});
-    var pb=document.getElementById('b-pl');
-    pb.addEventListener('click',function(){play=!play;pb.textContent=play?'❚❚':'▶';
-      if(play){if(idx>=tot-1)idx=0;tm=setInterval(function(){idx++;if(idx>=tot){idx=tot-1;play=false;pb.textContent='▶';clearInterval(tm)}t.value=idx;pintar()},210)}else clearInterval(tm)});
+  map=L.map('map',{minZoom:4,maxZoom:11,zoomSnap:.25,scrollWheelZoom:true,center:[39.6,-3.5],zoom:5.25});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+    {subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO · Datos: Puertos del Estado vía Copernicus Marine'}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
+    {subdomains:'abcd',opacity:.6,pane:'markerPane'}).addTo(map);
 
-    pintar();
-  }
+  Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id];
+    mk[id]=L.marker([b.lat,b.lon],{icon:L.divIcon({className:'bp',html:'',iconSize:[0,0],iconAnchor:[0,0]}),riseOnHover:true}).addTo(map)});
+  map.on('zoomend',render);
 
-  Promise.all([
-    fetch(U_M).then(function(r){return r.json()}),
-    fetch(U_A).then(function(r){return r.ok?r.json():null}).catch(function(){return null})
-  ]).then(function(r){init(r[0],r[1])})
-   .catch(function(e){document.getElementById('h-li').textContent='Error cargando datos';console.error(e)});
-})();
+  var sl=document.getElementById('slider');
+  sl.max=tot-1;sl.value=idx;
+  document.getElementById('ticks').innerHTML='<span>'+nM(D.meses[0])+'</span><span class="n">hoy</span><span class="p">'+nM(D.meses_futuro[11])+' · predicción</span>';
+  sl.addEventListener('input',function(){idx=+this.value;render()});
+  document.getElementById('b-now').onclick=function(){idx=IX;sl.value=idx;render()};
+  document.getElementById('b-pred').onclick=function(){idx=Math.min(tot-1,IX+6);sl.value=idx;render()};
+  document.getElementById('play').onclick=function(){
+    if(timer){clearInterval(timer);timer=null;this.textContent='▶';return}
+    this.textContent='❚❚';if(idx>=tot-1)idx=0;var bt=this;
+    timer=setInterval(function(){if(idx>=tot-1){clearInterval(timer);timer=null;bt.textContent='▶';return}
+      idx++;sl.value=idx;render()},260)};
+
+  destacado();render();
+}).catch(function(e){document.getElementById('err').style.display='flex';console.error(e)});
 </script>
 </body>
 </html>
