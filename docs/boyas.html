@@ -82,9 +82,25 @@
   .ticks .n{color:var(--live);font-weight:700}.ticks .p{color:var(--proj);font-weight:700}
 
   /* marcadores */
-  .bp{background:none!important;border:none!important;width:0!important;height:0!important}
-  .fx{position:absolute;transform:translate(-50%,-50%);cursor:pointer;transition:transform .13s}
-  .fx:hover{transform:translate(-50%,-50%) scale(1.07);z-index:9999}
+  .bp{background:none!important;border:none!important}
+  .fx{display:flex;align-items:center;justify-content:center;width:100%;height:100%;cursor:pointer;transition:transform .13s}
+  .fx:hover{transform:scale(1.08);z-index:9999}
+  .leaflet-popup-content-wrapper{border-radius:14px;box-shadow:0 18px 50px rgba(60,50,30,.22)}
+  .leaflet-popup-content{margin:13px 15px;width:278px!important}
+  .pop .nm{font-weight:800;font-size:15.5px;letter-spacing:-.01em}
+  .pop .meta{font-size:10px;color:var(--soft);letter-spacing:.04em;text-transform:uppercase;margin:3px 0 9px}
+  .pop .big{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .pop .big small{font-size:14px;font-weight:700;color:var(--soft)}
+  .pop .when{font-size:11.5px;color:var(--soft);margin-top:2px}.pop .when b{color:var(--live)}
+  .pop .rng{font-size:11.5px;color:var(--proj);font-weight:600;margin-top:2px}
+  .pop canvas{width:100%;height:76px;display:block;margin:10px 0 4px}
+  .pop .row{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--line)}
+  .pop .row:last-of-type{border-bottom:none}
+  .pop .row span{color:var(--soft)}.pop .row b{font-weight:700;text-align:right}.pop .row b.rec{color:var(--proj)}
+  .pop .pred{margin-top:9px;background:#fff7ef;border:1px solid #f0dcc4;border-radius:11px;padding:9px 11px}
+  .pop .pred .k2{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--proj)}
+  .pop .pred .l{display:flex;justify-content:space-between;font-size:11.5px;margin-top:5px}
+  .pop .note{font-size:10.5px;color:var(--soft);line-height:1.45;margin-top:8px}
   .bub{display:flex;align-items:center;justify-content:center;min-width:42px;height:25px;padding:0 8px;border-radius:999px;
     font-size:12px;font-weight:800;color:#fff;border:2px solid #fff;box-shadow:0 3px 10px rgba(60,50,30,.28)}
   .fic{min-width:98px;background:#fff;border:1px solid var(--line);border-radius:11px;
@@ -160,9 +176,10 @@ function cor(n){return n.replace(' (costera)','')}
 function f1(v){return v.toFixed(1).replace('.',',')}
 
 function val(b,i){
-  if(i<nH)return b.serie[i]!=null?{v:b.serie[i],t:'hist'}:null;
+  if(i<nH)return b.serie[i]!=null?{v:b.serie[i],t:'hist',mi:i}:null;
   if(i===IX){var a=A&&A.boyas?A.boyas[b.id]:null;if(a)return{v:a.temp,t:'live',f:a.fecha};
-    for(var k=nH-1;k>=0;k--)if(b.serie[k]!=null)return{v:b.serie[k],t:'hist'};return null}
+    // sin dato en directo: usamos el último mes observado y lo etiquetamos como tal
+    for(var k=nH-1;k>=0;k--)if(b.serie[k]!=null)return{v:b.serie[k],t:'hist',mi:k,ult:true};return null}
   var j=i-IX-1;
   if(b.prediccion&&b.prediccion.central[j]!=null)
     return{v:b.prediccion.central[j],t:'pred',p10:b.prediccion.p10[j],p90:b.prediccion.p90[j]};
@@ -170,12 +187,14 @@ function val(b,i){
 function etq(i){if(i===IX)return{w:'Ahora',t:'live'};
   if(i<nH)return{w:nM(D.meses[i]),t:'hist'};return{w:nM(D.meses_futuro[i-IX-1]),t:'pred'}}
 
-function markHtml(b,r,z){
+function markIcon(b,r,z){
   var c=r?color(r.v):'#d8d3c8', s=(sel===b.id?' sel':'');
-  if(z<ZC)return '<div class="fx'+s+'" onclick="__ab(\''+b.id+'\')"><div class="bub" style="background:'+c+'">'+(r?f1(r.v)+'°':'—')+'</div></div>';
-  return '<div class="fx'+s+'" onclick="__ab(\''+b.id+'\')"><div class="fic"><div class="bar" style="background:'+c+'"></div>'+
-    '<div class="in"><div class="nm">'+cor(b.nombre)+'</div>'+
-    '<div class="v" style="color:'+c+'">'+(r?f1(r.v):'—')+'<small> °C</small></div></div></div></div>';
+  if(z<ZC)return L.divIcon({className:'bp',iconSize:[50,26],iconAnchor:[25,13],
+    html:'<div class="fx'+s+'"><div class="bub" style="background:'+c+'">'+(r?f1(r.v)+'°':'—')+'</div></div>'});
+  return L.divIcon({className:'bp',iconSize:[112,50],iconAnchor:[56,25],
+    html:'<div class="fx'+s+'"><div class="fic"><div class="bar" style="background:'+c+'"></div>'+
+      '<div class="in"><div class="nm">'+cor(b.nombre)+'</div>'+
+      '<div class="v" style="color:'+c+'">'+(r?f1(r.v):'—')+'<small> °C</small></div></div></div></div>'});
 }
 
 function render(){
@@ -187,9 +206,8 @@ function render(){
   bg.textContent=e.t==='live'?'DATO DE HOY':'PREDICCIÓN';
   bg.className='badge'+(e.t==='live'?' live':'');
   Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id],r=val(b,idx);
-    mk[id].setIcon(L.divIcon({className:'bp',html:markHtml(b,r,z),iconSize:[0,0],iconAnchor:[0,0]}))});
+    mk[id].setIcon(markIcon(b,r,z))});
   hud();
-  if(sel)panel(sel);
 }
 
 function hud(){
@@ -233,18 +251,21 @@ function spark(cv,b){
   x.beginPath();x.strokeStyle='rgba(0,0,0,.14)';x.lineWidth=1;x.moveTo(X(h.length-1),4);x.lineTo(X(h.length-1),H-4);x.stroke();
 }
 
-function panel(id){
+function ficha(id){
   var b=D.boyas[id],s=b.stats||{},r=val(b,idx),a=A&&A.boyas?A.boyas[id]:null,p=b.prediccion;
-  var h='<div class="k">Ficha de la boya</div><div class="h">'+b.nombre+'</div>'+
-    '<div class="meta">'+(b.red||'')+(b.codigo_bd?' · nº '+b.codigo_bd:'')+' · midiendo desde '+((s.inicio||'—').slice(0,4))+
-    (s.n_anios?' · '+String(s.n_anios).replace('.',',')+' años de serie':'')+'</div>';
+  var h='<div class="pop"><div class="nm">'+b.nombre+'</div>'+
+    '<div class="meta">'+(b.red||'')+(b.codigo_bd?' · nº '+b.codigo_bd:'')+' · desde '+((s.inicio||'—').slice(0,4))+
+    (s.n_anios?' · '+String(s.n_anios).replace('.',',')+' años':'')+'</div>';
   if(r){
-    h+='<div class="n" style="color:'+color(r.v)+'">'+f1(r.v)+'<small> °C</small></div>';
+    h+='<div class="big" style="color:'+color(r.v)+'">'+f1(r.v)+'<small> °C</small></div>';
     if(r.t==='live')h+='<div class="when"><b>Ahora</b> · medido el '+fB(r.f)+'</div>';
     else if(r.t==='pred'){h+='<div class="when">Predicción para '+nM(D.meses_futuro[idx-IX-1])+'</div>';
-      if(r.p10!=null)h+='<div class="rng">rango probable 80%: '+f1(r.p10)+' – '+f1(r.p90)+' °C</div>'}
-    else h+='<div class="when">Media de '+nM(D.meses[idx])+'</div>';
-  }
+      if(r.p10!=null)h+='<div class="rng">rango probable 80%: '+f1(r.p10)+' – '+f1(r.p90)+' °C</div>';}
+    else{
+      var mi=(r.mi!=null?r.mi:idx);
+      h+='<div class="when">Media de '+nM(D.meses[mi])+(r.ult?' · último dato disponible':'')+'</div>';
+    }
+  }else h+='<div class="when">Sin dato para este momento</div>';
   h+='<canvas id="spk"></canvas>';
   if(a&&idx!==IX)h+='<div class="row"><span>Temperatura hoy</span><b style="color:var(--live)">'+f1(a.temp)+' °C</b></div>';
   if(s.anomalia_reciente!=null)h+='<div class="row"><span>Anomalía reciente</span><b>'+(s.anomalia_reciente>0?'+':'')+f1(s.anomalia_reciente)+' °C</b></div>';
@@ -255,16 +276,25 @@ function panel(id){
   if(s.record_dias25)h+='<div class="row"><span>Récord días ≥25 °C</span><b>'+s.record_dias25.dias+' ('+s.record_dias25.anio+')</b></div>';
   if(p){
     h+='<div class="pred"><div class="k2">Predicción del modelo</div>';
-    [0,2,5,11].forEach(function(j){ if(p.central[j]==null)return;
-      h+='<div class="l"><span>'+nM(D.meses_futuro[j])+'</span><b>'+f1(p.central[j])+'° <span style="color:var(--soft);font-weight:600">('+f1(p.p10[j])+'–'+f1(p.p90[j])+')</span></b></div>'});
+    [0,2,5,11].forEach(function(j){
+      if(p.central[j]==null)return;
+      var rg=(p.p10[j]!=null&&p.p90[j]!=null)?' <span style="color:var(--soft);font-weight:600">('+f1(p.p10[j])+'–'+f1(p.p90[j])+')</span>':'';
+      h+='<div class="l"><span>'+nM(D.meses_futuro[j])+'</span><b>'+f1(p.central[j])+'°'+rg+'</b></div>';});
     h+='</div>';
   }
   if(b.metricas&&b.metricas.mae_1m!=null)
-    h+='<div class="note">Fiabilidad aquí: error medio de <b>±'+f1(b.metricas.mae_1m)+' °C</b> a 1 mes'+(b.metricas.mae_3m!=null?' y <b>±'+f1(b.metricas.mae_3m)+' °C</b> a 3 meses</b>':'')+', medido contra datos reales.</div>';
+    h+='<div class="note">Fiabilidad aquí: error medio de <b>±'+f1(b.metricas.mae_1m)+' °C</b> a 1 mes'+
+      (b.metricas.mae_3m!=null?' y <b>±'+f1(b.metricas.mae_3m)+' °C</b> a 3 meses':'')+', medido contra datos reales.</div>';
   else if(!p)h+='<div class="note">Serie todavía corta: esta boya muestra observaciones y estadísticas, pero aún no predicción.</div>';
-  var sd=document.getElementById('side');
-  sd.innerHTML=h;sd.classList.add('open');
-  var cv=document.getElementById('spk');if(cv)spark(cv,b);
+  h+='</div>';
+  return h;
+}
+
+function abrirBoya(id){
+  sel=id;render();
+  try{
+    mk[id].bindPopup(ficha(id),{maxWidth:310,minWidth:290,autoPanPadding:[20,20]}).openPopup();
+  }catch(e){console.error('ficha',e);}
 }
 
 function destacado(){
@@ -276,11 +306,8 @@ function destacado(){
     (mejor?'<div class="n" style="color:var(--proj)">+'+f1(mejor.t)+'<small> °C/década</small></div>'+
     '<p style="font-size:12px;color:var(--soft);margin:6px 0 0;line-height:1.5">es el ritmo al que se calienta <b>'+mejor.n+'</b>, la boya con la tendencia más alta de la red. En mayo de 2026, 12 de las 15 boyas de aguas profundas batieron su récord de temperatura para ese mes.</p>':'')+
     '<div class="cta">Toca cualquier boya del mapa para ver su ficha completa: récords, tendencia y predicción.</div>';
-  sd.classList.remove('open');
 }
 
-window.__ab=function(id){sel=id;render();panel(id);
-  var b=D.boyas[id];if(window.innerWidth>860)map.panTo([b.lat,b.lon],{animate:true})};
 
 Promise.all([
   fetch('boyas_mapa.json?_='+Date.now()).then(function(r){return r.json()}),
@@ -297,8 +324,12 @@ Promise.all([
     {subdomains:'abcd',opacity:.6,pane:'markerPane'}).addTo(map);
 
   Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id];
-    mk[id]=L.marker([b.lat,b.lon],{icon:L.divIcon({className:'bp',html:'',iconSize:[0,0],iconAnchor:[0,0]}),riseOnHover:true}).addTo(map)});
+    mk[id]=L.marker([b.lat,b.lon],{icon:markIcon(b,val(b,idx),5),riseOnHover:true}).addTo(map);
+    mk[id].on('click',function(){abrirBoya(id)});});
   map.on('zoomend',render);
+  map.on('popupopen',function(ev){
+    var cv=document.getElementById('spk');
+    if(cv&&sel&&D.boyas[sel])spark(cv,D.boyas[sel]);});
 
   var sl=document.getElementById('slider');
   sl.max=tot-1;sl.value=idx;
