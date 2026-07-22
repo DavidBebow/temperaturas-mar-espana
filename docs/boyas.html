@@ -57,6 +57,11 @@
   .side .pred .l b{font-weight:700}
   .side .note{font-size:10.5px;color:var(--soft);line-height:1.45;margin-top:9px}
   .side .cta{font-size:11px;color:var(--soft);margin-top:9px;font-style:italic}
+  .side .cerrar{position:absolute;top:10px;right:12px;width:26px;height:26px;border-radius:50%;
+    border:1px solid var(--line);background:#fff;color:var(--soft);cursor:pointer;font-size:15px;line-height:1;padding:0}
+  .side .cerrar:hover{background:#f6f2ea;color:var(--ink)}
+  .side .pop{margin:0}
+  .side .pop canvas{height:76px}
 
   .legend{position:absolute;bottom:104px;left:16px;z-index:1000;background:var(--panel);border:1px solid var(--line);
     border-radius:14px;padding:12px 14px;backdrop-filter:blur(16px);box-shadow:0 14px 40px rgba(60,50,30,.12)}
@@ -292,9 +297,17 @@ function ficha(id){
 
 function abrirBoya(id){
   sel=id;render();
+  var sd=document.getElementById('side');
   try{
-    mk[id].bindPopup(ficha(id),{maxWidth:310,minWidth:290,autoPanPadding:[20,20]}).openPopup();
-  }catch(e){console.error('ficha',e);}
+    sd.innerHTML='<button class="cerrar" id="cerr" title="Volver">×</button>'+ficha(id);
+    sd.classList.add('open');
+    sd.scrollTop=0;
+    var bt=document.getElementById('cerr');
+    if(bt)bt.onclick=function(ev){ev.stopPropagation();sel=null;destacado();render()};
+    var cv=document.getElementById('spk');
+    if(cv)spark(cv,D.boyas[id]);
+  }catch(e){console.error('ficha',e);
+    sd.innerHTML='<div class="k">Ficha</div><div class="h">'+D.boyas[id].nombre+'</div>';}
 }
 
 function destacado(){
@@ -327,9 +340,6 @@ Promise.all([
     mk[id]=L.marker([b.lat,b.lon],{icon:markIcon(b,val(b,idx),5),riseOnHover:true}).addTo(map);
     mk[id].on('click',function(){abrirBoya(id)});});
   map.on('zoomend',render);
-  map.on('popupopen',function(ev){
-    var cv=document.getElementById('spk');
-    if(cv&&sel&&D.boyas[sel])spark(cv,D.boyas[sel]);});
 
   var sl=document.getElementById('slider');
   sl.max=tot-1;sl.value=idx;
