@@ -134,6 +134,10 @@
     }
     #panel-grandes .pg-cab{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;max-width:150px}
     .pg-card{flex:0 0 auto;min-width:198px}
+    /* Con una ficha (popup) abierta, la franja inferior se oculta para no taparla */
+    body.popup-abierta #panel-grandes{display:none}
+    /* Si la ficha no cabe en la pantalla, se puede hacer scroll dentro de ella */
+    .leaflet-popup-content{max-height:56vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
   }
   /* ---------- POPUPS ---------- */
   .leaflet-popup-content-wrapper{
@@ -298,6 +302,10 @@ const mapa = L.map('mapa', {
   minZoom: 5, maxZoom: 16, worldCopyJump: false, maxBoundsViscosity: 1.0,
   preferCanvas: true, zoomSnap: 1, zoomDelta: 1, wheelDebounceTime: 30, wheelPxPerZoomLevel: 90
 });
+// En móvil, mientras haya una ficha (popup) abierta se oculta la franja
+// inferior de "incendios más intensos" para que no la tape; al cerrar, vuelve.
+mapa.on('popupopen', function() { document.body.classList.add('popup-abierta'); });
+mapa.on('popupclose', function() { document.body.classList.remove('popup-abierta'); });
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
   attribution: '© Esri | Datos: NASA FIRMS VIIRS', maxZoom: 16, noWrap: true
 }).addTo(mapa);
@@ -698,7 +706,7 @@ function renderizar(data, geojson, datosDesdeCache) {
       const nombre = feature.properties.name || feature.properties.NAME || '';
       const c = datosMap[NOMBRE_A_ID[nombre]];
       if (!c) return;
-      layer.bindPopup(popupComunidad(c, horas), { maxWidth: 280 });
+      layer.bindPopup(popupComunidad(c, horas), { maxWidth: 280, autoPanPadding: L.point(16, 24) });
       layer.on('popupopen', function() {
         registrarInteraccion('comunidad_click', { comunidad: c.nombre, focos_activos: c.focos_activos });
       });
@@ -741,7 +749,7 @@ function renderizar(data, geojson, datosDesdeCache) {
       icon: crearIconoFoco(f.frp),
       zIndexOffset: Math.round(f.frp * 10), // los más intensos, dibujados por encima
       riseOnHover: true
-    }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270 });
+    }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270, autoPanPadding: L.point(16, 24) });
     marcador.on('popupopen', function() {
       registrarInteraccion('foco_click', {
         comunidad: f.comunidad || 'Desconocida',
