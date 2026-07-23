@@ -265,6 +265,7 @@ const CACHE_GEOJSON = 'cache_geojson_v1';
 const FRP_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/historial_frp.json';
 const CACHE_FRP = 'cache_frp_v1';
 let historialFrp = {};
+let vistaInicial = null; // encuadre inicial de España, para volver al cerrar un foco
 
 // ---------------------------------------------------------------------------
 //  MEDICIÓN EN GOOGLE ANALYTICS (GA4)
@@ -321,7 +322,14 @@ mapa.on('popupopen', function(e) {
 });
 mapa.on('popupclose', function() {
   document.body.classList.remove('popup-abierta');
-  setTimeout(function() { mapa.invalidateSize(); }, 60);
+  setTimeout(function() {
+    mapa.invalidateSize();
+    // Si se cierra la ficha estando ampliado sobre un foco (y no se ha abierto
+    // otra), el mapa vuelve al encuadre inicial de España.
+    if (vistaInicial && !document.querySelector('.leaflet-popup') && mapa.getZoom() >= 9) {
+      mapa.flyToBounds(vistaInicial, { padding: [24, 24], duration: 0.9 });
+    }
+  }, 120);
 });
 // ¿Estamos en pantalla de móvil? (mismo umbral que el CSS)
 function esMovil() { return window.matchMedia('(max-width:760px)').matches; }
@@ -748,6 +756,7 @@ function renderizar(data, geojson, datosDesdeCache) {
   if (limites.isValid()) {
     mapa.fitBounds(limites, { padding: [24, 24] });
     mapa.setMaxBounds(limites.pad(0.8));
+    vistaInicial = limites; // guardamos el encuadre inicial para poder volver a él
   }
 
   // Une detecciones casi solapadas (mismo fuego en distintas pasadas/sensores):
