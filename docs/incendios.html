@@ -124,17 +124,19 @@
     font-family:inherit;transition:background .12s ease;
   }
   .pg-card .pg-go:hover{background:#552a12}
-  /* En móvil: las fichas pasan a una franja inferior del mapa con scroll horizontal */
+  /* En móvil: las fichas van DEBAJO del mapa, en un carril con scroll horizontal.
+     Así no tapan el mapa ni los popups. Al abrir una ficha de foco se ocultan
+     temporalmente para que el mapa crezca y el popup se vea entero. */
   @media(max-width:760px){
     #panel-grandes{
-      top:auto;bottom:0;left:0;right:0;width:auto;max-width:none;max-height:none;
+      position:static;flex:0 0 auto;width:auto;max-width:none;max-height:none;
       flex-direction:row;gap:8px;overflow-x:auto;overflow-y:hidden;
       padding:8px 10px 10px;-webkit-overflow-scrolling:touch;
-      background:linear-gradient(0deg,rgba(8,5,3,.96) 35%,rgba(8,5,3,0));
+      background:#0d0704;border-top:1px solid #3a1a0a;
     }
     #panel-grandes .pg-cab{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;max-width:150px}
     .pg-card{flex:0 0 auto;min-width:198px}
-    /* Con una ficha (popup) abierta, la franja inferior se oculta para no taparla */
+    /* Con una ficha (popup) abierta, el carril se oculta y el mapa ocupa su hueco */
     body.popup-abierta #panel-grandes{display:none}
     /* Si la ficha no cabe en la pantalla, se puede hacer scroll dentro de ella */
     .leaflet-popup-content{max-height:56vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -304,8 +306,26 @@ const mapa = L.map('mapa', {
 });
 // En móvil, mientras haya una ficha (popup) abierta se oculta la franja
 // inferior de "incendios más intensos" para que no la tape; al cerrar, vuelve.
-mapa.on('popupopen', function() { document.body.classList.add('popup-abierta'); });
-mapa.on('popupclose', function() { document.body.classList.remove('popup-abierta'); });
+mapa.on('popupopen', function(e) {
+  document.body.classList.add('popup-abierta');
+  // El carril inferior se oculta -> el mapa crece: recalcular tamaño y recolocar el popup.
+  setTimeout(function() {
+    mapa.invalidateSize();
+    if (e.popup && e.popup.update) e.popup.update();
+  }, 60);
+});
+mapa.on('popupclose', function() {
+  document.body.classList.remove('popup-abierta');
+  setTimeout(function() { mapa.invalidateSize(); }, 60);
+});
+// ¿Estamos en pantalla de móvil? (mismo umbral que el CSS)
+function esMovil() { return window.matchMedia('(max-width:760px)').matches; }
+// En móvil el panel se inserta como bloque DEBAJO del mapa; en escritorio, flotando sobre él.
+function colocarPanel(panel) {
+  if (esMovil()) document.body.appendChild(panel);
+  else mapa.getContainer().appendChild(panel);
+  setTimeout(function() { mapa.invalidateSize(); }, 60);
+}
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
   attribution: '© Esri | Datos: NASA FIRMS VIIRS', maxZoom: 16, noWrap: true
 }).addTo(mapa);
@@ -478,7 +498,7 @@ function renderPanelGrandes(grandes) {
     '</div>';
   });
   panel.innerHTML = html;
-  mapa.getContainer().appendChild(panel);
+  colocarPanel(panel);
   panel.querySelectorAll('.pg-card').forEach(card => {
     card.onclick = function() {
       const g = grandes[+card.dataset.i];
@@ -660,7 +680,7 @@ function renderPanelFirms(items) {
     '</div>';
   });
   panel.innerHTML = html;
-  mapa.getContainer().appendChild(panel);
+  colocarPanel(panel);
   if (window.L && L.DomEvent) { L.DomEvent.disableClickPropagation(panel); L.DomEvent.disableScrollPropagation(panel); }
 
   const cards = panel.querySelectorAll('.pg-card');
@@ -825,7 +845,16 @@ function renderizar(data, geojson, datosDesdeCache) {
 inicializar();
 
 // Reajusta el encuadre si cambia el tamaño del marco (responsive iframe)
-window.addEventListener('resize', () => { mapa.invalidateSize(); });
+// y recoloca el panel de incendios si se cruza el umbral móvil/escritorio.
+window.addEventListener('resize', () => {
+  mapa.invalidateSize();
+  const panel = document.getElementById('panel-grandes');
+  if (panel) {
+    const dentroDelMapa = panel.parentElement === mapa.getContainer();
+    if (esMovil() && dentroDelMapa) colocarPanel(panel);
+    else if (!esMovil() && !dentroDelMapa) colocarPanel(panel);
+  }
+});
 </script>
 </body>
 </html>
