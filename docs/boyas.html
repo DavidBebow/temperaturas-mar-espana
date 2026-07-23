@@ -144,8 +144,10 @@
     /* la ficha/foco NO se muestra fija; solo como hoja inferior al tocar una boya */
     .side{display:none}
     .side.open{display:block;position:fixed;top:auto;bottom:0;left:0;right:0;width:auto;
-      max-height:76%;border-radius:20px 20px 0 0;padding:24px 18px 22px;
+      max-height:84%;z-index:2000;border-radius:20px 20px 0 0;padding:26px 18px 22px;
       box-shadow:0 -12px 44px rgba(60,50,30,.28);animation:up .26s cubic-bezier(.22,.61,.36,1)}
+    /* con la ficha abierta, ocultamos leyenda y barra para que no la tapen */
+    .side.open ~ .legend, .side.open ~ .time{display:none}
     .side.open::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);
       width:38px;height:4px;border-radius:3px;background:#d9d4cc}
     @keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:translateY(0);opacity:1}}
@@ -229,8 +231,11 @@ function f1(v){return v.toFixed(1).replace('.',',')}
 
 function val(b,i){
   if(i<nH)return b.serie[i]!=null?{v:b.serie[i],t:'hist',mi:i}:null;
-  if(i===IX){var a=A&&A.boyas?A.boyas[b.id]:null;if(a)return{v:a.temp,t:'live',f:a.fecha};
-    // sin dato en directo: usamos el último mes observado y lo etiquetamos como tal
+  if(i===IX){
+    // "Ahora" = solo dato en directo. Si hay capa live pero esta boya no
+    // transmite, NO inventamos un valor viejo: se muestra en gris "sin dato".
+    if(A&&A.boyas){var a=A.boyas[b.id];return a?{v:a.temp,t:'live',f:a.fecha}:null;}
+    // solo si aún no existe la capa live usamos el último mes como aproximación
     for(var k=nH-1;k>=0;k--)if(b.serie[k]!=null)return{v:b.serie[k],t:'hist',mi:k,ult:true};return null}
   var j=i-IX-1;
   if(b.prediccion&&b.prediccion.central[j]!=null)
@@ -317,9 +322,16 @@ function ficha(id){
       var mi=(r.mi!=null?r.mi:idx);
       h+='<div class="when">Media de '+nM(D.meses[mi])+(r.ult?' · último dato disponible':'')+'</div>';
     }
+  }else if(idx===IX){h+='<div class="dt" style="font-size:22px;color:var(--soft)">Sin dato ahora</div>'+
+    '<div class="when">Esta boya no está transmitiendo en este momento (avería o mantenimiento). '+
+    'Consulta su histórico y su predicción con la barra de tiempo.</div>';
   }else h+='<div class="when">Sin dato para este momento</div>';
   h+='<canvas id="spk"></canvas>';
   if(a&&idx!==IX)h+='<div class="row"><span>Temperatura hoy</span><b style="color:var(--live)">'+f1(a.temp)+' °C</b></div>';
+  if(a&&a.max_ayer)h+='<div class="row"><span>Máxima ayer</span><b>'+f1(a.max_ayer.valor)+' °C</b></div>';
+  if(a&&a.max_semana)h+='<div class="row"><span>Máx. esta semana</span><b>'+f1(a.max_semana.valor)+' °C</b></div>';
+  if(a&&a.max_mes)h+='<div class="row"><span>Máx. este mes</span><b>'+f1(a.max_mes.valor)+' °C</b></div>';
+  if(a&&a.max_anio)h+='<div class="row"><span>Máx. este año</span><b>'+f1(a.max_anio.valor)+' °C</b></div>';
   if(s.anomalia_reciente!=null)h+='<div class="row"><span>Anomalía reciente</span><b>'+(s.anomalia_reciente>0?'+':'')+f1(s.anomalia_reciente)+' °C</b></div>';
   var bat=(r&&r.t==='live'&&s.record_max&&r.v>s.record_max.valor);
   if(bat)h+='<div class="alerta">🔥 <b>Récord batido</b> · hoy supera el máximo histórico de esta boya ('+f1(s.record_max.valor)+' °C en '+s.record_max.fecha.slice(0,4)+')</div>';
