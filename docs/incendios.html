@@ -313,6 +313,10 @@ mapa.on('popupopen', function(e) {
   setTimeout(function() {
     mapa.invalidateSize();
     if (e.popup && e.popup.update) e.popup.update();
+    // OJO: update() regenera el HTML del popup y borra la gráfica ya dibujada.
+    // Si el popup es de un foco, volvemos a dibujarla sobre el lienzo nuevo.
+    const marcador = e.popup && e.popup._source;
+    if (marcador && marcador._foco) renderFrpChart(marcador, marcador._foco);
   }, 60);
 });
 mapa.on('popupclose', function() {
@@ -771,6 +775,7 @@ function renderizar(data, geojson, datosDesdeCache) {
       zIndexOffset: Math.round(f.frp * 10), // los más intensos, dibujados por encima
       riseOnHover: true
     }).addTo(mapa).bindPopup(popupFoco(f), { maxWidth: 270, autoPanPadding: L.point(16, 24) });
+    marcador._foco = f; // para poder redibujar su gráfica tras recolocar el popup
     marcador.on('popupopen', function() {
       registrarInteraccion('foco_click', {
         comunidad: f.comunidad || 'Desconocida',
