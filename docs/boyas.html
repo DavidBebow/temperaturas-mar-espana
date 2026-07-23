@@ -124,10 +124,54 @@
   #err{position:absolute;inset:0;display:none;z-index:2000;align-items:center;justify-content:center;
     text-align:center;color:var(--soft);padding:30px}
 
-  @media(max-width:860px){.side{display:none}.hud{width:196px;padding:13px 14px}.hud .big{font-size:27px}.brand{display:none}
-    .legend{bottom:96px}.yrwrap{min-width:110px}
-    .side.open{display:block;top:auto;bottom:96px;left:16px;right:16px;width:auto;max-height:52%}}
+  /* tablet */
+  @media(max-width:860px) and (min-width:681px){
+    .side{width:238px}.hud{width:210px;padding:13px 14px}.hud .big{font-size:28px}.brand{display:none}}
+
+  /* móvil: mapa limpio, un solo panel compacto arriba, ficha como hoja inferior */
+  @media(max-width:680px){
+    .brand{display:none}
+    .hud{top:10px;left:10px;right:10px;width:auto;padding:10px 14px;border-radius:14px}
+    .hud .div,.hud .stat{display:none}
+    .hud .k{font-size:9px}
+    .hud .big{font-size:22px;display:inline-block;margin:3px 8px 0 0;vertical-align:baseline}
+    .hud .cap{display:inline;font-size:11px}
+    .legend{left:10px;bottom:150px;padding:7px 10px}
+    .legend .bar{width:130px}
+    .time{left:10px;right:10px;bottom:10px;padding:10px 12px;gap:8px;flex-wrap:wrap}
+    .time .yrwrap{min-width:0;order:5;margin-left:auto}
+    .btn{font-size:12px;padding:7px 11px}
+    /* la ficha/foco NO se muestra fija; solo como hoja inferior al tocar una boya */
+    .side{display:none}
+    .side.open{display:block;position:fixed;top:auto;bottom:0;left:0;right:0;width:auto;
+      max-height:76%;border-radius:20px 20px 0 0;padding:24px 18px 22px;
+      box-shadow:0 -12px 44px rgba(60,50,30,.28);animation:up .26s cubic-bezier(.22,.61,.36,1)}
+    .side.open::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);
+      width:38px;height:4px;border-radius:3px;background:#d9d4cc}
+    @keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:translateY(0);opacity:1}}
+  }
 </style>
+<script>
+/* === Google Analytics 4 =========================================
+   Pon aquí tu ID de medición (empieza por G-). Mientras sea el
+   placeholder, no se carga GA y los eventos solo se emiten por
+   postMessage (por si prefieres capturarlos desde la página madre). */
+var GA_ID = 'G-XXXXXXXXXX';
+(function(){
+  if(GA_ID.indexOf('G-')===0 && GA_ID!=='G-XXXXXXXXXX'){
+    var s=document.createElement('script');s.async=true;
+    s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;document.head.appendChild(s);
+    window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};
+    gtag('js',new Date());gtag('config',GA_ID,{transport_type:'beacon'});
+  }
+})();
+function track(ev,params){
+  params=params||{};
+  try{ if(window.gtag) gtag('event',ev,params); }catch(e){}
+  try{ if(window.parent && window.parent!==window)
+    window.parent.postMessage({source:'boyas-mapa',event:ev,params:params},'*'); }catch(e){}
+}
+</script>
 </head>
 <body>
 <div id="map"></div>
@@ -300,15 +344,21 @@ function ficha(id){
   return h;
 }
 
+function cerrarFicha(){
+  sel=null;
+  document.getElementById('side').classList.remove('open');
+  destacado();render();
+}
 function abrirBoya(id){
   sel=id;render();
+  track('boya_click',{boya:D.boyas[id].nombre,vista:etq(idx).t});
   var sd=document.getElementById('side');
   try{
     sd.innerHTML='<button class="cerrar" id="cerr" title="Volver">×</button>'+ficha(id);
     sd.classList.add('open');
     sd.scrollTop=0;
     var bt=document.getElementById('cerr');
-    if(bt)bt.onclick=function(ev){ev.stopPropagation();sel=null;destacado();render()};
+    if(bt)bt.onclick=function(ev){ev.stopPropagation();cerrarFicha()};
     var cv=document.getElementById('spk');
     if(cv)spark(cv,D.boyas[id]);
   }catch(e){console.error('ficha',e);
@@ -344,21 +394,28 @@ Promise.all([
   Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id];
     mk[id]=L.marker([b.lat,b.lon],{icon:markIcon(b,val(b,idx),5),riseOnHover:true}).addTo(map);
     mk[id].on('click',function(){abrirBoya(id)});});
-  map.on('zoomend',render);
+  var zoomTrk=null;
+  map.on('zoomend',function(){render();
+    clearTimeout(zoomTrk);zoomTrk=setTimeout(function(){track('map_zoom',{zoom:Math.round(map.getZoom())})},600);});
+  // en móvil, tocar el mapa cierra la ficha para poder navegar
+  map.on('click',function(){if(sel&&window.innerWidth<=680)cerrarFicha()});
 
   var sl=document.getElementById('slider');
   sl.max=tot-1;sl.value=idx;
   document.getElementById('ticks').innerHTML='<span>'+nM(D.meses[0])+'</span><span class="n">hoy</span><span class="p">'+nM(D.meses_futuro[11])+' · predicción</span>';
-  sl.addEventListener('input',function(){idx=+this.value;render()});
-  document.getElementById('b-now').onclick=function(){idx=IX;sl.value=idx;render()};
-  document.getElementById('b-pred').onclick=function(){idx=Math.min(tot-1,IX+6);sl.value=idx;render()};
+  var slTrk=null;
+  sl.addEventListener('input',function(){idx=+this.value;render();
+    clearTimeout(slTrk);slTrk=setTimeout(function(){track('map_slider',{vista:etq(idx).t,punto:etq(idx).w})},700);});
+  document.getElementById('b-now').onclick=function(){idx=IX;sl.value=idx;render();track('map_ahora')};
+  document.getElementById('b-pred').onclick=function(){idx=Math.min(tot-1,IX+6);sl.value=idx;render();track('map_prediccion')};
   document.getElementById('play').onclick=function(){
     if(timer){clearInterval(timer);timer=null;this.textContent='▶';return}
-    this.textContent='❚❚';if(idx>=tot-1)idx=0;var bt=this;
+    this.textContent='❚❚';if(idx>=tot-1)idx=0;var bt=this;track('map_play');
     timer=setInterval(function(){if(idx>=tot-1){clearInterval(timer);timer=null;bt.textContent='▶';return}
       idx++;sl.value=idx;render()},260)};
 
   destacado();render();
+  track('map_cargado',{boyas:Object.keys(D.boyas).length});
 }).catch(function(e){document.getElementById('err').style.display='flex';console.error(e)});
 </script>
 </body>
