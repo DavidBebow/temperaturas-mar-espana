@@ -1,28 +1,24 @@
 #!/usr/bin/env python3
 """
-Climate Radar — vigilancia global de noticias climáticas en tiempo real.
+Climate Radar v2 — cazador de EXCLUSIVAS climáticas.
 
-Reúne noticias sobre clima / cambio climático de todo el mundo (cualquier idioma)
-desde cinco fuentes, las deduplica, las puntúa (con LLM opcional) y te envía
-los mejores resultados por Telegram.
+Objetivo (cambia respecto a v1): no resumir el ciclo de noticias que ya cubre
+Carbon Brief y las grandes cabeceras, sino detectar la noticia IMPACTANTE, RECIENTE
+y todavía NO cubierta en español, para que David la publique el primero.
 
-Fuentes:
-  1. GDELT DOC 2.0    -> prensa mundial, 65+ idiomas, traducida, cada 15 min (GRATIS, sin key)
-  2. Google News RSS  -> consultas dirigidas por país/idioma (GRATIS, sin key)
-  3. YouTube Data API -> vídeo (necesita YOUTUBE_API_KEY)
-  4. Reddit           -> comunidades de clima, señal de viralidad (GRATIS, sin key)
-  5. Bluesky          -> posts virales (GRATIS, API pública sin key)
+Palancas nuevas:
+  · Fuentes orientadas al long-tail: GDELT filtrado por idiomas NO inglés/español
+    (hindi, portugués, indonesio, árabe...) + consultas de sucesos dramáticos.
+  · Scoring con IA reescrito para premiar impacto + primicia + origen extranjero + viral.
+  · Filtro "¿ya está en español?": descarta lo que la prensa ES ya publicó.
+  · Vídeo (YouTube) y viralidad (Bluesky/Reddit) arreglados.
+  · Sin subcarpetas de estado (arreglado el crash de v1).
 
-Diseñado para correr en GitHub Actions cada 1-2 h. Degrada con elegancia:
-si falta una clave, esa fuente/paso se omite y el resto sigue funcionando.
-
-Variables de entorno (todas opcionales salvo que quieras esa función):
-  TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID  -> envío de avisos (si faltan, imprime en log)
-  ANTHROPIC_API_KEY                     -> scoring y titular ES con IA (si falta, scoring por keywords)
-  YOUTUBE_API_KEY                       -> activa la fuente de vídeo
-  RADAR_WINDOW_HOURS (def. 3)           -> ventana temporal de búsqueda
-  RADAR_MAX_ALERTS   (def. 12)          -> nº máx. de noticias por ejecución
-  RADAR_MIN_SCORE    (def. 6)           -> umbral de score (0-10) para avisar
+Variables de entorno:
+  TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID   -> avisos (si faltan, imprime en log)
+  ANTHROPIC_API_KEY  -> scoring inteligente (MUY recomendado: es lo que da las exclusivas)
+  YOUTUBE_API_KEY    -> activa la fuente de vídeo
+  RADAR_WINDOW_HOURS (def. 3)  ·  RADAR_MAX_ALERTS (def. 12)  ·  RADAR_MIN_SCORE (def. 7)
 """
 
 import os
@@ -39,57 +35,59 @@ import requests
 import feedparser
 
 # --------------------------------------------------------------------------- #
-# CONFIGURACIÓN  (edita libremente)
+# CONFIGURACIÓN
 # --------------------------------------------------------------------------- #
 
 WINDOW_HOURS = int(os.getenv("RADAR_WINDOW_HOURS", "3"))
 MAX_ALERTS   = int(os.getenv("RADAR_MAX_ALERTS", "12"))
-MIN_SCORE    = float(os.getenv("RADAR_MIN_SCORE", "6"))
+MIN_SCORE    = float(os.getenv("RADAR_MIN_SCORE", "7"))   # más exigente que v1
+CHECK_SPANISH_NOVELTY = True   # descarta lo ya cubierto por prensa española
 
-UA = "ClimateRadar/1.0 (+https://calentamientoglobal.es)"
-STATE_FILE = Path(__file__).parent / "data" / "seen.json"
-SEEN_CAP = 8000  # cuántos IDs recordamos para no repetir avisos
+UA = "Mozilla/5.0 (ClimateRadar/2.0; +https://calentamientoglobal.es)"
+STATE_FILE = Path(__file__).parent / "radar_seen.json"   # fichero plano, sin subcarpeta
+SEEN_CAP = 8000
 
-# GDELT: consultas por tema del Global Knowledge Graph + frases.
-# theme:ENV_CLIMATECHANGE captura clima en todos los idiomas (traducido).
+# GDELT global — orientado a SUCESOS de impacto, no a análisis.
 GDELT_QUERIES = [
-    "theme:ENV_CLIMATECHANGE",
-    'theme:ENV_CLIMATECHANGE (animal OR wildlife OR species OR whale OR bird OR coral)',
-    '"climate change" (extinction OR migration OR heatwave OR wildfire OR flood OR drought)',
+    'theme:ENV_CLIMATECHANGE (animal OR wildlife OR species OR whale OR dolphin OR bird OR fish OR coral OR elephant OR penguin)',
+    '("climate change" OR "global warming") ("mass mortality" OR die-off OR "washed ashore" OR stranded OR "found dead" OR extinction)',
+    '("climate change" OR "extreme heat" OR wildfire OR flood OR drought OR glacier) (record OR unprecedented OR "first time" OR disaster OR emergency OR viral)',
 ]
+# GDELT por idioma — el long-tail donde puedes llegar PRIMERO en español.
+GDELT_LANGS = ["hindi", "portuguese", "indonesian", "arabic", "thai"]
 
-# Google News RSS: (consulta, hl=idioma, gl=país, ceid).
-# Añade/quita países para orientar la cobertura donde te interese.
+# Google News RSS: dirigido a países no hispanohablantes (evita duplicar prensa ES).
 GNEWS_QUERIES = [
-    ("cambio climático animales",          "es", "ES", "ES:es"),
-    ("climate change wildlife",            "en", "US", "US:en"),
-    ("climate change animals",             "en", "IN", "IN:en"),
-    ("climate change extreme weather",     "en", "GB", "GB:en"),
-    ("réchauffement climatique animaux",   "fr", "FR", "FR:fr"),
-    ("Klimawandel Tiere",                  "de", "DE", "DE:de"),
-    ("mudança climática animais",          "pt", "BR", "BR:pt-419"),
-    ("cambiamento climatico animali",      "it", "IT", "IT:it"),
+    ("climate change animals",           "en", "IN", "IN:en"),   # India
+    ("climate wildlife disaster",        "en", "PH", "PH:en"),   # Filipinas
+    ("climate change animals viral",     "en", "US", "US:en"),
+    ("mudança climática animais",        "pt", "BR", "BR:pt-419"),
 ]
 
-# Reddit: comunidades de clima/naturaleza (señal de viralidad vía top del día).
-REDDIT_SUBS = "climate+climatechange+environment+collapse+nature+ClimateOffensive"
+REDDIT_SUBS = "climate+climatechange+environment+collapse+nature+NatureIsFuckingLit"
+BLUESKY_QUERIES = ["climate animals", "wildlife climate", "climate disaster video", "heatwave record"]
+YOUTUBE_QUERIES = ["climate change animals", "climate disaster", "wildlife heatwave"]
 
-# Bluesky: búsquedas públicas.
-BLUESKY_QUERIES = ["climate change", "climate crisis", "global warming", "cambio climático"]
+# Prensa española: si la noticia ya está aquí, NO eres el primero -> se descarta.
+SPANISH_MAINSTREAM = {
+    "elpais.com", "elmundo.es", "lavanguardia.com", "abc.es", "20minutos.es",
+    "eldiario.es", "larazon.es", "elconfidencial.com", "rtve.es", "efeverde.com",
+    "agenciasinc.es", "publico.es", "elperiodico.com", "lavozdegalicia.es",
+    "nationalgeographic.com.es", "xataka.com", "3djuegos.com",
+}
+# Agregadores/cabeceras globales que "ya lee todo el mundo" -> baja novedad.
+LOW_NOVELTY = {"carbonbrief.org", "theguardian.com", "reuters.com", "apnews.com",
+               "bbc.com", "bbc.co.uk", "nytimes.com", "washingtonpost.com"}
 
-# YouTube: consultas de vídeo (solo si hay YOUTUBE_API_KEY).
-YOUTUBE_QUERIES = ["climate change", "cambio climático", "climate disaster wildlife"]
+# Idiomas con potencial de primicia (no inglés/español) -> bonus.
+PRIORITY_LANGS = {"hin", "por", "ind", "ara", "tha", "vie", "tur", "ben", "urd",
+                  "swa", "tgl", "msa", "fas", "rus", "zho", "jpn", "kor"}
 
-# Prefiltro de relevancia (multilingüe) usado como red de seguridad y para el
-# scoring por keywords cuando no hay LLM.
 CLIMATE_TERMS = [
-    "climate", "clima", "climat", "klima", "climático", "climática", "climatico",
-    "warming", "calentamiento", "réchauffement", "erwärmung", "aquecimento",
-    "carbon", "co2", "emission", "emisión", "greenhouse", "invernadero",
-    "heatwave", "ola de calor", "drought", "sequía", "wildfire", "incendio",
-    "flood", "inundación", "glacier", "glaciar", "sea level", "nivel del mar",
-    "extinction", "extinción", "biodiversity", "biodiversidad", "coral", "arrecife",
-    "ipcc", "cop30", "cop31", "el niño", "la niña", "deforestation", "deforestación",
+    "climate", "clima", "climat", "klima", "warming", "calentamiento", "carbon",
+    "co2", "heatwave", "ola de calor", "drought", "sequía", "wildfire", "incendio",
+    "flood", "inundación", "glacier", "glaciar", "extinction", "extinción",
+    "biodiversity", "coral", "whale", "ballena", "wildlife", "fauna", "species",
 ]
 
 
@@ -100,37 +98,35 @@ CLIMATE_TERMS = [
 def now_utc():
     return dt.datetime.now(dt.timezone.utc)
 
-
 def norm_title(t):
     t = (t or "").lower().strip()
     t = re.sub(r"https?://\S+", "", t)
     t = re.sub(r"[^a-z0-9áéíóúüñç ]", "", t)
-    t = re.sub(r"\s+", " ", t).strip()
-    return t
-
+    return re.sub(r"\s+", " ", t).strip()
 
 def item_id(it):
-    """ID estable para dedup: título normalizado (fusiona la misma noticia entre medios)."""
     key = norm_title(it.get("title", "")) or it.get("url", "")
     return hashlib.sha1(key.encode("utf-8")).hexdigest()[:16]
 
+def domain_of(url):
+    m = re.search(r"https?://([^/]+)", url or "")
+    d = (m.group(1) if m else "").lower().replace("www.", "")
+    return d
 
-def within_window(published_iso):
+def within_window(published_iso, slack=1):
     if not published_iso:
         return True
     try:
         d = dt.datetime.fromisoformat(published_iso.replace("Z", "+00:00"))
         if d.tzinfo is None:
             d = d.replace(tzinfo=dt.timezone.utc)
-        return (now_utc() - d) <= dt.timedelta(hours=WINDOW_HOURS + 1)
+        return (now_utc() - d) <= dt.timedelta(hours=WINDOW_HOURS + slack)
     except Exception:
         return True
-
 
 def keyword_relevant(text):
     low = (text or "").lower()
     return any(term in low for term in CLIMATE_TERMS)
-
 
 def load_seen():
     try:
@@ -138,16 +134,15 @@ def load_seen():
     except Exception:
         return set()
 
-
 def save_seen(seen):
-    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     ids = list(seen)[-SEEN_CAP:]
     STATE_FILE.write_text(json.dumps({"ids": ids, "updated": now_utc().isoformat()}))
 
-
 def get(url, **kw):
     kw.setdefault("timeout", 30)
-    kw.setdefault("headers", {}).setdefault("User-Agent", UA)
+    h = kw.setdefault("headers", {})
+    h.setdefault("User-Agent", UA)
+    h.setdefault("Accept", "application/json, text/plain, */*")
     return requests.get(url, **kw)
 
 
@@ -155,39 +150,37 @@ def get(url, **kw):
 # FUENTES
 # --------------------------------------------------------------------------- #
 
+def _gdelt_query(q):
+    out = []
+    try:
+        url = ("https://api.gdeltproject.org/api/v2/doc/doc"
+               f"?query={quote(q)}&mode=artlist&maxrecords=60"
+               f"&timespan={WINDOW_HOURS}h&sort=datedesc&format=json")
+        r = get(url)
+        if not r.text.strip().startswith("{"):
+            return out
+        for a in r.json().get("articles", []):
+            sd = a.get("seendate", "")
+            iso = f"{sd[0:4]}-{sd[4:6]}-{sd[6:8]}T{sd[9:11]}:{sd[11:13]}:{sd[13:15]}Z" if len(sd) >= 15 else None
+            out.append({
+                "source": "gdelt", "title": a.get("title", ""), "url": a.get("url", ""),
+                "origin": a.get("domain", ""), "lang": a.get("language", ""),
+                "country": a.get("sourcecountry", ""), "published": iso,
+                "image": a.get("socialimage", ""), "metric": 0,
+            })
+    except Exception as e:
+        print(f"[gdelt] error: {e}")
+    return out
+
 def fetch_gdelt():
     out = []
     for q in GDELT_QUERIES:
-        try:
-            url = (
-                "https://api.gdeltproject.org/api/v2/doc/doc"
-                f"?query={quote(q)}&mode=artlist&maxrecords=75"
-                f"&timespan={WINDOW_HOURS}h&sort=datedesc&format=json"
-            )
-            r = get(url)
-            if not r.text.strip().startswith("{"):
-                continue
-            for a in r.json().get("articles", []):
-                sd = a.get("seendate", "")  # YYYYMMDDTHHMMSSZ
-                iso = None
-                if len(sd) >= 15:
-                    iso = f"{sd[0:4]}-{sd[4:6]}-{sd[6:8]}T{sd[9:11]}:{sd[11:13]}:{sd[13:15]}Z"
-                out.append({
-                    "source": "gdelt",
-                    "title": a.get("title", ""),
-                    "url": a.get("url", ""),
-                    "origin": a.get("domain", ""),
-                    "lang": a.get("language", ""),
-                    "country": a.get("sourcecountry", ""),
-                    "published": iso,
-                    "image": a.get("socialimage", ""),
-                    "metric": 0,
-                })
-            time.sleep(1.5)  # cortesía con la API
-        except Exception as e:
-            print(f"[gdelt] error: {e}")
+        out += _gdelt_query(q)
+        time.sleep(1.4)
+    for lang in GDELT_LANGS:                       # long-tail por idioma
+        out += _gdelt_query(f"theme:ENV_CLIMATECHANGE sourcelang:{lang}")
+        time.sleep(1.4)
     return out
-
 
 def fetch_google_news():
     out = []
@@ -199,51 +192,39 @@ def fetch_google_news():
                 pub = None
                 if getattr(e, "published_parsed", None):
                     pub = dt.datetime(*e.published_parsed[:6], tzinfo=dt.timezone.utc).isoformat()
-                src = ""
-                if getattr(e, "source", None):
-                    src = getattr(e.source, "title", "")
+                src = getattr(getattr(e, "source", None), "title", "") if getattr(e, "source", None) else ""
                 out.append({
-                    "source": "googlenews",
-                    "title": getattr(e, "title", ""),
-                    "url": getattr(e, "link", ""),
-                    "origin": src,
-                    "lang": hl,
-                    "country": gl,
-                    "published": pub,
-                    "image": "",
-                    "metric": 0,
+                    "source": "googlenews", "title": getattr(e, "title", ""),
+                    "url": getattr(e, "link", ""), "origin": src, "lang": hl,
+                    "country": gl, "published": pub, "image": "", "metric": 0,
                 })
         except Exception as e:
             print(f"[googlenews] error {q}: {e}")
     return [i for i in out if within_window(i["published"])]
 
-
 def fetch_reddit():
+    """Best-effort: los runners de GitHub a veces los bloquea Reddit. Vía RSS."""
     out = []
     try:
-        url = f"https://www.reddit.com/r/{REDDIT_SUBS}/top.json?t=day&limit=60"
-        r = get(url, headers={"User-Agent": UA})
-        for c in r.json().get("data", {}).get("children", []):
-            d = c.get("data", {})
-            title = d.get("title", "")
+        url = f"https://www.reddit.com/r/{REDDIT_SUBS}/hot/.rss?limit=50"
+        feed = feedparser.parse(url, request_headers={"User-Agent": UA})
+        for e in feed.entries[:50]:
+            title = getattr(e, "title", "")
             if not keyword_relevant(title):
                 continue
-            pub = dt.datetime.fromtimestamp(d.get("created_utc", 0), dt.timezone.utc).isoformat()
+            pub = None
+            if getattr(e, "updated_parsed", None):
+                pub = dt.datetime(*e.updated_parsed[:6], tzinfo=dt.timezone.utc).isoformat()
             out.append({
-                "source": "reddit",
-                "title": title,
-                "url": d.get("url_overridden_by_dest") or ("https://reddit.com" + d.get("permalink", "")),
-                "origin": "r/" + d.get("subreddit", ""),
-                "lang": "en",
-                "country": "",
-                "published": pub,
-                "image": "",
-                "metric": int(d.get("ups", 0)),
+                "source": "reddit", "title": title, "url": getattr(e, "link", ""),
+                "origin": "reddit", "lang": "en", "country": "", "published": pub,
+                "image": "", "metric": 0,
             })
+        if not out:
+            print("[reddit] 0 (posible bloqueo de IP de GitHub Actions; no crítico)")
     except Exception as e:
         print(f"[reddit] error: {e}")
     return out
-
 
 def fetch_bluesky():
     out = []
@@ -252,6 +233,9 @@ def fetch_bluesky():
             url = ("https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts"
                    f"?q={quote(q)}&sort=latest&limit=25")
             r = get(url)
+            if r.status_code != 200 or not r.text.strip().startswith("{"):
+                print(f"[bluesky] '{q}' HTTP {r.status_code}")
+                continue
             for p in r.json().get("posts", []):
                 rec = p.get("record", {})
                 text = rec.get("text", "")
@@ -259,104 +243,141 @@ def fetch_bluesky():
                     continue
                 handle = p.get("author", {}).get("handle", "")
                 rkey = p.get("uri", "").split("/")[-1]
+                langs = rec.get("langs") or [""]
                 out.append({
-                    "source": "bluesky",
-                    "title": text[:180],
+                    "source": "bluesky", "title": text[:180],
                     "url": f"https://bsky.app/profile/{handle}/post/{rkey}",
-                    "origin": "@" + handle,
-                    "lang": rec.get("langs", [""])[0] if rec.get("langs") else "",
-                    "country": "",
-                    "published": rec.get("createdAt"),
-                    "image": "",
-                    "metric": int(p.get("likeCount", 0)),
+                    "origin": "@" + handle, "lang": langs[0][:3],
+                    "country": "", "published": rec.get("createdAt"),
+                    "image": "", "metric": int(p.get("likeCount", 0)),
                 })
         except Exception as e:
             print(f"[bluesky] error {q}: {e}")
     return [i for i in out if within_window(i["published"])]
 
-
 def fetch_youtube():
     key = os.getenv("YOUTUBE_API_KEY")
     if not key:
-        print("[youtube] sin YOUTUBE_API_KEY -> fuente omitida")
+        print("[youtube] sin YOUTUBE_API_KEY -> fuente omitida (no habrá vídeo)")
         return []
-    out = []
+    out, ids = [], []
     after = (now_utc() - dt.timedelta(hours=WINDOW_HOURS)).strftime("%Y-%m-%dT%H:%M:%SZ")
     for q in YOUTUBE_QUERIES:
         try:
             url = ("https://www.googleapis.com/youtube/v3/search"
-                   f"?part=snippet&type=video&order=viewCount&maxResults=15"
-                   f"&publishedAfter={after}&q={quote(q)}&key={key}")
-            r = get(url)
-            for it in r.json().get("items", []):
-                sn = it.get("snippet", {})
+                   f"?part=snippet&type=video&order=viewCount&maxResults=12"
+                   f"&publishedAfter={after}&relevanceLanguage=es&q={quote(q)}&key={key}")
+            for it in get(url).json().get("items", []):
                 vid = it.get("id", {}).get("videoId")
+                sn = it.get("snippet", {})
                 if not vid:
                     continue
+                ids.append(vid)
                 out.append({
-                    "source": "youtube",
-                    "title": sn.get("title", ""),
+                    "source": "youtube", "title": sn.get("title", ""),
                     "url": f"https://www.youtube.com/watch?v={vid}",
-                    "origin": sn.get("channelTitle", ""),
-                    "lang": "",
-                    "country": "",
-                    "published": sn.get("publishedAt"),
+                    "origin": sn.get("channelTitle", ""), "lang": "",
+                    "country": "", "published": sn.get("publishedAt"),
                     "image": sn.get("thumbnails", {}).get("high", {}).get("url", ""),
                     "metric": 0,
                 })
         except Exception as e:
             print(f"[youtube] error {q}: {e}")
+    # segunda llamada: nº de visitas (señal de viralidad)
+    try:
+        if ids:
+            vurl = ("https://www.googleapis.com/youtube/v3/videos"
+                    f"?part=statistics&id={','.join(ids[:50])}&key={key}")
+            stats = {v["id"]: int(v.get("statistics", {}).get("viewCount", 0))
+                     for v in get(vurl).json().get("items", [])}
+            for it in out:
+                vid = it["url"].split("v=")[-1]
+                it["metric"] = stats.get(vid, 0)
+    except Exception as e:
+        print(f"[youtube] stats error: {e}")
     return out
 
 
 # --------------------------------------------------------------------------- #
-# DEDUP + SCORING
+# FILTRADO
 # --------------------------------------------------------------------------- #
 
+def prefilter(items):
+    """Quita lo que ya está en prensa española (no serías el primero)."""
+    kept = []
+    for it in items:
+        if domain_of(it["url"]) in SPANISH_MAINSTREAM:
+            continue
+        kept.append(it)
+    return kept
+
 def dedup(items, seen):
-    fresh, batch_ids = [], set()
+    fresh, batch = [], set()
     for it in items:
         if not it.get("title") or not it.get("url"):
             continue
         iid = item_id(it)
-        if iid in seen or iid in batch_ids:
+        if iid in seen or iid in batch:
             continue
-        batch_ids.add(iid)
+        batch.add(iid)
         it["id"] = iid
         fresh.append(it)
     return fresh
 
+def already_in_spanish(spanish_title):
+    """True si Google News en español YA tiene la noticia (=> no es primicia)."""
+    q = " ".join(re.findall(r"[A-Za-zÁÉÍÓÚÑáéíóúñ]{4,}", spanish_title or ""))[:120]
+    if len(q) < 8:
+        return False
+    try:
+        url = f"https://news.google.com/rss/search?q={quote(q)}&hl=es&gl=ES&ceid=ES:es"
+        feed = feedparser.parse(url)
+        recent = 0
+        for e in feed.entries[:10]:
+            if getattr(e, "published_parsed", None):
+                d = dt.datetime(*e.published_parsed[:6], tzinfo=dt.timezone.utc)
+                if (now_utc() - d) <= dt.timedelta(days=3):
+                    recent += 1
+        return recent >= 2   # ya cubierto por >=2 medios ES en 72h
+    except Exception:
+        return False
+
+
+# --------------------------------------------------------------------------- #
+# SCORING
+# --------------------------------------------------------------------------- #
 
 def score_with_llm(items):
-    """Puntúa 0-10 y genera un titular en español. Devuelve None si no hay clave/error."""
     key = os.getenv("ANTHROPIC_API_KEY")
     if not key:
         return None
-    payload_items = [
-        {"i": n, "title": it["title"], "source": it["source"],
-         "lang": it["lang"], "country": it["country"]}
-        for n, it in enumerate(items)
-    ]
+    payload = [{"i": n, "title": it["title"], "source": it["source"],
+                "lang": it["lang"], "country": it["country"],
+                "domain": domain_of(it["url"]), "metric": it.get("metric", 0)}
+               for n, it in enumerate(items)]
     prompt = (
-        "Eres editor de un medio español de periodismo climático (calentamientoglobal.es). "
-        "Puntúa cada noticia de 0 a 10 según: relevancia climática real, novedad y "
-        "atractivo para una audiencia española interesada en clima, fauna y fenómenos extremos. "
-        "Penaliza opinión genérica, promociones y ruido. Premia hechos concretos, sucesos, "
-        "estudios y ángulos poco cubiertos (fauna, países lejanos, vídeos virales).\n"
+        "Eres el editor de SUCESOS de un medio español de clima (calentamientoglobal.es). "
+        "No buscas análisis ni divulgación: buscas EXCLUSIVAS que publicar el PRIMERO en español. "
+        "Puntúa 0-10 donde 10 = 'bombazo que publico YA'.\n\n"
+        "PREMIA fuerte: hechos concretos y dramáticos (mortandades de fauna, desastres, récords "
+        "rotos, rescates, vídeos virales); origen en prensa NO inglesa/española (India, sudeste "
+        "asiático, Latinoamérica, África, Oriente Medio); alto potencial viral o emocional; algo "
+        "que casi seguro la prensa española AÚN no ha contado.\n"
+        "PENALIZA fuerte (score <=3): opinión, análisis, 'explainers', divulgación genérica, "
+        "política/cumbres, y cabeceras que ya lee todo el mundo (Carbon Brief, Guardian, Reuters, BBC).\n\n"
         "Devuelve SOLO un array JSON: [{\"i\":int,\"score\":float,"
-        "\"cat\":\"fauna|extremos|ciencia|energia|politica|virales|otros\","
-        "\"es\":\"titular reescrito en español (max 90 car)\"}].\n\n"
-        f"Noticias:\n{json.dumps(payload_items, ensure_ascii=False)}"
+        "\"cat\":\"fauna|desastre|record|viral|ciencia|otros\","
+        "\"primicia\":true|false,\"es\":\"titular en español, gancho, max 90 car\"}].\n\n"
+        f"Noticias:\n{json.dumps(payload, ensure_ascii=False)}"
     )
     try:
         r = requests.post(
             "https://api.anthropic.com/v1/messages",
             headers={"x-api-key": key, "anthropic-version": "2023-06-01",
                      "content-type": "application/json"},
-            json={"model": "claude-haiku-4-5-20251001", "max_tokens": 2000,
+            json={"model": "claude-haiku-4-5-20251001", "max_tokens": 2500,
                   "messages": [{"role": "user", "content": prompt}]},
-            timeout=90,
-        )
+            timeout=90)
         txt = r.json()["content"][0]["text"]
         txt = txt[txt.find("["): txt.rfind("]") + 1]
         for row in json.loads(txt):
@@ -365,71 +386,66 @@ def score_with_llm(items):
                 items[i]["score"] = float(row.get("score", 0))
                 items[i]["cat"] = row.get("cat", "otros")
                 items[i]["es"] = row.get("es", items[i]["title"])
+                items[i]["primicia"] = bool(row.get("primicia", False))
         return items
     except Exception as e:
         print(f"[llm] error: {e}")
         return None
 
-
 def score_by_keywords(items):
-    """Fallback sin LLM: score por densidad de términos climáticos + señal social."""
+    """Fallback SIN IA. Aviso: no distingue 'impactante', solo aproxima. Añade la IA."""
     for it in items:
         low = it["title"].lower()
         hits = sum(1 for t in CLIMATE_TERMS if t in low)
-        # GDELT y Google News ya vienen de consultas climáticas -> base garantizada.
-        floor = 6.0 if it["source"] in ("gdelt", "googlenews") else 4.0
-        base = min(9.0, floor + hits * 1.2)
-        if it["metric"] > 200:      # viralidad social
-            base += 1.0
-        if it["source"] in ("reddit", "bluesky", "youtube"):
-            base += 0.3            # ligeramente pro-viral
-        it["score"] = round(min(base, 10.0), 1)
+        base = 5.0 + hits * 0.8
+        if it.get("lang", "")[:3] in PRIORITY_LANGS:      # origen extranjero -> primicia
+            base += 1.5
+        if domain_of(it["url"]) in LOW_NOVELTY:           # todo el mundo lo lee
+            base -= 3.0
+        if it.get("metric", 0) > 500:                     # viral
+            base += 1.5
+        if it["source"] in ("youtube", "bluesky"):        # vídeo/viral
+            base += 0.5
+        it["score"] = round(max(0.0, min(base, 10.0)), 1)
         it["cat"] = "otros"
         it["es"] = it["title"]
+        it["primicia"] = it.get("lang", "")[:3] in PRIORITY_LANGS
     return items
 
 
 # --------------------------------------------------------------------------- #
-# ENTREGA (TELEGRAM)
+# ENTREGA
 # --------------------------------------------------------------------------- #
 
-FLAG = {"IN": "🇮🇳", "US": "🇺🇸", "ES": "🇪🇸", "GB": "🇬🇧", "FR": "🇫🇷",
-        "DE": "🇩🇪", "BR": "🇧🇷", "IT": "🇮🇹"}
 ICON = {"gdelt": "📰", "googlenews": "🗞️", "reddit": "👽", "bluesky": "🦋", "youtube": "▶️"}
 
-
 def format_digest(items):
-    lines = [f"🌍 <b>Climate Radar</b> · {len(items)} noticias · {now_utc():%d %b %H:%M} UTC\n"]
+    lines = [f"🌍 <b>Climate Radar</b> · {len(items)} posibles exclusivas · {now_utc():%d %b %H:%M} UTC\n"]
     for it in items:
         title = html.escape(it.get("es") or it["title"])
         origin = html.escape(it.get("origin", ""))
-        flag = FLAG.get(it.get("country", ""), "")
         cat = it.get("cat", "")
-        cat_tag = f" · <i>{cat}</i>" if cat and cat != "otros" else ""
-        metric = f" · 🔥{it['metric']}" if it.get("metric", 0) > 200 else ""
+        tag = f" · <i>{cat}</i>" if cat and cat != "otros" else ""
+        star = "🔥PRIMICIA " if it.get("primicia") else ""
+        metric = f" · 👁{it['metric']:,}" if it.get("metric", 0) > 500 else ""
+        lang = f" [{it['lang']}]" if it.get("lang") else ""
         lines.append(
-            f"{ICON.get(it['source'],'•')} <b>{it['score']:.0f}</b>{cat_tag} {flag} "
+            f"{ICON.get(it['source'],'•')} <b>{it['score']:.0f}</b>{tag} {star}"
             f"<a href=\"{html.escape(it['url'])}\">{title}</a>\n"
-            f"    <i>{origin} · {it['source']}{metric}</i>"
+            f"    <i>{origin}{lang} · {it['source']}{metric}</i>"
         )
     return "\n".join(lines)
 
-
 def send_telegram(text):
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat = os.getenv("TELEGRAM_CHAT_ID")
+    token, chat = os.getenv("TELEGRAM_BOT_TOKEN"), os.getenv("TELEGRAM_CHAT_ID")
     if not token or not chat:
-        print("[telegram] sin credenciales -> muestro el digest por consola:\n")
-        print(text)
+        print("[telegram] sin credenciales -> digest por consola:\n\n" + text)
         return
     for chunk in [text[i:i + 3900] for i in range(0, len(text), 3900)]:
         try:
-            requests.post(
-                f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": chat, "text": chunk, "parse_mode": "HTML",
-                      "disable_web_page_preview": True},
-                timeout=30,
-            )
+            requests.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                          json={"chat_id": chat, "text": chunk, "parse_mode": "HTML",
+                                "disable_web_page_preview": True}, timeout=30)
             time.sleep(0.5)
         except Exception as e:
             print(f"[telegram] error: {e}")
@@ -451,32 +467,44 @@ def main():
         print(f"  {name}: {len(got)} candidatos")
         raw += got
 
+    raw = prefilter(raw)                     # fuera lo que ya está en prensa ES
     fresh = dedup(raw, seen)
-    print(f"Nuevos tras dedup: {len(fresh)}")
+    print(f"Nuevos tras dedup+prefiltro: {len(fresh)}")
     if not fresh:
+        save_seen(seen)
         print("Nada nuevo. Fin.")
         return
 
-    # Limita el volumen enviado al LLM (coste): prioriza por señal social previa.
     fresh.sort(key=lambda x: x.get("metric", 0), reverse=True)
-    candidates = fresh[:60]
+    candidates = fresh[:70]
 
     scored = score_with_llm(candidates)
     if scored is None:
         scored = score_by_keywords(candidates)
-        print("Scoring: keywords (sin ANTHROPIC_API_KEY)")
+        print("Scoring: KEYWORDS (sin ANTHROPIC_API_KEY -> añádela para cazar exclusivas)")
     else:
-        print("Scoring: LLM (Claude Haiku)")
+        print("Scoring: IA (Claude Haiku)")
 
-    hits = [it for it in scored if it.get("score", 0) >= MIN_SCORE]
-    hits.sort(key=lambda x: x.get("score", 0), reverse=True)
-    hits = hits[:MAX_ALERTS]
+    hits = sorted([it for it in scored if it.get("score", 0) >= MIN_SCORE],
+                  key=lambda x: x.get("score", 0), reverse=True)[:MAX_ALERTS * 2]
     print(f"Superan umbral (>= {MIN_SCORE}): {len(hits)}")
 
-    if hits:
-        send_telegram(format_digest(hits))
+    # Filtro de primicia: descarta lo que la prensa española ya publicó.
+    final = []
+    if CHECK_SPANISH_NOVELTY:
+        for it in hits:
+            if already_in_spanish(it.get("es") or it["title"]):
+                continue
+            final.append(it)
+            if len(final) >= MAX_ALERTS:
+                break
+        print(f"Tras filtro 'ya en español': {len(final)}")
+    else:
+        final = hits[:MAX_ALERTS]
 
-    # Marca como vistos TODOS los nuevos (aunque no superen umbral) para no re-evaluarlos.
+    if final:
+        send_telegram(format_digest(final))
+
     for it in fresh:
         seen.add(it["id"])
     save_seen(seen)
