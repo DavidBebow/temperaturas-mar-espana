@@ -5,21 +5,24 @@ on:
     - cron: "20 6 * * *"        # cada día a las 06:20 UTC
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   actualizar:
     runs-on: ubuntu-latest
     steps:
-      # 1) Repo PRIVADO (este), donde está el cerebro
-      - name: Checkout privado
-        uses: actions/checkout@v4
-
-      # 2) Repo PÚBLICO, donde se publican los datos
+      # 1) Este repo público
       - name: Checkout público
         uses: actions/checkout@v4
+
+      # 2) Repo privado con el cerebro (no se publica, solo se usa para ejecutar)
+      - name: Checkout privado
+        uses: actions/checkout@v4
         with:
-          repository: DavidBebow/caudal-rios-espana
+          repository: DavidBebow/clima-scripts
           token: ${{ secrets.SCRIPTS_TOKEN }}
-          path: publico
+          path: privado
 
       - name: Configurar Python
         uses: actions/setup-python@v5
@@ -29,15 +32,14 @@ jobs:
       - name: Instalar dependencias
         run: pip install requests
 
-      # 3) Genera los datos directamente dentro de docs/data del público
+      # 3) Ejecuta el script privado y escribe los datos en docs/data de este repo
       - name: Generar caudales
         env:
-          OUTPUT_DIR: ${{ github.workspace }}/publico/docs/data
-        run: python generar_caudales.py
+          OUTPUT_DIR: ${{ github.workspace }}/docs/data
+        run: python privado/generar_caudales.py
 
-      # 4) Commit y push en el repo público
+      # 4) Commit de los datos en este repo público
       - name: Publicar
-        working-directory: publico
         run: |
           git config user.name  "GitHub Actions Bot"
           git config user.email "actions@github.com"
