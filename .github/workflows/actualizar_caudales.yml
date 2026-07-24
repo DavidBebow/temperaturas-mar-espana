@@ -1,0 +1,50 @@
+name: Actualizar caudales
+
+on:
+  schedule:
+    - cron: "20 6 * * *"        # cada día a las 06:20 UTC
+  workflow_dispatch: {}
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      # 1) Repo PRIVADO (este), donde está el cerebro
+      - name: Checkout privado
+        uses: actions/checkout@v4
+
+      # 2) Repo PÚBLICO, donde se publican los datos
+      - name: Checkout público
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/caudal-rios-espana
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: publico
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      # 3) Genera los datos directamente dentro de docs/data del público
+      - name: Generar caudales
+        env:
+          OUTPUT_DIR: ${{ github.workspace }}/publico/docs/data
+        run: python generar_caudales.py
+
+      # 4) Commit y push en el repo público
+      - name: Publicar
+        working-directory: publico
+        run: |
+          git config user.name  "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add docs/data/estaciones.geojson docs/data/meta.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios"
+          else
+            git commit -m "Caudales actualizados: $(date -u +'%d/%m/%Y %H:%M')"
+            git push
+          fi
