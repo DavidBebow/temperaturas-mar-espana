@@ -84,12 +84,12 @@
 <div class="widget">
   <div class="maparea">
     <div id="map"></div>
-    <div class="ov-title"><b>Planeta Vivo · <em>Caudal de los ríos</em></b><span>Estaciones de aforo SAIH · caudal de hoy y media histórica</span></div>
+    <div class="ov-title"><b>Planeta Vivo · <em>Caudal de los ríos</em></b><span>Caudal modelizado (GloFAS · Copernicus) · dato de hoy y media histórica</span></div>
 
     <div class="ov ov-live">
       <div class="tag live"><span class="dot"></span> En directo · ahora</div>
       <div class="big" id="l-n">—</div>
-      <p class="sub" id="l-sub">estaciones de aforo en río monitorizadas</p>
+      <p class="sub" id="l-sub">puntos de río monitorizados en toda España</p>
       <div class="hr"></div>
       <div class="kv"><b id="l-max">—</b><span id="l-maxl">río con más caudal</span></div>
       <div class="kv"><b id="l-dry">—</b><span id="l-dryl">estación con mayor déficit</span></div>
@@ -134,7 +134,7 @@ function colorAnom(a){
 
 const map=L.map("map",{zoomControl:true,scrollWheelZoom:false}).setView([40,-3.4],6);
 L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
-  attribution:'© OpenStreetMap · © CARTO · Datos: MITECO y Confederaciones Hidrográficas (SAIH / ROEA)',
+  attribution:'© OpenStreetMap · © CARTO · Caudal: GloFAS / Copernicus vía Open-Meteo (modelizado)',
   maxZoom:18
 }).addTo(map);
 map.on("focus",()=>map.scrollWheelZoom.enable());
