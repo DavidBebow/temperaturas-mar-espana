@@ -1,0 +1,46 @@
+name: Climate Radar
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: climate-radar
+  cancel-in-progress: false
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: pip install requests feedparser
+      - name: Ejecutar Climate Radar
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
+          YOUTUBE_API_KEY:    ${{ secrets.YOUTUBE_API_KEY }}
+          RADAR_WINDOW_HOURS: "3"
+          RADAR_MAX_ALERTS:   "12"
+          RADAR_MIN_SCORE:    "6"
+        run: python docs/climate-radar.py
+      - name: Guardar estado
+        run: |
+          git config user.name  "climate-radar-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add docs/data/seen.json
+          if ! git diff --cached --quiet; then
+            git commit -m "radar: estado [skip ci]"
+            git push
+          else
+            echo "Sin cambios de estado."
+          fi
