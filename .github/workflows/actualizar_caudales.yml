@@ -32,10 +32,10 @@ jobs:
       - name: Instalar dependencias
         run: pip install requests
 
-      # 3) Ejecuta el script privado y escribe los datos en docs de este repo
+      # 3) Ejecuta el script privado y escribe los datos en docs/caudal
       - name: Generar caudales
         env:
-          OUTPUT_DIR: ${{ github.workspace }}/docs
+          OUTPUT_DIR: ${{ github.workspace }}/docs/caudal
         run: python privado/generar_caudales.py
 
       # 4) Commit de los datos en este repo público
@@ -43,7 +43,7 @@ jobs:
         run: |
           git config user.name  "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git add docs/estaciones.geojson docs/meta.json
+          git add docs/caudal/estaciones.geojson docs/caudal/meta.json
           if git diff --staged --quiet; then
             echo "Sin cambios"
           else
