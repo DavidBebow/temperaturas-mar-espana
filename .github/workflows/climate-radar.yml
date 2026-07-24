@@ -2,7 +2,7 @@ name: Climate Radar
 
 on:
   schedule:
-    - cron: "0 */2 * * *"   # cada 2 horas (UTC). Para más inmediatez: "*/30 * * * *"
+    - cron: "0 5,13,21 * * *"   # 3 veces al día (cada 8 h). España verano ~07:00, 15:00, 23:00
   workflow_dispatch:
 
 permissions:
@@ -31,7 +31,7 @@ jobs:
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
           ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
           YOUTUBE_API_KEY:    ${{ secrets.YOUTUBE_API_KEY }}
-          RADAR_WINDOW_HOURS: "3"
+          RADAR_WINDOW_HOURS: "9"
           RADAR_MAX_ALERTS:   "12"
           RADAR_MIN_SCORE:    "7"
         run: python docs/climate-radar.py
