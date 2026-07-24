@@ -1,9 +1,23 @@
 {
-  "actualizado": "2026-07-24T06:20:00+00:00",
-  "n_estaciones": 5,
-  "muestra": true,
-  "fuentes": [
-    {"id": "che", "nombre": "Confederación Hidrográfica del Ebro (SAIH Ebro)", "licencia": "CHE — reutilización con atribución", "estaciones": 5}
-  ],
-  "fuentes_fallidas": []
+  "actualizado": "2026-07-24T15:22:01+00:00",
+  "n_estaciones": 20,
+  "fuente": "GloFAS / Copernicus vía Open-Meteo (caudal modelizado)",
+  "puntos_fallidos": [
+    {
+      "codigo": "TAJ-04",
+      "error": "429 Client Error: Too Many Requests for url: https://flood-api.open-meteo.com/v1/flood?latitude=39.723&longitude=-6.892&daily=river_discharge&start_date=1992-01-01&end_date=2026-07-24"
+    },
+    {
+      "codigo": "DUE-01",
+      "error": "HTTPSConnectionPool(host='flood-api.open-meteo.com', port=443): Read timed out. (read timeout=40)"
+    },
+    {
+      "codigo": "JUC-01",
+      "error": "HTTPSConnectionPool(host='flood-api.open-meteo.com', port=443): Read timed out. (read timeout=40)"
+    },
+    {
+      "codigo": "SEG-01",
+      "error": "HTTPSConnectionPool(host='flood-api.open-meteo.com', port=443): Read timed out. (read timeout=40)"
+    }
+  ]
 }
