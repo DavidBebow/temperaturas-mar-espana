@@ -38,20 +38,21 @@ import feedparser
 # CONFIGURACIÓN
 # --------------------------------------------------------------------------- #
 
-WINDOW_HOURS = int(os.getenv("RADAR_WINDOW_HOURS", "3"))
+WINDOW_HOURS = int(os.getenv("RADAR_WINDOW_HOURS", "9"))
 MAX_ALERTS   = int(os.getenv("RADAR_MAX_ALERTS", "12"))
-MIN_SCORE    = float(os.getenv("RADAR_MIN_SCORE", "7"))   # más exigente que v1
+MIN_SCORE    = float(os.getenv("RADAR_MIN_SCORE", "6"))
 CHECK_SPANISH_NOVELTY = True   # descarta lo ya cubierto por prensa española
+HEARTBEAT    = True            # avisa aunque no haya primicias (para saber que corrió)
 
 UA = "Mozilla/5.0 (ClimateRadar/2.0; +https://calentamientoglobal.es)"
 STATE_FILE = Path(__file__).parent / "radar_seen.json"   # fichero plano, sin subcarpeta
 SEEN_CAP = 8000
 
-# GDELT global — orientado a SUCESOS de impacto, no a análisis.
+# GDELT global — red AMPLIA en la ingesta; el impacto lo filtra la IA en el scoring.
 GDELT_QUERIES = [
-    'theme:ENV_CLIMATECHANGE (animal OR wildlife OR species OR whale OR dolphin OR bird OR fish OR coral OR elephant OR penguin)',
-    '("climate change" OR "global warming") ("mass mortality" OR die-off OR "washed ashore" OR stranded OR "found dead" OR extinction)',
-    '("climate change" OR "extreme heat" OR wildfire OR flood OR drought OR glacier) (record OR unprecedented OR "first time" OR disaster OR emergency OR viral)',
+    'theme:ENV_CLIMATECHANGE',   # firehose amplio (mucho volumen; la IA elige)
+    'theme:ENV_CLIMATECHANGE (animal OR wildlife OR species OR whale OR dolphin OR coral OR elephant OR penguin OR bird OR fish)',
+    '("climate change" OR "global warming") ("mass mortality" OR die-off OR "washed ashore" OR stranded OR "found dead" OR extinction OR viral)',
 ]
 # GDELT por idioma — el long-tail donde puedes llegar PRIMERO en español.
 GDELT_LANGS = ["hindi", "portuguese", "indonesian", "arabic", "thai"]
@@ -467,10 +468,14 @@ def main():
         print(f"  {name}: {len(got)} candidatos")
         raw += got
 
+    total = len(raw)
     raw = prefilter(raw)                     # fuera lo que ya está en prensa ES
     fresh = dedup(raw, seen)
     print(f"Nuevos tras dedup+prefiltro: {len(fresh)}")
     if not fresh:
+        if HEARTBEAT:
+            send_telegram(f"🌍 <b>Climate Radar</b> · ejecutado, sin novedades "
+                          f"(candidatos: {total}, nada nuevo) · {now_utc():%d %b %H:%M} UTC")
         save_seen(seen)
         print("Nada nuevo. Fin.")
         return
@@ -504,6 +509,9 @@ def main():
 
     if final:
         send_telegram(format_digest(final))
+    elif HEARTBEAT:
+        send_telegram(f"🌍 <b>Climate Radar</b> · ejecutado, sin exclusivas nuevas "
+                      f"(analizados: {len(candidates)}) · {now_utc():%d %b %H:%M} UTC")
 
     for it in fresh:
         seen.add(it["id"])
