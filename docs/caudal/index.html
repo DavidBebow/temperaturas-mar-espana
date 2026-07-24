@@ -159,6 +159,7 @@ function regimenSVG(reg){
 function fichaHTML(p){
   const c=colorAnom(p.anomalia_pct), arrow=p.anomalia_pct==null?"":(p.anomalia_pct>=0?"↑":"↓");
   const chip=p.anomalia_pct==null?"":`<div class="pf-chip" style="background:${c}1a;color:${c}">${arrow} ${p.anomalia_pct>0?"+":""}${p.anomalia_pct}% vs su media</div>`;
+  const tend={sube:"↑ subiendo",baja:"↓ bajando",estable:"→ estable"}[p.tendencia]||"—";
   return `<div style="min-width:230px">
     <p class="pf-est">${p.estacion}</p>
     <div class="pf-rio">Río ${p.rio||"—"}${p.cuenca?" · cuenca del "+p.cuenca:""}</div>
@@ -166,7 +167,8 @@ function fichaHTML(p){
     ${chip}
     <div class="pf-rows">
       <div><span>Caudal medio anual</span><span>${fmt(p.caudal_medio_anual,"m³/s")}</span></div>
-      <div><span>Nivel</span><span>${fmt(p.nivel_m,"m")}</span></div>
+      <div><span>Hace un año (misma fecha)</span><span>${fmt(p.caudal_anio_pasado,"m³/s")}</span></div>
+      <div><span>Tendencia (última semana)</span><span>${tend}</span></div>
       <div><span>Desemboca en</span><span>${p.desemboca||"—"}</span></div>
       <div><span>Última lectura</span><span>${p.fecha?new Date(p.fecha).toLocaleString("es-ES"):"—"}</span></div>
     </div>
