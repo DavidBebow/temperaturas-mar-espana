@@ -199,8 +199,8 @@ function resumen(feats,meta){
 }
 
 Promise.all([
-  fetch("data/estaciones.geojson").then(r=>r.json()),
-  fetch("data/meta.json").then(r=>r.json()).catch(()=>({}))
+  fetch("estaciones.geojson").then(r=>r.json()),
+  fetch("meta.json").then(r=>r.json()).catch(()=>({}))
 ]).then(([gj,meta])=>{
   const layer=L.geoJSON(gj,{
     pointToLayer:(f,ll)=>L.marker(ll,{icon:pill(f.properties)}),
