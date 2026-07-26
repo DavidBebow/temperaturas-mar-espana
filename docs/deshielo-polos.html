@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El deshielo de los polos en tiempo real · Hielo marino del Ártico y la Antártida</title>
+<meta name="description" content="Sigue el deshielo de los polos en directo: extensión del hielo marino del Ártico y la Antártida frente a la media histórica, y pérdida de masa de los mantos de hielo de Groenlandia y la Antártida (NASA GRACE-FO). Sin alarmismo, solo datos.">
+<style>
+  :root{--ink:#1a1410;--soft:#7a6f66;--line:#ece7df;--bg2:#faf7f2;--card:#fff;
+    --ice:#2b7bb5;--ice2:#1a5c8f;--icebg:#eef6fc;--iceline:#cfe4f3;
+    --warm:#e0531f;--warm2:#b23410;--warmbg:#fff3ec;--warmline:#f3d4c4;
+    --green:#2fbf6b;}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#fff;color:var(--ink);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:34px 18px 40px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice);font-weight:700;text-align:center}
+  h1{font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.1;text-align:center;margin:10px 0 8px}
+  .sub{font-size:17px;color:var(--soft);text-align:center;max-width:660px;margin:0 auto 8px}
+  .live{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;letter-spacing:.12em;
+    color:var(--ice);margin:14px 0 0;font-weight:700;text-transform:uppercase}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(47,191,107,.5);animation:p 2s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(47,191,107,.5)}70%{box-shadow:0 0 0 8px rgba(47,191,107,0)}100%{box-shadow:0 0 0 0 rgba(47,191,107,0)}}
+
+  .strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;max-width:900px;margin:26px auto 0}
+  @media(max-width:760px){.strip{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.strip{grid-template-columns:1fr 1fr}}
+  .kpi{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px 12px;text-align:center}
+  .kpi .ico{font-size:18px}
+  .kpi .v{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:2px 0 1px;line-height:1.15}
+  .kpi .l{font-size:11px;color:var(--soft);line-height:1.3}
+  .kpi .d{font-size:11px;font-weight:700;margin-top:2px}
+  .neg{color:var(--warm2)}.pos{color:var(--ice2)}
+
+  h2.sec{font-size:25px;font-weight:800;letter-spacing:-.01em;margin:46px 0 4px;text-align:center}
+  .sec-sub{font-size:15px;color:var(--soft);text-align:center;margin:0 auto 22px;max-width:640px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+  @media(max-width:720px){h1{font-size:30px}.grid{grid-template-columns:1fr}}
+  .st{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px 22px;box-shadow:0 14px 40px rgba(60,40,20,.06);position:relative;overflow:hidden}
+  .st .hd{display:flex;align-items:center;gap:10px}
+  .st .flag{font-size:24px}
+  .st .name{font-size:19px;font-weight:800;letter-spacing:-.01em}
+  .st .place{font-size:12.5px;color:var(--soft)}
+  .st .row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:14px;gap:10px}
+  .st .temp{font-size:42px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .st .temp small{font-size:16px;font-weight:700;color:var(--soft)}
+  .st .anom{text-align:right;font-size:13px;color:var(--soft)}
+  .st .anom .big{font-size:22px;font-weight:800;letter-spacing:-.01em;display:block;line-height:1.15}
+  canvas{width:100%;height:150px;display:block;margin-top:14px}
+  .st .meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:12px;font-size:13px;border-top:1px solid var(--line);padding-top:12px}
+  .st .meta .lab{color:var(--soft)}
+  .st .meta b{font-weight:700}
+  .st .load{color:var(--soft);font-size:14px;padding:10px 0}
+  .legend{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--soft);margin-top:4px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:18px;height:3px;border-radius:2px;display:inline-block}
+
+  .note{max-width:860px;margin:26px auto 0;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:18px 20px;font-size:14px;color:#40372f}
+  .note b{color:var(--ink)}
+
+  .mass{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+  @media(max-width:720px){.mass{grid-template-columns:1fr}}
+  .ms{border-radius:20px;padding:20px 22px;border:1px solid var(--warmline);background:linear-gradient(135deg,#fff6f1,#ffeadf)}
+  .ms .name{font-size:19px;font-weight:800;display:flex;align-items:center;gap:9px}
+  .ms .rate{font-size:34px;font-weight:800;letter-spacing:-.02em;color:var(--warm2);margin:8px 0 0;line-height:1}
+  .ms .rate small{font-size:15px;color:var(--soft);font-weight:700}
+  .ms .meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:14px;font-size:13px;border-top:1px solid var(--warmline);padding-top:12px}
+  .ms .meta .lab{color:var(--soft)}
+  .counter{max-width:860px;margin:18px auto 0;background:#101820;color:#eaf2f8;border-radius:20px;padding:22px 24px;text-align:center}
+  .counter .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#7fb4dd;font-weight:700}
+  .counter .num{font-size:clamp(30px,7vw,52px);font-weight:800;letter-spacing:-.02em;margin:6px 0 2px;font-variant-numeric:tabular-nums;color:#fff}
+  .counter .u{font-size:15px;color:#9fb6c6}
+  .counter .sub2{font-size:13px;color:#9fb6c6;margin-top:10px}
+  .counter .sub2 b{color:#eaf2f8}
+
+  .recs{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:860px;margin:0 auto}
+  @media(max-width:620px){.recs{grid-template-columns:1fr}}
+  .rec{border-radius:16px;padding:18px;border:1px solid var(--line);background:#fff}
+  .rec .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--soft)}
+  .rec .v{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
+  .rec.cold .v{color:var(--ice2)}.rec.warm .v{color:var(--warm2)}
+  .rec .d{font-size:13px;color:var(--soft)}
+
+  .explain{max-width:860px;margin:0 auto}
+  .explain .blk{border-top:1px solid var(--line);padding:18px 2px}
+  .explain h3{font-size:17px;font-weight:800;margin:0 0 4px;display:flex;gap:9px;align-items:center}
+  .explain p{margin:0;color:#40372f;font-size:14.5px}
+
+  .faq{max-width:860px;margin:12px auto 0}
+  .faq details{border-bottom:1px solid var(--line);padding:4px 0}
+  .faq summary{cursor:pointer;font-weight:700;font-size:16px;padding:14px 4px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:'+';color:var(--ice);font-weight:800;font-size:20px}
+  .faq details[open] summary::after{content:'–'}
+  .faq p{margin:0 4px 14px;color:#40372f}
+  .src{font-size:12px;color:var(--soft);text-align:center;margin-top:34px;border-top:1px solid var(--line);padding-top:18px}
+  .src a{color:var(--ice2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">🧊 Observatorio climático</div>
+  <h1>El deshielo de los polos, en tiempo real</h1>
+  <p class="sub">Dos termómetros del planeta helado en una sola página: la extensión del hielo marino del Ártico y la Antártida frente a su media histórica, y cuánto hielo pierden cada año los grandes mantos de Groenlandia y la Antártida.</p>
+  <div class="live"><span class="dot"></span><span id="updated">Cargando datos…</span></div>
+
+  <div class="strip">
+    <div class="kpi"><div class="ico">❄️</div><div class="v" id="kArc">—</div><div class="l">Ártico ahora</div><div class="d" id="kArcD"></div></div>
+    <div class="kpi"><div class="ico">🧊</div><div class="v" id="kAnt">—</div><div class="l">Antártida ahora</div><div class="d" id="kAntD"></div></div>
+    <div class="kpi"><div class="ico">🌍</div><div class="v" id="kGlob">—</div><div class="l">Hielo marino global</div><div class="d" id="kGlobD"></div></div>
+    <div class="kpi"><div class="ico">🇬🇱</div><div class="v neg">−267</div><div class="l">Groenlandia (Gt/año)</div><div class="d neg">manto de hielo</div></div>
+    <div class="kpi"><div class="ico">🇦🇶</div><div class="v neg">−136</div><div class="l">Antártida (Gt/año)</div><div class="d neg">manto de hielo</div></div>
+  </div>
+
+  <!-- ================ HIELO MARINO ================ -->
+  <h2 class="sec">1 · El hielo marino, en directo</h2>
+  <p class="sec-sub">La banquisa —el hielo que flota sobre el mar— crece en invierno y se derrite en verano. Lo que importa no es el valor de hoy, sino cuánto se aleja de lo normal para esta fecha. Datos diarios del NSIDC (NASA/NOAA).</p>
+  <div class="grid">
+    <div class="st" id="cardArctic">
+      <div class="hd"><span class="flag">❄️</span><div><div class="name">Ártico</div><div class="place">Hemisferio norte · banquisa</div></div></div>
+      <div class="load" id="loadArc">Cargando extensión diaria…</div>
+      <div id="bodyArc" style="display:none">
+        <div class="row"><div class="temp" id="extArc">—<small> M km²</small></div><div class="anom"><span class="big" id="anomArc">—</span>vs. media 1981–2010</div></div>
+        <canvas id="chartArc" width="440" height="150"></canvas>
+        <div class="legend"><span><i style="background:#c7d2da"></i>Media 1981–2010</span><span><i style="background:var(--ice)"></i>Este año</span></div>
+        <div class="meta">
+          <div><span class="lab">Fecha del dato:</span> <b id="dateArc">—</b></div>
+          <div><span class="lab">Normal para hoy:</span> <b id="normArc">—</b></div>
+          <div><span class="lab">Récord mínimo:</span> <b>3,39 M km² (2012)</b></div>
+          <div><span class="lab">Mínimo 2025:</span> <b>4,60 M km²</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="st" id="cardAntarctic">
+      <div class="hd"><span class="flag">🧊</span><div><div class="name">Antártida</div><div class="place">Hemisferio sur · banquisa</div></div></div>
+      <div class="load" id="loadAnt">Cargando extensión diaria…</div>
+      <div id="bodyAnt" style="display:none">
+        <div class="row"><div class="temp" id="extAnt">—<small> M km²</small></div><div class="anom"><span class="big" id="anomAnt">—</span>vs. media 1981–2010</div></div>
+        <canvas id="chartAnt" width="440" height="150"></canvas>
+        <div class="legend"><span><i style="background:#c7d2da"></i>Media 1981–2010</span><span><i style="background:var(--ice)"></i>Este año</span></div>
+        <div class="meta">
+          <div><span class="lab">Fecha del dato:</span> <b id="dateAnt">—</b></div>
+          <div><span class="lab">Normal para hoy:</span> <b id="normAnt">—</b></div>
+          <div><span class="lab">Récord mínimo:</span> <b>1,79 M km² (2023)</b></div>
+          <div><span class="lab">Máximo más bajo:</span> <b>16,96 M km² (2023)</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>¿Por qué el hielo marino no sube el nivel del mar y aun así importa?</b> Porque ya flota: al derretirse no añade agua al océano, igual que un hielo en un vaso lleno. Pero el hielo blanco refleja la luz del Sol y el mar oscuro la absorbe; cuando la banquisa retrocede, el océano se calienta más deprisa y acelera todo lo demás. La Antártida encadena desde 2023 sus extensiones más bajas jamás medidas, y el hielo marino <b>global</b> del planeta ha marcado mínimos históricos en 2023 y 2025.</div>
+
+  <!-- ================ MANTOS DE HIELO ================ -->
+  <h2 class="sec">2 · Los mantos de hielo que sí suben el mar</h2>
+  <p class="sec-sub">Groenlandia y la Antártida guardan hielo sobre tierra firme acumulado durante milenios. Cuando se derrite, ese agua va al océano. Las balanzas espaciales GRACE-FO de la NASA lo pesan desde 2002.</p>
+  <div class="mass">
+    <div class="ms">
+      <div class="name">🇬🇱 Groenlandia</div>
+      <div class="rate">−267 <small>Gt de hielo al año</small></div>
+      <div class="meta">
+        <div><span class="lab">Aporte al nivel del mar:</span> <b>+0,8 mm/año</b></div>
+        <div><span class="lab">Midiendo desde:</span> <b>2002 (GRACE)</b></div>
+        <div><span class="lab">Tendencia:</span> <b>pérdida sostenida</b></div>
+        <div><span class="lab">Equivale a:</span> <b>~267 km³/año</b></div>
+      </div>
+    </div>
+    <div class="ms">
+      <div class="name">🇦🇶 Antártida</div>
+      <div class="rate">−136 <small>Gt de hielo al año</small></div>
+      <div class="meta">
+        <div><span class="lab">Aporte al nivel del mar:</span> <b>+0,4 mm/año</b></div>
+        <div><span class="lab">Midiendo desde:</span> <b>2002 (GRACE)</b></div>
+        <div><span class="lab">Tendencia:</span> <b>pérdida acelerándose</b></div>
+        <div><span class="lab">Equivale a:</span> <b>~136 km³/año</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="counter">
+    <div class="k">🧊 Hielo perdido por los polos en 2026 · al ritmo medio de GRACE-FO</div>
+    <div class="num" id="tonYear">—</div>
+    <div class="u">toneladas de hielo (Groenlandia + Antártida)</div>
+    <div class="sub2">Y <b id="tonSince">0</b> toneladas desde que abriste esta página. Los mantos pierden juntos unas <b>400.000 millones de toneladas al año</b> —cerca del <b>30 %</b> de la subida actual del nivel del mar. No es una medición instantánea: es la proyección al ritmo medio observado por satélite desde 2002.</div>
+  </div>
+
+  <!-- ================ RÉCORDS ================ -->
+  <h2 class="sec">Los récords del hielo polar</h2>
+  <p class="sec-sub">La memoria del deshielo en cuatro cifras.</p>
+  <div class="recs">
+    <div class="rec cold"><div class="k">Mínimo histórico del Ártico</div><div class="v">3,39 M km²</div><div class="d">16 de septiembre de 2012. La menor extensión de hielo marino ártico jamás medida por satélite. Los 19 últimos años son los 19 mínimos más bajos del registro.</div></div>
+    <div class="rec warm"><div class="k">Mínimo histórico de la Antártida</div><div class="v">1,79 M km²</div><div class="d">21 de febrero de 2023. Un desplome que rompió con décadas de aparente estabilidad del hielo antártico y no se ha recuperado desde entonces.</div></div>
+    <div class="rec cold"><div class="k">Máximo antártico más bajo</div><div class="v">16,96 M km²</div><div class="d">10 de septiembre de 2023. Incluso en pleno invierno austral, la banquisa alcanzó su techo anual más bajo de todo el registro satelital.</div></div>
+    <div class="rec warm"><div class="k">Pérdida de los mantos de hielo</div><div class="v">~420 Gt/año</div><div class="d">Groenlandia y la Antártida juntas, entre 2002 y 2023, según las balanzas GRACE-FO de la NASA. Responsables de en torno a un tercio de la subida del mar.</div></div>
+  </div>
+
+  <!-- ================ QUÉ MIDE ================ -->
+  <h2 class="sec">Qué mide cada indicador</h2>
+  <div class="explain">
+    <div class="blk"><h3>❄️ Extensión del hielo marino</h3><p>Mide la superficie de océano cubierta por al menos un 15 % de hielo, en millones de km², a partir de los sensores de microondas de los satélites del NSIDC (NASA/NOAA). El hielo marino es estacional: en el Ártico el mínimo llega en septiembre y el máximo en marzo; en la Antártida es al revés. Por eso el dato relevante es la <b>anomalía</b>: cuánto se desvía la extensión de hoy respecto a la media del periodo 1981–2010 para esa misma fecha.</p></div>
+    <div class="blk"><h3>⚖️ Balance de masa de los mantos de hielo</h3><p>Mide cuántas gigatoneladas de hielo ganan o pierden al año Groenlandia y la Antártida sobre tierra firme. Una gigatonelada (Gt) es mil millones de toneladas. Los datos proceden de las misiones GRACE y GRACE-FO de la NASA, dos satélites gemelos que detectan cambios diminutos en la gravedad de la Tierra al variar la masa de hielo. Es este deshielo —y no el marino— el que hace subir el nivel del mar.</p></div>
+    <div class="blk"><h3>🌍 Hielo marino global</h3><p>Suma la extensión de ambos hemisferios. Durante décadas, lo que se perdía en el Ártico se compensaba en parte en la Antártida; desde 2016 esa compensación se ha roto y el total planetario ha marcado mínimos históricos en 2023 y 2025. Es una forma de ver el estado del hielo del planeta de un solo vistazo.</p></div>
+  </div>
+
+  <!-- ================ FAQ ================ -->
+  <h2 class="sec">Preguntas frecuentes</h2>
+  <div class="faq">
+    <details open><summary>¿Se están derritiendo los polos?</summary><p>Sí, aunque de forma distinta en cada uno. El hielo marino del Ártico lleva décadas encogiendo de forma clara. La Antártida parecía estable hasta 2016, pero desde 2023 encadena las extensiones más bajas jamás medidas. Y los mantos de hielo sobre tierra —Groenlandia y la Antártida— pierden juntos unas 400.000 millones de toneladas de hielo al año, que van directas al mar.</p></details>
+    <details><summary>¿Por qué el deshielo del Ártico no sube el nivel del mar pero el de Groenlandia sí?</summary><p>El hielo marino del Ártico ya flota sobre el océano, así que al derretirse no añade volumen, igual que un cubito que se funde en un vaso lleno. El hielo de Groenlandia y de la Antártida, en cambio, está sobre tierra firme: cuando se derrite, ese agua nueva llega al mar y lo hace subir. Por eso los mantos de hielo son los que importan para el nivel del mar.</p></details>
+    <details><summary>¿Cuánta extensión de hielo hay ahora mismo?</summary><p>Arriba tienes el dato diario más reciente para el Ártico y la Antártida, con su anomalía respecto a la media 1981–2010, actualizado con los ficheros diarios del NSIDC. Como referencia, el Ártico oscila entre unos 15 millones de km² en marzo y unos 4,5 en septiembre; la Antártida, entre unos 3 millones en febrero y unos 18 en septiembre.</p></details>
+    <details><summary>¿Qué es una gigatonelada de hielo?</summary><p>Mil millones de toneladas. Una gigatonelada de hielo equivale aproximadamente a un cubo de un kilómetro de lado. Groenlandia pierde unas 267 al año y la Antártida unas 136: juntas, cerca de 400 gigatoneladas anuales, responsables de alrededor de un tercio de la subida del nivel del mar desde 1993.</p></details>
+    <details><summary>¿De dónde salen estos datos?</summary><p>La extensión del hielo marino procede del Sea Ice Index del National Snow and Ice Data Center (NSIDC), con datos satelitales de la NASA y la NOAA actualizados a diario. El balance de masa de los mantos de hielo procede de las misiones GRACE y GRACE-FO de la NASA. El contador de toneladas es una estimación calculada al ritmo medio observado por satélite, no una medición en directo.</p></details>
+  </div>
+
+  <p class="src">Hielo marino: <a href="https://nsidc.org/sea-ice-today" rel="nofollow">NSIDC Sea Ice Index</a> (NASA/NOAA) · Balance de masa: <a href="https://climate.nasa.gov/vital-signs/ice-sheets/" rel="nofollow">NASA GRACE-FO</a> · Parte del <a href="https://calentamientoglobal.es/observatorio-climatico/">Observatorio climático de calentamientoglobal.es</a>.</p>
+</div>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"¿Se están derritiendo los polos?","acceptedAnswer":{"@type":"Answer","text":"Sí. El hielo marino del Ártico lleva décadas encogiendo. La Antártida encadena desde 2023 las extensiones más bajas jamás medidas. Y los mantos de hielo de Groenlandia y la Antártida pierden juntos unas 400.000 millones de toneladas de hielo al año."}},
+{"@type":"Question","name":"¿Por qué el deshielo del Ártico no sube el nivel del mar pero el de Groenlandia sí?","acceptedAnswer":{"@type":"Answer","text":"El hielo marino del Ártico ya flota, así que al derretirse no añade volumen al océano. El hielo de Groenlandia y la Antártida está sobre tierra firme: cuando se derrite, ese agua llega al mar y lo hace subir."}},
+{"@type":"Question","name":"¿Cuánta extensión de hielo marino hay ahora mismo?","acceptedAnswer":{"@type":"Answer","text":"El Ártico oscila entre unos 15 millones de km² en marzo y unos 4,5 en septiembre; la Antártida, entre unos 3 millones en febrero y unos 18 en septiembre. El dato diario más reciente se muestra con su anomalía respecto a la media 1981-2010."}},
+{"@type":"Question","name":"¿Qué es una gigatonelada de hielo?","acceptedAnswer":{"@type":"Answer","text":"Mil millones de toneladas, aproximadamente un cubo de hielo de un kilómetro de lado. Groenlandia pierde unas 267 al año y la Antártida unas 136."}},
+{"@type":"Question","name":"¿De dónde salen estos datos?","acceptedAnswer":{"@type":"Answer","text":"La extensión del hielo marino procede del Sea Ice Index del NSIDC (NASA/NOAA), actualizado a diario. El balance de masa de los mantos procede de las misiones GRACE y GRACE-FO de la NASA."}}
+]}
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  function fmt(n,dec){return Number(n).toLocaleString('es-ES',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+  function fechaTxt(iso){var p=iso.split('-');return parseInt(p[2],10)+' '+MES[parseInt(p[1],10)-1]+' '+p[0];}
+
+  function drawChart(canvasId, serie, media){
+    var cv=document.getElementById(canvasId); if(!cv||!media||!media.length) return;
+    var ctx=cv.getContext('2d'), W=cv.width, H=cv.height, padL=6,padR=6,padT=10,padB=6;
+    ctx.clearRect(0,0,W,H);
+    var maxV=0; media.forEach(function(p){if(p[1]>maxV)maxV=p[1];});
+    (serie||[]).forEach(function(p){if(p[1]>maxV)maxV=p[1];});
+    maxV*=1.05; var minV=0;
+    function X(doy){return padL+(doy/366)*(W-padL-padR);}
+    function Y(v){return padT+(1-(v-minV)/(maxV-minV))*(H-padT-padB);}
+    ctx.beginPath();
+    media.forEach(function(p,i){(i===0?ctx.moveTo:ctx.lineTo).call(ctx,X(p[0]),Y(p[1]));});
+    ctx.strokeStyle='#c7d2da'; ctx.lineWidth=2.4; ctx.stroke();
+    if(serie&&serie.length){
+      ctx.beginPath();
+      serie.forEach(function(p,i){(i===0?ctx.moveTo:ctx.lineTo).call(ctx,X(p[0]),Y(p[1]));});
+      ctx.strokeStyle='#2b7bb5'; ctx.lineWidth=2.6; ctx.stroke();
+      var last=serie[serie.length-1];
+      ctx.beginPath(); ctx.arc(X(last[0]),Y(last[1]),3.6,0,7); ctx.fillStyle='#1a5c8f'; ctx.fill();
+    }
+  }
+
+  function renderHemi(h, suf){
+    document.getElementById('load'+suf).style.display='none';
+    document.getElementById('body'+suf).style.display='block';
+    document.getElementById('ext'+suf).innerHTML=fmt(h.ext,2)+'<small> M km²</small>';
+    var aEl=document.getElementById('anom'+suf);
+    var sign=h.anom>=0?'+':'−';
+    aEl.textContent=sign+fmt(Math.abs(h.anom),2)+' M km²';
+    aEl.style.color=h.anom<0?'var(--warm2)':'var(--ice2)';
+    document.getElementById('date'+suf).textContent=fechaTxt(h.fecha);
+    document.getElementById('norm'+suf).textContent=fmt(h.normal,2)+' M km²';
+    drawChart(suf==='Arc'?'chartArc':'chartAnt', h.serie, h.media);
+  }
+  function renderKPI(h, kv, kd){
+    kv.textContent=fmt(h.ext,1);
+    var sign=h.anom>=0?'+':'−';
+    kd.textContent=sign+fmt(Math.abs(h.anom_pct),0)+'%';
+    kd.className='d '+(h.anom<0?'neg':'pos');
+  }
+
+  fetch('deshielo.json?t='+Date.now(),{cache:'no-store'})
+  .then(function(r){if(!r.ok)throw 0;return r.json();})
+  .then(function(d){
+    if(d.arctic){renderHemi(d.arctic,'Arc');renderKPI(d.arctic,document.getElementById('kArc'),document.getElementById('kArcD'));}
+    if(d.antarctic){renderHemi(d.antarctic,'Ant');renderKPI(d.antarctic,document.getElementById('kAnt'),document.getElementById('kAntD'));}
+    if(d.arctic&&d.antarctic){
+      var tot=d.arctic.ext+d.antarctic.ext, anom=d.arctic.anom+d.antarctic.anom;
+      document.getElementById('kGlob').textContent=fmt(tot,1);
+      var kd=document.getElementById('kGlobD');
+      kd.textContent=(anom>=0?'+':'−')+fmt(Math.abs(anom),1)+' M km²';
+      kd.className='d '+(anom<0?'neg':'pos');
+    }
+    var fecha=(d.arctic&&d.arctic.fecha)||(d.antarctic&&d.antarctic.fecha)||d.fecha_dato;
+    var muestra=d.muestra?' · datos de muestra (pendiente de la 1ª ejecución)':'';
+    document.getElementById('updated').textContent='Hielo marino · '+(fecha?fechaTxt(fecha):'')+' · NSIDC'+muestra;
+    if(d.mantos&&d.mantos.combinado_gt_year){RATE_GT_YEAR=Math.abs(d.mantos.combinado_gt_year);RATE_T_SEC=RATE_GT_YEAR*1e9/31557600;}
+  })
+  .catch(function(){
+    ['Arc','Ant'].forEach(function(suf){
+      document.getElementById('load'+suf).textContent='Los datos del hielo marino se publican en breve. El resto de la página funciona con normalidad.';
+    });
+    document.getElementById('updated').textContent='Balance de masa: NASA GRACE-FO';
+  });
+
+  // ---- contador de masa (Gt/año) ----
+  var RATE_GT_YEAR=403;                        // Groenlandia 267 + Antártida 136
+  var RATE_T_SEC=RATE_GT_YEAR*1e9/31557600;    // toneladas por segundo (~12.774)
+  var yearStart=Date.UTC(new Date().getUTCFullYear(),0,1);
+  var openTs=Date.now();
+  function tick(){
+    var now=Date.now();
+    document.getElementById('tonYear').textContent=Math.floor((now-yearStart)/1000*RATE_T_SEC).toLocaleString('es-ES');
+    document.getElementById('tonSince').textContent=Math.floor((now-openTs)/1000*RATE_T_SEC).toLocaleString('es-ES');
+  }
+  tick(); setInterval(tick,120);
+})();
+</script>
+</body>
+</html>
