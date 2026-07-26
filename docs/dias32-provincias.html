@@ -209,28 +209,28 @@
     if(g.type==='MultiPolygon'){for(var i=0;i<g.coordinates.length;i++)if(ptInPoly(x,y,g.coordinates[i]))return true;}
     return false;}
   function centroid(f){
-    var g=f.geometry,ring;
-    if(!g)return null;
-    if(g.type==='Polygon')ring=g.coordinates[0];
-    else if(g.type==='MultiPolygon')ring=g.coordinates[0][0];
+    var g=f.geometry;if(!g)return null;var sx=0,sy=0,n=0;
+    function ring(r){for(var i=0;i<r.length;i++){sx+=r[i][0];sy+=r[i][1];n++;}}
+    if(g.type==='Polygon')g.coordinates.forEach(ring);
+    else if(g.type==='MultiPolygon')g.coordinates.forEach(function(poly){poly.forEach(ring);});
     else return null;
-    var sx=0,sy=0;ring.forEach(function(c){sx+=c[0];sy+=c[1];});
-    return [sx/ring.length,sy/ring.length];
+    return n?[sx/n,sy/n]:null;
   }
+  // Enfoque por POLÍGONO (garantiza que ninguno queda sin color):
+  // cada polígono toma la capital que contiene; si no contiene ninguna
+  // (capital costera que cae "en el mar" en un GeoJSON de baja resolución),
+  // toma la capital más cercana a su centro.
   function matchFeatures(gj){
-    var feats=gj.features||[];
-    feats.forEach(function(f){f.__prov=null;});
-    DATA.provincias.forEach(function(p){
-      // 1) el polígono que contiene la capital
-      for(var i=0;i<feats.length;i++){ if(feats[i].__prov)continue;
-        if(ptInGeom(p.lon,p.lat,feats[i].geometry)){feats[i].__prov=p.prov;return;} }
-      // 2) respaldo (capital justo en la costa): polígono libre más cercano al centroide
-      var best=null,bd=1e9;
-      for(var j=0;j<feats.length;j++){ if(feats[j].__prov)continue;
-        var c=centroid(feats[j]); if(!c)continue;
-        var d=(c[0]-p.lon)*(c[0]-p.lon)+(c[1]-p.lat)*(c[1]-p.lat);
-        if(d<bd){bd=d;best=feats[j];} }
-      if(best)best.__prov=p.prov;
+    (gj.features||[]).forEach(function(f){
+      var got=null;
+      for(var i=0;i<DATA.provincias.length;i++){var p=DATA.provincias[i];
+        if(ptInGeom(p.lon,p.lat,f.geometry)){got=p.prov;break;}}
+      if(!got){var c=centroid(f),best=null,bd=1e9;
+        if(c)DATA.provincias.forEach(function(p){
+          var d=(c[0]-p.lon)*(c[0]-p.lon)+(c[1]-p.lat)*(c[1]-p.lat);
+          if(d<bd){bd=d;best=p.prov;}});
+        got=best;}
+      f.__prov=got;
     });
   }
   function featProv(f){ return f.__prov; }
