@@ -216,22 +216,33 @@
     else return null;
     return n?[sx/n,sy/n]:null;
   }
-  // Enfoque por POLÍGONO (garantiza que ninguno queda sin color):
-  // cada polígono toma la capital que contiene; si no contiene ninguna
-  // (capital costera que cae "en el mar" en un GeoJSON de baja resolución),
-  // toma la capital más cercana a su centro.
+  // Emparejamiento UNO-A-UNO global entre polígonos y provincias.
+  // Para cada par (polígono, capital) se calcula una "distancia": si la capital
+  // está DENTRO del polígono se le da prioridad (clave muy negativa) ordenada por
+  // cercanía al centro —así, si dos capitales caen dentro de un mismo polígono,
+  // gana la que está más centrada, no la primera de la lista—. Después se asigna
+  // de forma voraz de menor a mayor, sin repetir polígono ni provincia. Ninguna
+  // provincia se usa dos veces (no hay cruces tipo Murcia→Albacete) y ninguna
+  // costera se queda fuera (cae por cercanía).
   function matchFeatures(gj){
-    (gj.features||[]).forEach(function(f){
-      var got=null;
-      for(var i=0;i<DATA.provincias.length;i++){var p=DATA.provincias[i];
-        if(ptInGeom(p.lon,p.lat,f.geometry)){got=p.prov;break;}}
-      if(!got){var c=centroid(f),best=null,bd=1e9;
-        if(c)DATA.provincias.forEach(function(p){
-          var d=(c[0]-p.lon)*(c[0]-p.lon)+(c[1]-p.lat)*(c[1]-p.lat);
-          if(d<bd){bd=d;best=p.prov;}});
-        got=best;}
-      f.__prov=got;
+    var feats=(gj.features||[]);
+    feats.forEach(function(f){f.__prov=null;f.__c=centroid(f);});
+    var pairs=[];
+    feats.forEach(function(f,fi){
+      if(!f.__c)return;
+      DATA.provincias.forEach(function(p){
+        var dx=f.__c[0]-p.lon, dy=f.__c[1]-p.lat, d=dx*dx+dy*dy;
+        var inside=ptInGeom(p.lon,p.lat,f.geometry);
+        pairs.push([inside? d-1e9 : d, fi, p.prov]);
+      });
     });
+    pairs.sort(function(a,b){return a[0]-b[0];});
+    var usedF={}, usedP={};
+    for(var i=0;i<pairs.length;i++){
+      var fi=pairs[i][1], prov=pairs[i][2];
+      if(usedF[fi]||usedP[prov])continue;
+      feats[fi].__prov=prov; usedF[fi]=1; usedP[prov]=1;
+    }
   }
   function featProv(f){ return f.__prov; }
   function styleFn(f){
