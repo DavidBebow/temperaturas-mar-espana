@@ -192,17 +192,48 @@
       {subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO'}).addTo(map);
     GEO.reduce(function(pr,url){return pr.catch(function(){return fetch(url).then(function(r){if(!r.ok)throw 0;return r.json();});});},Promise.reject())
       .then(function(gj){
+        matchFeatures(gj);
         geoLayer=L.geoJSON(gj,{style:styleFn,onEachFeature:onEach}).addTo(map);
         paintMap();
       }).catch(function(){ document.getElementById('map').style.display='none'; });
   }
-  function featProv(f){
-    var raw=f.properties&&(f.properties.name||f.properties.NAME||f.properties.provincia||'');
-    var n=norm(raw);
-    if(ALIAS[n]) return ALIAS[n];
-    if(NBYP[n]) return NBYP[n];
-    return null;
+  // Emparejamiento robusto por PUNTO-EN-POLÍGONO: a cada polígono del GeoJSON se le
+  // asigna la provincia cuya capital cae dentro. Independiente del nombre del GeoJSON.
+  function ptInRing(x,y,ring){var inside=false;for(var i=0,j=ring.length-1;i<ring.length;j=i++){
+    var xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;}return inside;}
+  function ptInPoly(x,y,poly){if(!poly||!poly[0]||!ptInRing(x,y,poly[0]))return false;
+    for(var k=1;k<poly.length;k++)if(ptInRing(x,y,poly[k]))return false;return true;}
+  function ptInGeom(x,y,g){if(!g)return false;
+    if(g.type==='Polygon')return ptInPoly(x,y,g.coordinates);
+    if(g.type==='MultiPolygon'){for(var i=0;i<g.coordinates.length;i++)if(ptInPoly(x,y,g.coordinates[i]))return true;}
+    return false;}
+  function centroid(f){
+    var g=f.geometry,ring;
+    if(!g)return null;
+    if(g.type==='Polygon')ring=g.coordinates[0];
+    else if(g.type==='MultiPolygon')ring=g.coordinates[0][0];
+    else return null;
+    var sx=0,sy=0;ring.forEach(function(c){sx+=c[0];sy+=c[1];});
+    return [sx/ring.length,sy/ring.length];
   }
+  function matchFeatures(gj){
+    var feats=gj.features||[];
+    feats.forEach(function(f){f.__prov=null;});
+    DATA.provincias.forEach(function(p){
+      // 1) el polígono que contiene la capital
+      for(var i=0;i<feats.length;i++){ if(feats[i].__prov)continue;
+        if(ptInGeom(p.lon,p.lat,feats[i].geometry)){feats[i].__prov=p.prov;return;} }
+      // 2) respaldo (capital justo en la costa): polígono libre más cercano al centroide
+      var best=null,bd=1e9;
+      for(var j=0;j<feats.length;j++){ if(feats[j].__prov)continue;
+        var c=centroid(feats[j]); if(!c)continue;
+        var d=(c[0]-p.lon)*(c[0]-p.lon)+(c[1]-p.lat)*(c[1]-p.lat);
+        if(d<bd){bd=d;best=feats[j];} }
+      if(best)best.__prov=p.prov;
+    });
+  }
+  function featProv(f){ return f.__prov; }
   function styleFn(f){
     var pr=featProv(f), p=pr&&BYP[pr], v=p?valueOf(p,year,esc):null;
     return {fillColor:color(v),weight:1,color:'#fff',fillOpacity:.9};
