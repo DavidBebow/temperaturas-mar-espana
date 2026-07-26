@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Días de más de 32 °C al año por provincia · Mapa y proyección a 2100</title>
+<meta name="description" content="Cuántos días al año se superan los 32 °C en cada provincia de España, con datos ERA5 desde 1961 y una proyección hasta 2100 en tres escenarios de emisiones. Mapa interactivo por provincia.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{--ink:#1a1410;--soft:#7a6f66;--line:#ece7df;--bg2:#faf7f2;--card:#fff;
+    --c0:#eef0f2;--c1:#ffe0a3;--c2:#f9c15a;--c3:#f3993c;--c4:#e0531f;--c5:#b23410;--c6:#7a1f0a;
+    --accent:#e0531f;--accent2:#b23410;}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#fff;color:var(--ink);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 18px 40px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;text-align:center}
+  h1{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.1;text-align:center;margin:10px 0 8px}
+  .sub{font-size:16.5px;color:var(--soft);text-align:center;max-width:680px;margin:0 auto 6px}
+  .live{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;letter-spacing:.12em;
+    color:var(--accent);margin:12px 0 0;font-weight:700;text-transform:uppercase}
+  .dot{width:8px;height:8px;border-radius:50%;background:#2fbf6b;box-shadow:0 0 0 0 rgba(47,191,107,.5);animation:p 2s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(47,191,107,.5)}70%{box-shadow:0 0 0 8px rgba(47,191,107,0)}100%{box-shadow:0 0 0 0 rgba(47,191,107,0)}}
+
+  .controls{max-width:820px;margin:24px auto 0;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;
+    color:var(--soft);cursor:pointer;transition:.15s}
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip.hist[aria-pressed="true"]{background:#1a5c8f;border-color:#1a5c8f}
+  .yearrow{display:flex;align-items:center;gap:14px;margin-top:14px}
+  .yearrow input[type=range]{flex:1;accent-color:var(--accent)}
+  .yearbig{font-size:30px;font-weight:800;letter-spacing:-.02em;min-width:74px;text-align:center}
+  .yeartag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--soft);text-align:center;margin-top:2px}
+
+  #map{height:500px;border-radius:20px;margin-top:18px;border:1px solid var(--line);background:#eaf0f3;z-index:0}
+  .leaflet-container{font:inherit}
+  .legend{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;margin-top:12px;font-size:12px;color:var(--soft)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:16px;height:12px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.06)}
+
+  .detail{margin-top:22px;border:1px solid var(--line);border-radius:20px;padding:20px 22px;box-shadow:0 14px 40px rgba(60,40,20,.06);display:none}
+  .detail h3{margin:0;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .detail .cap{font-size:13px;color:var(--soft);margin-top:2px}
+  .dcards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 6px}
+  @media(max-width:620px){.dcards{grid-template-columns:1fr 1fr}}
+  .dc{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+  .dc .k{font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+  .dc .v{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+  .dc .u{font-size:11px;color:var(--soft)}
+  canvas{width:100%;height:230px;display:block;margin-top:8px}
+  .chartleg{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;font-size:12px;color:var(--soft);margin-top:2px}
+  .chartleg span{display:inline-flex;align-items:center;gap:6px}.chartleg i{width:18px;height:3px;border-radius:2px}
+
+  h2.sec{font-size:23px;font-weight:800;letter-spacing:-.01em;margin:44px 0 4px;text-align:center}
+  .sec-sub{font-size:14.5px;color:var(--soft);text-align:center;margin:0 auto 18px;max-width:620px}
+  .rank{max-width:820px;margin:0 auto}
+  .rk{display:flex;align-items:center;gap:12px;padding:7px 4px;cursor:pointer;border-radius:8px}
+  .rk:hover{background:var(--bg2)}
+  .rk .pos{width:22px;color:var(--soft);font-size:12px;text-align:right;flex:none}
+  .rk .nm{width:150px;font-size:13.5px;font-weight:700;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rk .bar{flex:1;height:16px;background:var(--bg2);border-radius:8px;overflow:hidden}
+  .rk .bar i{display:block;height:100%;border-radius:8px}
+  .rk .val{width:58px;text-align:right;font-size:13px;font-weight:700;flex:none}
+  @media(max-width:520px){.rk .nm{width:104px}}
+
+  .note{max-width:860px;margin:34px auto 0;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:18px 20px;font-size:14px;color:#40372f}
+  .note b{color:var(--ink)}
+  .faq{max-width:860px;margin:12px auto 0}
+  .faq details{border-bottom:1px solid var(--line);padding:4px 0}
+  .faq summary{cursor:pointer;font-weight:700;font-size:16px;padding:14px 4px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:'+';color:var(--accent);font-weight:800;font-size:20px}
+  .faq details[open] summary::after{content:'–'}
+  .faq p{margin:0 4px 14px;color:#40372f}
+  .src{font-size:12px;color:var(--soft);text-align:center;margin-top:32px;border-top:1px solid var(--line);padding-top:18px}
+  .src a{color:var(--accent2)}
+  .warnmuestra{display:none;max-width:820px;margin:10px auto 0;text-align:center;font-size:12.5px;color:#8a6d3b;background:#fdf6e3;border:1px solid #f0e3bf;border-radius:10px;padding:8px 12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">🌡️ Observatorio climático</div>
+  <h1>Días de más de 32 °C al año, por provincia</h1>
+  <p class="sub">Cuántos días de calor fuerte —con la máxima por encima de 32 °C— vive cada provincia de España: lo observado desde 1961 con datos ERA5 y una proyección hasta 2100 en tres escenarios de emisiones. Mueve el año y elige el escenario.</p>
+  <div class="live"><span class="dot"></span><span id="updated">Cargando datos…</span></div>
+  <div class="warnmuestra" id="warnmuestra">Estás viendo datos de muestra, pendientes de la primera ejecución del modelo con datos reales.</div>
+
+  <div class="controls">
+    <div class="chips" id="chips">
+      <button class="chip hist" data-esc="hist" aria-pressed="false">Observado</button>
+      <button class="chip" data-esc="ssp126" aria-pressed="false">Bajas emisiones</button>
+      <button class="chip" data-esc="ssp245" aria-pressed="true">Intermedio</button>
+      <button class="chip" data-esc="ssp585" aria-pressed="false">Altas emisiones</button>
+    </div>
+    <div class="yearrow">
+      <input type="range" id="year" min="1961" max="2100" step="1" value="2050">
+      <div><div class="yearbig" id="yearBig">2050</div><div class="yeartag" id="yearTag">Intermedio · SSP2-4.5</div></div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+  <div class="legend" id="legend"></div>
+
+  <div class="detail" id="detail">
+    <h3 id="dName">—</h3>
+    <div class="cap" id="dCap"></div>
+    <div class="dcards">
+      <div class="dc"><div class="k">1961–1990</div><div class="v" id="dPast">—</div><div class="u">días/año</div></div>
+      <div class="dc"><div class="k">Hoy (1991–2020)</div><div class="v" id="dNow">—</div><div class="u">días/año</div></div>
+      <div class="dc"><div class="k">2050 · intermedio</div><div class="v" id="d2050">—</div><div class="u">días/año</div></div>
+      <div class="dc"><div class="k">2100 · altas emis.</div><div class="v" id="d2100">—</div><div class="u">días/año</div></div>
+    </div>
+    <canvas id="chart" width="900" height="230"></canvas>
+    <div class="chartleg">
+      <span><i style="background:#1a5c8f"></i>Observado</span>
+      <span><i style="background:#2f9e6b"></i>Bajas (SSP1-2.6)</span>
+      <span><i style="background:#f3993c"></i>Intermedio (SSP2-4.5)</span>
+      <span><i style="background:#b23410"></i>Altas (SSP5-8.5)</span>
+    </div>
+  </div>
+
+  <h2 class="sec">Ranking de provincias</h2>
+  <p class="sec-sub" id="rankSub">Días con máxima superior a 32 °C · pulsa una provincia para ver su evolución.</p>
+  <div class="rank" id="rank"></div>
+
+  <div class="note"><b>Cómo se calcula.</b> El histórico cuenta, provincia a provincia (por su capital), cuántos días de cada año superaron los 32 °C de temperatura máxima según el reanálisis <b>ERA5</b>, homogéneo desde 1961. La <b>proyección a 2100</b> parte de la distribución de temperaturas observada en el periodo 1991–2020 y la desplaza según el calentamiento adicional que proyecta el <b>IPCC (AR6)</b> para el sur de Europa en cada escenario de emisiones —bajas (SSP1-2.6), intermedias (SSP2-4.5) y altas (SSP5-8.5)—. Es una estimación de tendencia, no una predicción del tiempo de un año concreto: los años reales oscilarán alrededor de estas curvas.</div>
+
+  <h2 class="sec">Preguntas frecuentes</h2>
+  <div class="faq">
+    <details open><summary>¿Qué significa un «día de más de 32 °C»?</summary><p>Un día en el que la temperatura máxima superó los 32 °C. Es un umbral de calor fuerte: a partir de ahí empieza a haber estrés térmico apreciable para la población, sobre todo si se repite varios días seguidos o si las noches no refrescan. No es lo mismo que un aviso de la AEMET —cuyos umbrales varían por zona—, sino un criterio fijo e igual para toda España, pensado para poder comparar provincias y años entre sí.</p></details>
+    <details><summary>¿De dónde salen los datos históricos?</summary><p>Del reanálisis ERA5, el archivo climático de referencia del Centro Europeo (ECMWF), servido a través de Open-Meteo. Cubre de forma homogénea toda España desde 1961, lo que permite comparar el número de días de calor entre provincias y a lo largo de las décadas sin los huecos de las series de estaciones.</p></details>
+    <details><summary>¿Cómo se proyecta hasta 2100?</summary><p>Tomamos la distribución de temperaturas máximas realmente observada en cada provincia (1991–2020) y le sumamos el calentamiento adicional que los modelos climáticos del IPCC (AR6) proyectan para el sur de Europa en cada escenario. Con esa distribución desplazada volvemos a contar los días que superarían los 32 °C. Es un método transparente de «corrimiento de distribución»: no inventa el clima futuro, reproyecta el actual bajo más calor.</p></details>
+    <details><summary>¿Qué son los escenarios SSP?</summary><p>Son las trayectorias de emisiones que usa el IPCC. SSP1-2.6 supone recortes fuertes y rápidos (bajas emisiones); SSP2-4.5 es una vía intermedia, la más cercana a las políticas actuales; SSP5-8.5 asume emisiones muy altas. La diferencia entre ellos a final de siglo es enorme, y por eso el número de días de calor de 2100 depende tanto del escenario que elijas.</p></details>
+    <details><summary>¿Por qué el norte casi no tiene días de más de 32 °C?</summary><p>Porque la cornisa cantábrica y el noroeste tienen veranos suaves, moderados por el Atlántico. Allí superar los 32 °C sigue siendo excepcional. En cambio, el valle del Guadalquivir, Extremadura y el interior de la meseta acumulan decenas de días cada verano. La proyección muestra que, con el calentamiento, ese calor fuerte empieza a asomar también en zonas hoy templadas.</p></details>
+  </div>
+
+  <p class="src">Histórico: reanálisis <a href="https://open-meteo.com/" rel="nofollow">ERA5 · Open-Meteo</a> · Proyección: distribución observada 1991–2020 + calentamiento <a href="https://www.ipcc.ch/report/ar6/wg1/" rel="nofollow">IPCC AR6</a> (sur de Europa) · Geometría: click_that_hood · Parte del <a href="https://calentamientoglobal.es/observatorio-climatico/">Observatorio climático de calentamientoglobal.es</a>.</p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  "use strict";
+  var GEO=['https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-provinces.geojson',
+           'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain.geojson'];
+  var BINS=[0,5,10,20,30,45,60,80];
+  var COLS=['--c0','--c1','--c2','--c3','--c4','--c5','--c6'];
+  function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+  function color(d){
+    if(d==null) return cssv('--c0');
+    var idx=0; for(var i=0;i<BINS.length;i++){ if(d>=BINS[i]) idx=i; }
+    return cssv(COLS[Math.min(idx,COLS.length-1)]);
+  }
+  function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');}
+  var ALIAS={ // nombre del geojson (normalizado) -> clave de datos
+    lacoruna:'A Coruña',coruna:'A Coruña',corunaa:'A Coruña',acoruna:'A Coruña',
+    alava:'Álava',arabaalava:'Álava',araba:'Álava',
+    alacant:'Alicante',alicante:'Alicante',almeria:'Almería',asturias:'Asturias',avila:'Ávila',
+    baleares:'Illes Balears',islasbaleares:'Illes Balears',illesbalears:'Illes Balears',
+    vizcaya:'Bizkaia',bizkaia:'Bizkaia',caceres:'Cáceres',cadiz:'Cádiz',cantabria:'Cantabria',
+    castellon:'Castellón',castello:'Castellón',cordoba:'Córdoba',gerona:'Girona',girona:'Girona',
+    guipuzcoa:'Gipuzkoa',gipuzkoa:'Gipuzkoa',jaen:'Jaén',leon:'León',lerida:'Lleida',lleida:'Lleida',
+    malaga:'Málaga',laspalmas:'Las Palmas',palmaslas:'Las Palmas',nafarroa:'Navarra',navarra:'Navarra',
+    orense:'Ourense',ourense:'Ourense',larioja:'La Rioja',rioja:'La Rioja',
+    santacruzdetenerife:'Santa Cruz de Tenerife',tenerife:'Santa Cruz de Tenerife'
+  };
+  var MES; // unused
+  var DATA=null, BYP={}, NBYP={}, esc='ssp245', year=2050, sel=null, map=null, geoLayer=null;
+
+  function projVal(p, e, y){
+    var arr=p.proj&&p.proj[e]; if(!arr||!arr.length) return null;
+    if(y<=arr[0][0]) return arr[0][1];
+    if(y>=arr[arr.length-1][0]) return arr[arr.length-1][1];
+    for(var i=0;i<arr.length-1;i++){ if(arr[i][0]<=y&&y<=arr[i+1][0]){
+      var t=(y-arr[i][0])/(arr[i+1][0]-arr[i][0]); return arr[i][1]+(arr[i+1][1]-arr[i][1])*t; } }
+    return arr[arr.length-1][1];
+  }
+  function histVal(p, y){
+    var h=p.hist||[], best=null;
+    for(var i=0;i<h.length;i++){ if(h[i][0]<=y) best=h[i][1]; }
+    return best;
+  }
+  function valueOf(p, y, e){ return (y<=2025)? histVal(p,y) : projVal(p,e,y); }
+
+  function fmt(n){ return n==null?'—':(Math.round(n*10)/10).toLocaleString('es-ES'); }
+
+  // ---------- mapa ----------
+  function initMap(){
+    map=L.map('map',{minZoom:4,maxZoom:8,scrollWheelZoom:false,attributionControl:true}).setView([40.0,-3.4],5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+      {subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO'}).addTo(map);
+    GEO.reduce(function(pr,url){return pr.catch(function(){return fetch(url).then(function(r){if(!r.ok)throw 0;return r.json();});});},Promise.reject())
+      .then(function(gj){
+        geoLayer=L.geoJSON(gj,{style:styleFn,onEachFeature:onEach}).addTo(map);
+        paintMap();
+      }).catch(function(){ document.getElementById('map').style.display='none'; });
+  }
+  function featProv(f){
+    var raw=f.properties&&(f.properties.name||f.properties.NAME||f.properties.provincia||'');
+    var n=norm(raw);
+    if(ALIAS[n]) return ALIAS[n];
+    if(NBYP[n]) return NBYP[n];
+    return null;
+  }
+  function styleFn(f){
+    var pr=featProv(f), p=pr&&BYP[pr], v=p?valueOf(p,year,esc):null;
+    return {fillColor:color(v),weight:1,color:'#fff',fillOpacity:.9};
+  }
+  function onEach(f,layer){
+    var pr=featProv(f);
+    layer.on('click',function(){ if(pr&&BYP[pr]) select(pr); });
+    layer.on('mouseover',function(){ layer.setStyle({weight:2,color:'#7a1f0a'}); });
+    layer.on('mouseout',function(){ layer.setStyle({weight:1,color:'#fff'}); });
+    layer.bindTooltip(function(){ var p=pr&&BYP[pr]; return '<b>'+(pr||(f.properties&&f.properties.name))+'</b>: '+fmt(p?valueOf(p,year,esc):null)+' días'; },{sticky:true});
+  }
+  function paintMap(){ if(geoLayer) geoLayer.setStyle(styleFn); }
+
+  // ---------- ranking ----------
+  function paintRank(){
+    var arr=DATA.provincias.map(function(p){return {prov:p.prov,v:valueOf(p,year,esc)};})
+      .sort(function(a,b){return (b.v||0)-(a.v||0);});
+    var max=Math.max(10, arr[0]?arr[0].v:10);
+    var html='';
+    arr.forEach(function(o,i){
+      var w=Math.round((o.v||0)/max*100);
+      html+='<div class="rk" data-p="'+o.prov+'"><div class="pos">'+(i+1)+'</div>'
+        +'<div class="nm">'+o.prov+'</div>'
+        +'<div class="bar"><i style="width:'+w+'%;background:'+color(o.v)+'"></i></div>'
+        +'<div class="val">'+fmt(o.v)+'</div></div>';
+    });
+    var r=document.getElementById('rank'); r.innerHTML=html;
+    Array.prototype.forEach.call(r.querySelectorAll('.rk'),function(el){
+      el.addEventListener('click',function(){ select(el.getAttribute('data-p')); });
+    });
+    document.getElementById('rankSub').textContent='Días con máxima superior a 32 °C en '+year
+      +(year>2025?' · '+DATA.escenarios[esc]:' · observado')+' · pulsa una provincia.';
+  }
+
+  // ---------- detalle ----------
+  function select(prov){
+    sel=prov; var p=BYP[prov]; if(!p) return;
+    document.getElementById('detail').style.display='block';
+    document.getElementById('dName').textContent=prov;
+    document.getElementById('dCap').textContent='Capital de referencia · '+fmt(p.media_9120)+' días/año de media en 1991–2020';
+    document.getElementById('dPast').textContent=fmt(p.media_6190);
+    document.getElementById('dNow').textContent=fmt(p.media_9120);
+    document.getElementById('d2050').textContent=fmt(projVal(p,'ssp245',2050));
+    document.getElementById('d2100').textContent=fmt(projVal(p,'ssp585',2100));
+    drawChart(p);
+    document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  function drawChart(p){
+    var cv=document.getElementById('chart'),ctx=cv.getContext('2d');
+    var W=cv.width,H=cv.height,padL=34,padR=10,padT=12,padB=22;
+    ctx.clearRect(0,0,W,H);
+    var y0=1961,y1=2100, maxV=10;
+    (p.hist||[]).forEach(function(d){if(d[1]>maxV)maxV=d[1];});
+    ['ssp126','ssp245','ssp585'].forEach(function(e){(p.proj[e]||[]).forEach(function(d){if(d[1]>maxV)maxV=d[1];});});
+    maxV=Math.ceil(maxV/20)*20;
+    function X(y){return padL+(y-y0)/(y1-y0)*(W-padL-padR);}
+    function Y(v){return padT+(1-v/maxV)*(H-padT-padB);}
+    // ejes suaves
+    ctx.strokeStyle='#eee7dd';ctx.lineWidth=1;ctx.fillStyle='#9a8f83';ctx.font='10px sans-serif';
+    for(var v=0;v<=maxV;v+=Math.max(20,Math.round(maxV/4/20)*20)){ctx.beginPath();ctx.moveTo(padL,Y(v));ctx.lineTo(W-padR,Y(v));ctx.stroke();ctx.fillText(v,4,Y(v)+3);}
+    [1980,2000,2020,2050,2075,2100].forEach(function(yy){ctx.fillText(yy,X(yy)-12,H-6);});
+    // línea 2025 (fin observado)
+    ctx.strokeStyle='#d8cfc3';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(2025),padT);ctx.lineTo(X(2025),H-padB);ctx.stroke();ctx.setLineDash([]);
+    function line(pts,col,dash){ if(!pts||!pts.length)return; ctx.strokeStyle=col;ctx.lineWidth=2.4;ctx.setLineDash(dash||[]);ctx.beginPath();
+      pts.forEach(function(d,i){(i===0?ctx.moveTo:ctx.lineTo).call(ctx,X(d[0]),Y(d[1]));});ctx.stroke();ctx.setLineDash([]); }
+    // proyecciones (desde 2025, arrancando en el último observado para continuidad)
+    var last=(p.hist&&p.hist.length)?p.hist[p.hist.length-1]:[2025,0];
+    line([last].concat(p.proj.ssp126),'#2f9e6b');
+    line([last].concat(p.proj.ssp245),'#f3993c');
+    line([last].concat(p.proj.ssp585),'#b23410');
+    line(p.hist,'#1a5c8f');
+    // marcador del año elegido
+    var vy=valueOf(p,year,esc); if(vy!=null){ctx.fillStyle='#1a1410';ctx.beginPath();ctx.arc(X(year),Y(vy),3.5,0,7);ctx.fill();}
+  }
+
+  // ---------- controles ----------
+  function setEsc(e){
+    esc=e;
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(c){c.setAttribute('aria-pressed',c.getAttribute('data-esc')===e);});
+    var slider=document.getElementById('year');
+    if(e==='hist'){ if(year>2025){year=2025;} slider.min=1961; slider.max=2025; }
+    else { slider.min=1961; slider.max=2100; }
+    slider.value=year; syncYearTag(); paintAll();
+  }
+  function syncYearTag(){
+    document.getElementById('yearBig').textContent=year;
+    var tag = year<=2025 ? 'Observado · ERA5'
+      : (DATA?DATA.escenarios[esc]:'');
+    document.getElementById('yearTag').textContent=tag;
+  }
+  function paintAll(){ paintMap(); paintRank(); syncYearTag(); if(sel&&BYP[sel]) drawChart(BYP[sel]); }
+
+  // ---------- init ----------
+  function buildLegend(){
+    var labs=['0','5','10','20','30','45','60','80+'],html='';
+    for(var i=0;i<COLS.length;i++){ html+='<span><i style="background:'+cssv(COLS[i])+'"></i>'+labs[i]+(i<COLS.length-1?'–'+labs[i+1]:'')+'</span>'; }
+    document.getElementById('legend').innerHTML=html+' <span style="color:#9a8f83">días/año &gt;32 °C</span>';
+  }
+
+  fetch('dias32.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(function(d){
+      DATA=d;
+      d.provincias.forEach(function(p){BYP[p.prov]=p; NBYP[norm(p.prov)]=p.prov;});
+      buildLegend();
+      var when=d.actualizado?d.actualizado.slice(0,10):'';
+      document.getElementById('updated').textContent='Datos ERA5 + proyección IPCC · '+when+(d.muestra?' · muestra':'');
+      if(d.muestra) document.getElementById('warnmuestra').style.display='block';
+      initMap(); setEsc('ssp245'); paintAll();
+      // arranca mostrando la más calurosa
+      var top=d.provincias.slice().sort(function(a,b){return (b.media_9120||0)-(a.media_9120||0);})[0];
+      if(top) select(top.prov);
+    })
+    .catch(function(){
+      document.getElementById('updated').textContent='No se han podido cargar los datos. Vuelve a intentarlo en unos minutos.';
+      document.getElementById('map').style.display='none';
+    });
+
+  document.getElementById('chips').addEventListener('click',function(e){
+    var b=e.target.closest('.chip'); if(!b)return; setEsc(b.getAttribute('data-esc'));
+  });
+  document.getElementById('year').addEventListener('input',function(e){
+    year=parseInt(e.target.value,10);
+    if(year<=2025 && esc!=='hist'){ /* mantiene escenario pero es observado */ }
+    paintAll();
+  });
+})();
+</script>
+</body>
+</html>
