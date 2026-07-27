@@ -1,0 +1,110 @@
+{
+  "historico_provincias": {
+    "2022": {
+      "zamora": 38000,
+      "ourense": 12500,
+      "zaragoza": 17000,
+      "castellon": 19000
+    },
+    "2025": {
+      "ourense": 96000,
+      "leon": 60000,
+      "zamora": 38000
+    }
+  },
+  "proyeccion_fwi": {
+    "_comment": "Capa estatica del peligro de incendio a futuro. Cambio proyectado del indice FWI respecto a 1981-2010, escenario SSP5-8.5, regionalizado por zona climatica (Copernicus C3S + CMIP6). NO son hectareas. Se recalcula ~1 vez al ano si cambia la metodologia.",
+    "escenario": "SSP5-8.5",
+    "referencia": "1981-2010",
+    "zonas": {
+      "atlantico_humedo": {
+        "c2050": 8,
+        "c2100": 20,
+        "prov": [
+          "a coruna",
+          "lugo",
+          "pontevedra",
+          "asturias",
+          "cantabria",
+          "bizkaia",
+          "gipuzkoa",
+          "alava"
+        ]
+      },
+      "norte_transicion": {
+        "c2050": 15,
+        "c2100": 35,
+        "prov": [
+          "ourense",
+          "navarra",
+          "la rioja",
+          "burgos",
+          "palencia",
+          "leon",
+          "zamora"
+        ]
+      },
+      "interior_continental": {
+        "c2050": 18,
+        "c2100": 45,
+        "prov": [
+          "madrid",
+          "toledo",
+          "ciudad real",
+          "cuenca",
+          "guadalajara",
+          "albacete",
+          "caceres",
+          "badajoz",
+          "zaragoza",
+          "teruel",
+          "huesca",
+          "salamanca",
+          "avila",
+          "segovia",
+          "soria",
+          "valladolid"
+        ]
+      },
+      "mediterraneo_litoral": {
+        "c2050": 22,
+        "c2100": 55,
+        "prov": [
+          "barcelona",
+          "tarragona",
+          "girona",
+          "lleida",
+          "castellon",
+          "valencia",
+          "alicante",
+          "illes balears",
+          "huelva",
+          "sevilla",
+          "cordoba",
+          "cadiz",
+          "malaga",
+          "granada"
+        ]
+      },
+      "sur_arido": {
+        "c2050": 25,
+        "c2100": 62,
+        "prov": [
+          "murcia",
+          "almeria",
+          "jaen"
+        ]
+      },
+      "canarias": {
+        "c2050": 12,
+        "c2100": 30,
+        "prov": [
+          "las palmas",
+          "santa cruz de tenerife"
+        ]
+      }
+    }
+  },
+  "actualizado": "2026-07-27",
+  "fuente_actual": "EFFIS · Copernicus EMS"
+}
