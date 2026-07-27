@@ -1,0 +1,150 @@
+<!-- ===========================================================================
+  WORDPRESS · Pagina "Superficie forestal quemada en Espana"
+  Pega TODO en un bloque "HTML personalizado" de Elementor. Estilo Apple, fondo
+  blanco, coherente con la pagina de incendios activos.
+  Estructura: texto · mapa a pantalla completa · texto · FAQ · fuentes.
+  Focus keyword: "hectareas quemadas en Espana".
+  El mapa vive en docs/superficie-incendios.html del repo (GitHub Pages).
+
+  >>> AJUSTA el src del <iframe> a tu URL de GitHub Pages.
+  >>> Propuestas de titulo, meta y schema al final del archivo.
+============================================================================ -->
+<style>
+.cfl{--ink:#1d1408;--soft:#7a6a58;--faint:#b0a08c;--line:#ece3d8;--bg2:#fbf6f0;
+  --accent:#cc4400;--accentd:#a12f00;--green:#2e7d52;--red:#c0392b;
+  max-width:860px;margin:0 auto;padding:0 6px;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.7}
+.cfl *{box-sizing:border-box}
+.cfl .eyebrow{display:inline-block;font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px}
+.cfl h1{font-size:40px;line-height:1.12;letter-spacing:-.02em;margin:0 0 14px;font-weight:800}
+.cfl h2{font-size:27px;line-height:1.2;letter-spacing:-.015em;margin:54px 0 8px;font-weight:800}
+.cfl .sub{font-size:18px;color:var(--soft);margin:0 0 8px;line-height:1.6}
+.cfl p{font-size:17px;margin:0 0 16px}
+.cfl a{color:var(--accent);text-decoration:none}.cfl a:hover{text-decoration:underline}
+.cfl strong{color:var(--ink)}
+.cfl-fullmap{position:relative;left:50%;right:50%;width:100vw;margin:30px -50vw}
+.cfl-fullmap iframe{width:100%;height:86vh;min-height:620px;max-height:1000px;border:0;display:block}
+.cfl-cap{max-width:860px;margin:10px auto 0;padding:0 16px;font-size:13px;color:var(--soft);text-align:center}
+.cfl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:26px 0}
+.cfl-stat{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:22px 20px}
+.cfl-stat .n{font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--accentd)}
+.cfl-stat .l{font-size:13px;color:var(--soft);margin-top:8px;line-height:1.4}
+.cfl-stat .s{font-size:10.5px;color:var(--faint);margin-top:8px;text-transform:uppercase;letter-spacing:.04em}
+.cfl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:24px 0}
+.cfl-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 18px}
+.cfl-card .ic{font-size:1.5rem;margin-bottom:10px}
+.cfl-card .t{font-size:15px;font-weight:700;margin-bottom:6px}
+.cfl-card .d{font-size:14px;color:var(--soft);line-height:1.55}
+.cfl-scen{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.cfl-scen .box{border:1.5px solid var(--line);border-radius:16px;padding:22px;background:#fff}
+.cfl-scen .box.good{border-color:#f6d9b8}.cfl-scen .box.bad{border-color:#eecdc0}
+.cfl-scen .lab{font-size:12px;font-weight:700;letter-spacing:.04em}
+.cfl-scen .good .lab{color:#b8730a}.cfl-scen .bad .lab{color:var(--accentd)}
+.cfl-scen .big{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:6px 0 4px}
+.cfl-scen .d{font-size:14px;color:var(--soft);line-height:1.55}
+.cfl-note{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:18px 20px;margin:22px 0;font-size:16px}
+.cfl-alert{background:#fff4ec;border:1px solid #f3d6c2;border-left:3px solid #c05000;border-radius:12px;padding:20px 22px;margin:24px 0}
+.cfl-alert .t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#c05000;margin-bottom:8px}
+.cfl-alert p{font-size:15.5px;margin:0;color:var(--soft)}
+.cfl-faq{border-top:1px solid var(--line);margin-top:14px}
+.cfl-faq details{border-bottom:1px solid var(--line)}
+.cfl-faq summary{cursor:pointer;list-style:none;padding:16px 2px;font-weight:600;font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.cfl-faq summary::-webkit-details-marker{display:none}
+.cfl-faq summary::after{content:"+";color:var(--accent);font-size:22px;font-weight:400;transition:transform .2s}
+.cfl-faq details[open] summary::after{transform:rotate(45deg)}
+.cfl-faq p{padding:0 2px 16px;color:var(--soft);font-size:16px;margin:0}
+.cfl-src{font-size:13px;color:var(--soft);background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:30px;line-height:1.6}
+@media(max-width:680px){.cfl h1{font-size:30px}.cfl h2{font-size:23px}.cfl .sub{font-size:16px}.cfl p{font-size:16px}
+  .cfl-scen{grid-template-columns:1fr}.cfl-fullmap iframe{height:72vh}}
+</style>
+
+<div class="cfl">
+  <span class="eyebrow">🔥 Observatorio climático</span>
+  <h1>Superficie forestal quemada en España: mapa, histórico y proyección a futuro</h1>
+  <p class="sub">Cuántas hectáreas ha arrasado el fuego en cada provincia, la evolución año a año desde 1968 y cómo aumentará el peligro de incendio a mitad y final de siglo. Datos oficiales de EFFIS y MITECO.</p>
+  <div class="cfl-stats">
+    <div class="cfl-stat"><div class="n">343.862</div><div class="l">hectáreas quemadas en 2025, el peor año del registro EFFIS</div><div class="s">EFFIS 2025</div></div>
+    <div class="cfl-stat"><div class="n">8,2 M</div><div class="l">hectáreas quemadas en España entre 1968 y 2023</div><div class="s">EGIF · MITECO</div></div>
+    <div class="cfl-stat"><div class="n">50</div><div class="l">provincias con su superficie quemada año a año</div><div class="s">España</div></div>
+    <div class="cfl-stat"><div class="n">+55 %</div><div class="l">de peligro de incendio proyectado en el sur para 2100</div><div class="s">FWI · SSP5-8.5</div></div>
+  </div>
+</div>
+
+<div class="cfl-fullmap">
+  <iframe src="https://davidbebow.github.io/temperaturas-mar-espana/superficie-incendios.html" title="Mapa de superficie forestal quemada en España por provincia, histórico y proyección" loading="lazy" allowfullscreen=""></iframe>
+</div>
+<p class="cfl-cap">Cambia entre <strong>temporada actual</strong>, <strong>histórico</strong> y <strong>proyección 2050 · 2100</strong> · pulsa una provincia para ver sus hectáreas ·
+  <a href="https://davidbebow.github.io/temperaturas-mar-espana/superficie-incendios.html" target="_blank" rel="noopener">Abrir a pantalla completa</a></p>
+
+<div class="cfl">
+  <h2>Qué muestra este mapa</h2>
+  <p>A diferencia del <a href="https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/">mapa de incendios activos</a>, que detecta los focos de fuego <em>ahora mismo</em> por satélite, este mide algo distinto y complementario: la <strong>superficie realmente quemada</strong>, en hectáreas. Tiene tres capas que puedes intercambiar con los botones de arriba.</p>
+  <div class="cfl-cards">
+    <div class="cfl-card"><div class="ic">📍</div><div class="t">Temporada actual</div><div class="d">Hectáreas acumuladas en lo que va de año, con las provincias más afectadas. Datos de EFFIS, actualizados a diario en campaña.</div></div>
+    <div class="cfl-card"><div class="ic">📊</div><div class="t">Histórico</div><div class="d">La serie nacional año a año desde 1968 y el reparto por provincia. Permite ver si los grandes años de fuego se están volviendo más frecuentes.</div></div>
+    <div class="cfl-card"><div class="ic">🔮</div><div class="t">Proyección 2050 · 2100</div><div class="d">Cuánto aumentará el peligro meteorológico de incendio (índice FWI) en cada provincia bajo un escenario de altas emisiones.</div></div>
+  </div>
+
+  <h2>2025, el peor año del registro; 2026, camino de repetir</h2>
+  <p>La superficie quemada en España no crece de forma suave: se dispara en años concretos, cada vez más seguidos. <strong>2022</strong> batió el récord del siglo con más de 306.000 hectáreas; apenas tres años después, <strong>2025</strong> lo pulverizó con <strong>343.862 hectáreas</strong>, el año con más superficie arrasada desde que EFFIS lleva registro. Y lo hizo con menos incendios que 2022: fuegos menos numerosos pero mucho más grandes y difíciles de apagar, los llamados incendios de sexta generación.</p>
+
+  <div class="cfl-note">
+    Los grandes incendios son la consecuencia visible de la sequía y el calor que ya seguimos a diario. Consulta también los <a href="https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/">focos de incendio activos</a>, las <a href="https://calentamientoglobal.es/lluvias-en-espana/">lluvias y la sequía</a> y la <a href="https://calentamientoglobal.es/canicula-en-espana-ahora/">canícula en directo</a>.
+  </div>
+
+  <h2>Por qué el fuego irá a más: la proyección FWI</h2>
+  <p>La tercera capa del mapa no predice hectáreas —eso depende de la ignición, el viento y la gestión del monte, imposibles de anticipar—, sino el <strong>índice meteorológico de peligro de incendio (FWI)</strong>: cuánto de favorable al fuego será el clima. Es el mismo enfoque riguroso que usamos en <a href="https://calentamientoglobal.es/tu-municipio-en-2050/">Tu municipio en 2050</a>. La proyección, bajo un escenario de altas emisiones, apunta a un aumento generalizado del peligro, más acusado en el interior y el sur peninsular.</p>
+  <div class="cfl-scen">
+    <div class="box good">
+      <div class="lab">🟠 MITAD DE SIGLO · 2050</div>
+      <div class="big">+8 % a +25 %</div>
+      <div class="d">El peligro de incendio sube en toda España, con los mayores aumentos en el interior continental, el litoral mediterráneo y el sureste árido.</div>
+    </div>
+    <div class="box bad">
+      <div class="lab">🔴 FINAL DE SIGLO · 2100</div>
+      <div class="big">+20 % a +62 %</div>
+      <div class="d">En un escenario de altas emisiones, buena parte del sur y el este entran en niveles de peligro hoy excepcionales, y la temporada de riesgo se alarga varios meses.</div>
+    </div>
+  </div>
+
+  <div class="cfl-alert">
+    <div class="t">⚠️ Cómo leer la proyección</div>
+    <p>La capa de futuro mide <strong>peligro meteorológico</strong>, no hectáreas quemadas. Un clima más favorable al fuego no garantiza más superficie quemada si mejora la prevención y la extinción; pero sí eleva el riesgo de fondo y acorta el margen de reacción.</p>
+  </div>
+
+  <h2>Preguntas frecuentes</h2>
+  <div class="cfl-faq">
+    <details><summary>¿Cuántas hectáreas se han quemado este año en España?</summary>
+      <p>La cifra en curso aparece en la pestaña «Temporada actual» del mapa, actualizada con datos de EFFIS. En 2025 se quemaron 343.862 hectáreas, el peor año del registro EFFIS; 2026 avanza por encima de la media a la misma fecha.</p></details>
+    <details><summary>¿De dónde salen los datos de superficie quemada?</summary>
+      <p>De dos fuentes oficiales: EFFIS (Sistema Europeo de Información de Incendios Forestales, de Copernicus) para el año en curso y la serie desde 2006, y la Estadística General de Incendios Forestales (EGIF) del MITECO para el histórico oficial por provincia desde 1968.</p></details>
+    <details><summary>¿Cuál ha sido el peor año de incendios en España?</summary>
+      <p>Por superficie quemada, 2025 es el peor del registro EFFIS con 343.862 hectáreas, por delante de 2022 (más de 306.000). En la serie larga de la EGIF, años como 1985 y 1994 también superaron las 400.000 hectáreas.</p></details>
+    <details><summary>¿La proyección dice cuántas hectáreas arderán en 2050?</summary>
+      <p>No. Nadie puede predecir con fiabilidad las hectáreas futuras, porque dependen de factores humanos. La proyección muestra el aumento del peligro meteorológico de incendio (índice FWI), que sí se puede modelizar con escenarios climáticos.</p></details>
+    <details><summary>¿Qué relación tienen los incendios con el cambio climático?</summary>
+      <p>El calentamiento alarga y agrava la temporada de incendios: olas de calor más largas, sequías más intensas y noches más cálidas resecan la vegetación y crean condiciones de propagación extremas. La cuenca mediterránea se calienta al doble de la media global.</p></details>
+  </div>
+
+  <p class="cfl-src">
+    <strong>Fuentes:</strong> Superficie quemada — <strong>EFFIS / Copernicus EMS</strong> (año en curso y serie desde 2006) y <strong>EGIF / MITECO</strong> (histórico oficial por provincia desde 1968) ·
+    Proyección — cambio del índice meteorológico de peligro de incendio (FWI) bajo escenario SSP5-8.5, a partir de Copernicus C3S y proyecciones climáticas CMIP6 ·
+    Mapa base: © OpenStreetMap &amp; CARTO. La capa de proyección indica peligro meteorológico, no una previsión de hectáreas.
+  </p>
+</div>
+
+<!-- ===========================================================================
+  PROPUESTAS SEO (para RankMath) — no se muestran en la pagina
+  -----------------------------------------------------------------------------
+  Focus keyword:      hectareas quemadas en Espana
+  Titulo SEO:         Superficie quemada en Espana: mapa, historico y futuro | Observatorio
+  Slug:               superficie-quemada-espana
+  Meta descripcion:   Mapa de hectareas quemadas por provincia en Espana: temporada actual,
+                      historico desde 1968 y proyeccion del peligro de incendio a 2050 y 2100.
+                      Datos EFFIS y MITECO.
+  Keywords secundarias: superficie forestal quemada Espana, hectareas incendios por provincia,
+                      incendios Espana 2025 2026, peor ano incendios Espana, proyeccion incendios FWI.
+
+  Schema recomendado (JSON-LD): Dataset + FAQPage (usa las preguntas de arriba).
+============================================================================ -->
