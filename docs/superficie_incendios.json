@@ -1,0 +1,53 @@
+{
+  "_comment": "VISTA PREVIA. El pipeline (obtener_superficie_incendios.py) sobrescribe temporada_actual, historico_nacional e historico_provincias con datos en vivo de EFFIS. La capa proyeccion_fwi es estatica (se recalcula ~1 vez al ano).",
+  "actualizado": "2026-07-27",
+  "fuente_actual": "EFFIS · Copernicus EMS",
+  "temporada_actual": {
+    "anio": 2026,
+    "a_fecha": "2026-07-23",
+    "total_ha": 124800,
+    "n_incendios": 343,
+    "media_misma_fecha_ha": 41000,
+    "comentario": "Casi el triple que en la misma fecha de 2025. Ourense, Leon y Zamora concentran la mayor parte.",
+    "provincias": {
+      "ourense": 38200,
+      "leon": 21500,
+      "zamora": 15400,
+      "caceres": 9200,
+      "salamanca": 6100,
+      "asturias": 4800
+    }
+  },
+  "historico_nacional": [
+    { "anio": 1985, "ha": 484476, "fuente": "EGIF/WWF", "hito": "Uno de los peores anos registrados" },
+    { "anio": 1994, "ha": 437635, "fuente": "EGIF/WWF", "hito": "Gran ano de incendios mediterraneos" },
+    { "anio": 2006, "ha": 118368, "fuente": "EFFIS" },
+    { "anio": 2012, "ha": 189376, "fuente": "EFFIS", "hito": "Sequia y calor extremos" },
+    { "anio": 2017, "ha": 130925, "fuente": "EFFIS", "hito": "Incendios de octubre en Galicia" },
+    { "anio": 2022, "ha": 306555, "fuente": "EFFIS", "hito": "Record del siglo hasta entonces" },
+    { "anio": 2023, "ha": 89250, "fuente": "EFFIS" },
+    { "anio": 2024, "ha": 75000, "fuente": "EFFIS", "aprox": true },
+    { "anio": 2025, "ha": 343862, "fuente": "EFFIS", "hito": "Ano con mas superficie quemada del registro EFFIS" },
+    { "anio": 2026, "ha": 124800, "fuente": "EFFIS", "parcial": true, "hito": "En curso, a 23 de julio" }
+  ],
+  "historico_provincias": {
+    "_nota": "Ejemplo real por comunidad (EFFIS, verano 2022). El pipeline lo sustituye por superficie por provincia y ano.",
+    "referencia": "2022-verano-CCAA",
+    "ccaa_2022": {
+      "castilla y leon": 86567,
+      "galicia": 51459,
+      "comunitat valenciana": 34257
+    }
+  },
+  "proyeccion_fwi": {
+    "_nota": "Cambio proyectado del indice meteorologico de peligro de incendio (FWI) respecto a 1981-2010, bajo escenario de altas emisiones SSP5-8.5, regionalizado por zona climatica (C3S/EFFIS y literatura CMIP6). Es peligro meteorologico, NO hectareas.",
+    "zonas": {
+      "atlantico_humedo":   { "c2050": 8,  "c2100": 20, "prov": ["a coruna","lugo","pontevedra","asturias","cantabria","bizkaia","gipuzkoa","alava"] },
+      "norte_transicion":   { "c2050": 15, "c2100": 35, "prov": ["ourense","navarra","la rioja","burgos","palencia","leon","zamora"] },
+      "interior_continental":{ "c2050": 18, "c2100": 45, "prov": ["madrid","toledo","ciudad real","cuenca","guadalajara","albacete","caceres","badajoz","zaragoza","teruel","huesca","salamanca","avila","segovia","soria","valladolid"] },
+      "mediterraneo_litoral":{ "c2050": 22, "c2100": 55, "prov": ["barcelona","tarragona","girona","lleida","castellon","valencia","alicante","illes balears","huelva","sevilla","cordoba","cadiz","malaga","granada"] },
+      "sur_arido":          { "c2050": 25, "c2100": 62, "prov": ["murcia","almeria","jaen"] },
+      "canarias":           { "c2050": 12, "c2100": 30, "prov": ["las palmas","santa cruz de tenerife"] }
+    }
+  }
+}
