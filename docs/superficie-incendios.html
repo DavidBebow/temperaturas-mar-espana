@@ -1,150 +1,287 @@
-<!-- ===========================================================================
-  WORDPRESS · Pagina "Superficie forestal quemada en Espana"
-  Pega TODO en un bloque "HTML personalizado" de Elementor. Estilo Apple, fondo
-  blanco, coherente con la pagina de incendios activos.
-  Estructura: texto · mapa a pantalla completa · texto · FAQ · fuentes.
-  Focus keyword: "hectareas quemadas en Espana".
-  El mapa vive en docs/superficie-incendios.html del repo (GitHub Pages).
-
-  >>> AJUSTA el src del <iframe> a tu URL de GitHub Pages.
-  >>> Propuestas de titulo, meta y schema al final del archivo.
-============================================================================ -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superficie forestal quemada en España — mapa por provincia</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-.cfl{--ink:#1d1408;--soft:#7a6a58;--faint:#b0a08c;--line:#ece3d8;--bg2:#fbf6f0;
-  --accent:#cc4400;--accentd:#a12f00;--green:#2e7d52;--red:#c0392b;
-  max-width:860px;margin:0 auto;padding:0 6px;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.7}
-.cfl *{box-sizing:border-box}
-.cfl .eyebrow{display:inline-block;font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px}
-.cfl h1{font-size:40px;line-height:1.12;letter-spacing:-.02em;margin:0 0 14px;font-weight:800}
-.cfl h2{font-size:27px;line-height:1.2;letter-spacing:-.015em;margin:54px 0 8px;font-weight:800}
-.cfl .sub{font-size:18px;color:var(--soft);margin:0 0 8px;line-height:1.6}
-.cfl p{font-size:17px;margin:0 0 16px}
-.cfl a{color:var(--accent);text-decoration:none}.cfl a:hover{text-decoration:underline}
-.cfl strong{color:var(--ink)}
-.cfl-fullmap{position:relative;left:50%;right:50%;width:100vw;margin:30px -50vw}
-.cfl-fullmap iframe{width:100%;height:86vh;min-height:620px;max-height:1000px;border:0;display:block}
-.cfl-cap{max-width:860px;margin:10px auto 0;padding:0 16px;font-size:13px;color:var(--soft);text-align:center}
-.cfl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:26px 0}
-.cfl-stat{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:22px 20px}
-.cfl-stat .n{font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--accentd)}
-.cfl-stat .l{font-size:13px;color:var(--soft);margin-top:8px;line-height:1.4}
-.cfl-stat .s{font-size:10.5px;color:var(--faint);margin-top:8px;text-transform:uppercase;letter-spacing:.04em}
-.cfl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:24px 0}
-.cfl-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 18px}
-.cfl-card .ic{font-size:1.5rem;margin-bottom:10px}
-.cfl-card .t{font-size:15px;font-weight:700;margin-bottom:6px}
-.cfl-card .d{font-size:14px;color:var(--soft);line-height:1.55}
-.cfl-scen{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
-.cfl-scen .box{border:1.5px solid var(--line);border-radius:16px;padding:22px;background:#fff}
-.cfl-scen .box.good{border-color:#f6d9b8}.cfl-scen .box.bad{border-color:#eecdc0}
-.cfl-scen .lab{font-size:12px;font-weight:700;letter-spacing:.04em}
-.cfl-scen .good .lab{color:#b8730a}.cfl-scen .bad .lab{color:var(--accentd)}
-.cfl-scen .big{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:6px 0 4px}
-.cfl-scen .d{font-size:14px;color:var(--soft);line-height:1.55}
-.cfl-note{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:18px 20px;margin:22px 0;font-size:16px}
-.cfl-alert{background:#fff4ec;border:1px solid #f3d6c2;border-left:3px solid #c05000;border-radius:12px;padding:20px 22px;margin:24px 0}
-.cfl-alert .t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#c05000;margin-bottom:8px}
-.cfl-alert p{font-size:15.5px;margin:0;color:var(--soft)}
-.cfl-faq{border-top:1px solid var(--line);margin-top:14px}
-.cfl-faq details{border-bottom:1px solid var(--line)}
-.cfl-faq summary{cursor:pointer;list-style:none;padding:16px 2px;font-weight:600;font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:14px}
-.cfl-faq summary::-webkit-details-marker{display:none}
-.cfl-faq summary::after{content:"+";color:var(--accent);font-size:22px;font-weight:400;transition:transform .2s}
-.cfl-faq details[open] summary::after{transform:rotate(45deg)}
-.cfl-faq p{padding:0 2px 16px;color:var(--soft);font-size:16px;margin:0}
-.cfl-src{font-size:13px;color:var(--soft);background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:30px;line-height:1.6}
-@media(max-width:680px){.cfl h1{font-size:30px}.cfl h2{font-size:23px}.cfl .sub{font-size:16px}.cfl p{font-size:16px}
-  .cfl-scen{grid-template-columns:1fr}.cfl-fullmap iframe{height:72vh}}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:'DM Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#0a0806;display:flex;flex-direction:column;overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- CABECERA ---------- */
+  #cabecera{
+    position:relative;z-index:500;
+    background:linear-gradient(180deg,#1b0c05 0%,#130804 100%);
+    color:#fff;padding:13px 20px;display:flex;justify-content:space-between;
+    align-items:center;flex-wrap:wrap;gap:8px;border-bottom:1px solid #3a1a0a;
+  }
+  #cabecera h2{font-size:15px;font-weight:600;letter-spacing:-.01em;color:#fff3e8;display:flex;align-items:center;gap:9px}
+  #cabecera h2 .dot{width:9px;height:9px;border-radius:50%;background:#ff5a1f;flex-shrink:0;
+    box-shadow:0 0 0 0 rgba(255,90,31,.6);animation:pulso 2.2s infinite}
+  @keyframes pulso{0%{box-shadow:0 0 0 0 rgba(255,90,31,.55)}70%{box-shadow:0 0 0 9px rgba(255,90,31,0)}100%{box-shadow:0 0 0 0 rgba(255,90,31,0)}}
+  #info-derecha{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  #resumen{font-size:12px;color:#a87a5c}#resumen span{color:#ff7a3c;font-weight:700}
+  #actualizacion{font-size:11px;color:#7a5444}
+  /* ---------- TABS ---------- */
+  #tabs{position:relative;z-index:500;background:#100704;border-bottom:1px solid #3a1a0a;
+    display:flex;gap:8px;padding:9px 20px;flex-wrap:wrap;align-items:center}
+  .tab{border:1px solid #3a1a0a;background:rgba(255,255,255,.03);color:#bca08c;border-radius:999px;
+    padding:6px 15px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.14s;font-family:inherit}
+  .tab.on{background:#ff5a1f;border-color:#ff7a3c;color:#150703}
+  .tab:hover:not(.on){border-color:#ff7a3c;color:#ffd0a0}
+  #tabs .hint{margin-left:auto;font-size:10.5px;color:#7a5444}
+  /* ---------- MAPA ---------- */
+  #mapa{flex:1;min-height:0;width:100%;background:#0a0806}
+  /* ---------- PANEL FLOTANTE ---------- */
+  #panel{position:absolute;z-index:600;left:14px;bottom:14px;width:290px;max-width:calc(100% - 28px);
+    background:rgba(20,9,4,.94);border:1px solid #4a2010;border-radius:16px;padding:14px 16px;
+    box-shadow:0 14px 44px rgba(0,0,0,.7);color:#e8d0b0;backdrop-filter:blur(6px)}
+  #panel h3{font-size:13px;font-weight:700;color:#fff3e8;margin-bottom:4px;letter-spacing:-.01em}
+  #panel p{font-size:11.5px;color:#a8897a;line-height:1.5;margin-bottom:8px}
+  #panel .big{font-size:28px;font-weight:700;color:#ff8a4c;letter-spacing:-.02em;line-height:1}
+  #panel .big small{display:block;font-size:11px;font-weight:500;color:#a8897a;margin-top:5px;letter-spacing:0}
+  .legend{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+  .lg{display:flex;align-items:center;gap:8px;font-size:11px;color:#bca08c}
+  .lg .sw{width:14px;height:14px;border-radius:4px;flex-shrink:0;border:1px solid rgba(255,255,255,.14)}
+  .rank{list-style:none;margin:6px 0 0}
+  .rank li{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:4px 0;border-bottom:1px solid #2a1008}
+  .rank li:last-child{border-bottom:none}.rank li b{color:#ffca9a}
+  .toggle{display:flex;gap:6px;margin:8px 0 2px}
+  .chart{width:100%;height:118px;display:block;margin-top:4px}
+  .chart text{fill:#8a6a5a}
+  .note{font-size:10px;color:#6a4a3a;margin-top:8px;line-height:1.45}
+  /* popups */
+  .leaflet-popup-content-wrapper{background:#1a0a04 !important;border:1px solid #4a2010 !important;border-radius:14px !important;color:#f0e0d0 !important}
+  .leaflet-popup-tip{background:#1a0a04 !important;border:1px solid #4a2010 !important}
+  .leaflet-popup-close-button{color:#7a4a3a !important}
+  .pt{font-weight:700;font-size:14.5px;color:#fff3e8;margin-bottom:6px}
+  .pd{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:#a8897a;padding:4px 0;border-bottom:1px solid #2a1008}
+  .pd:last-child{border-bottom:none}.pd b{color:#e8d0b0}
+  .leaflet-control-zoom{border:none !important;box-shadow:0 4px 16px rgba(0,0,0,.5) !important;border-radius:12px !important;overflow:hidden}
+  .leaflet-control-zoom a{background:#1a0a04 !important;color:#bca08c !important;border-color:#3a1a0a !important}
+  .leaflet-control-attribution{background:rgba(16,7,4,.82) !important;color:#7a5444 !important;font-size:10px !important}
+  .leaflet-control-attribution a{color:#b88a6a !important}
+  @media(max-width:600px){#cabecera h2{font-size:13px}#tabs{padding:8px 12px}#tabs .hint{display:none}
+    #panel{width:auto;left:10px;right:10px;bottom:10px}}
 </style>
-
-<div class="cfl">
-  <span class="eyebrow">🔥 Observatorio climático</span>
-  <h1>Superficie forestal quemada en España: mapa, histórico y proyección a futuro</h1>
-  <p class="sub">Cuántas hectáreas ha arrasado el fuego en cada provincia, la evolución año a año desde 1968 y cómo aumentará el peligro de incendio a mitad y final de siglo. Datos oficiales de EFFIS y MITECO.</p>
-  <div class="cfl-stats">
-    <div class="cfl-stat"><div class="n">343.862</div><div class="l">hectáreas quemadas en 2025, el peor año del registro EFFIS</div><div class="s">EFFIS 2025</div></div>
-    <div class="cfl-stat"><div class="n">8,2 M</div><div class="l">hectáreas quemadas en España entre 1968 y 2023</div><div class="s">EGIF · MITECO</div></div>
-    <div class="cfl-stat"><div class="n">50</div><div class="l">provincias con su superficie quemada año a año</div><div class="s">España</div></div>
-    <div class="cfl-stat"><div class="n">+55 %</div><div class="l">de peligro de incendio proyectado en el sur para 2100</div><div class="s">FWI · SSP5-8.5</div></div>
+</head>
+<body>
+<div id="cabecera">
+  <h2><span class="dot"></span>Superficie forestal quemada en España</h2>
+  <div id="info-derecha">
+    <span id="resumen">Cargando datos…</span>
+    <span id="actualizacion"></span>
   </div>
 </div>
-
-<div class="cfl-fullmap">
-  <iframe src="https://davidbebow.github.io/temperaturas-mar-espana/superficie-incendios.html" title="Mapa de superficie forestal quemada en España por provincia, histórico y proyección" loading="lazy" allowfullscreen=""></iframe>
+<div id="tabs">
+  <button class="tab on" data-view="temporada">Temporada actual</button>
+  <button class="tab" data-view="historico">Histórico</button>
+  <button class="tab" data-view="proyeccion">Proyección 2050 · 2100</button>
+  <span class="hint">Pulsa una provincia para ver el detalle</span>
 </div>
-<p class="cfl-cap">Cambia entre <strong>temporada actual</strong>, <strong>histórico</strong> y <strong>proyección 2050 · 2100</strong> · pulsa una provincia para ver sus hectáreas ·
-  <a href="https://davidbebow.github.io/temperaturas-mar-espana/superficie-incendios.html" target="_blank" rel="noopener">Abrir a pantalla completa</a></p>
+<div id="mapa"><div id="panel"></div></div>
 
-<div class="cfl">
-  <h2>Qué muestra este mapa</h2>
-  <p>A diferencia del <a href="https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/">mapa de incendios activos</a>, que detecta los focos de fuego <em>ahora mismo</em> por satélite, este mide algo distinto y complementario: la <strong>superficie realmente quemada</strong>, en hectáreas. Tiene tres capas que puedes intercambiar con los botones de arriba.</p>
-  <div class="cfl-cards">
-    <div class="cfl-card"><div class="ic">📍</div><div class="t">Temporada actual</div><div class="d">Hectáreas acumuladas en lo que va de año, con las provincias más afectadas. Datos de EFFIS, actualizados a diario en campaña.</div></div>
-    <div class="cfl-card"><div class="ic">📊</div><div class="t">Histórico</div><div class="d">La serie nacional año a año desde 1968 y el reparto por provincia. Permite ver si los grandes años de fuego se están volviendo más frecuentes.</div></div>
-    <div class="cfl-card"><div class="ic">🔮</div><div class="t">Proyección 2050 · 2100</div><div class="d">Cuánto aumentará el peligro meteorológico de incendio (índice FWI) en cada provincia bajo un escenario de altas emisiones.</div></div>
-  </div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ===========================================================================
+   Datos en vivo y geometria — URLs fijas (no hay que cambiar nada).
+=========================================================================== */
+const JSON_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/superficie_incendios.json';
+const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-provinces.geojson';
 
-  <h2>2025, el peor año del registro; 2026, camino de repetir</h2>
-  <p>La superficie quemada en España no crece de forma suave: se dispara en años concretos, cada vez más seguidos. <strong>2022</strong> batió el récord del siglo con más de 306.000 hectáreas; apenas tres años después, <strong>2025</strong> lo pulverizó con <strong>343.862 hectáreas</strong>, el año con más superficie arrasada desde que EFFIS lleva registro. Y lo hizo con menos incendios que 2022: fuegos menos numerosos pero mucho más grandes y difíciles de apagar, los llamados incendios de sexta generación.</p>
+/* Vista previa embebida (se sustituye por JSON_URL en cuanto responde). */
+const PREVIEW = {
+  "actualizado":"2026-07-27","fuente_actual":"EFFIS · Copernicus EMS",
+  "temporada_actual":{"anio":2026,"a_fecha":"2026-07-23","total_ha":124800,"n_incendios":343,
+    "media_misma_fecha_ha":41000,"comentario":"Casi el triple que en la misma fecha de 2025.",
+    "provincias":{"ourense":38200,"leon":21500,"zamora":15400,"caceres":9200,"salamanca":6100,"asturias":4800}},
+  "historico_nacional":[
+    {"anio":1985,"ha":484476,"fuente":"EGIF/WWF","hito":"Uno de los peores años"},
+    {"anio":1994,"ha":437635,"fuente":"EGIF/WWF","hito":"Gran año mediterráneo"},
+    {"anio":2006,"ha":118368,"fuente":"EFFIS"},
+    {"anio":2012,"ha":189376,"fuente":"EFFIS","hito":"Sequía y calor extremos"},
+    {"anio":2017,"ha":130925,"fuente":"EFFIS","hito":"Incendios de octubre en Galicia"},
+    {"anio":2022,"ha":306555,"fuente":"EFFIS","hito":"Récord del siglo hasta entonces"},
+    {"anio":2023,"ha":89250,"fuente":"EFFIS"},
+    {"anio":2024,"ha":75000,"fuente":"EFFIS","aprox":true},
+    {"anio":2025,"ha":343862,"fuente":"EFFIS","hito":"Año con más superficie del registro EFFIS"},
+    {"anio":2026,"ha":124800,"fuente":"EFFIS","parcial":true,"hito":"En curso, a 23-jul"}
+  ],
+  "historico_provincias":{"referencia":"2022-verano-CCAA","ccaa_2022":{"castilla y leon":86567,"galicia":51459,"comunitat valenciana":34257}},
+  "proyeccion_fwi":{"zonas":{
+    "atlantico_humedo":{"c2050":8,"c2100":20,"prov":["a coruna","lugo","pontevedra","asturias","cantabria","bizkaia","gipuzkoa","alava"]},
+    "norte_transicion":{"c2050":15,"c2100":35,"prov":["ourense","navarra","la rioja","burgos","palencia","leon","zamora"]},
+    "interior_continental":{"c2050":18,"c2100":45,"prov":["madrid","toledo","ciudad real","cuenca","guadalajara","albacete","caceres","badajoz","zaragoza","teruel","huesca","salamanca","avila","segovia","soria","valladolid"]},
+    "mediterraneo_litoral":{"c2050":22,"c2100":55,"prov":["barcelona","tarragona","girona","lleida","castellon","valencia","alicante","illes balears","huelva","sevilla","cordoba","cadiz","malaga","granada"]},
+    "sur_arido":{"c2050":25,"c2100":62,"prov":["murcia","almeria","jaen"]},
+    "canarias":{"c2050":12,"c2100":30,"prov":["las palmas","santa cruz de tenerife"]}
+  }}
+};
 
-  <div class="cfl-note">
-    Los grandes incendios son la consecuencia visible de la sequía y el calor que ya seguimos a diario. Consulta también los <a href="https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/">focos de incendio activos</a>, las <a href="https://calentamientoglobal.es/lluvias-en-espana/">lluvias y la sequía</a> y la <a href="https://calentamientoglobal.es/canicula-en-espana-ahora/">canícula en directo</a>.
-  </div>
+/* Nombres del GeoJSON (normalizados) -> slug de nuestros datos */
+const ALIAS = {"orense":"ourense","la coruna":"a coruna","gerona":"girona","lerida":"lleida",
+  "vizcaya":"bizkaia","guipuzcoa":"gipuzkoa","baleares":"illes balears","islas baleares":"illes balears",
+  "alacant":"alicante","castello":"castellon","araba":"alava"};
+function norm(s){return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(new RegExp("[\\u0300-\\u036f]","g"),"");}
+function slug(name){var n=norm(name);return ALIAS[n]||n;}
+function fmt(n){return (n==null||isNaN(n))?"—":Math.round(n).toLocaleString("es-ES");}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 
-  <h2>Por qué el fuego irá a más: la proyección FWI</h2>
-  <p>La tercera capa del mapa no predice hectáreas —eso depende de la ignición, el viento y la gestión del monte, imposibles de anticipar—, sino el <strong>índice meteorológico de peligro de incendio (FWI)</strong>: cuánto de favorable al fuego será el clima. Es el mismo enfoque riguroso que usamos en <a href="https://calentamientoglobal.es/tu-municipio-en-2050/">Tu municipio en 2050</a>. La proyección, bajo un escenario de altas emisiones, apunta a un aumento generalizado del peligro, más acusado en el interior y el sur peninsular.</p>
-  <div class="cfl-scen">
-    <div class="box good">
-      <div class="lab">🟠 MITAD DE SIGLO · 2050</div>
-      <div class="big">+8 % a +25 %</div>
-      <div class="d">El peligro de incendio sube en toda España, con los mayores aumentos en el interior continental, el litoral mediterráneo y el sureste árido.</div>
-    </div>
-    <div class="box bad">
-      <div class="lab">🔴 FINAL DE SIGLO · 2100</div>
-      <div class="big">+20 % a +62 %</div>
-      <div class="d">En un escenario de altas emisiones, buena parte del sur y el este entran en niveles de peligro hoy excepcionales, y la temporada de riesgo se alarga varios meses.</div>
-    </div>
-  </div>
+/* Escalas de color (oscuro) */
+function colorHa(ha){
+  if(ha==null) return "#241812";
+  if(ha<=0) return "#1f3a26";
+  if(ha<1000) return "#caa12a";
+  if(ha<5000) return "#e07b1e";
+  if(ha<20000) return "#d83a14";
+  if(ha<50000) return "#e8160a";
+  return "#8a0f04";
+}
+const LEG_HA=[["#8a0f04","+50.000 ha"],["#e8160a","20.000–50.000"],["#d83a14","5.000–20.000"],
+  ["#e07b1e","1.000–5.000"],["#caa12a","<1.000"],["#1f3a26","0 / sin dato"]];
+function colorFwi(p){
+  if(p==null) return "#241812";
+  if(p<10) return "#caa12a";
+  if(p<20) return "#e0a41e";
+  if(p<35) return "#e07b1e";
+  if(p<50) return "#d83a14";
+  return "#8a0f04";
+}
+const LEG_FWI=[["#8a0f04","+50 %"],["#d83a14","35–50 %"],["#e07b1e","20–35 %"],["#e0a41e","10–20 %"],["#caa12a","<10 %"]];
 
-  <div class="cfl-alert">
-    <div class="t">⚠️ Cómo leer la proyección</div>
-    <p>La capa de futuro mide <strong>peligro meteorológico</strong>, no hectáreas quemadas. Un clima más favorable al fuego no garantiza más superficie quemada si mejora la prevención y la extinción; pero sí eleva el riesgo de fondo y acorta el margen de reacción.</p>
-  </div>
+/* Reduccion provincia->CCAA (solo para el ejemplo historico 2022) */
+const PROV_CCAA={
+  "castellon":"comunitat valenciana","valencia":"comunitat valenciana","alicante":"comunitat valenciana",
+  "a coruna":"galicia","lugo":"galicia","ourense":"galicia","pontevedra":"galicia",
+  "avila":"castilla y leon","burgos":"castilla y leon","leon":"castilla y leon","palencia":"castilla y leon",
+  "salamanca":"castilla y leon","segovia":"castilla y leon","soria":"castilla y leon",
+  "valladolid":"castilla y leon","zamora":"castilla y leon"
+};
 
-  <h2>Preguntas frecuentes</h2>
-  <div class="cfl-faq">
-    <details><summary>¿Cuántas hectáreas se han quemado este año en España?</summary>
-      <p>La cifra en curso aparece en la pestaña «Temporada actual» del mapa, actualizada con datos de EFFIS. En 2025 se quemaron 343.862 hectáreas, el peor año del registro EFFIS; 2026 avanza por encima de la media a la misma fecha.</p></details>
-    <details><summary>¿De dónde salen los datos de superficie quemada?</summary>
-      <p>De dos fuentes oficiales: EFFIS (Sistema Europeo de Información de Incendios Forestales, de Copernicus) para el año en curso y la serie desde 2006, y la Estadística General de Incendios Forestales (EGIF) del MITECO para el histórico oficial por provincia desde 1968.</p></details>
-    <details><summary>¿Cuál ha sido el peor año de incendios en España?</summary>
-      <p>Por superficie quemada, 2025 es el peor del registro EFFIS con 343.862 hectáreas, por delante de 2022 (más de 306.000). En la serie larga de la EGIF, años como 1985 y 1994 también superaron las 400.000 hectáreas.</p></details>
-    <details><summary>¿La proyección dice cuántas hectáreas arderán en 2050?</summary>
-      <p>No. Nadie puede predecir con fiabilidad las hectáreas futuras, porque dependen de factores humanos. La proyección muestra el aumento del peligro meteorológico de incendio (índice FWI), que sí se puede modelizar con escenarios climáticos.</p></details>
-    <details><summary>¿Qué relación tienen los incendios con el cambio climático?</summary>
-      <p>El calentamiento alarga y agrava la temporada de incendios: olas de calor más largas, sequías más intensas y noches más cálidas resecan la vegetación y crean condiciones de propagación extremas. La cuenca mediterránea se calienta al doble de la media global.</p></details>
-  </div>
+let DATA=PREVIEW, GEO=null, VIEW="temporada", PROJ="c2100", CURVAL={}, LAYER=null;
 
-  <p class="cfl-src">
-    <strong>Fuentes:</strong> Superficie quemada — <strong>EFFIS / Copernicus EMS</strong> (año en curso y serie desde 2006) y <strong>EGIF / MITECO</strong> (histórico oficial por provincia desde 1968) ·
-    Proyección — cambio del índice meteorológico de peligro de incendio (FWI) bajo escenario SSP5-8.5, a partir de Copernicus C3S y proyecciones climáticas CMIP6 ·
-    Mapa base: © OpenStreetMap &amp; CARTO. La capa de proyección indica peligro meteorológico, no una previsión de hectáreas.
-  </p>
-</div>
+const mapa=L.map('mapa',{center:[39.9,-3.5],zoom:6,zoomControl:true,minZoom:5,maxZoom:12,preferCanvas:true,scrollWheelZoom:false});
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  {attribution:'© Esri · Datos: EFFIS/Copernicus · EGIF/MITECO',maxZoom:12,noWrap:true}).addTo(mapa);
 
-<!-- ===========================================================================
-  PROPUESTAS SEO (para RankMath) — no se muestran en la pagina
-  -----------------------------------------------------------------------------
-  Focus keyword:      hectareas quemadas en Espana
-  Titulo SEO:         Superficie quemada en Espana: mapa, historico y futuro | Observatorio
-  Slug:               superficie-quemada-espana
-  Meta descripcion:   Mapa de hectareas quemadas por provincia en Espana: temporada actual,
-                      historico desde 1968 y proyeccion del peligro de incendio a 2050 y 2100.
-                      Datos EFFIS y MITECO.
-  Keywords secundarias: superficie forestal quemada Espana, hectareas incendios por provincia,
-                      incendios Espana 2025 2026, peor ano incendios Espana, proyeccion incendios FWI.
+function valores(){
+  var out={};
+  if(VIEW==="temporada"){
+    var p=(DATA.temporada_actual||{}).provincias||{};
+    for(var k in p) out[slug(k)]=p[k];
+  }else if(VIEW==="proyeccion"){
+    var z=((DATA.proyeccion_fwi||{}).zonas)||{};
+    for(var zn in z)(z[zn].prov||[]).forEach(function(pr){out[slug(pr)]=z[zn][PROJ];});
+  }else{
+    var c=(DATA.historico_provincias||{}).ccaa_2022||{};
+    for(var pr2 in PROV_CCAA){var v=c[PROV_CCAA[pr2]];if(v!=null)out[pr2]=v;}
+  }
+  return out;
+}
+function estilo(f){
+  var v=CURVAL[slug(f.properties.name)];
+  var col=VIEW==="proyeccion"?colorFwi(v):colorHa(v);
+  return {fillColor:col,fillOpacity:.62,color:"#3a1a0a",weight:1,opacity:.9};
+}
+function popup(f){
+  var name=f.properties.name, s=slug(name), v=CURVAL[s];
+  if(VIEW==="proyeccion"){
+    var z=DATA.proyeccion_fwi.zonas,c50=null,c100=null;
+    for(var zn in z)if((z[zn].prov||[]).indexOf(s)>=0){c50=z[zn].c2050;c100=z[zn].c2100;}
+    return '<div style="min-width:200px"><div class="pt">'+name+'</div>'+
+      '<div class="pd"><span>Peligro (FWI) 2050</span><b>'+(c50==null?"—":"+"+c50+" %")+'</b></div>'+
+      '<div class="pd"><span>Peligro (FWI) 2100</span><b>'+(c100==null?"—":"+"+c100+" %")+'</b></div>'+
+      '<div class="pd"><span>Escenario</span><b>SSP5-8.5</b></div></div>';
+  }
+  var ctx=VIEW==="temporada"?("año "+((DATA.temporada_actual||{}).anio||"")):"ejemplo 2022 · por CCAA";
+  return '<div style="min-width:190px"><div class="pt">'+name+'</div>'+
+    '<div class="pd"><span>Superficie quemada</span><b>'+(v==null?"sin dato":fmt(v)+" ha")+'</b></div>'+
+    '<div class="pd"><span>Referencia</span><b>'+ctx+'</b></div></div>';
+}
+function pinta(){
+  CURVAL=valores();
+  if(LAYER) mapa.removeLayer(LAYER);
+  if(GEO){
+    LAYER=L.geoJSON(GEO,{style:estilo,onEachFeature:function(f,l){
+      l.bindPopup(popup(f),{maxWidth:260});
+      l.on('mouseover',function(){l.setStyle({fillOpacity:.85,weight:2,color:"#ff7a3c"});});
+      l.on('mouseout',function(){LAYER.resetStyle(l);});
+    }}).addTo(mapa);
+  }
+  renderPanel();
+}
 
-  Schema recomendado (JSON-LD): Dataset + FAQPage (usa las preguntas de arriba).
-============================================================================ -->
+function renderPanel(){
+  var el=document.getElementById("panel"), leg=VIEW==="proyeccion"?LEG_FWI:LEG_HA;
+  var legHtml='<div class="legend">'+leg.map(function(x){return '<span class="lg"><span class="sw" style="background:'+x[0]+'"></span>'+x[1]+'</span>';}).join("")+'</div>';
+  var h="";
+  if(VIEW==="temporada"){
+    var t=DATA.temporada_actual||{};
+    var vs=t.media_misma_fecha_ha?(" · "+(Math.round(t.total_ha/t.media_misma_fecha_ha*10)/10)+"× la media a esta fecha"):"";
+    h+='<h3>Temporada '+t.anio+'</h3>'+
+       '<div class="big">'+fmt(t.total_ha)+' ha<small>quemadas'+(t.a_fecha?' · a '+t.a_fecha:'')+vs+'</small></div>';
+    h+=rankHtml(t.provincias||{});
+    h+=legHtml+'<p class="note">En vista previa aparecen solo las provincias con dato. El pipeline completa las 50.</p>';
+  }else if(VIEW==="proyeccion"){
+    h+='<h3>Peligro de incendio a futuro</h3>'+
+       '<p>Cambio del índice meteorológico <b>FWI</b> respecto a 1981-2010 (SSP5-8.5). Es peligro meteorológico, no hectáreas.</p>'+
+       '<div class="toggle"><button class="tab '+(PROJ==="c2050"?"on":"")+'" id="b50">2050</button>'+
+       '<button class="tab '+(PROJ==="c2100"?"on":"")+'" id="b100">2100</button></div>'+legHtml;
+  }else{
+    h+='<h3>Superficie quemada por año</h3>'+chartHtml()+
+       '<p class="note">Serie nacional · EFFIS (2006→) y EGIF/MITECO (hitos). El mapa colorea el ejemplo de 2022 por CCAA; el pipeline trae las 50 provincias año a año.</p>'+legHtml;
+  }
+  el.innerHTML=h;
+  var b50=document.getElementById("b50"),b100=document.getElementById("b100");
+  if(b50)b50.onclick=function(){PROJ="c2050";pinta();};
+  if(b100)b100.onclick=function(){PROJ="c2100";pinta();};
+}
+function rankHtml(obj){
+  var a=Object.keys(obj).map(function(k){return [k,obj[k]];}).sort(function(x,y){return y[1]-x[1];});
+  if(!a.length) return "";
+  return '<ul class="rank">'+a.map(function(x){return '<li><span>'+cap(x[0])+'</span><b>'+fmt(x[1])+' ha</b></li>';}).join("")+'</ul>';
+}
+function chartHtml(){
+  var d=(DATA.historico_nacional||[]).slice().sort(function(a,b){return a.anio-b.anio;});
+  if(!d.length) return "";
+  var W=258,H=118,pad=6,max=Math.max.apply(null,d.map(function(x){return x.ha;}));
+  var gap=(W-pad*2)/d.length,bw=gap*0.7;
+  var bars=d.map(function(x,i){
+    var hh=(H-22)*(x.ha/max),y=H-16-hh,xx=pad+i*gap+(gap-bw)/2;
+    var col=x.hito?"#e8160a":(x.parcial?"#e07b1e":"#d83a14");
+    return '<g><title>'+x.anio+': '+fmt(x.ha)+' ha'+(x.hito?" — "+x.hito:"")+'</title>'+
+      '<rect x="'+xx.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,hh).toFixed(1)+'" rx="1.5" fill="'+col+'"/>'+
+      '<text x="'+(xx+bw/2).toFixed(1)+'" y="'+(H-5)+'" text-anchor="middle" font-size="7">'+String(x.anio).slice(2)+'</text></g>';
+  }).join("");
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'">'+bars+'</svg>';
+}
+
+document.getElementById("tabs").addEventListener("click",function(e){
+  var b=e.target.closest(".tab[data-view]");if(!b)return;
+  document.querySelectorAll(".tab[data-view]").forEach(function(t){t.classList.remove("on");});
+  b.classList.add("on");VIEW=b.dataset.view;pinta();
+});
+
+function setCabecera(){
+  var t=DATA.temporada_actual||{};
+  document.getElementById("resumen").innerHTML='<span>'+fmt(t.total_ha)+' ha</span> quemadas en '+(t.anio||"");
+  document.getElementById("actualizacion").textContent='Actualizado: '+(DATA.actualizado||"")+' · '+(DATA.fuente_actual||"");
+}
+function arranque(){
+  setCabecera();
+  fetch(GEOJSON_URL).then(function(r){return r.json();}).then(function(g){GEO=g;pinta();
+    var b=LAYER&&LAYER.getBounds();if(b&&b.isValid()){mapa.fitBounds(b,{padding:[16,16]});mapa.setMaxBounds(b.pad(0.25));}
+  }).catch(function(){pinta();});
+}
+fetch(JSON_URL+'?t='+Date.now()).then(function(r){return r.json();}).then(function(j){DATA=j||PREVIEW;arranque();})
+  .catch(function(){DATA=PREVIEW;arranque();});
+window.addEventListener('resize',function(){mapa.invalidateSize();});
+</script>
+</body>
+</html>
