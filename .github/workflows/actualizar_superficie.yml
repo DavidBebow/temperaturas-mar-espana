@@ -1,0 +1,64 @@
+name: Actualizar superficie quemada
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+# Ejecuta desde el publico, trae los scripts del repo privado (clima-scripts)
+# y commitea el JSON en el propio repo publico (GitHub Pages).
+on:
+  schedule:
+    # 2 veces al dia. Horas en UTC (verano peninsular = UTC+2)
+    - cron: '0 6 * * *'    # 08:00 hora peninsular
+    - cron: '0 16 * * *'   # 18:00 hora peninsular
+  workflow_dispatch:
+concurrency:
+  group: actualizar-superficie
+  cancel-in-progress: false
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: clima-scripts
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Generar superficie_incendios.json
+        env:
+          # El script vive en clima-scripts/ y lee clima-scripts/datos/,
+          # pero escribe el JSON en la raiz del repo publico.
+          SALIDA_JSON: ${{ github.workspace }}/superficie_incendios.json
+        run: python clima-scripts/superficie_generar.py
+
+      - name: Guardar cambios
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git pull --rebase --autostash
+          git add superficie_incendios.json
+          if git diff --staged --quiet; then
+            echo "No hay cambios que guardar"
+          else
+            git commit -m "Superficie quemada actualizada: $(date +'%d/%m/%Y %H:%M')"
+            for intento in 1 2 3 4 5; do
+              git push && exit 0
+              echo "Push fallo. Reintentando en 15 segundos... intento $intento/5"
+              sleep 15
+            done
+            echo "No se pudo hacer push despues de 5 intentos"
+            exit 1
+          fi
