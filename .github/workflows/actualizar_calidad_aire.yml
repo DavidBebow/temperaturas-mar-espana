@@ -1,5 +1,4 @@
 name: Actualizar calidad del aire
-
 on:
   schedule:
     - cron: '0 11 * * *'
@@ -7,10 +6,8 @@ on:
     - cron: '0 16 * * *'
     - cron: '0 17 * * *'
   workflow_dispatch:
-
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   actualizar:
     runs-on: ubuntu-latest
@@ -19,21 +16,37 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Instalar dependencias
         run: pip install requests
-
       - name: Ejecutar script
         run: python scripts/obtener_calidad_aire.py
-
       - name: Guardar cambios
+        id: guardar                                       # ← IndexNow: id para leer el output
         run: |
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
           git add docs/calidad_aire.json docs/historial_calidad_aire.json
-          git diff --staged --quiet || (git commit -m "Calidad aire actualizada: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
+          if git diff --staged --quiet; then
+            echo "Sin cambios"
+            echo "changed=false" >> "$GITHUB_OUTPUT"      # ← IndexNow: sin cambios
+          else
+            git commit -m "Calidad aire actualizada: $(date +'%d/%m/%Y %H:%M')"
+            git pull --rebase
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"       # ← IndexNow: publicado
+          fi
+      # ← IndexNow: solo si el JSON público cambió. continue-on-error para que
+      # un fallo aquí nunca tumbe el job (el dato ya está publicado).
+      - name: Notificar a IndexNow (Bing/IA)
+        if: steps.guardar.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+          INDEXNOW_HOST: calentamientoglobal.es
+        run: |
+          python indexnow_ping.py \
+            "https://calentamientoglobal.es/calidad-del-aire/"
