@@ -1,9 +1,9 @@
 import requests
 import json
 import os
+import sys
 import time
 from datetime import datetime, timedelta
-
 CIUDADES = [
     {"id": "vitoria",      "nombre": "Vitoria-Gasteiz",     "provincia": "Álava",        "lat": 42.85, "lon": -2.67},
     {"id": "albacete",     "nombre": "Albacete",             "provincia": "Albacete",     "lat": 38.99, "lon": -1.86},
@@ -56,7 +56,6 @@ CIUDADES = [
     {"id": "ceuta",        "nombre": "Ceuta",                "provincia": "Ceuta",        "lat": 35.89, "lon": -5.32},
     {"id": "melilla",      "nombre": "Melilla",              "provincia": "Melilla",      "lat": 35.29, "lon": -2.94},
 ]
-
 LIMITES_OMS = {
     "pm25": 15.0,
     "pm10": 45.0,
@@ -65,38 +64,83 @@ LIMITES_OMS = {
     "so2":  40.0,
 }
 
-def obtener_calidad_ciudad(lat, lon):
+# Cuántas ciudades por petición. Open-Meteo admite múltiples coordenadas en
+# una sola llamada; con 50 basta un request. El chunk deja margen si algún día
+# crece la lista, y evita por completo el rate limiting de 50 llamadas sueltas.
+CHUNK_CIUDADES = 50
+
+
+def extraer_valores(current):
+    """Normaliza el bloque 'current' de una ubicación a nuestro esquema."""
+    pm25 = current.get("pm2_5")
+    pm10 = current.get("pm10")
+    no2  = current.get("nitrogen_dioxide")
+    o3   = current.get("ozone")
+    so2  = current.get("sulphur_dioxide")
+    aqi  = current.get("european_aqi")
+    dust = current.get("dust")
+    return {
+        "pm25": round(pm25, 1) if pm25 is not None else None,
+        "pm10": round(pm10, 1) if pm10 is not None else None,
+        "no2":  round(no2,  1) if no2  is not None else None,
+        "o3":   round(o3,   1) if o3   is not None else None,
+        "so2":  round(so2,  1) if so2  is not None else None,
+        "aqi_europeo": int(aqi) if aqi is not None else None,
+        "dust": round(dust, 1) if dust is not None else None,
+    }
+
+
+def _pedir_chunk(ciudades, intentos=4):
+    """Una petición para varias ciudades. Devuelve lista de dicts 'current'
+    alineada con 'ciudades', o None si falla tras todos los reintentos."""
     url = "https://air-quality-api.open-meteo.com/v1/air-quality"
     params = {
-        "latitude":  lat,
-        "longitude": lon,
+        "latitude":  ",".join(str(c["lat"]) for c in ciudades),
+        "longitude": ",".join(str(c["lon"]) for c in ciudades),
         "current":   "pm10,pm2_5,nitrogen_dioxide,ozone,sulphur_dioxide,european_aqi,dust",
         "timezone":  "Europe/Madrid",
     }
-    try:
-        r = requests.get(url, params=params, timeout=15)
-        r.raise_for_status()
-        data    = r.json()
-        current = data.get("current", {})
-        pm25 = current.get("pm2_5")
-        pm10 = current.get("pm10")
-        no2  = current.get("nitrogen_dioxide")
-        o3   = current.get("ozone")
-        so2  = current.get("sulphur_dioxide")
-        aqi  = current.get("european_aqi")
-        dust = current.get("dust")
-        return {
-            "pm25": round(pm25, 1) if pm25 is not None else None,
-            "pm10": round(pm10, 1) if pm10 is not None else None,
-            "no2":  round(no2,  1) if no2  is not None else None,
-            "o3":   round(o3,   1) if o3   is not None else None,
-            "so2":  round(so2,  1) if so2  is not None else None,
-            "aqi_europeo": int(aqi) if aqi is not None else None,
-            "dust": round(dust, 1) if dust is not None else None,
-        }
-    except Exception as e:
-        print(f"  Error: {e}")
-        return {}
+    for intento in range(1, intentos + 1):
+        try:
+            r = requests.get(url, params=params, timeout=30)
+            r.raise_for_status()
+            data = r.json()
+            # Con varias coordenadas Open-Meteo devuelve una lista; con una
+            # sola, un dict. Normalizamos siempre a lista.
+            if isinstance(data, dict):
+                data = [data]
+            if len(data) != len(ciudades):
+                raise ValueError(
+                    f"respuesta con {len(data)} ubicaciones, esperadas {len(ciudades)}"
+                )
+            return [loc.get("current", {}) for loc in data]
+        except Exception as e:
+            espera = 2 ** intento  # 2, 4, 8, 16 s
+            print(f"  Intento {intento}/{intentos} falló: {e}")
+            if intento < intentos:
+                print(f"  Reintentando en {espera}s...")
+                time.sleep(espera)
+    return None
+
+
+def obtener_calidad_todas(ciudades):
+    """Obtiene la calidad del aire de todas las ciudades en pocas peticiones.
+    Devuelve lista de dicts de valores alineada con 'ciudades'. Si algún chunk
+    falla del todo, esas posiciones quedan como {} (Sin datos), pero el resto
+    se conserva."""
+    valores = []
+    for i in range(0, len(ciudades), CHUNK_CIUDADES):
+        chunk = ciudades[i:i + CHUNK_CIUDADES]
+        currents = _pedir_chunk(chunk)
+        if currents is None:
+            print(f"  ERROR: chunk {i//CHUNK_CIUDADES + 1} sin datos tras varios intentos.")
+            valores.extend({} for _ in chunk)
+        else:
+            valores.extend(extraer_valores(c) for c in currents)
+        if i + CHUNK_CIUDADES < len(ciudades):
+            time.sleep(1)  # cortesía entre chunks (solo si hay más de uno)
+    return valores
+
 
 def clasificar_calidad_pm25(pm25):
     if pm25 is None:
@@ -106,7 +150,6 @@ def clasificar_calidad_pm25(pm25):
     if pm25 < 25: return "#FFCC44", "Moderada",  3
     if pm25 < 50: return "#FF8822", "Mala",      4
     return "#CC2200", "Muy mala", 5
-
 def clasificar_aqi_europeo(aqi):
     if aqi is None: return "#888888", "Sin datos", 0
     if aqi < 20:    return "#0066CC", "Muy buena", 1
@@ -115,14 +158,12 @@ def clasificar_aqi_europeo(aqi):
     if aqi < 80:    return "#FF8822", "Mala",      4
     if aqi < 100:   return "#CC2200", "Muy mala",  5
     return "#880000", "Extrema", 5
-
 def clasificar_ciudad(pm25, aqi_europeo):
     color, etiqueta, nivel = clasificar_calidad_pm25(pm25)
     if color is not None:
         return color, etiqueta, nivel, pm25, "µg/m³ PM2.5"
     color, etiqueta, nivel = clasificar_aqi_europeo(aqi_europeo)
     return color, etiqueta, nivel, aqi_europeo, "AQI europeo"
-
 def detectar_sahariano(pm10, dust):
     if dust is not None and dust > 50:
         return True
@@ -130,14 +171,12 @@ def detectar_sahariano(pm10, dust):
         if (dust / pm10) > 0.5 and pm10 > 40:
             return True
     return False
-
 def supera_limite_oms(valores):
     for param, limite in LIMITES_OMS.items():
         val = valores.get(param)
         if val is not None and val > limite:
             return True
     return False
-
 def contaminante_dominante(valores):
     nombres = {"pm25": "PM2.5", "pm10": "PM10", "no2": "NO₂", "o3": "O₃", "so2": "SO₂"}
     peor_ratio, peor_param = 0, None
@@ -148,7 +187,6 @@ def contaminante_dominante(valores):
             if ratio > peor_ratio:
                 peor_ratio, peor_param = ratio, param
     return nombres.get(peor_param) if peor_param else None
-
 def calcular_max_racha(entradas):
     max_racha = racha = 0
     for e in sorted(entradas, key=lambda x: x["fecha"]):
@@ -158,7 +196,6 @@ def calcular_max_racha(entradas):
         else:
             racha = 0
     return max_racha
-
 def actualizar_historial(resultados):
     ruta = "docs/historial_calidad_aire.json"
     hoy  = datetime.now().strftime("%Y-%m-%d")
@@ -196,23 +233,26 @@ def actualizar_historial(resultados):
     with open(ruta, "w", encoding="utf-8") as f:
         json.dump(historial, f, ensure_ascii=False, indent=2)
     return resultados
-
 def generar_json():
     print(f"\n{'='*60}")
     print(f"Calidad del aire — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     print(f"Fuente: Open-Meteo Air Quality API (sin API key)")
     print(f"{'='*60}\n")
 
+    # UNA petición (o pocas) para todas las ciudades: adiós al rate limiting.
+    print(f"Consultando {len(CIUDADES)} ciudades en lote...")
+    valores_todos = obtener_calidad_todas(CIUDADES)
+
+    # Salvaguarda: si NINGUNA ciudad trajo dato, abortamos SIN escribir para
+    # conservar el docs/calidad_aire.json bueno anterior.
+    con_dato = sum(1 for v in valores_todos if v.get("pm25") is not None or v.get("aqi_europeo") is not None)
+    if con_dato == 0:
+        print("ERROR: la API no devolvió datos para ninguna ciudad. Se conserva el JSON anterior.")
+        sys.exit(1)
+
     resultados = []
     errores    = 0
-
-    for ciudad in CIUDADES:
-        print(f"Procesando: {ciudad['nombre']}...")
-        valores = obtener_calidad_ciudad(ciudad["lat"], ciudad["lon"])
-
-        if not valores:
-            errores += 1
-
+    for ciudad, valores in zip(CIUDADES, valores_todos):
         pm25 = valores.get("pm25")
         pm10 = valores.get("pm10")
         no2  = valores.get("no2")
@@ -220,18 +260,17 @@ def generar_json():
         so2  = valores.get("so2")
         aqi  = valores.get("aqi_europeo")
         dust = valores.get("dust")
-
+        if pm25 is None and aqi is None:
+            errores += 1
         color, etiqueta, nivel, valor_mostrado, unidad_mostrada = clasificar_ciudad(pm25, aqi)
         sahariano    = detectar_sahariano(pm10, dust)
         supera_oms   = supera_limite_oms(valores)
         contaminante = contaminante_dominante(valores)
         etiq_aqi     = clasificar_aqi_europeo(aqi)[1] if aqi is not None else "Sin datos"
-
         estado = f"PM2.5:{pm25} AQI:{aqi} → {etiqueta}"
         if sahariano:
             estado += " 🏜️"
-        print(f"  ✓ {estado}")
-
+        print(f"  {ciudad['nombre']}: {estado}")
         resultados.append({
             "id":              ciudad["id"],
             "nombre":          ciudad["nombre"],
@@ -258,15 +297,10 @@ def generar_json():
             "max_dias_sobre_oms":       0,
             "dias_sobre_oms_anio":      0,
         })
-
-        time.sleep(0.2)
-
     resultados = actualizar_historial(resultados)
-
     ciudades_ok    = sum(1 for r in resultados if r["nivel"] in [1, 2])
     ciudades_malas = sum(1 for r in resultados if r["nivel"] >= 4)
     saharianos     = sum(1 for r in resultados if r["sahariano"])
-
     os.makedirs("docs", exist_ok=True)
     output = {
         "ultima_actualizacion":   datetime.now().isoformat(),
@@ -281,15 +315,12 @@ def generar_json():
         "nota_oms":               "Límites OMS 2021: PM2.5<15, PM10<45, NO2<25, O3<100 µg/m³",
         "ciudades":               resultados,
     }
-
     with open("docs/calidad_aire.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
-
     print(f"\n✓ {len(CIUDADES) - errores}/{len(CIUDADES)} ciudades con datos")
     print(f"✓ {ciudades_ok} ciudades buena calidad")
     print(f"✓ {ciudades_malas} ciudades mala calidad")
     if saharianos:
         print(f"⚠️  {saharianos} ciudades con episodio sahariano\n")
-
 if __name__ == "__main__":
     generar_json()
