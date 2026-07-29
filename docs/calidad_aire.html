@@ -3,241 +3,378 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calidad del Aire en España — 50 Capitales en Tiempo Real</title>
+<title>Calidad del aire en España hoy | Mapa PM2.5 de las 50 capitales</title>
+<meta name="description" content="Mapa de la calidad del aire en España actualizado cada pocas horas: PM2.5 de las 50 capitales, límite OMS y qué ciudades están afectadas por el humo de los incendios. Datos CAMS Copernicus y NASA FIRMS.">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  .ca * { margin: 0; padding: 0; box-sizing: border-box; }
-  .ca {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background: #eef1f5;
-    color: #0e1b2a;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(20,40,70,0.10);
-    max-width: 100%;
-  }
+/* =========================================================
+   PÁGINA CALIDAD DEL AIRE — sistema de diseño (scope .cgw)
+   ========================================================= */
+.cgw{
+  --ink:#152538; --muted:#647689; --soft:#8496a8; --line:#e6ecf2;
+  --bg:#f4f7fa; --card:#ffffff; --green:#1f7a4d; --green-soft:#e7f4ec;
+  --ember:#c0451c; --ember-soft:#fdeee7; --sky:#2a6fb0;
+  --exc:#0066CC; --bue:#2E9E6B; --mod:#E6A700; --mal:#FF8822; --muy:#CC2200;
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.62; -webkit-font-smoothing:antialiased;
+  max-width:1040px; margin:0 auto; padding:0 18px;
+}
+.cgw *{box-sizing:border-box;}
+.cgw p{margin:0 0 14px;}
+.cgw h2,.cgw h3{color:var(--ink); line-height:1.22;}
+.cgw a{color:var(--sky); text-decoration:none;} .cgw a:hover{text-decoration:underline;}
+.cgw .eyebrow{
+  font-size:12px; font-weight:800; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--green); display:inline-flex; align-items:center; gap:7px; margin:0 0 12px;
+}
+.cgw .eyebrow.ember{color:var(--ember);}
+.cgw .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:currentColor;
+  box-shadow:0 0 0 4px color-mix(in srgb, currentColor 18%, transparent);}
 
-  /* ===== TÍTULO ===== */
-  .ca-titulo {
-    text-align: center;
-    padding: 16px 16px 10px;
-    background: #eef1f5;
-  }
-  .ca-titulo h2 {
-    font-size: 19px; font-weight: 700; letter-spacing: -0.01em;
-    color: #14283f;
-  }
-  .ca-titulo h2 b { color: #1f7a4d; font-weight: 700; }
-  .ca-titulo p { font-size: 12px; color: #6a7d92; margin-top: 3px; }
+/* ---------- HERO ---------- */
+.cgw-hero{
+  background:linear-gradient(160deg,#fbfdff 0%, #eef3f8 100%);
+  border:1px solid var(--line); border-radius:22px;
+  padding:34px 34px 26px; margin:22px 0 26px;
+  box-shadow:0 10px 40px rgba(20,40,70,.05);
+}
+.cgw-hero h1{
+  font-size:clamp(26px,4.4vw,40px); font-weight:800; letter-spacing:-0.02em;
+  line-height:1.1; margin:0 0 14px; color:var(--ink);
+}
+.cgw-hero h1 em{color:var(--green); font-style:normal;}
+.cgw-lead{font-size:clamp(15px,1.7vw,18px); color:#3d5064; max-width:70ch; margin:0 0 4px;}
+.cgw-lead b{color:var(--ink);}
+.cgw-updated{margin:16px 0 2px; font-size:12.5px; color:var(--green); font-weight:700;
+  display:inline-flex; align-items:center; gap:7px;}
+.cgw-updated .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 0 rgba(31,122,77,.5); animation:cgwpulse 2.2s infinite;}
+@keyframes cgwpulse{0%{box-shadow:0 0 0 0 rgba(31,122,77,.45)}70%{box-shadow:0 0 0 9px rgba(31,122,77,0)}100%{box-shadow:0 0 0 0 rgba(31,122,77,0)}}
 
-  /* ===== BANNER DE ALERTA (incendios / sahara) ===== */
-  .ca-banner {
-    display: none;
-    margin: 0 12px 10px;
-    padding: 9px 14px;
-    border-radius: 12px;
-    font-size: 12.5px; line-height: 1.35;
-    text-align: center;
-  }
-  .ca-banner.humo   { display: none; background: #fdecec; border: 1px solid #f2b8b0; color: #9a2318; }
-  .ca-banner.sahara { display: none; background: #fdf4e0; border: 1px solid #eecf8f; color: #8a5a10; }
-  .ca-banner b { font-weight: 700; }
+/* ---------- STATS STRIP ---------- */
+.cgw-stats{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+  margin:22px 0 4px; border-top:1px solid var(--line);
+}
+.cgw-stat{padding:18px 20px 4px; position:relative;}
+.cgw-stat + .cgw-stat::before{content:"";position:absolute;left:0;top:20px;bottom:8px;width:1px;background:var(--line);}
+.cgw-stat .n{font-size:clamp(24px,3.2vw,34px); font-weight:800; letter-spacing:-0.02em; color:var(--ink); line-height:1;}
+.cgw-stat .l{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.35;}
 
-  /* ===== ESCENARIO (mapa + fichas) ===== */
-  .ca-stage { position: relative; }
-  #ca-mapa { width: 100%; height: 560px; background: #dfe6ee; z-index: 1; }
+/* ---------- MAPA (wrapper) ---------- */
+.cgw-mapwrap{margin:8px 0 30px; border-radius:20px; overflow:hidden;
+  box-shadow:0 14px 46px rgba(20,40,70,.12); border:1px solid var(--line);}
 
-  .ca-card {
-    background: rgba(255,255,255,0.96);
-    border: 1px solid #dbe3ec;
-    border-radius: 14px;
-    box-shadow: 0 6px 24px rgba(20,40,70,0.14);
-    padding: 14px 15px;
-    backdrop-filter: blur(3px);
-  }
-  .ca-cards { z-index: 500; }
-  .ca-live { position: absolute; top: 16px; left: 16px; width: 232px; }
-  .ca-foco { position: absolute; top: 16px; right: 16px; width: 250px; }
+/* ---------- SECCIONES ---------- */
+.cgw-sec{margin:38px 0;}
+.cgw-sec h2{font-size:clamp(21px,2.8vw,28px); font-weight:800; letter-spacing:-0.015em; margin:0 0 12px;}
+.cgw-sec > p{font-size:16px; color:#3a4c60; max-width:75ch;}
+.cgw-sec > p b, .cgw-sec > p strong{color:var(--ink);}
 
-  .ca-kicker {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.09em;
-    text-transform: uppercase; color: #1f7a4d;
-    display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
-  }
-  .ca-kicker.foco { color: #b5451f; }
-  .ca-kicker .pt { width: 7px; height: 7px; border-radius: 50%; background: #22a565; }
-  .ca-kicker.foco .pt { background: #e2612a; }
+/* ---------- CARDS (icon boxes) ---------- */
+.cgw-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin:20px 0;}
+.cgw-card{
+  background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px;
+  box-shadow:0 4px 20px rgba(20,40,70,.05); transition:transform .15s ease, box-shadow .15s ease;
+}
+.cgw-card:hover{transform:translateY(-2px); box-shadow:0 10px 30px rgba(20,40,70,.10);}
+.cgw-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:22px; background:var(--green-soft); margin-bottom:12px;}
+.cgw-ic.ember{background:var(--ember-soft);}
+.cgw-ic.sky{background:#e8f1fa;}
+.cgw-card h3{font-size:16px; font-weight:700; margin:0 0 5px;}
+.cgw-card p{font-size:13.5px; color:var(--muted); margin:0; line-height:1.5;}
 
-  .ca-big { font-size: 40px; font-weight: 800; line-height: 1; color: #14283f; letter-spacing: -0.02em; }
-  .ca-big small { font-size: 14px; font-weight: 700; color: #6a7d92; }
-  .ca-sub { font-size: 11.5px; color: #6a7d92; margin: 4px 0 10px; line-height: 1.3; }
+/* ---------- STEPS ---------- */
+.cgw-steps{counter-reset:s; display:grid; gap:2px; margin:18px 0;}
+.cgw-step{position:relative; padding:14px 8px 14px 60px; border-top:1px solid var(--line);}
+.cgw-step::before{counter-increment:s; content:counter(s); position:absolute; left:8px; top:12px;
+  width:36px;height:36px;border-radius:10px;background:var(--ink); color:#fff; font-weight:800;
+  display:flex;align-items:center;justify-content:center; font-size:15px;}
+.cgw-step b{color:var(--ink);} .cgw-step{font-size:15px; color:#3a4c60;}
 
-  .ca-row {
-    display: flex; align-items: baseline; gap: 8px;
-    padding: 6px 0; border-top: 1px solid #eef2f6;
-    font-size: 11.5px; color: #46586c; line-height: 1.25;
-  }
-  .ca-row:first-of-type { border-top: none; }
-  .ca-row .val { font-weight: 800; color: #14283f; white-space: nowrap; }
-  .ca-row .val.warn { color: #c0392b; }
-  .ca-row .val.fire { color: #d24a1e; }
-  .ca-row .txt { color: #6a7d92; }
+/* ---------- ESCALA DE NIVELES ---------- */
+.cgw-scale{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:18px 0;}
+.cgw-lvl{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 15px;
+  box-shadow:0 3px 14px rgba(20,40,70,.05);}
+.cgw-lvl .top{display:flex; align-items:center; gap:8px; margin-bottom:4px;}
+.cgw-lvl .sw{width:12px;height:12px;border-radius:4px;}
+.cgw-lvl .name{font-weight:800; font-size:14px;}
+.cgw-lvl .rng{font-size:12px; color:var(--soft); font-weight:600;}
+.cgw-lvl p{font-size:12.5px; color:var(--muted); margin:6px 0 0; line-height:1.45;}
 
-  .ca-foco .ca-big-lead { font-size: 34px; font-weight: 800; color: #b5451f; line-height: 1; margin: 2px 0 4px; letter-spacing:-0.02em;}
-  .ca-foco .ca-foco-txt { font-size: 12.5px; color: #33465a; line-height: 1.45; }
-  .ca-foco .ca-foco-txt b { color: #14283f; }
-  .ca-foco .ca-hint { margin-top: 10px; font-size: 10.5px; color: #8fa0b2; font-style: italic; }
+/* ---------- CALLOUT ---------- */
+.cgw-callout{background:var(--ember-soft); border:1px solid #f3cdbb; border-left:4px solid var(--ember);
+  border-radius:12px; padding:15px 18px; margin:18px 0; font-size:14.5px; color:#7a3417;}
+.cgw-callout b{color:#5f2810;}
 
-  /* ===== LEYENDA ===== */
-  .ca-leyenda {
-    background: #e6ebf1;
-    padding: 9px 16px;
-    display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center;
-    font-size: 11px; color: #56687c;
-    border-top: 1px solid #dbe3ec;
-  }
-  .ca-leyenda strong { color: #2f4257; font-weight: 700; }
-  .ca-ley-item { display: flex; align-items: center; gap: 5px; }
-  .ca-ley-punto { width: 11px; height: 11px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.12); flex-shrink: 0; }
-  .ca-ley-nota { margin-left: auto; font-size: 10px; color: #8697a8; }
+/* ---------- FAQ ---------- */
+.cgw-faq{margin:16px 0;}
+.cgw-faq details{border-bottom:1px solid var(--line); padding:4px 0;}
+.cgw-faq summary{cursor:pointer; list-style:none; padding:15px 34px 15px 2px; position:relative;
+  font-weight:700; font-size:16px; color:var(--ink);}
+.cgw-faq summary::-webkit-details-marker{display:none;}
+.cgw-faq summary::after{content:"+"; position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  font-size:22px; font-weight:400; color:var(--green); transition:transform .2s;}
+.cgw-faq details[open] summary::after{content:"–";}
+.cgw-faq details p{font-size:14.5px; color:#3a4c60; margin:0 2px 14px; max-width:78ch;}
 
-  /* ===== MARCADORES PÍLDORA ===== */
-  .ca-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-  .ca-pill {
-    display: flex; align-items: center; gap: 4px;
-    border-radius: 999px;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 8px rgba(20,40,70,0.30);
-    padding: 3px 9px;
-    font-weight: 800; font-size: 13px; line-height: 1;
-    white-space: nowrap;
-  }
-  .ca-pill .u { font-size: 8.5px; font-weight: 700; opacity: 0.85; }
-  .ca-pill .badge { font-size: 11px; margin-left: 1px; }
-  .ca-pill-nombre {
-    margin-top: 2px; font-size: 9px; font-weight: 700;
-    color: #33465a; text-shadow: 0 1px 3px rgba(255,255,255,0.9);
-    white-space: nowrap;
-  }
+/* ---------- FUENTES ---------- */
+.cgw-src{font-size:12.5px; color:var(--soft); border-top:1px solid var(--line); padding-top:14px; margin:26px 0 30px; line-height:1.6;}
 
-  /* ===== POPUP ===== */
-  .ca .leaflet-popup-content-wrapper {
-    background: #ffffff; border: 1px solid #dbe3ec; border-radius: 14px;
-    box-shadow: 0 10px 34px rgba(20,40,70,0.25); color: #23384c;
-  }
-  .ca .leaflet-popup-tip { background: #ffffff; }
-  .ca .leaflet-popup-content { margin: 13px 15px; }
-  .ca-pop-tit { font-weight: 800; font-size: 15px; color: #14283f; }
-  .ca-pop-prov { font-size: 11px; color: #8697a8; margin-bottom: 9px; }
-  .ca-pop-humo {
-    background: #fdecec; border: 1px solid #f2b8b0; color: #9a2318;
-    border-radius: 9px; padding: 7px 9px; font-size: 11.5px; line-height: 1.35; margin-bottom: 9px;
-  }
-  .ca-pop-humo b { font-weight: 800; }
-  .ca-pop-sep {
-    font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    color: #8697a8; padding: 7px 0 3px; border-bottom: 1px solid #eef2f6;
-  }
-  .ca-pop-dato {
-    display: flex; justify-content: space-between; gap: 12px;
-    padding: 4px 0; border-bottom: 1px solid #f2f5f8; font-size: 12px; color: #6a7d92;
-  }
-  .ca-pop-dato:last-child { border-bottom: none; }
-  .ca-pop-dato .v { font-weight: 700; color: #23384c; }
-  .ca-oms-ok  { color: #1f9d57; font-weight: 700; }
-  .ca-oms-mal { color: #d24a1e; font-weight: 700; }
-  .ca-pop-tag {
-    display: inline-block; margin-top: 10px; padding: 3px 12px;
-    border-radius: 999px; font-size: 10.5px; font-weight: 800; color: #fff;
-  }
-  .ca .leaflet-control-zoom a { background:#fff; color:#46586c; border-color:#dbe3ec; }
-  .ca .leaflet-control-zoom a:hover { background:#f2f5f8; color:#14283f; }
-  .ca .leaflet-control-attribution { background: rgba(255,255,255,0.82); color:#8697a8; font-size:10px; }
-  .ca .leaflet-control-attribution a { color:#3d6da3; }
+@media(max-width:720px){
+  .cgw-hero{padding:24px 20px;}
+  .cgw-stats{grid-template-columns:repeat(2,1fr);}
+  .cgw-stat + .cgw-stat:nth-child(odd)::before{display:none;}
+  .cgw-stat{padding:16px 14px 4px;}
+}
 
-  /* ===== RESPONSIVE MÓVIL ===== */
-  @media (max-width: 820px) {
-    .ca { border-radius: 14px; }
-    .ca-titulo h2 { font-size: 16px; }
-    .ca-titulo p { font-size: 11px; }
-    #ca-mapa { height: 58vh; min-height: 340px; max-height: 460px; }
-    /* Las fichas salen de encima del mapa y se apilan debajo, a ancho completo */
-    .ca-stage { display: flex; flex-direction: column; }
-    .ca-cards { display: flex; flex-direction: column; gap: 10px; padding: 12px; background: #eef1f5; }
-    .ca-live, .ca-foco {
-      position: static; width: 100%;
-    }
-    .ca-big { font-size: 34px; }
-    .ca-leyenda { font-size: 10px; gap: 6px 10px; }
-    .ca-ley-nota { margin-left: 0; width: 100%; }
-    .ca .leaflet-popup-content { margin: 12px 13px; }
-  }
-  @media (max-width: 420px) {
-    .ca-titulo h2 { font-size: 15px; }
-    .ca-pill { font-size: 12px; padding: 3px 7px; }
-    .ca-pill-nombre { font-size: 8.5px; }
-  }
+/* =========================================================
+   MAPA "PLANETA VIVO" (scope .ca) — inline
+   ========================================================= */
+.ca *{margin:0;padding:0;box-sizing:border-box;}
+.ca{font-family:inherit; background:#eef1f5; color:#0e1b2a;}
+.ca-titulo{text-align:center; padding:16px 16px 10px; background:#eef1f5;}
+.ca-titulo h2{font-size:18px; font-weight:800; letter-spacing:-.01em; color:#14283f;}
+.ca-titulo h2 b{color:#1f7a4d;}
+.ca-titulo p{font-size:12px; color:#6a7d92; margin-top:3px;}
+.ca-banner{display:none; margin:0 12px 10px; padding:9px 14px; border-radius:12px; font-size:12.5px; line-height:1.35; text-align:center;}
+.ca-banner.humo{display:none; background:#fdecec; border:1px solid #f2b8b0; color:#9a2318;}
+.ca-banner.sahara{display:none; background:#fdf4e0; border:1px solid #eecf8f; color:#8a5a10;}
+.ca-banner b{font-weight:700;}
+.ca-stage{position:relative;}
+#ca-mapa{width:100%; height:560px; background:#dfe6ee; z-index:1;}
+.ca-card{background:rgba(255,255,255,.96); border:1px solid #dbe3ec; border-radius:14px; box-shadow:0 6px 24px rgba(20,40,70,.14); padding:14px 15px; backdrop-filter:blur(3px);}
+.ca-cards{z-index:500;}
+.ca-live{position:absolute; top:16px; left:16px; width:232px;}
+.ca-foco{position:absolute; top:16px; right:16px; width:250px;}
+.ca-kicker{font-size:10px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:#1f7a4d; display:flex; align-items:center; gap:6px; margin-bottom:6px;}
+.ca-kicker.foco{color:#b5451f;}
+.ca-kicker .pt{width:7px; height:7px; border-radius:50%; background:#22a565;}
+.ca-kicker.foco .pt{background:#e2612a;}
+.ca-big{font-size:40px; font-weight:800; line-height:1; color:#14283f; letter-spacing:-.02em;}
+.ca-sub{font-size:11.5px; color:#6a7d92; margin:4px 0 10px; line-height:1.3;}
+.ca-row{display:flex; align-items:baseline; gap:8px; padding:6px 0; border-top:1px solid #eef2f6; font-size:11.5px; color:#46586c; line-height:1.25;}
+.ca-row:first-of-type{border-top:none;}
+.ca-row .val{font-weight:800; color:#14283f; white-space:nowrap;}
+.ca-row .val.warn{color:#c0392b;} .ca-row .val.fire{color:#d24a1e;}
+.ca-row .txt{color:#6a7d92;}
+.ca-foco .ca-big-lead{font-size:32px; font-weight:800; color:#b5451f; line-height:1; margin:2px 0 4px; letter-spacing:-.02em;}
+.ca-foco .ca-foco-txt{font-size:12.5px; color:#33465a; line-height:1.45;}
+.ca-foco .ca-foco-txt b{color:#14283f;}
+.ca-hint{margin-top:10px; font-size:10.5px; color:#8fa0b2; font-style:italic;}
+.ca-leyenda{background:#e6ebf1; padding:9px 16px; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; font-size:11px; color:#56687c; border-top:1px solid #dbe3ec;}
+.ca-leyenda strong{color:#2f4257; font-weight:700;}
+.ca-ley-item{display:flex; align-items:center; gap:5px;}
+.ca-ley-punto{width:11px; height:11px; border-radius:4px; border:1px solid rgba(0,0,0,.12);}
+.ca-ley-nota{margin-left:auto; font-size:10px; color:#8697a8;}
+.ca-marker{display:flex; flex-direction:column; align-items:center; cursor:pointer;}
+.ca-pill{display:flex; align-items:center; gap:4px; border-radius:999px; border:2px solid #fff; box-shadow:0 2px 8px rgba(20,40,70,.30); padding:3px 9px; font-weight:800; font-size:13px; line-height:1; white-space:nowrap;}
+.ca-pill .u{font-size:8.5px; font-weight:700; opacity:.85;}
+.ca-pill .badge{font-size:11px; margin-left:1px;}
+.ca-pill-nombre{margin-top:2px; font-size:9px; font-weight:700; color:#33465a; text-shadow:0 1px 3px rgba(255,255,255,.9); white-space:nowrap;}
+.ca .leaflet-popup-content-wrapper{background:#fff; border:1px solid #dbe3ec; border-radius:14px; box-shadow:0 10px 34px rgba(20,40,70,.25); color:#23384c;}
+.ca .leaflet-popup-tip{background:#fff;}
+.ca .leaflet-popup-content{margin:13px 15px;}
+.ca-pop-tit{font-weight:800; font-size:15px; color:#14283f;}
+.ca-pop-prov{font-size:11px; color:#8697a8; margin-bottom:9px;}
+.ca-pop-humo{background:#fdecec; border:1px solid #f2b8b0; color:#9a2318; border-radius:9px; padding:7px 9px; font-size:11.5px; line-height:1.35; margin-bottom:9px;}
+.ca-pop-humo b{font-weight:800;}
+.ca-pop-sep{font-size:9.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#8697a8; padding:7px 0 3px; border-bottom:1px solid #eef2f6;}
+.ca-pop-dato{display:flex; justify-content:space-between; gap:12px; padding:4px 0; border-bottom:1px solid #f2f5f8; font-size:12px; color:#6a7d92;}
+.ca-pop-dato:last-child{border-bottom:none;}
+.ca-pop-dato .v{font-weight:700; color:#23384c;}
+.ca-oms-ok{color:#1f9d57; font-weight:700;} .ca-oms-mal{color:#d24a1e; font-weight:700;}
+.ca-pop-tag{display:inline-block; margin-top:10px; padding:3px 12px; border-radius:999px; font-size:10.5px; font-weight:800; color:#fff;}
+.ca .leaflet-control-zoom a{background:#fff; color:#46586c; border-color:#dbe3ec;}
+.ca .leaflet-control-zoom a:hover{background:#f2f5f8; color:#14283f;}
+.ca .leaflet-control-attribution{background:rgba(255,255,255,.82); color:#8697a8; font-size:10px;}
+.ca .leaflet-control-attribution a{color:#3d6da3;}
+@media(max-width:820px){
+  .ca-titulo h2{font-size:16px;}
+  #ca-mapa{height:58vh; min-height:340px; max-height:460px;}
+  .ca-stage{display:flex; flex-direction:column;}
+  .ca-cards{display:flex; flex-direction:column; gap:10px; padding:12px; background:#eef1f5;}
+  .ca-live,.ca-foco{position:static; width:100%;}
+  .ca-big{font-size:34px;}
+  .ca-ley-nota{margin-left:0; width:100%;}
+}
 </style>
 </head>
 <body>
-<div class="ca">
-  <div class="ca-titulo">
-    <h2>Planeta Vivo · <b>Calidad del aire</b></h2>
-    <p>PM2.5 modelado (CAMS · Copernicus) · 50 capitales de provincia · dato de hoy</p>
+<article class="cgw">
+
+  <!-- ============================ HERO / CABECERA ============================ -->
+  <div class="cgw-hero">
+    <span class="eyebrow"><span class="dot"></span> Observatorio climático · Calidad del aire</span>
+    <h1>Calidad del aire en España hoy: las 50 capitales en tiempo real, límite OMS y <em>humo de incendios</em></h1>
+    <p class="cgw-lead"><b>La calidad del aire de las 50 capitales de provincia, medida con el modelo CAMS del sistema europeo Copernicus.</b> No verás solo un índice de color: también el valor real de cada contaminante, cuánto se aleja del límite recomendado por la OMS y —lo que no encontrarás en otros mapas— qué parte de la mala calidad del aire de hoy se debe al <b>humo de los incendios activos</b>.</p>
+    <div class="cgw-updated"><span class="pulse"></span> Actualización automática cuatro veces al día</div>
+
+    <div class="cgw-stats">
+      <div class="cgw-stat"><div class="n">50</div><div class="l">capitales de provincia monitorizadas en toda España</div></div>
+      <div class="cgw-stat"><div class="n">4×</div><div class="l">actualización diaria con el último dato del modelo CAMS</div></div>
+      <div class="cgw-stat"><div class="n">15 µg/m³</div><div class="l">límite de PM2.5 recomendado por la OMS (media diaria)</div></div>
+      <div class="cgw-stat"><div class="n">7</div><div class="l">indicadores por ciudad: PM2.5, PM10, NO₂, O₃, SO₂, polvo y AQI europeo</div></div>
+    </div>
   </div>
 
-  <div class="ca-banner humo" id="ca-banner-humo"></div>
-  <div class="ca-banner sahara" id="ca-banner-sahara">
-    🏜️ <b>Episodio de polvo sahariano probable</b> — varias capitales muestran niveles elevados de polvo en suspensión compatibles con una intrusión desde el Sahara.
-  </div>
-
-  <div class="ca-stage">
-    <div id="ca-mapa"></div>
-    <div class="ca-cards">
-      <!-- FICHA IZQUIERDA: EN DIRECTO -->
-      <div class="ca-card ca-live">
-        <div class="ca-kicker"><span class="pt"></span> En directo · ahora</div>
-        <div class="ca-big" id="ca-live-num">50</div>
-        <div class="ca-sub">capitales de provincia monitorizadas en toda España</div>
-        <div id="ca-live-rows"></div>
+  <!-- ============================ MAPA (inline) ============================ -->
+  <div class="cgw-mapwrap">
+    <div class="ca">
+      <div class="ca-titulo">
+        <h2>Planeta Vivo · <b>Calidad del aire</b></h2>
+        <p>PM2.5 modelado (CAMS · Copernicus) · 50 capitales de provincia · dato de hoy</p>
       </div>
-      <!-- FICHA DERECHA: FOCO · EL DATO -->
-      <div class="ca-card ca-foco">
-        <div class="ca-kicker foco"><span class="pt"></span> Foco · el dato</div>
-        <div id="ca-foco-body">
-          <div class="ca-foco-txt">Cargando…</div>
+      <div class="ca-banner humo" id="ca-banner-humo"></div>
+      <div class="ca-banner sahara" id="ca-banner-sahara">🏜️ <b>Episodio de polvo sahariano probable</b> — varias capitales muestran niveles elevados de polvo en suspensión compatibles con una intrusión desde el Sahara.</div>
+      <div class="ca-stage">
+        <div id="ca-mapa"></div>
+        <div class="ca-cards">
+          <div class="ca-card ca-live">
+            <div class="ca-kicker"><span class="pt"></span> En directo · ahora</div>
+            <div class="ca-big" id="ca-live-num">50</div>
+            <div class="ca-sub">capitales de provincia monitorizadas en toda España</div>
+            <div id="ca-live-rows"></div>
+          </div>
+          <div class="ca-card ca-foco">
+            <div class="ca-kicker foco"><span class="pt"></span> Foco · el dato</div>
+            <div id="ca-foco-body"><div class="ca-foco-txt">Cargando…</div></div>
+            <div class="ca-hint">Toca cualquier capital del mapa para ver su ficha completa: contaminantes, índice europeo, histórico y estado frente al límite OMS.</div>
+          </div>
         </div>
-        <div class="ca-hint">Toca cualquier capital del mapa para ver su ficha completa: contaminantes, índice europeo, histórico y estado frente al límite OMS.</div>
+      </div>
+      <div class="ca-leyenda">
+        <strong>Calidad (PM2.5 µg/m³):</strong>
+        <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#0066CC"></div> Excelente &lt;5</div>
+        <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#44AA66"></div> Buena 5–15</div>
+        <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#FFCC44"></div> Moderada 15–25</div>
+        <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#FF8822"></div> Mala 25–50</div>
+        <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#CC2200"></div> Muy mala &gt;50</div>
+        <div class="ca-ley-item">🔥 Humo de incendios</div>
+        <span class="ca-ley-nota">Límite OMS: 15 µg/m³ · Clic para detalles</span>
       </div>
     </div>
   </div>
 
-  <div class="ca-leyenda">
-    <strong>Calidad (PM2.5 µg/m³):</strong>
-    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#0066CC"></div> Excelente &lt;5</div>
-    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#44AA66"></div> Buena 5–15</div>
-    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#FFCC44"></div> Moderada 15–25</div>
-    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#FF8822"></div> Mala 25–50</div>
-    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#CC2200"></div> Muy mala &gt;50</div>
-    <div class="ca-ley-item">🔥 Humo de incendios</div>
-    <span class="ca-ley-nota">Límite OMS: 15 µg/m³ · Clic para detalles</span>
-  </div>
-</div>
+  <!-- ============================ DATO DESTACADO ============================ -->
+  <section class="cgw-sec">
+    <span class="eyebrow ember"><span class="dot"></span> Dato destacado</span>
+    <h2>El humo de los incendios dispara las partículas que respiras</h2>
+    <p><b>El humo de los incendios forestales es una de las principales causas de mala calidad del aire en España en verano.</b> Al arder, la vegetación libera enormes cantidades de partículas finas (PM2.5) que el viento transporta cientos de kilómetros. Por eso una capital sin fuego en su término puede registrar aire irrespirable si su región arde. Este mapa cruza, cada día, las partículas de las 50 capitales con los focos activos detectados por los satélites VIIRS de la NASA para señalar exactamente ese vínculo.</p>
+    <div class="cgw-grid">
+      <div class="cgw-card"><div class="cgw-ic">🌫️</div><h3>PM2.5, la partícula clave</h3><p>Partículas de menos de 2,5 micras que penetran hasta la sangre. El indicador de salud más importante y el que más sube con el humo.</p></div>
+      <div class="cgw-card"><div class="cgw-ic sky">🇪🇺</div><h3>Índice AQI europeo</h3><p>La escala oficial de la Agencia Europea de Medio Ambiente que combina varios contaminantes en un único índice.</p></div>
+      <div class="cgw-card"><div class="cgw-ic ember">🔥</div><h3>Humo de incendios</h3><p>Cuando una comunidad tiene incendios activos de alta intensidad y sus capitales muestran partículas elevadas, el mapa lo marca.</p></div>
+    </div>
+  </section>
+
+  <!-- ============================ QUÉ ES PM2.5 ============================ -->
+  <section class="cgw-sec">
+    <h2>Qué es el PM2.5 y por qué es el dato que más importa</h2>
+    <p><b>El PM2.5 son partículas en suspensión de menos de 2,5 micras, unas 30 veces más finas que un cabello humano.</b> Su tamaño es lo que las hace peligrosas: penetran hasta el fondo de los pulmones y pasan al torrente sanguíneo, donde se asocian a enfermedades respiratorias, cardiovasculares y a mortalidad prematura. La OMS fijó en 2021 su límite recomendado en <b>15 µg/m³ de media diaria</b> y 5 µg/m³ de media anual. El humo de los incendios es especialmente rico en este tipo de partícula.</p>
+  </section>
+
+  <!-- ============================ CÓMO SE MIDE ============================ -->
+  <section class="cgw-sec">
+    <h2>Cómo se mide la calidad del aire en este mapa</h2>
+    <div class="cgw-steps">
+      <div class="cgw-step"><b>Cada pocas horas se toma el nivel de contaminantes</b> que el modelo CAMS (Copernicus) estima para cada una de las 50 capitales de provincia.</div>
+      <div class="cgw-step"><b>Se compara el PM2.5 con el límite de la OMS</b> (15 µg/m³) para clasificar el aire de cada ciudad, de excelente a muy malo.</div>
+      <div class="cgw-step"><b>Se cruza con los incendios activos</b> detectados por los satélites VIIRS de la NASA (FIRMS): si la comunidad de una capital tiene fuego intenso y sus partículas están elevadas, se marca el humo.</div>
+      <div class="cgw-step"><b>El color de cada ciudad refleja su nivel de PM2.5,</b> del azul (excelente) al rojo (muy malo), para leer el estado de un vistazo.</div>
+    </div>
+  </section>
+
+  <!-- ============================ NIVELES ============================ -->
+  <section class="cgw-sec">
+    <h2>Qué significa cada nivel de calidad del aire</h2>
+    <div class="cgw-scale">
+      <div class="cgw-lvl"><div class="top"><span class="sw" style="background:#0066CC"></span><span class="name">Excelente</span></div><span class="rng">PM2.5 &lt; 5 µg/m³</span><p>Aire limpio, por debajo incluso de la media anual recomendada.</p></div>
+      <div class="cgw-lvl"><div class="top"><span class="sw" style="background:#2E9E6B"></span><span class="name">Buena</span></div><span class="rng">5 – 15 µg/m³</span><p>Calidad aceptable, dentro del límite diario de la OMS.</p></div>
+      <div class="cgw-lvl"><div class="top"><span class="sw" style="background:#E6A700"></span><span class="name">Moderada</span></div><span class="rng">15 – 25 µg/m³</span><p>Supera el límite OMS; precaución en personas sensibles.</p></div>
+      <div class="cgw-lvl"><div class="top"><span class="sw" style="background:#FF8822"></span><span class="name">Mala</span></div><span class="rng">25 – 50 µg/m³</span><p>Riesgo para la salud; evita el ejercicio intenso al aire libre.</p></div>
+      <div class="cgw-lvl"><div class="top"><span class="sw" style="background:#CC2200"></span><span class="name">Muy mala</span></div><span class="rng">&gt; 50 µg/m³</span><p>Aire peligroso, habitual durante episodios de humo de incendios.</p></div>
+    </div>
+  </section>
+
+  <!-- ============================ INCENDIOS Y AIRE ============================ -->
+  <section class="cgw-sec">
+    <h2>Cómo afectan los incendios a la calidad del aire</h2>
+    <p><b>Un incendio forestal puede empeorar la calidad del aire de ciudades situadas a cientos de kilómetros del fuego.</b> El humo está compuesto en gran parte por PM2.5 y PM10, que ascienden con las columnas de convección y se desplazan con el viento. Durante los grandes incendios del verano, capitales sin ningún foco en su término municipal registran picos de partículas que multiplican varias veces el límite de la OMS. Este mapa permite distinguir esos episodios de la contaminación urbana de fondo o del polvo del Sahara.</p>
+    <div class="cgw-grid">
+      <div class="cgw-card"><div class="cgw-ic ember">💨</div><h3>El humo viaja lejos</h3><p>Las partículas recorren cientos de kilómetros. Una ciudad limpia puede empeorar por incendios en su comunidad o en regiones vecinas.</p></div>
+      <div class="cgw-card"><div class="cgw-ic ember">🫁</div><h3>Más dañino que el tráfico</h3><p>El PM2.5 del humo penetra más que muchos contaminantes urbanos y agrava el asma y las enfermedades cardiovasculares.</p></div>
+      <div class="cgw-card"><div class="cgw-ic sky">🛰️</div><h3>Detección por satélite</h3><p>Cruzamos las partículas de cada capital con los focos activos que ven los satélites VIIRS de la NASA cada pocas horas.</p></div>
+    </div>
+  </section>
+
+  <!-- ============================ HUMO vs SAHARA ============================ -->
+  <section class="cgw-sec">
+    <h2>Humo de incendios frente a polvo del Sahara</h2>
+    <p><b>No toda subida de partículas se debe a los incendios: el polvo del Sahara es la otra gran causa de mala calidad del aire en España.</b> Se diferencian por su origen y su rastro. El polvo sahariano es polvo mineral que llega desde el norte de África y afecta sobre todo al sur, el este y Canarias; en el mapa se marca con 🏜️. El humo de incendios se asocia a focos activos detectados por satélite en la misma región y se marca con 🔥. Separar ambos fenómenos es clave para entender qué respiras cada día.</p>
+  </section>
+
+  <!-- ============================ CONTAMINANTES ============================ -->
+  <section class="cgw-sec">
+    <h2>Qué puedes consultar en cada capital</h2>
+    <div class="cgw-grid">
+      <div class="cgw-card"><div class="cgw-ic">🌫️</div><h3>PM2.5 y PM10</h3><p>Partículas finas y gruesas en µg/m³, las más relevantes para la salud y las que dispara el humo.</p></div>
+      <div class="cgw-card"><div class="cgw-ic sky">🚗</div><h3>NO₂ y O₃</h3><p>Dióxido de nitrógeno (tráfico) y ozono troposférico, que se dispara con el calor del verano.</p></div>
+      <div class="cgw-card"><div class="cgw-ic">🏭</div><h3>SO₂ y polvo</h3><p>Dióxido de azufre y polvo mineral en suspensión, indicador de intrusiones saharianas.</p></div>
+      <div class="cgw-card"><div class="cgw-ic sky">📊</div><h3>Índice y límite OMS</h3><p>El AQI europeo, el contaminante dominante y si la ciudad supera el límite de la OMS, con su histórico.</p></div>
+    </div>
+  </section>
+
+  <!-- ============================ POR QUÉ IMPORTA ============================ -->
+  <section class="cgw-sec">
+    <h2>Por qué es importante seguir la calidad del aire</h2>
+    <div class="cgw-grid">
+      <div class="cgw-card"><div class="cgw-ic ember">❤️</div><h3>Salud</h3><p>La contaminación por partículas causa cientos de miles de muertes prematuras al año en Europa. Saber cuándo el aire empeora permite protegerse.</p></div>
+      <div class="cgw-card"><div class="cgw-ic">🏃</div><h3>Decisiones diarias</h3><p>Cuándo salir a correr, ventilar la casa o proteger a niños y mayores depende del aire de ese día, no de la media.</p></div>
+      <div class="cgw-card"><div class="cgw-ic ember">🌡️</div><h3>Cambio climático</h3><p>Más calor e incendios más intensos empeoran la calidad del aire: el vínculo entre clima y aire es cada vez más directo.</p></div>
+    </div>
+  </section>
+
+  <!-- ============================ CÓMO LEER EL MAPA ============================ -->
+  <section class="cgw-sec">
+    <h2>Cómo leer el mapa de calidad del aire</h2>
+    <div class="cgw-steps">
+      <div class="cgw-step"><b>Cada píldora de color es una capital de provincia:</b> el número es su PM2.5 en µg/m³ y el color, su nivel frente al límite de la OMS.</div>
+      <div class="cgw-step"><b>El icono 🔥 marca las capitales con humo de incendios probable</b> y el 🏜️, las afectadas por polvo del Sahara.</div>
+      <div class="cgw-step"><b>Al pulsar sobre cualquier capital</b> se abre su ficha con todos los contaminantes, el índice europeo, el contaminante dominante y su histórico de días sobre el límite OMS.</div>
+      <div class="cgw-step"><b>Las fichas superiores resumen el día:</b> la peor capital, cuántas superan la OMS y cuántas están afectadas por el humo del fuego.</div>
+    </div>
+    <div class="cgw-callout">🔥 <b>Señal de humo:</b> PM2.5 elevado + incendios de alta intensidad en la misma comunidad + varias capitales marcadas a la vez = episodio de humo afectando a la calidad del aire de esa región. Exactamente lo que este mapa detecta a diario.</div>
+  </section>
+
+  <!-- ============================ FAQ ============================ -->
+  <section class="cgw-sec">
+    <h2>Preguntas frecuentes sobre la calidad del aire en España</h2>
+    <div class="cgw-faq">
+      <details open><summary>¿Dónde puedo ver la calidad del aire en España en tiempo real?</summary><p>En esta página, con un mapa que se actualiza cuatro veces al día. Muestra el PM2.5 de las 50 capitales de provincia, su nivel frente al límite de la OMS, el contaminante dominante, el histórico y qué ciudades están afectadas por el humo de los incendios activos.</p></details>
+      <details><summary>¿Qué es el PM2.5 y por qué es peligroso?</summary><p>El PM2.5 son partículas en suspensión de menos de 2,5 micras. Por su tamaño penetran hasta el fondo de los pulmones y pasan a la sangre, lo que se asocia a enfermedades respiratorias y cardiovasculares. La OMS recomienda no superar los 15 µg/m³ de media diaria.</p></details>
+      <details><summary>¿Los incendios empeoran la calidad del aire de ciudades lejanas?</summary><p>Sí. El humo de los incendios está compuesto en gran parte por partículas PM2.5 que viajan cientos de kilómetros con el viento. Una capital sin fuego en su término municipal puede registrar mala calidad del aire por incendios activos en su misma comunidad o en regiones vecinas.</p></details>
+      <details><summary>¿Cómo se distingue el humo de incendios del polvo del Sahara?</summary><p>Son fenómenos distintos. El polvo sahariano es polvo mineral que llega del norte de África y se identifica por los niveles de polvo en suspensión; afecta sobre todo al sur, el este y Canarias. El humo de incendios se asocia a focos activos detectados por satélite en la misma región. El mapa los diferencia con 🏜️ y 🔥.</p></details>
+      <details><summary>¿Cuál es el límite de calidad del aire recomendado por la OMS?</summary><p>Para el PM2.5, la Organización Mundial de la Salud recomienda desde 2021 no superar los 15 µg/m³ de media diaria ni los 5 µg/m³ de media anual. Son valores más estrictos que los límites legales vigentes en la Unión Europea.</p></details>
+      <details><summary>¿Cada cuánto se actualizan los datos?</summary><p>Cuatro veces al día. El modelo CAMS de Copernicus estima los niveles de contaminantes de cada capital y aquí se recoge automáticamente el valor más reciente, junto con los focos de incendio activos detectados por la NASA.</p></details>
+      <details><summary>¿De dónde salen los datos?</summary><p>La calidad del aire procede del modelo CAMS (Copernicus Atmosphere Monitoring Service) servido a través de Open-Meteo. Los incendios activos proceden del sistema FIRMS de la NASA (sensores VIIRS SNPP, NOAA-20 y NOAA-21). Son datos modelizados y de detección satelital, no de estaciones de medición en superficie.</p></details>
+      <details><summary>¿Qué puedo hacer cuando la calidad del aire es mala?</summary><p>Con niveles altos de partículas conviene reducir el ejercicio intenso al aire libre, mantener ventanas cerradas durante los picos, usar purificadores con filtro HEPA si es posible y prestar especial atención a niños, mayores y personas con asma o problemas cardíacos.</p></details>
+    </div>
+  </section>
+
+  <p class="cgw-src">Fuentes: calidad del aire — modelo <a href="https://atmosphere.copernicus.eu/">CAMS</a> del sistema europeo <a href="https://www.copernicus.eu/es">Copernicus</a>, a través de la <a href="https://open-meteo.com/en/docs/air-quality-api">Air Quality API de Open-Meteo</a>. Incendios activos — <a href="https://firms.modaps.eosdis.nasa.gov/">NASA FIRMS</a> (VIIRS SNPP/NOAA-20/NOAA-21). Límites de referencia: <a href="https://www.who.int/news-room/feature-stories/detail/what-are-the-who-air-quality-guidelines">Directrices de calidad del aire de la OMS 2021</a>. Datos actualizados a diario en CalentamientoGlobal.es.</p>
+
+</article>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
-  const BASE = 'https://davidbebow.github.io/temperaturas-mar-espana/';
-  const AIRE_URL = BASE + 'calidad_aire.json';
-  const FUEGO_URL = BASE + 'incendios.json';
-
-  // ---- Umbrales de atribución de humo (ajustables) ----
-  const SMOKE_PM25_MIN   = 15;   // µg/m³: PM2.5 elevado (moderada+)
-  const COM_FRP_FUERTE   = 50;   // MW: FRP máximo en la comunidad para considerar incendio real
-  const COM_STRONG_COUNT = 3;    // nº de focos "Alta/Muy alta" para considerar incendio real
-
-  // Provincia (calidad_aire) -> Comunidad (incendios)
-  const PROV_COM = {
+  const BASE='https://davidbebow.github.io/temperaturas-mar-espana/';
+  const AIRE_URL=BASE+'calidad_aire.json', FUEGO_URL=BASE+'incendios.json';
+  const SMOKE_PM25_MIN=15, COM_FRP_FUERTE=50, COM_STRONG_COUNT=3;
+  const PROV_COM={
     'Álava':'País Vasco','Vizcaya':'País Vasco','Guipúzcoa':'País Vasco',
     'Albacete':'Castilla-La Mancha','Ciudad Real':'Castilla-La Mancha','Cuenca':'Castilla-La Mancha','Guadalajara':'Castilla-La Mancha','Toledo':'Castilla-La Mancha',
     'Alicante':'Comunidad Valenciana','Castellón':'Comunidad Valenciana','Valencia':'Comunidad Valenciana',
@@ -245,89 +382,20 @@
     'Ávila':'Castilla y León','Burgos':'Castilla y León','León':'Castilla y León','Palencia':'Castilla y León','Salamanca':'Castilla y León','Segovia':'Castilla y León','Soria':'Castilla y León','Valladolid':'Castilla y León','Zamora':'Castilla y León',
     'Badajoz':'Extremadura','Cáceres':'Extremadura',
     'Barcelona':'Cataluña','Girona':'Cataluña','Lleida':'Cataluña','Tarragona':'Cataluña',
-    'Cantabria':'Cantabria',
-    'A Coruña':'Galicia','Lugo':'Galicia','Ourense':'Galicia','Pontevedra':'Galicia',
-    'Huesca':'Aragón','Teruel':'Aragón','Zaragoza':'Aragón',
-    'La Rioja':'La Rioja',
-    'Las Palmas':'Canarias','Tenerife':'Canarias',
-    'Madrid':'Comunidad de Madrid',
-    'Murcia':'Región de Murcia',
-    'Navarra':'Navarra',
-    'Ceuta':'Ceuta','Melilla':'Melilla'
+    'Cantabria':'Cantabria','A Coruña':'Galicia','Lugo':'Galicia','Ourense':'Galicia','Pontevedra':'Galicia',
+    'Huesca':'Aragón','Teruel':'Aragón','Zaragoza':'Aragón','La Rioja':'La Rioja',
+    'Las Palmas':'Canarias','Tenerife':'Canarias','Madrid':'Comunidad de Madrid',
+    'Murcia':'Región de Murcia','Navarra':'Navarra','Ceuta':'Ceuta','Melilla':'Melilla'
   };
-
-  const mapa = L.map('ca-mapa', { center:[40.2,-3.5], zoom:5, zoomControl:true, scrollWheelZoom:false });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'© OpenStreetMap · © CARTO · Datos: Open-Meteo · CAMS Copernicus · Incendios: NASA FIRMS',
-    subdomains:'abcd', maxZoom:12
-  }).addTo(mapa);
-
-  const txtColor = c => (c === '#FFCC44') ? '#5a4400' : '#ffffff';
-  const v = (val,u) => (val!==null && val!==undefined) ? val+' '+u : '—';
-  function haversine(a,b,c,d){const R=6371,r=Math.PI/180;const dLa=(c-a)*r,dLo=(d-b)*r;const x=Math.sin(dLa/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
-
-  // ---- Analizar incendios por comunidad ----
-  function analizarFuego(fuego){
-    const stats = {};
-    const focos = (fuego && fuego.focos_individuales) || [];
-    focos.forEach(f => {
-      const c = f.comunidad; if(!c) return;
-      if(!stats[c]) stats[c] = {count:0, maxFRP:0, strong:0, foci:[]};
-      const s = stats[c];
-      s.count++;
-      const frp = f.frp || 0;
-      if(frp > s.maxFRP) s.maxFRP = frp;
-      if(f.intensidad === 'Muy alta' || f.intensidad === 'Alta') s.strong++;
-      s.foci.push(f);
-    });
-    Object.values(stats).forEach(s => {
-      s.activo = (s.maxFRP >= COM_FRP_FUERTE) || (s.strong >= COM_STRONG_COUNT);
-      // foco más intenso de la comunidad (para nombrarlo)
-      s.top = s.foci.reduce((a,b)=> (b.frp||0) > (a.frp||0) ? b : a, s.foci[0] || null);
-    });
-    return stats;
-  }
-
-  // ¿Esta ciudad está afectada por humo? Devuelve {humo:bool, comunidad, foco}
-  function evaluarHumo(ciudad, fuegoStats){
-    const com = PROV_COM[ciudad.provincia];
-    const s = com ? fuegoStats[com] : null;
-    const elevado = (ciudad.pm25 !== null && ciudad.pm25 !== undefined && ciudad.pm25 >= SMOKE_PM25_MIN);
-    const humo = !!(s && s.activo && elevado && !ciudad.sahariano);
-    return { humo, comunidad: com, foco: s ? s.top : null };
-  }
-
-  function crearIcono(c, humo){
-    const color = c.color || '#888888';
-    let valorStr, sub;
-    if(c.pm25 !== null && c.pm25 !== undefined){ valorStr = c.pm25 + '<span class="u"> µg</span>'; }
-    else if(c.aqi_europeo !== null && c.aqi_europeo !== undefined){ valorStr = c.aqi_europeo + '<span class="u"> AQI</span>'; }
-    else { valorStr = '<span class="u">s/d</span>'; }
-    let nombre = c.nombre || ''; if(nombre.length > 13) nombre = nombre.slice(0,12)+'…';
-    const badge = humo ? '<span class="badge">🔥</span>' : (c.sahariano ? '<span class="badge">🏜️</span>' : '');
-    const html = `<div class="ca-marker">
-        <div class="ca-pill" style="background:${color};color:${txtColor(color)}">${valorStr}${badge}</div>
-        <div class="ca-pill-nombre">${nombre}</div>
-      </div>`;
-    return L.divIcon({ html, className:'', iconSize:null, iconAnchor:[34,34], popupAnchor:[0,-30] });
-  }
-
-  function popup(c, ev){
-    const omsStr = c.supera_oms
-      ? '<span class="ca-oms-mal">⚠️ Supera OMS</span>'
-      : '<span class="ca-oms-ok">✅ Dentro de OMS</span>';
-    const aqiStr = (c.aqi_europeo!==null&&c.aqi_europeo!==undefined) ? `${c.aqi_europeo} — ${c.etiqueta_aqi||''}` : '—';
-    let humoBlock = '';
-    if(ev.humo){
-      const f = ev.foco;
-      const donde = (f && f.lugar) ? `${f.lugar} (${ev.comunidad})` : ev.comunidad;
-      const frp = (f && f.frp) ? ` · foco más intenso ${Math.round(f.frp)} MW` : '';
-      humoBlock = `<div class="ca-pop-humo">🔥 <b>Calidad del aire afectada probablemente por el humo</b> de los incendios activos en <b>${ev.comunidad}</b>. El PM2.5 (${v(c.pm25,'µg/m³')}) está elevado y coincide con fuego activo cerca: ${donde}${frp}.</div>`;
-    }
-    return `<div style="min-width:238px">
-      <div class="ca-pop-tit">${c.nombre}</div>
-      <div class="ca-pop-prov">📍 ${c.provincia}</div>
-      ${humoBlock}
+  const mapa=L.map('ca-mapa',{center:[40.2,-3.5],zoom:5,zoomControl:true,scrollWheelZoom:true});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap · © CARTO · Datos: Open-Meteo · CAMS Copernicus · Incendios: NASA FIRMS',subdomains:'abcd',maxZoom:12}).addTo(mapa);
+  const txtColor=c=>(c==='#FFCC44')?'#5a4400':'#ffffff';
+  const v=(val,u)=>(val!==null&&val!==undefined)?val+' '+u:'—';
+  function analizarFuego(f){const s={};const fo=(f&&f.focos_individuales)||[];fo.forEach(x=>{const c=x.comunidad;if(!c)return;if(!s[c])s[c]={count:0,maxFRP:0,strong:0,foci:[]};const o=s[c];o.count++;const frp=x.frp||0;if(frp>o.maxFRP)o.maxFRP=frp;if(x.intensidad==='Muy alta'||x.intensidad==='Alta')o.strong++;o.foci.push(x);});Object.values(s).forEach(o=>{o.activo=(o.maxFRP>=COM_FRP_FUERTE)||(o.strong>=COM_STRONG_COUNT);o.top=o.foci.reduce((a,b)=>(b.frp||0)>((a&&a.frp)||0)?b:a,o.foci[0]||null);});return s;}
+  function evaluarHumo(c,st){const com=PROV_COM[c.provincia];const s=com?st[com]:null;const el=(c.pm25!==null&&c.pm25!==undefined&&c.pm25>=SMOKE_PM25_MIN);return{humo:!!(s&&s.activo&&el&&!c.sahariano),comunidad:com,foco:s?s.top:null};}
+  function crearIcono(c,humo){const color=c.color||'#888';let val;if(c.pm25!=null)val=c.pm25+'<span class="u"> µg</span>';else if(c.aqi_europeo!=null)val=c.aqi_europeo+'<span class="u"> AQI</span>';else val='<span class="u">s/d</span>';let n=c.nombre||'';if(n.length>13)n=n.slice(0,12)+'…';const b=humo?'<span class="badge">🔥</span>':(c.sahariano?'<span class="badge">🏜️</span>':'');return L.divIcon({html:`<div class="ca-marker"><div class="ca-pill" style="background:${color};color:${txtColor(color)}">${val}${b}</div><div class="ca-pill-nombre">${n}</div></div>`,className:'',iconSize:null,iconAnchor:[34,34],popupAnchor:[0,-30]});}
+  function popup(c,ev){const oms=c.supera_oms?'<span class="ca-oms-mal">⚠️ Supera OMS</span>':'<span class="ca-oms-ok">✅ Dentro de OMS</span>';const aqi=(c.aqi_europeo!=null)?`${c.aqi_europeo} — ${c.etiqueta_aqi||''}`:'—';let h='';if(ev.humo){const f=ev.foco;const d=(f&&f.lugar)?`${f.lugar} (${ev.comunidad})`:ev.comunidad;const fr=(f&&f.frp)?` · foco más intenso ${Math.round(f.frp)} MW`:'';h=`<div class="ca-pop-humo">🔥 <b>Calidad del aire afectada probablemente por el humo</b> de los incendios activos en <b>${ev.comunidad}</b>. El PM2.5 (${v(c.pm25,'µg/m³')}) está elevado y coincide con fuego activo cerca: ${d}${fr}.</div>`;}
+    return `<div style="min-width:238px"><div class="ca-pop-tit">${c.nombre}</div><div class="ca-pop-prov">📍 ${c.provincia}</div>${h}
       <div class="ca-pop-sep">Contaminantes (µg/m³)</div>
       <div class="ca-pop-dato"><span>PM2.5 · partículas finas</span><span class="v">${v(c.pm25,'')}</span></div>
       <div class="ca-pop-dato"><span>PM10 · partículas gruesas</span><span class="v">${v(c.pm10,'')}</span></div>
@@ -335,88 +403,56 @@
       <div class="ca-pop-dato"><span>O₃ · ozono</span><span class="v">${v(c.o3,'')}</span></div>
       <div class="ca-pop-dato"><span>Polvo en suspensión</span><span class="v">${v(c.dust,'')}</span></div>
       <div class="ca-pop-sep">Índice y límites</div>
-      <div class="ca-pop-dato"><span>Índice AQI europeo</span><span class="v">${aqiStr}</span></div>
-      <div class="ca-pop-dato"><span>Límite OMS 2021</span><span>${omsStr}</span></div>
+      <div class="ca-pop-dato"><span>Índice AQI europeo</span><span class="v">${aqi}</span></div>
+      <div class="ca-pop-dato"><span>Límite OMS 2021</span><span>${oms}</span></div>
       ${c.contaminante_dominante?`<div class="ca-pop-dato"><span>Contaminante dominante</span><span class="v">${c.contaminante_dominante}</span></div>`:''}
       <div class="ca-pop-sep">Histórico</div>
       <div class="ca-pop-dato"><span>Días consecutivos en este estado</span><span class="v">${c.dias_consecutivos_estado||0}</span></div>
       <div class="ca-pop-dato"><span>Días sobre OMS este año</span><span class="v">${c.dias_sobre_oms_anio||0}</span></div>
-      <div><span class="ca-pop-tag" style="background:${c.color||'#888'}">${c.etiqueta||'Sin datos'}</span></div>
-    </div>`;
+      <div><span class="ca-pop-tag" style="background:${c.color||'#888'}">${c.etiqueta||'Sin datos'}</span></div></div>`;}
+  function render(aire,fuego){
+    const st=analizarFuego(fuego);const ciudades=aire.ciudades||[];const evals=new Map();const smoke=[];
+    ciudades.forEach(c=>{const ev=evaluarHumo(c,st);evals.set(c.id,ev);if(ev.humo)smoke.push(c);});
+    ciudades.forEach(c=>{L.marker([c.lat,c.lon],{icon:crearIcono(c,evals.get(c.id).humo)}).addTo(mapa).bindPopup(popup(c,evals.get(c.id)),{maxWidth:290});});
+    const conDatos=aire.ciudades_con_datos??ciudades.length;
+    const sobreOMS=ciudades.filter(c=>c.supera_oms).length;
+    const peor=ciudades.filter(c=>c.pm25!=null).sort((a,b)=>b.pm25-a.pm25)[0];
+    document.getElementById('ca-live-num').textContent=conDatos;
+    let rows='';if(peor)rows+=`<div class="ca-row"><span class="val ${peor.nivel>=4?'warn':''}">${peor.pm25} µg/m³</span><span class="txt">peor calidad — ${peor.nombre}</span></div>`;
+    rows+=`<div class="ca-row"><span class="val">${sobreOMS}</span><span class="txt">capitales por encima del límite OMS</span></div>`;
+    if(smoke.length)rows+=`<div class="ca-row"><span class="val fire">🔥 ${smoke.length}</span><span class="txt">capitales con humo de incendios probable</span></div>`;
+    rows+=`<div class="ca-row"><span class="val">${(aire.fecha_legible||'—').split(' a las')[0]}</span><span class="txt">última actualización · 4×/día</span></div>`;
+    document.getElementById('ca-live-rows').innerHTML=rows;
+    const foco=document.getElementById('ca-foco-body');
+    if(smoke.length){const pw=smoke.slice().sort((a,b)=>b.pm25-a.pm25)[0];const ev=evals.get(pw.id);const r=Math.round(pw.pm25/15);
+      foco.innerHTML=`<div class="ca-big-lead">×${r} <span style="font-size:14px;color:#8a6b5a">el límite OMS</span></div><div class="ca-foco-txt">es el PM2.5 en <b>${pw.nombre}</b> (${pw.pm25} µg/m³), disparado por el <b>humo de los incendios activos en ${ev.comunidad}</b>. En total, <b>${smoke.length} capitales</b> registran hoy partículas elevadas compatibles con el humo del fuego.</div>`;
+      const nombres=smoke.slice().sort((a,b)=>b.pm25-a.pm25).slice(0,4).map(c=>c.nombre).join(', ');
+      const bn=document.getElementById('ca-banner-humo');bn.innerHTML=`🔥 <b>El humo de los incendios está empeorando la calidad del aire.</b> ${smoke.length} capitales con partículas elevadas hoy (${nombres}${smoke.length>4?'…':''}). El humo eleva el PM2.5 y el PM10, las partículas más dañinas para la salud.`;bn.style.display='block';
+    } else {foco.innerHTML=peor?`<div class="ca-big-lead">${peor.pm25} <span style="font-size:14px;color:#8a6b5a">µg/m³</span></div><div class="ca-foco-txt">es el PM2.5 más alto ahora mismo, en <b>${peor.nombre}</b> (${peor.etiqueta}). El límite recomendado por la OMS es de 15 µg/m³. Hoy no se detecta influencia significativa de humo de incendios.</div>`:`<div class="ca-foco-txt">Sin datos suficientes para destacar un foco hoy.</div>`;}
+    if(aire.episodio_sahariano)document.getElementById('ca-banner-sahara').style.display='block';
   }
-
-  function render(aire, fuego){
-    const fuegoStats = analizarFuego(fuego);
-    const ciudades = aire.ciudades || [];
-
-    // Evaluar humo por ciudad
-    const evals = new Map();
-    let smokeCities = [];
-    ciudades.forEach(c => {
-      const ev = evaluarHumo(c, fuegoStats);
-      evals.set(c.id, ev);
-      if(ev.humo) smokeCities.push(c);
-    });
-
-    // Pintar marcadores
-    let mMadrid = null;
-    ciudades.forEach(c => {
-      const ev = evals.get(c.id);
-      const m = L.marker([c.lat, c.lon], { icon: crearIcono(c, ev.humo) })
-        .addTo(mapa).bindPopup(popup(c, ev), { maxWidth: 290 });
-      if(c.id === 'madrid') mMadrid = m;
-    });
-
-    // ---- Ficha EN DIRECTO ----
-    const conDatos = aire.ciudades_con_datos ?? ciudades.length;
-    const sobreOMS = ciudades.filter(c => c.supera_oms).length;
-    const peor = ciudades.filter(c => c.pm25!=null).sort((a,b)=>b.pm25-a.pm25)[0];
-    document.getElementById('ca-live-num').textContent = conDatos;
-    let rows = '';
-    if(peor) rows += `<div class="ca-row"><span class="val ${peor.nivel>=4?'warn':''}">${peor.pm25} µg/m³</span><span class="txt">peor calidad — ${peor.nombre}</span></div>`;
-    rows += `<div class="ca-row"><span class="val">${sobreOMS}</span><span class="txt">capitales por encima del límite OMS</span></div>`;
-    if(smokeCities.length) rows += `<div class="ca-row"><span class="val fire">🔥 ${smokeCities.length}</span><span class="txt">capitales con humo de incendios probable</span></div>`;
-    rows += `<div class="ca-row"><span class="val">${(aire.fecha_legible||'—').split(' a las')[0]}</span><span class="txt">última actualización · 4×/día</span></div>`;
-    document.getElementById('ca-live-rows').innerHTML = rows;
-
-    // ---- Ficha FOCO · EL DATO ----
-    const foco = document.getElementById('ca-foco-body');
-    if(smokeCities.length){
-      const peorHumo = smokeCities.slice().sort((a,b)=>b.pm25-a.pm25)[0];
-      const ev = evals.get(peorHumo.id);
-      const ratio = Math.round(peorHumo.pm25 / 15);
-      foco.innerHTML = `
-        <div class="ca-big-lead">×${ratio} <span style="font-size:14px;color:#8a6b5a">el límite OMS</span></div>
-        <div class="ca-foco-txt">es el PM2.5 en <b>${peorHumo.nombre}</b> (${peorHumo.pm25} µg/m³), disparado por el <b>humo de los incendios activos en ${ev.comunidad}</b>. En total, <b>${smokeCities.length} capitales</b> registran hoy partículas elevadas compatibles con el humo del fuego.</div>`;
-      // Banner sobre el mapa
-      const nombres = smokeCities.slice().sort((a,b)=>b.pm25-a.pm25).slice(0,4).map(c=>c.nombre).join(', ');
-      const b = document.getElementById('ca-banner-humo');
-      b.innerHTML = `🔥 <b>El humo de los incendios está empeorando la calidad del aire.</b> ${smokeCities.length} capitales con partículas elevadas hoy (${nombres}${smokeCities.length>4?'…':''}). El humo eleva el PM2.5 y el PM10, las partículas más dañinas para la salud.`;
-      b.style.display = 'block';
-    } else {
-      const peorAll = peor;
-      foco.innerHTML = peorAll
-        ? `<div class="ca-big-lead">${peorAll.pm25} <span style="font-size:14px;color:#8a6b5a">µg/m³</span></div>
-           <div class="ca-foco-txt">es el PM2.5 más alto ahora mismo, en <b>${peorAll.nombre}</b> (${peorAll.etiqueta}). El límite recomendado por la OMS es de 15 µg/m³. Hoy no se detecta influencia significativa de humo de incendios.</div>`
-        : `<div class="ca-foco-txt">Sin datos suficientes para destacar un foco hoy.</div>`;
-    }
-
-    if(aire.episodio_sahariano) document.getElementById('ca-banner-sahara').style.display = 'block';
-    if(mMadrid) setTimeout(()=>mMadrid.openPopup(), 700);
-  }
-
-  // ---- Cargar ambos JSON; el mapa funciona aunque incendios falle ----
-  const t = '?t=' + Date.now();
+  const t='?t='+Date.now();
   Promise.all([
-    fetch(AIRE_URL + t).then(r=>{ if(!r.ok) throw new Error('aire HTTP '+r.status); return r.json(); }),
-    fetch(FUEGO_URL + t).then(r=> r.ok ? r.json() : null).catch(()=>null)
-  ]).then(([aire, fuego]) => render(aire, fuego))
-    .catch(err => {
-      console.error(err);
-      document.getElementById('ca-foco-body').innerHTML =
-        '<div class="ca-foco-txt">No se pudieron cargar los datos: '+err.message+'</div>';
-    });
+    fetch(AIRE_URL+t).then(r=>{if(!r.ok)throw new Error('aire HTTP '+r.status);return r.json();}),
+    fetch(FUEGO_URL+t).then(r=>r.ok?r.json():null).catch(()=>null)
+  ]).then(([a,f])=>render(a,f)).catch(e=>{document.getElementById('ca-foco-body').innerHTML='<div class="ca-foco-txt">No se pudieron cargar los datos: '+e.message+'</div>';});
 })();
+</script>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Dataset","name":"Calidad del aire en las 50 capitales de provincia de España","description":"Niveles de PM2.5, PM10, NO2, O3, SO2, polvo e índice AQI europeo de las 50 capitales de provincia de España, actualizados cuatro veces al día y cruzados con los incendios activos para identificar el humo.","keywords":["calidad del aire","PM2.5","España","contaminación","incendios","OMS"],"spatialCoverage":"España","temporalCoverage":"2026/..","license":"https://creativecommons.org/licenses/by/4.0/","creator":{"@type":"Organization","name":"CalentamientoGlobal.es"},"isBasedOn":["https://atmosphere.copernicus.eu/","https://firms.modaps.eosdis.nasa.gov/"]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"¿Dónde puedo ver la calidad del aire en España en tiempo real?","acceptedAnswer":{"@type":"Answer","text":"En esta página, con un mapa que se actualiza cuatro veces al día. Muestra el PM2.5 de las 50 capitales de provincia, su nivel frente al límite de la OMS, el contaminante dominante, el histórico y qué ciudades están afectadas por el humo de los incendios activos."}},
+{"@type":"Question","name":"¿Qué es el PM2.5 y por qué es peligroso?","acceptedAnswer":{"@type":"Answer","text":"El PM2.5 son partículas en suspensión de menos de 2,5 micras. Por su tamaño penetran hasta el fondo de los pulmones y pasan a la sangre, lo que se asocia a enfermedades respiratorias y cardiovasculares. La OMS recomienda no superar los 15 µg/m³ de media diaria."}},
+{"@type":"Question","name":"¿Los incendios empeoran la calidad del aire de ciudades lejanas?","acceptedAnswer":{"@type":"Answer","text":"Sí. El humo de los incendios está compuesto en gran parte por partículas PM2.5 que viajan cientos de kilómetros con el viento. Una capital sin fuego en su término municipal puede registrar mala calidad del aire por incendios activos en su misma comunidad o en regiones vecinas."}},
+{"@type":"Question","name":"¿Cómo se distingue el humo de incendios del polvo del Sahara?","acceptedAnswer":{"@type":"Answer","text":"Son fenómenos distintos. El polvo sahariano es polvo mineral que llega del norte de África y se identifica por los niveles de polvo en suspensión; afecta sobre todo al sur, el este y Canarias. El humo de incendios se asocia a focos activos detectados por satélite en la misma región."}},
+{"@type":"Question","name":"¿Cuál es el límite de calidad del aire recomendado por la OMS?","acceptedAnswer":{"@type":"Answer","text":"Para el PM2.5, la Organización Mundial de la Salud recomienda desde 2021 no superar los 15 µg/m³ de media diaria ni los 5 µg/m³ de media anual. Son valores más estrictos que los límites legales vigentes en la Unión Europea."}},
+{"@type":"Question","name":"¿Cada cuánto se actualizan los datos?","acceptedAnswer":{"@type":"Answer","text":"Cuatro veces al día. El modelo CAMS de Copernicus estima los niveles de contaminantes de cada capital y aquí se recoge automáticamente el valor más reciente, junto con los focos de incendio activos detectados por la NASA."}},
+{"@type":"Question","name":"¿De dónde salen los datos?","acceptedAnswer":{"@type":"Answer","text":"La calidad del aire procede del modelo CAMS (Copernicus) servido a través de Open-Meteo. Los incendios activos proceden del sistema FIRMS de la NASA (sensores VIIRS SNPP, NOAA-20 y NOAA-21). Son datos modelizados y de detección satelital."}},
+{"@type":"Question","name":"¿Qué puedo hacer cuando la calidad del aire es mala?","acceptedAnswer":{"@type":"Answer","text":"Con niveles altos de partículas conviene reducir el ejercicio intenso al aire libre, mantener ventanas cerradas durante los picos, usar purificadores con filtro HEPA si es posible y prestar especial atención a niños, mayores y personas con asma o problemas cardíacos."}}
+]}
 </script>
 </body>
 </html>
