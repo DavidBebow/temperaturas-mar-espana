@@ -24,20 +24,16 @@ jobs:
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Instalar dependencias
         run: pip install requests
-
       - name: Ejecutar script
         env:
           NASA_FIRMS_KEY: ${{ secrets.NASA_FIRMS_KEY }}
         run: python scripts/obtener_incendios.py
-
       # Red de seguridad: si el JSON no es válido o le faltan comunidades,
       # se aborta SIN hacer commit y se conserva el último bueno.
       - name: Validar datos antes de publicar
@@ -61,8 +57,8 @@ jobs:
                 f"{d.get('total_focos_espana', 0)} focos, "
                 f"sensores activos: {d.get('sensores_activos', '?')}")
           PY
-
       - name: Guardar cambios
+        id: guardar                                       # ← IndexNow: id para leer el output
         run: |
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
@@ -70,13 +66,29 @@ jobs:
           git add docs/incendios.json docs/historial_incendios.json docs/historial_frp.json
           if git diff --staged --quiet; then
             echo "No hay cambios que guardar"
+            echo "changed=false" >> "$GITHUB_OUTPUT"      # ← IndexNow: sin cambios
           else
             git commit -m "Incendios actualizados: $(date +'%d/%m/%Y %H:%M')"
             for intento in 1 2 3 4 5; do
-              git push && exit 0
+              if git push; then
+                echo "changed=true" >> "$GITHUB_OUTPUT"   # ← IndexNow: publicado con éxito
+                exit 0
+              fi
               echo "Push falló. Reintentando en 15 segundos... intento $intento/5"
               sleep 15
             done
             echo "No se pudo hacer push después de 5 intentos"
             exit 1
           fi
+      # ← IndexNow: solo si el JSON público cambió y se publicó. continue-on-error
+      # para que un fallo aquí (clave no añadida, throttling 429, red) nunca tumbe
+      # el job: el dato de incendios ya está publicado, que es lo crítico.
+      - name: Notificar a IndexNow (Bing/IA)
+        if: steps.guardar.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+          INDEXNOW_HOST: calentamientoglobal.es
+        run: |
+          python indexnow_ping.py \
+            "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/"
