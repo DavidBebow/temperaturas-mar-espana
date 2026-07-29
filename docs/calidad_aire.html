@@ -6,326 +6,417 @@
 <title>Calidad del Aire en España — 50 Capitales en Tiempo Real</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; background: #0a0e1a; }
-  #mapa { width: 100%; height: 530px; background: #0a0e1a; }
-
-  #cabecera {
-    background: #060810;
-    color: white;
-    padding: 10px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    border-bottom: 1px solid #1a2240;
+  .ca * { margin: 0; padding: 0; box-sizing: border-box; }
+  .ca {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #eef1f5;
+    color: #0e1b2a;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(20,40,70,0.10);
+    max-width: 100%;
   }
-  #cabecera h2 {
-    font-size: 14px; font-weight: 500;
-    letter-spacing: 0.04em; color: #e8f0ff;
-    display: flex; align-items: center; gap: 8px;
-  }
-  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-  #resumen { font-size: 11px; color: #6a8aaa; }
-  #resumen span { color: #88ddaa; font-weight: 600; }
-  #resumen span.alerta { color: #ff8844; }
-  #ultima-act { font-size: 11px; color: #4a6a8a; }
 
-  #alerta-sahariana {
+  /* ===== TÍTULO ===== */
+  .ca-titulo {
+    text-align: center;
+    padding: 16px 16px 10px;
+    background: #eef1f5;
+  }
+  .ca-titulo h2 {
+    font-size: 19px; font-weight: 700; letter-spacing: -0.01em;
+    color: #14283f;
+  }
+  .ca-titulo h2 b { color: #1f7a4d; font-weight: 700; }
+  .ca-titulo p { font-size: 12px; color: #6a7d92; margin-top: 3px; }
+
+  /* ===== BANNER DE ALERTA (incendios / sahara) ===== */
+  .ca-banner {
     display: none;
-    background: #3a2800;
-    border-bottom: 1px solid #7a5a00;
-    padding: 7px 16px;
-    font-size: 12px;
-    color: #ffcc66;
+    margin: 0 12px 10px;
+    padding: 9px 14px;
+    border-radius: 12px;
+    font-size: 12.5px; line-height: 1.35;
     text-align: center;
   }
+  .ca-banner.humo   { display: none; background: #fdecec; border: 1px solid #f2b8b0; color: #9a2318; }
+  .ca-banner.sahara { display: none; background: #fdf4e0; border: 1px solid #eecf8f; color: #8a5a10; }
+  .ca-banner b { font-weight: 700; }
 
-  #leyenda {
-    background: #080c18;
-    padding: 7px 16px;
-    display: flex; flex-wrap: wrap; gap: 10px;
-    align-items: center;
-    border-bottom: 1px solid #1a2240;
-    font-size: 11px; color: #7a9aaa;
+  /* ===== ESCENARIO (mapa + fichas) ===== */
+  .ca-stage { position: relative; }
+  #ca-mapa { width: 100%; height: 560px; background: #dfe6ee; z-index: 1; }
+
+  .ca-card {
+    background: rgba(255,255,255,0.96);
+    border: 1px solid #dbe3ec;
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(20,40,70,0.14);
+    padding: 14px 15px;
+    backdrop-filter: blur(3px);
   }
-  #leyenda strong { color: #9abccc; font-weight: 500; }
-  .leyenda-item { display: flex; align-items: center; gap: 4px; }
-  .leyenda-punto {
-    width: 10px; height: 10px; border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0;
+  .ca-cards { z-index: 500; }
+  .ca-live { position: absolute; top: 16px; left: 16px; width: 232px; }
+  .ca-foco { position: absolute; top: 16px; right: 16px; width: 250px; }
+
+  .ca-kicker {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.09em;
+    text-transform: uppercase; color: #1f7a4d;
+    display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+  }
+  .ca-kicker.foco { color: #b5451f; }
+  .ca-kicker .pt { width: 7px; height: 7px; border-radius: 50%; background: #22a565; }
+  .ca-kicker.foco .pt { background: #e2612a; }
+
+  .ca-big { font-size: 40px; font-weight: 800; line-height: 1; color: #14283f; letter-spacing: -0.02em; }
+  .ca-big small { font-size: 14px; font-weight: 700; color: #6a7d92; }
+  .ca-sub { font-size: 11.5px; color: #6a7d92; margin: 4px 0 10px; line-height: 1.3; }
+
+  .ca-row {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 6px 0; border-top: 1px solid #eef2f6;
+    font-size: 11.5px; color: #46586c; line-height: 1.25;
+  }
+  .ca-row:first-of-type { border-top: none; }
+  .ca-row .val { font-weight: 800; color: #14283f; white-space: nowrap; }
+  .ca-row .val.warn { color: #c0392b; }
+  .ca-row .val.fire { color: #d24a1e; }
+  .ca-row .txt { color: #6a7d92; }
+
+  .ca-foco .ca-big-lead { font-size: 34px; font-weight: 800; color: #b5451f; line-height: 1; margin: 2px 0 4px; letter-spacing:-0.02em;}
+  .ca-foco .ca-foco-txt { font-size: 12.5px; color: #33465a; line-height: 1.45; }
+  .ca-foco .ca-foco-txt b { color: #14283f; }
+  .ca-foco .ca-hint { margin-top: 10px; font-size: 10.5px; color: #8fa0b2; font-style: italic; }
+
+  /* ===== LEYENDA ===== */
+  .ca-leyenda {
+    background: #e6ebf1;
+    padding: 9px 16px;
+    display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center;
+    font-size: 11px; color: #56687c;
+    border-top: 1px solid #dbe3ec;
+  }
+  .ca-leyenda strong { color: #2f4257; font-weight: 700; }
+  .ca-ley-item { display: flex; align-items: center; gap: 5px; }
+  .ca-ley-punto { width: 11px; height: 11px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.12); flex-shrink: 0; }
+  .ca-ley-nota { margin-left: auto; font-size: 10px; color: #8697a8; }
+
+  /* ===== MARCADORES PÍLDORA ===== */
+  .ca-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+  .ca-pill {
+    display: flex; align-items: center; gap: 4px;
+    border-radius: 999px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(20,40,70,0.30);
+    padding: 3px 9px;
+    font-weight: 800; font-size: 13px; line-height: 1;
+    white-space: nowrap;
+  }
+  .ca-pill .u { font-size: 8.5px; font-weight: 700; opacity: 0.85; }
+  .ca-pill .badge { font-size: 11px; margin-left: 1px; }
+  .ca-pill-nombre {
+    margin-top: 2px; font-size: 9px; font-weight: 700;
+    color: #33465a; text-shadow: 0 1px 3px rgba(255,255,255,0.9);
+    white-space: nowrap;
   }
 
-  /* MARCADORES */
-  .marcador-wrapper {
-    display: flex; flex-direction: column;
-    align-items: center; cursor: pointer;
+  /* ===== POPUP ===== */
+  .ca .leaflet-popup-content-wrapper {
+    background: #ffffff; border: 1px solid #dbe3ec; border-radius: 14px;
+    box-shadow: 0 10px 34px rgba(20,40,70,0.25); color: #23384c;
   }
-  .marcador-burbuja {
-    border-radius: 10px;
-    border: 1.5px solid rgba(255,255,255,0.25);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.6);
-    padding: 4px 7px;
-    display: flex; flex-direction: column;
-    align-items: center;
-    min-width: 62px; white-space: nowrap;
-    backdrop-filter: blur(2px);
+  .ca .leaflet-popup-tip { background: #ffffff; }
+  .ca .leaflet-popup-content { margin: 13px 15px; }
+  .ca-pop-tit { font-weight: 800; font-size: 15px; color: #14283f; }
+  .ca-pop-prov { font-size: 11px; color: #8697a8; margin-bottom: 9px; }
+  .ca-pop-humo {
+    background: #fdecec; border: 1px solid #f2b8b0; color: #9a2318;
+    border-radius: 9px; padding: 7px 9px; font-size: 11.5px; line-height: 1.35; margin-bottom: 9px;
   }
-  .marcador-nombre {
-    font-size: 9px; font-weight: 700;
-    color: rgba(255,255,255,0.9);
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    line-height: 1.2;
+  .ca-pop-humo b { font-weight: 800; }
+  .ca-pop-sep {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: #8697a8; padding: 7px 0 3px; border-bottom: 1px solid #eef2f6;
   }
-  .marcador-valor {
-    font-size: 13px; font-weight: 800;
-    color: white;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-    line-height: 1.2;
+  .ca-pop-dato {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 4px 0; border-bottom: 1px solid #f2f5f8; font-size: 12px; color: #6a7d92;
   }
-  .marcador-etiqueta {
-    font-size: 8px; font-weight: 600;
-    color: rgba(255,255,255,0.85);
-    background: rgba(0,0,0,0.25);
-    border-radius: 4px; padding: 0 3px;
-    margin-top: 1px;
+  .ca-pop-dato:last-child { border-bottom: none; }
+  .ca-pop-dato .v { font-weight: 700; color: #23384c; }
+  .ca-oms-ok  { color: #1f9d57; font-weight: 700; }
+  .ca-oms-mal { color: #d24a1e; font-weight: 700; }
+  .ca-pop-tag {
+    display: inline-block; margin-top: 10px; padding: 3px 12px;
+    border-radius: 999px; font-size: 10.5px; font-weight: 800; color: #fff;
   }
-  .marcador-punta {
-    width: 0; height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    margin-top: -1px;
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
-  }
+  .ca .leaflet-control-zoom a { background:#fff; color:#46586c; border-color:#dbe3ec; }
+  .ca .leaflet-control-zoom a:hover { background:#f2f5f8; color:#14283f; }
+  .ca .leaflet-control-attribution { background: rgba(255,255,255,0.82); color:#8697a8; font-size:10px; }
+  .ca .leaflet-control-attribution a { color:#3d6da3; }
 
-  /* POPUP */
-  .leaflet-popup-content-wrapper {
-    background: #0a1020 !important;
-    border: 1px solid #1e3040 !important;
-    border-radius: 14px !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.8) !important;
-    color: #e0eeff !important;
+  /* ===== RESPONSIVE MÓVIL ===== */
+  @media (max-width: 820px) {
+    .ca { border-radius: 14px; }
+    .ca-titulo h2 { font-size: 16px; }
+    .ca-titulo p { font-size: 11px; }
+    #ca-mapa { height: 58vh; min-height: 340px; max-height: 460px; }
+    /* Las fichas salen de encima del mapa y se apilan debajo, a ancho completo */
+    .ca-stage { display: flex; flex-direction: column; }
+    .ca-cards { display: flex; flex-direction: column; gap: 10px; padding: 12px; background: #eef1f5; }
+    .ca-live, .ca-foco {
+      position: static; width: 100%;
+    }
+    .ca-big { font-size: 34px; }
+    .ca-leyenda { font-size: 10px; gap: 6px 10px; }
+    .ca-ley-nota { margin-left: 0; width: 100%; }
+    .ca .leaflet-popup-content { margin: 12px 13px; }
   }
-  .leaflet-popup-tip { background: #0a1020 !important; }
-  .leaflet-popup-close-button { color: #4a6a8a !important; }
-  .leaflet-popup-close-button:hover { color: #e0eeff !important; }
-
-  .popup-titulo { font-weight: 700; font-size: 15px; margin-bottom: 2px; color: #e8f0ff; }
-  .popup-provincia { font-size: 11px; color: #4a6a8a; margin-bottom: 10px; }
-  .popup-dato {
-    display: flex; justify-content: space-between;
-    padding: 5px 0; border-bottom: 1px solid #1a2a40;
-    font-size: 12px; color: #7a9aaa;
+  @media (max-width: 420px) {
+    .ca-titulo h2 { font-size: 15px; }
+    .ca-pill { font-size: 12px; padding: 3px 7px; }
+    .ca-pill-nombre { font-size: 8.5px; }
   }
-  .popup-dato:last-of-type { border-bottom: none; }
-  .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; }
-  .popup-separador {
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: #4a6a8a; padding: 8px 0 4px;
-    border-bottom: 1px solid #1a2a40;
-  }
-  .popup-tag {
-    display: inline-block; margin-top: 10px;
-    padding: 3px 12px; border-radius: 12px;
-    font-size: 10px; font-weight: 700; color: white;
-  }
-  .popup-sahariano {
-    display: inline-block; margin-top: 6px; margin-left: 6px;
-    padding: 3px 10px; border-radius: 12px;
-    font-size: 10px; font-weight: 700;
-    background: #5a3a00; color: #ffcc66;
-    border: 1px solid #7a5a00;
-  }
-  .oms-ok  { color: #44cc88; }
-  .oms-mal { color: #ff8844; }
-
-  .leaflet-control-zoom a {
-    background: #0a1020 !important; color: #7a9aaa !important;
-    border-color: #1e3040 !important;
-  }
-  .leaflet-control-zoom a:hover { background: #1a2040 !important; color: #e0eeff !important; }
-  .leaflet-control-attribution {
-    background: rgba(6,8,16,0.85) !important;
-    color: #4a6a8a !important; font-size: 10px !important;
-  }
-  .leaflet-control-attribution a { color: #5a8aaa !important; }
 </style>
 </head>
 <body>
+<div class="ca">
+  <div class="ca-titulo">
+    <h2>Planeta Vivo · <b>Calidad del aire</b></h2>
+    <p>PM2.5 modelado (CAMS · Copernicus) · 50 capitales de provincia · dato de hoy</p>
+  </div>
 
-<div id="cabecera">
-  <h2>💨 Calidad del Aire — 50 Capitales de España</h2>
-  <div id="info-derecha">
-    <span id="resumen">Cargando datos...</span>
-    <span id="ultima-act"></span>
+  <div class="ca-banner humo" id="ca-banner-humo"></div>
+  <div class="ca-banner sahara" id="ca-banner-sahara">
+    🏜️ <b>Episodio de polvo sahariano probable</b> — varias capitales muestran niveles elevados de polvo en suspensión compatibles con una intrusión desde el Sahara.
+  </div>
+
+  <div class="ca-stage">
+    <div id="ca-mapa"></div>
+    <div class="ca-cards">
+      <!-- FICHA IZQUIERDA: EN DIRECTO -->
+      <div class="ca-card ca-live">
+        <div class="ca-kicker"><span class="pt"></span> En directo · ahora</div>
+        <div class="ca-big" id="ca-live-num">50</div>
+        <div class="ca-sub">capitales de provincia monitorizadas en toda España</div>
+        <div id="ca-live-rows"></div>
+      </div>
+      <!-- FICHA DERECHA: FOCO · EL DATO -->
+      <div class="ca-card ca-foco">
+        <div class="ca-kicker foco"><span class="pt"></span> Foco · el dato</div>
+        <div id="ca-foco-body">
+          <div class="ca-foco-txt">Cargando…</div>
+        </div>
+        <div class="ca-hint">Toca cualquier capital del mapa para ver su ficha completa: contaminantes, índice europeo, histórico y estado frente al límite OMS.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ca-leyenda">
+    <strong>Calidad (PM2.5 µg/m³):</strong>
+    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#0066CC"></div> Excelente &lt;5</div>
+    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#44AA66"></div> Buena 5–15</div>
+    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#FFCC44"></div> Moderada 15–25</div>
+    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#FF8822"></div> Mala 25–50</div>
+    <div class="ca-ley-item"><div class="ca-ley-punto" style="background:#CC2200"></div> Muy mala &gt;50</div>
+    <div class="ca-ley-item">🔥 Humo de incendios</div>
+    <span class="ca-ley-nota">Límite OMS: 15 µg/m³ · Clic para detalles</span>
   </div>
 </div>
 
-<div id="alerta-sahariana">
-  🏜️ <strong>Episodio de polvo sahariano probable</strong> — Varias ciudades muestran niveles elevados de polvo en suspensión compatibles con una intrusión de polvo del Sahara.
-</div>
-
-<div id="leyenda">
-  <strong>Calidad (PM2.5 µg/m³):</strong>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#0066CC"></div> Excelente &lt;5</div>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#44AA66"></div> Buena 5–15</div>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FFCC44"></div> Moderada 15–25</div>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#FF8822"></div> Mala 25–50</div>
-  <div class="leyenda-item"><div class="leyenda-punto" style="background:#CC2200"></div> Muy mala &gt;50</div>
-  <span style="margin-left:auto;font-size:10px;color:#4a6a8a">Límite OMS: 15 µg/m³ · Clic para detalles</span>
-</div>
-
-<div id="mapa"></div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/calidad_aire.json';
+(function(){
+  const BASE = 'https://davidbebow.github.io/temperaturas-mar-espana/';
+  const AIRE_URL = BASE + 'calidad_aire.json';
+  const FUEGO_URL = BASE + 'incendios.json';
 
-const mapa = L.map('mapa', {
-  center: [40.0, -3.5], zoom: 5, zoomControl: true
-});
+  // ---- Umbrales de atribución de humo (ajustables) ----
+  const SMOKE_PM25_MIN   = 15;   // µg/m³: PM2.5 elevado (moderada+)
+  const COM_FRP_FUERTE   = 50;   // MW: FRP máximo en la comunidad para considerar incendio real
+  const COM_STRONG_COUNT = 3;    // nº de focos "Alta/Muy alta" para considerar incendio real
 
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '© Esri | Datos: Open-Meteo · CAMS Copernicus', maxZoom: 12
-}).addTo(mapa);
+  // Provincia (calidad_aire) -> Comunidad (incendios)
+  const PROV_COM = {
+    'Álava':'País Vasco','Vizcaya':'País Vasco','Guipúzcoa':'País Vasco',
+    'Albacete':'Castilla-La Mancha','Ciudad Real':'Castilla-La Mancha','Cuenca':'Castilla-La Mancha','Guadalajara':'Castilla-La Mancha','Toledo':'Castilla-La Mancha',
+    'Alicante':'Comunidad Valenciana','Castellón':'Comunidad Valenciana','Valencia':'Comunidad Valenciana',
+    'Almería':'Andalucía','Cádiz':'Andalucía','Córdoba':'Andalucía','Granada':'Andalucía','Huelva':'Andalucía','Jaén':'Andalucía','Málaga':'Andalucía','Sevilla':'Andalucía',
+    'Ávila':'Castilla y León','Burgos':'Castilla y León','León':'Castilla y León','Palencia':'Castilla y León','Salamanca':'Castilla y León','Segovia':'Castilla y León','Soria':'Castilla y León','Valladolid':'Castilla y León','Zamora':'Castilla y León',
+    'Badajoz':'Extremadura','Cáceres':'Extremadura',
+    'Barcelona':'Cataluña','Girona':'Cataluña','Lleida':'Cataluña','Tarragona':'Cataluña',
+    'Cantabria':'Cantabria',
+    'A Coruña':'Galicia','Lugo':'Galicia','Ourense':'Galicia','Pontevedra':'Galicia',
+    'Huesca':'Aragón','Teruel':'Aragón','Zaragoza':'Aragón',
+    'La Rioja':'La Rioja',
+    'Las Palmas':'Canarias','Tenerife':'Canarias',
+    'Madrid':'Comunidad de Madrid',
+    'Murcia':'Región de Murcia',
+    'Navarra':'Navarra',
+    'Ceuta':'Ceuta','Melilla':'Melilla'
+  };
 
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '', maxZoom: 12, opacity: 0.6
-}).addTo(mapa);
+  const mapa = L.map('ca-mapa', { center:[40.2,-3.5], zoom:5, zoomControl:true, scrollWheelZoom:false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution:'© OpenStreetMap · © CARTO · Datos: Open-Meteo · CAMS Copernicus · Incendios: NASA FIRMS',
+    subdomains:'abcd', maxZoom:12
+  }).addTo(mapa);
 
-function v(val, unidad) {
-  return (val !== null && val !== undefined) ? val + ' ' + unidad : '—';
-}
+  const txtColor = c => (c === '#FFCC44') ? '#5a4400' : '#ffffff';
+  const v = (val,u) => (val!==null && val!==undefined) ? val+' '+u : '—';
+  function haversine(a,b,c,d){const R=6371,r=Math.PI/180;const dLa=(c-a)*r,dLo=(d-b)*r;const x=Math.sin(dLa/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
 
-function crearIcono(c) {
-  const color = c.color || '#888888';
-
-  // Mostrar PM2.5 si existe, sino AQI europeo, sino —
-  let valorStr, subtexto;
-  if (c.pm25 !== null && c.pm25 !== undefined) {
-    valorStr = c.pm25 + '<span style="font-size:9px;opacity:.8"> µg</span>';
-    subtexto = c.etiqueta || 'Sin datos';
-  } else if (c.aqi_europeo !== null && c.aqi_europeo !== undefined) {
-    valorStr = c.aqi_europeo + '<span style="font-size:9px;opacity:.8"> AQI</span>';
-    subtexto = c.etiqueta || 'Sin datos';
-  } else {
-    valorStr = '<span style="font-size:11px;opacity:.7">Sin datos</span>';
-    subtexto = '';
+  // ---- Analizar incendios por comunidad ----
+  function analizarFuego(fuego){
+    const stats = {};
+    const focos = (fuego && fuego.focos_individuales) || [];
+    focos.forEach(f => {
+      const c = f.comunidad; if(!c) return;
+      if(!stats[c]) stats[c] = {count:0, maxFRP:0, strong:0, foci:[]};
+      const s = stats[c];
+      s.count++;
+      const frp = f.frp || 0;
+      if(frp > s.maxFRP) s.maxFRP = frp;
+      if(f.intensidad === 'Muy alta' || f.intensidad === 'Alta') s.strong++;
+      s.foci.push(f);
+    });
+    Object.values(stats).forEach(s => {
+      s.activo = (s.maxFRP >= COM_FRP_FUERTE) || (s.strong >= COM_STRONG_COUNT);
+      // foco más intenso de la comunidad (para nombrarlo)
+      s.top = s.foci.reduce((a,b)=> (b.frp||0) > (a.frp||0) ? b : a, s.foci[0] || null);
+    });
+    return stats;
   }
 
-  let nombre = c.nombre || '';
-  if (nombre.length > 12) nombre = nombre.substring(0, 11) + '…';
-  const sahara = c.sahariano ? ' 🏜️' : '';
+  // ¿Esta ciudad está afectada por humo? Devuelve {humo:bool, comunidad, foco}
+  function evaluarHumo(ciudad, fuegoStats){
+    const com = PROV_COM[ciudad.provincia];
+    const s = com ? fuegoStats[com] : null;
+    const elevado = (ciudad.pm25 !== null && ciudad.pm25 !== undefined && ciudad.pm25 >= SMOKE_PM25_MIN);
+    const humo = !!(s && s.activo && elevado && !ciudad.sahariano);
+    return { humo, comunidad: com, foco: s ? s.top : null };
+  }
 
-  const html = `
-    <div class="marcador-wrapper">
-      <div class="marcador-burbuja" style="background:${color}cc">
-        <div class="marcador-nombre">${nombre}${sahara}</div>
-        <div class="marcador-valor">${valorStr}</div>
-        ${subtexto ? `<div class="marcador-etiqueta">${subtexto}</div>` : ''}
-      </div>
-      <div class="marcador-punta" style="border-top:8px solid ${color}cc"></div>
-    </div>`;
+  function crearIcono(c, humo){
+    const color = c.color || '#888888';
+    let valorStr, sub;
+    if(c.pm25 !== null && c.pm25 !== undefined){ valorStr = c.pm25 + '<span class="u"> µg</span>'; }
+    else if(c.aqi_europeo !== null && c.aqi_europeo !== undefined){ valorStr = c.aqi_europeo + '<span class="u"> AQI</span>'; }
+    else { valorStr = '<span class="u">s/d</span>'; }
+    let nombre = c.nombre || ''; if(nombre.length > 13) nombre = nombre.slice(0,12)+'…';
+    const badge = humo ? '<span class="badge">🔥</span>' : (c.sahariano ? '<span class="badge">🏜️</span>' : '');
+    const html = `<div class="ca-marker">
+        <div class="ca-pill" style="background:${color};color:${txtColor(color)}">${valorStr}${badge}</div>
+        <div class="ca-pill-nombre">${nombre}</div>
+      </div>`;
+    return L.divIcon({ html, className:'', iconSize:null, iconAnchor:[34,34], popupAnchor:[0,-30] });
+  }
 
-  return L.divIcon({
-    html,
-    className:   '',
-    iconSize:    null,
-    iconAnchor:  [40, 54],
-    popupAnchor: [0, -57]
-  });
-}
-
-function construirPopup(c) {
-  const omsOk  = !c.supera_oms;
-  const omsStr = omsOk
-    ? '<span class="oms-ok">✅ Dentro del límite OMS</span>'
-    : '<span class="oms-mal">⚠️ Supera límite OMS</span>';
-
-  const sahStr = c.sahariano
-    ? '<span class="popup-sahariano">🏜️ Polvo sahariano probable</span>' : '';
-
-  const aqiStr = (c.aqi_europeo !== null && c.aqi_europeo !== undefined)
-    ? `${c.aqi_europeo} — ${c.etiqueta_aqi || ''}` : '—';
-
-  const dustStr = (c.dust !== null && c.dust !== undefined)
-    ? c.dust + ' µg/m³' : '—';
-
-  return `
-    <div style="min-width:240px">
-      <div class="popup-titulo">💨 ${c.nombre}</div>
-      <div class="popup-provincia">📍 ${c.provincia}</div>
-
-      <div class="popup-separador">Contaminantes (µg/m³)</div>
-      <div class="popup-dato"><span>PM2.5 — partículas finas</span><span>${v(c.pm25, 'µg/m³')}</span></div>
-      <div class="popup-dato"><span>PM10 — partículas gruesas</span><span>${v(c.pm10, 'µg/m³')}</span></div>
-      <div class="popup-dato"><span>NO₂ — dióxido de nitrógeno</span><span>${v(c.no2, 'µg/m³')}</span></div>
-      <div class="popup-dato"><span>O₃ — ozono</span><span>${v(c.o3, 'µg/m³')}</span></div>
-      <div class="popup-dato"><span>SO₂ — dióxido de azufre</span><span>${v(c.so2, 'µg/m³')}</span></div>
-      <div class="popup-dato"><span>Polvo en suspensión</span><span>${dustStr}</span></div>
-
-      <div class="popup-separador">Índice europeo de calidad (CAQI)</div>
-      <div class="popup-dato"><span>Índice AQI europeo</span><span>${aqiStr}</span></div>
-      <div class="popup-dato"><span>Límite OMS 2021</span><span>${omsStr}</span></div>
-      ${c.contaminante_dominante ? `<div class="popup-dato"><span>Contaminante dominante</span><span>${c.contaminante_dominante}</span></div>` : ''}
-
-      <div class="popup-separador">Histórico</div>
-      <div class="popup-dato"><span>Días consecutivos en este estado</span><span>${c.dias_consecutivos_estado || 0} días</span></div>
-      <div class="popup-dato"><span>Días sobre límite OMS este año</span><span>${c.dias_sobre_oms_anio || 0} días</span></div>
-      <div class="popup-dato"><span>Récord días sobre OMS</span><span>${c.max_dias_sobre_oms || 0} días</span></div>
-
-      <div>
-        <span class="popup-tag" style="background:${c.color || '#888'}99;border:1px solid ${c.color || '#888'}">
-          ${c.etiqueta || 'Sin datos'}
-        </span>
-        ${sahStr}
-      </div>
-    </div>`;
-}
-
-fetch(JSON_URL + '?t=' + Date.now())
-  .then(r => {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  })
-  .then(data => {
-    const buenas = data.ciudades_buena_calidad || 0;
-    const malas  = data.ciudades_mala_calidad  || 0;
-    const total  = data.ciudades_con_datos      || 0;
-
-    document.getElementById('resumen').innerHTML =
-      `<span>${total}</span> ciudades · ` +
-      `<span>${buenas}</span> buena calidad · ` +
-      `<span class="${malas > 5 ? 'alerta' : ''}">${malas}</span> mala calidad`;
-
-    document.getElementById('ultima-act').textContent =
-      'Actualizado: ' + (data.fecha_legible || '—');
-
-    if (data.episodio_sahariano) {
-      document.getElementById('alerta-sahariana').style.display = 'block';
+  function popup(c, ev){
+    const omsStr = c.supera_oms
+      ? '<span class="ca-oms-mal">⚠️ Supera OMS</span>'
+      : '<span class="ca-oms-ok">✅ Dentro de OMS</span>';
+    const aqiStr = (c.aqi_europeo!==null&&c.aqi_europeo!==undefined) ? `${c.aqi_europeo} — ${c.etiqueta_aqi||''}` : '—';
+    let humoBlock = '';
+    if(ev.humo){
+      const f = ev.foco;
+      const donde = (f && f.lugar) ? `${f.lugar} (${ev.comunidad})` : ev.comunidad;
+      const frp = (f && f.frp) ? ` · foco más intenso ${Math.round(f.frp)} MW` : '';
+      humoBlock = `<div class="ca-pop-humo">🔥 <b>Calidad del aire afectada probablemente por el humo</b> de los incendios activos en <b>${ev.comunidad}</b>. El PM2.5 (${v(c.pm25,'µg/m³')}) está elevado y coincide con fuego activo cerca: ${donde}${frp}.</div>`;
     }
+    return `<div style="min-width:238px">
+      <div class="ca-pop-tit">${c.nombre}</div>
+      <div class="ca-pop-prov">📍 ${c.provincia}</div>
+      ${humoBlock}
+      <div class="ca-pop-sep">Contaminantes (µg/m³)</div>
+      <div class="ca-pop-dato"><span>PM2.5 · partículas finas</span><span class="v">${v(c.pm25,'')}</span></div>
+      <div class="ca-pop-dato"><span>PM10 · partículas gruesas</span><span class="v">${v(c.pm10,'')}</span></div>
+      <div class="ca-pop-dato"><span>NO₂ · dióxido de nitrógeno</span><span class="v">${v(c.no2,'')}</span></div>
+      <div class="ca-pop-dato"><span>O₃ · ozono</span><span class="v">${v(c.o3,'')}</span></div>
+      <div class="ca-pop-dato"><span>Polvo en suspensión</span><span class="v">${v(c.dust,'')}</span></div>
+      <div class="ca-pop-sep">Índice y límites</div>
+      <div class="ca-pop-dato"><span>Índice AQI europeo</span><span class="v">${aqiStr}</span></div>
+      <div class="ca-pop-dato"><span>Límite OMS 2021</span><span>${omsStr}</span></div>
+      ${c.contaminante_dominante?`<div class="ca-pop-dato"><span>Contaminante dominante</span><span class="v">${c.contaminante_dominante}</span></div>`:''}
+      <div class="ca-pop-sep">Histórico</div>
+      <div class="ca-pop-dato"><span>Días consecutivos en este estado</span><span class="v">${c.dias_consecutivos_estado||0}</span></div>
+      <div class="ca-pop-dato"><span>Días sobre OMS este año</span><span class="v">${c.dias_sobre_oms_anio||0}</span></div>
+      <div><span class="ca-pop-tag" style="background:${c.color||'#888'}">${c.etiqueta||'Sin datos'}</span></div>
+    </div>`;
+  }
 
-    let primerMadrid = null;
+  function render(aire, fuego){
+    const fuegoStats = analizarFuego(fuego);
+    const ciudades = aire.ciudades || [];
 
-    (data.ciudades || []).forEach(c => {
-      const icono  = crearIcono(c);
-      const marker = L.marker([c.lat, c.lon], { icon: icono })
-        .addTo(mapa)
-        .bindPopup(construirPopup(c), { maxWidth: 290 });
-
-      if (c.id === 'madrid') primerMadrid = marker;
+    // Evaluar humo por ciudad
+    const evals = new Map();
+    let smokeCities = [];
+    ciudades.forEach(c => {
+      const ev = evaluarHumo(c, fuegoStats);
+      evals.set(c.id, ev);
+      if(ev.humo) smokeCities.push(c);
     });
 
-    if (primerMadrid) {
-      setTimeout(() => primerMadrid.openPopup(), 800);
+    // Pintar marcadores
+    let mMadrid = null;
+    ciudades.forEach(c => {
+      const ev = evals.get(c.id);
+      const m = L.marker([c.lat, c.lon], { icon: crearIcono(c, ev.humo) })
+        .addTo(mapa).bindPopup(popup(c, ev), { maxWidth: 290 });
+      if(c.id === 'madrid') mMadrid = m;
+    });
+
+    // ---- Ficha EN DIRECTO ----
+    const conDatos = aire.ciudades_con_datos ?? ciudades.length;
+    const sobreOMS = ciudades.filter(c => c.supera_oms).length;
+    const peor = ciudades.filter(c => c.pm25!=null).sort((a,b)=>b.pm25-a.pm25)[0];
+    document.getElementById('ca-live-num').textContent = conDatos;
+    let rows = '';
+    if(peor) rows += `<div class="ca-row"><span class="val ${peor.nivel>=4?'warn':''}">${peor.pm25} µg/m³</span><span class="txt">peor calidad — ${peor.nombre}</span></div>`;
+    rows += `<div class="ca-row"><span class="val">${sobreOMS}</span><span class="txt">capitales por encima del límite OMS</span></div>`;
+    if(smokeCities.length) rows += `<div class="ca-row"><span class="val fire">🔥 ${smokeCities.length}</span><span class="txt">capitales con humo de incendios probable</span></div>`;
+    rows += `<div class="ca-row"><span class="val">${(aire.fecha_legible||'—').split(' a las')[0]}</span><span class="txt">última actualización · 4×/día</span></div>`;
+    document.getElementById('ca-live-rows').innerHTML = rows;
+
+    // ---- Ficha FOCO · EL DATO ----
+    const foco = document.getElementById('ca-foco-body');
+    if(smokeCities.length){
+      const peorHumo = smokeCities.slice().sort((a,b)=>b.pm25-a.pm25)[0];
+      const ev = evals.get(peorHumo.id);
+      const ratio = Math.round(peorHumo.pm25 / 15);
+      foco.innerHTML = `
+        <div class="ca-big-lead">×${ratio} <span style="font-size:14px;color:#8a6b5a">el límite OMS</span></div>
+        <div class="ca-foco-txt">es el PM2.5 en <b>${peorHumo.nombre}</b> (${peorHumo.pm25} µg/m³), disparado por el <b>humo de los incendios activos en ${ev.comunidad}</b>. En total, <b>${smokeCities.length} capitales</b> registran hoy partículas elevadas compatibles con el humo del fuego.</div>`;
+      // Banner sobre el mapa
+      const nombres = smokeCities.slice().sort((a,b)=>b.pm25-a.pm25).slice(0,4).map(c=>c.nombre).join(', ');
+      const b = document.getElementById('ca-banner-humo');
+      b.innerHTML = `🔥 <b>El humo de los incendios está empeorando la calidad del aire.</b> ${smokeCities.length} capitales con partículas elevadas hoy (${nombres}${smokeCities.length>4?'…':''}). El humo eleva el PM2.5 y el PM10, las partículas más dañinas para la salud.`;
+      b.style.display = 'block';
+    } else {
+      const peorAll = peor;
+      foco.innerHTML = peorAll
+        ? `<div class="ca-big-lead">${peorAll.pm25} <span style="font-size:14px;color:#8a6b5a">µg/m³</span></div>
+           <div class="ca-foco-txt">es el PM2.5 más alto ahora mismo, en <b>${peorAll.nombre}</b> (${peorAll.etiqueta}). El límite recomendado por la OMS es de 15 µg/m³. Hoy no se detecta influencia significativa de humo de incendios.</div>`
+        : `<div class="ca-foco-txt">Sin datos suficientes para destacar un foco hoy.</div>`;
     }
-  })
-  .catch(err => {
-    console.error('Error cargando JSON:', err);
-    document.getElementById('resumen').textContent = 'Error al cargar datos: ' + err.message;
-  });
+
+    if(aire.episodio_sahariano) document.getElementById('ca-banner-sahara').style.display = 'block';
+    if(mMadrid) setTimeout(()=>mMadrid.openPopup(), 700);
+  }
+
+  // ---- Cargar ambos JSON; el mapa funciona aunque incendios falle ----
+  const t = '?t=' + Date.now();
+  Promise.all([
+    fetch(AIRE_URL + t).then(r=>{ if(!r.ok) throw new Error('aire HTTP '+r.status); return r.json(); }),
+    fetch(FUEGO_URL + t).then(r=> r.ok ? r.json() : null).catch(()=>null)
+  ]).then(([aire, fuego]) => render(aire, fuego))
+    .catch(err => {
+      console.error(err);
+      document.getElementById('ca-foco-body').innerHTML =
+        '<div class="ca-foco-txt">No se pudieron cargar los datos: '+err.message+'</div>';
+    });
+})();
 </script>
 </body>
 </html>
