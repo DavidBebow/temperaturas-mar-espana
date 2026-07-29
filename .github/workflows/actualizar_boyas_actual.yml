@@ -2,20 +2,21 @@
 # CAPA "AHORA": temperatura actual de las boyas, 3 veces al día.
 # Rápido (~1-2 min): solo baja los ficheros NRT y publica boyas_actual.json.
 # Requiere que el workflow semanal ya haya generado docs/boyas_mapa.json.
+#
+# INDEXNOW: si boyas_actual.json cambia, avisa a Bing (y por extensión a
+# Copilot/ChatGPT/DuckDuckGo/Yahoo/Ecosia) de que la página del mapa del mar
+# tiene dato nuevo. Requiere indexnow_ping.py en la raíz del repo y el
+# Secret INDEXNOW_KEY.
 name: Actualizar temperatura actual boyas
-
 on:
   workflow_dispatch:
   schedule:
     - cron: "0 6,13,20 * * *"     # 06:00, 13:00 y 20:00 UTC
-
 permissions:
   contents: write
-
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   PYTHONUNBUFFERED: "1"
-
 jobs:
   actual:
     runs-on: ubuntu-latest
@@ -23,22 +24,18 @@ jobs:
     steps:
       - name: Checkout público (este repo)
         uses: actions/checkout@v4
-
       - name: Checkout privado (clima-scripts)
         uses: actions/checkout@v4
         with:
           repository: DavidBebow/clima-scripts
           token: ${{ secrets.SCRIPTS_TOKEN }}
           path: privado
-
       - name: Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Dependencias
         run: pip install numpy netCDF4 copernicusmarine
-
       - name: Calcular temperatura actual
         env:
           BOYAS_MAPA: docs/boyas_mapa.json
@@ -46,16 +43,29 @@ jobs:
           COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUS_USER }}
           COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
         run: python privado/boyas_actual.py
-
       - name: Publicar temperatura actual
+        id: publicar                                    # ← IndexNow: id para leer el output
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add docs/boyas_actual.json
           if git diff --cached --quiet; then
             echo "Sin cambios"
+            echo "changed=false" >> "$GITHUB_OUTPUT"   # ← IndexNow: sin cambios
           else
             git commit -m "Temperatura actual boyas $(date -u +'%F %H:%M')"
             git pull --rebase
             git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"    # ← IndexNow: publicado
           fi
+      # ← IndexNow: solo si boyas_actual.json cambió. continue-on-error para que
+      # un fallo aquí nunca tumbe el job (el dato ya está publicado).
+      - name: Notificar a IndexNow (Bing/IA)
+        if: steps.publicar.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+          INDEXNOW_HOST: calentamientoglobal.es
+        run: |
+          python indexnow_ping.py \
+            "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/"
