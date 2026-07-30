@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El cambio climático en tu provincia — CalentamientoGlobal.es</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    background:#f4f5f7; color:#2b2f36; }
+  #envoltorio { max-width:1100px; margin:0 auto; padding:18px 16px 30px; }
+
+  /* Cabecera */
+  #cabecera { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap;
+    gap:12px; margin-bottom:16px; }
+  .kicker { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+    color:#e35a12; margin-bottom:4px; }
+  #cabecera h1 { font-size:26px; font-weight:800; color:#15181d; letter-spacing:-0.3px; }
+  #cabecera h1 span { color:#1653d6; }
+  .sub { font-size:12.5px; color:#7a8089; margin-top:5px; }
+  #selector { background:#fff; color:#15181d; border:1px solid #d9dde3; border-radius:10px;
+    padding:9px 12px; font-size:14px; font-weight:600; box-shadow:0 1px 3px rgba(20,30,50,0.05); }
+
+  /* Fichas de datos clave */
+  #fichas { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px;
+    margin-bottom:16px; }
+  .ficha { background:#fff; border:1px solid #e6e8ec; border-radius:14px; padding:16px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,30,50,0.04); }
+  .ficha .num { font-size:27px; font-weight:800; color:#1653d6; letter-spacing:-0.5px; line-height:1.1; }
+  .ficha .num.calor { color:#e35a12; }
+  .ficha .cap { font-size:12px; color:#6b7280; margin-top:6px; line-height:1.4; }
+
+  /* Foco · lo destacado */
+  #foco { background:#fff; border:1px solid #e6e8ec; border-radius:16px; padding:18px 20px;
+    margin-bottom:16px; box-shadow:0 2px 8px rgba(20,30,50,0.05); }
+  #foco .kicker { color:#e35a12; }
+  .destacado { display:flex; gap:11px; align-items:flex-start; padding:9px 0; font-size:14.5px;
+    line-height:1.5; border-bottom:1px solid #f0f1f3; }
+  .destacado:last-child { border-bottom:none; }
+  .destacado .ic { font-size:19px; flex-shrink:0; margin-top:-1px; }
+  .destacado.alto .tx { font-weight:600; color:#1d2026; }
+  .destacado .tx { color:#3a3f47; }
+  .destacado a { color:#1653d6; text-decoration:none; font-size:12px; white-space:nowrap; font-weight:600; }
+  .destacado:first-child .tx { font-size:16.5px; }
+  .sin-dest { color:#5f8f6e; font-size:14px; padding:6px 0; }
+
+  /* Tarjetas de indicadores */
+  #tarjetas { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:12px; }
+  .tarjeta { background:#fff; border:1px solid #e6e8ec; border-radius:14px; padding:15px 17px;
+    box-shadow:0 1px 3px rgba(20,30,50,0.04); }
+  .tarjeta h3 { font-size:13px; font-weight:700; color:#15181d; margin-bottom:9px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .tarjeta h3 a { font-size:11px; color:#1653d6; text-decoration:none; font-weight:600; white-space:nowrap; }
+  .fila { display:flex; justify-content:space-between; gap:10px; padding:5px 0; font-size:13px;
+    border-bottom:1px solid #f3f4f6; }
+  .fila:last-child { border-bottom:none; }
+  .fila .k { color:#6b7280; }
+  .fila .v { font-weight:700; color:#1d2026; text-align:right; }
+  .fila .v.mal { color:#d4380d; } .fila .v.bien { color:#2e8b57; }
+
+  #pie { margin:22px 0 6px; font-size:11.5px; color:#8a9099; text-align:center; line-height:1.7; }
+  #pie a { color:#1653d6; }
+  #cargando { text-align:center; padding:70px 0; color:#8a9099; }
+  @media (max-width:640px){ #cabecera h1{font-size:21px;} .ficha .num{font-size:23px;} }
+</style>
+</head>
+<body>
+<div id="envoltorio">
+  <div id="cabecera">
+    <div>
+      <div class="kicker">Observatorio climático · en directo</div>
+      <h1 id="titulo">El cambio climático en <span>…</span></h1>
+      <div class="sub" id="subtitulo"></div>
+    </div>
+    <select id="selector"><option>Cargando…</option></select>
+  </div>
+  <div id="contenido"><div id="cargando">Cargando datos…</div></div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const params = new URLSearchParams(location.search);
+let slug = params.get("p") || "murcia";
+const signo = n => (n>0?"+":"")+n;
+
+function fila(k, v, clase) {
+  if (v === null || v === undefined || v === "") return "";
+  return `<div class="fila"><span class="k">${k}</span><span class="v ${clase||""}">${v}</span></div>`;
+}
+function tarjeta(titulo, url, filas) {
+  if (!filas) return "";
+  return `<div class="tarjeta"><h3><span>${titulo}</span><a href="${url}" target="_top">ver herramienta →</a></h3>${filas}</div>`;
+}
+function ficha(num, cap, calor) {
+  if (num === null || num === undefined || num === "") return "";
+  return `<div class="ficha"><div class="num ${calor?"calor":""}">${num}</div><div class="cap">${cap}</div></div>`;
+}
+
+async function cargar() {
+  $("#contenido").innerHTML = '<div id="cargando">Cargando datos…</div>';
+  let d;
+  try { d = await (await fetch(`provincias/${slug}.json`, {cache:"no-store"})).json(); }
+  catch(e) { $("#contenido").innerHTML = '<div id="cargando">No se pudieron cargar los datos.</div>'; return; }
+  const i = d.indicadores, U = d.enlaces;
+  document.title = `El cambio climático en ${d.provincia} — CalentamientoGlobal.es`;
+  $("#titulo").innerHTML = `El cambio climático en <span>${d.provincia}</span>`;
+  $("#subtitulo").textContent = `${d.ccaa} · actualizado el ${d.fecha_legible} · AEMET · NASA · Copernicus · NOAA · Puertos del Estado`;
+
+  /* Fichas clave */
+  let fh = "";
+  if (i.canicula) fh += ficha(i.canicula.tmax_hoy+"°", "máxima prevista hoy en la provincia", true);
+  if (i.firma_climatica && i.firma_climatica.pr>=3)
+    fh += ficha((i.firma_climatica.pr_tope?"≥":"")+i.firma_climatica.pr.toFixed(0)+"×",
+      "más probable este calor por el cambio climático", true);
+  const boyaTop = (i.boyas||[]).concat().sort((a,b)=>(b.temp||0)-(a.temp||0))[0];
+  const marTop = (i.mar||[]).concat().sort((a,b)=>Math.abs(b.anomalia||0)-Math.abs(a.anomalia||0))[0];
+  if (boyaTop && boyaTop.temp!=null) fh += ficha(boyaTop.temp.toFixed(1)+"°", `el mar ahora en la boya de ${boyaTop.nombre}`);
+  else if (marTop) fh += ficha(marTop.temperatura_actual+"°", `el mar en ${marTop.nombre} (${signo(marTop.anomalia)}° de anomalía)`);
+  if (i.avisos && (i.avisos.rojos+i.avisos.naranjas+i.avisos.amarillos)>0)
+    fh += ficha(i.avisos.rojos+i.avisos.naranjas+i.avisos.amarillos,
+      `avisos AEMET activos${i.avisos.naranjas?` (${i.avisos.naranjas} naranja)`:""}${i.avisos.rojos?` (${i.avisos.rojos} ROJO)`:""}`);
+  const nocTop = (i.noches_tropicales||[]).concat().sort((a,b)=>(b.nt_anyo||0)-(a.nt_anyo||0))[0];
+  if (nocTop) fh += ficha(nocTop.nt_anyo, `noches tropicales este año en ${nocTop.nombre}`);
+  if (i.incendios_ccaa && i.incendios_ccaa.focos_activos>0)
+    fh += ficha(i.incendios_ccaa.focos_activos, `focos activos en ${i.incendios_ccaa.nombre} (48 h)`, true);
+
+  /* Destacados */
+  const dest = (d.destacados||[]).map(x =>
+    `<div class="destacado ${x.nivel}"><span class="ic">${x.icono}</span><span class="tx">${x.texto}</span> <a href="${x.url}" target="_top">ver →</a></div>`
+  ).join("") || '<div class="sin-dest">Sin anomalías climáticas destacables ahora mismo.</div>';
+
+  /* Tarjetas */
+  let t = "";
+  if (i.boyas) t += tarjeta("🛟 Boyas de Puertos del Estado", U.mar,
+    i.boyas.map(b => fila(b.nombre,
+      (b.temp!=null? b.temp.toFixed(1)+" °C" : "—") +
+      (b.record_max&&b.record_max.valor? ` · récord: ${b.record_max.valor} °C (${b.record_max.fecha.slice(0,4)})` : ""),
+      (b.anomalia_reciente>=2?"mal":"") )).join("") +
+    (boyaTop&&boyaTop.tendencia_decada!=null ? fila("Tendencia "+boyaTop.nombre, signo(boyaTop.tendencia_decada)+" °C/década","mal") : ""));
+  if (i.canicula) t += tarjeta("☀️ Canícula / calor", U.canicula,
+    fila("Índice de calor (0-100)", i.canicula.icc, i.canicula.icc>=70?"mal":"") +
+    fila("Nivel", i.canicula.nivel) +
+    fila("Máx. hoy", i.canicula.tmax_hoy+" °C") +
+    fila("Días consecutivos de calor", i.canicula.dias_consecutivos) +
+    fila("Noche tropical anoche", i.canicula.noche_tropical?"Sí":"No", i.canicula.noche_tropical?"mal":"bien"));
+  if (i.firma_climatica) { const f=i.firma_climatica;
+    t += tarjeta("🔬 Firma climática ("+(f.nombre||d.capital)+")", U.firma,
+    fila("Índice (−5 a +5)", f.ifc, f.ifc>=3?"mal":"") +
+    fila("Máx. de hoy", f.tmax+" °C") +
+    fila("Veces más probable por CC", f.pr ? f.pr.toFixed(0)+"×"+(f.pr_tope?" o más":"") : null) +
+    fila("Grados añadidos por CC", f.delta!=null ? signo(f.delta)+" °C" : null)); }
+  if (i.avisos && i.avisos.total>0) { const a=i.avisos;
+    t += tarjeta("⚠️ Avisos AEMET activos", U.avisos,
+    fila("Rojos", a.rojos, a.rojos?"mal":"bien") + fila("Naranjas", a.naranjas, a.naranjas?"mal":"") +
+    fila("Amarillos", a.amarillos) +
+    (a.items||[]).slice(0,4).map(x=>fila(x.icono+" "+x.tipo, x.zona)).join("")); }
+  if (i.mar) t += tarjeta("🌡️ Temperatura del mar", U.mar,
+    i.mar.map(p=>fila(p.nombre, `${p.temperatura_actual} °C (${signo(p.anomalia)} °C)`, p.anomalia>=2?"mal":"")).join(""));
+  if (i.nivel_mar) t += tarjeta("🌊 Nivel del mar", U.nivel_mar,
+    i.nivel_mar.map(p=>fila(p.nombre, `${signo(p.desviacion_cm)} cm`, p.desviacion_cm>=10?"mal":"")).join(""));
+  if (i.incendios_ccaa) { const f=i.incendios_ccaa;
+    t += tarjeta("🔥 Incendios ("+f.nombre+")", U.incendios,
+    fila("Focos activos (48 h)", f.focos_activos, f.focos_activos>0?"mal":"bien") +
+    fila("Situación", f.etiqueta) + fila("Días con fuego este año", f.dias_anio_actual)); }
+  if (i.lluvias) { const l=i.lluvias;
+    t += tarjeta("🌧️ Lluvias", U.lluvias,
+    fila("Acumulado este año", l.mm_anual+" mm") +
+    fila("Normal a estas alturas", l.media_hasta_hoy_mm+" mm") +
+    fila("Anomalía anual", l.anomalia_anual_pct!=null?signo(l.anomalia_anual_pct)+" %":null, l.anomalia_anual_pct<=-30?"mal":"") +
+    fila("Última semana", l.etiqueta_semana)); }
+  if (i.noches_tropicales) t += tarjeta("🌙 Noches tropicales", U.nocturnas,
+    i.noches_tropicales.map(c=>fila(c.nombre, `${c.nt_mes} este mes · ${c.nt_anyo} en el año`, c.nt_mes>=15?"mal":"")).join(""));
+  if (i.calidad_aire) t += tarjeta("💨 Calidad del aire", U.aire,
+    i.calidad_aire.map(c=>fila(c.nombre, c.etiqueta + (c.contaminante_dominante?" ("+c.contaminante_dominante+")":""), (c.supera_oms?"mal":"bien"))).join(""));
+  if (i.embalses) { const e=i.embalses;
+    t += tarjeta("💧 Embalses", U.observatorio,
+    fila("Nivel medio", e.pct_media+" %", e.pct_media<=35?"mal":e.pct_media>=60?"bien":"") +
+    fila("Volumen", e.volumen_total_hm3+" / "+e.capacidad_total_hm3+" hm³") +
+    fila("Situación", e.etiqueta)); }
+  if (i.dias32) t += tarjeta("🥵 Días por encima de 32 °C", U.observatorio,
+    fila("Este año", i.dias32.actual, "mal") +
+    fila("Media 1991-2020", i.dias32.media_1991_2020) +
+    fila("Media 1961-1990", i.dias32.media_1961_1990));
+  if (i.coste_desastres) t += tarjeta("💶 Coste del clima extremo", U.desastres,
+    fila("Acumulado (Consorcio)", i.coste_desastres.coste_millones_eur+" M€", "mal"));
+  if (i.capital_2050) { const m=i.capital_2050;
+    t += tarjeta("📍 "+m.municipio+" en 2050", U.municipio2050,
+    fila("Análogo climático", m.analogo_climatico) +
+    fila("Días de calor extremo", m.dias_calor_extremo_hoy+" → "+m.dias_calor_extremo_2050, "mal") +
+    fila("Noches tropicales", m.noches_tropicales_hoy+" → "+m.noches_tropicales_2050) +
+    fila("Meses secos", m.meses_secos_hoy+" → "+m.meses_secos_2050)); }
+
+  $("#contenido").innerHTML =
+    `<div id="fichas">${fh}</div>` +
+    `<div id="foco"><div class="kicker">Foco · lo destacado hoy</div>${dest}</div>` +
+    `<div id="tarjetas">${t}</div>` +
+    `<div id="pie">Datos: <a href="${U.observatorio}" target="_top">Observatorio Climático de calentamientoglobal.es</a> · ` +
+    `Licencia CC-BY 4.0 — cita “calentamientoglobal.es” · AEMET · NASA FIRMS · Copernicus · NOAA · Puertos del Estado · Open-Meteo · MITECO</div>`;
+}
+
+async function initSelector() {
+  try {
+    const idx = await (await fetch("provincias/index.json", {cache:"no-store"})).json();
+    const provs = idx.provincias.slice().sort((a,b)=>a.provincia.localeCompare(b.provincia,"es"));
+    $("#selector").innerHTML = provs.map(p=>`<option value="${p.slug}" ${p.slug===slug?"selected":""}>${p.provincia}</option>`).join("");
+    $("#selector").onchange = e => { slug = e.target.value;
+      history.replaceState(null,"","?p="+slug); cargar(); };
+  } catch(e) { $("#selector").style.display="none"; }
+}
+initSelector(); cargar();
+</script>
+</body>
+</html>
