@@ -1,0 +1,62 @@
+name: Agregador provincial
+
+# Corre en el repo PÚBLICO. Hace checkout del privado (clima-scripts) solo para
+# leer los scripts, ejecuta el agregador contra docs/ y commitea los resultados aquí.
+# La lógica nunca se copia a este repo: vive en el checkout temporal del runner.
+
+on:
+  schedule:
+    - cron: "45 6,14 * * *"   # tras los workflows de datos (UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: agregador-provincias
+  cancel-in-progress: false
+
+jobs:
+  agregar:
+    runs-on: ubuntu-latest
+    steps:
+      # Este repo (público): datos de entrada y destino de salida
+      - uses: actions/checkout@v4
+
+      # Repo privado: los scripts (PAT de SOLO LECTURA sobre clima-scripts)
+      - uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.CLIMA_SCRIPTS_PAT }}
+          path: privado
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generar JSON provinciales
+        env:
+          DOCS_DIR: ${{ github.workspace }}/docs
+        # Ajusta la ruta si guardas el script en una subcarpeta de clima-scripts
+        run: python privado/agregador_provincias.py
+
+      - name: Commit y push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/provincias/
+          git diff --cached --quiet && echo "Sin cambios" && exit 0
+          git commit -m "Agregador provincial: actualización automática"
+          git pull --rebase origin main
+          git push
+
+      - name: Publicar en WordPress (opcional)
+        if: ${{ vars.WP_PUBLICAR == 'true' }}
+        env:
+          DOCS_DIR: ${{ github.workspace }}/docs
+          WP_URL: https://calentamientoglobal.es
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+        run: |
+          pip install requests
+          python privado/publicar_wordpress.py
