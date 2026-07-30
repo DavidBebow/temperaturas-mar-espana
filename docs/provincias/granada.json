@@ -3,8 +3,8 @@
  "provincia": "Granada",
  "ccaa": "Andalucía",
  "capital": "Granada",
- "generado": "2026-07-30T11:20+02:00",
- "fecha_legible": "30/07/2026 a las 11:20",
+ "generado": "2026-07-30T18:15+02:00",
+ "fecha_legible": "30/07/2026 a las 18:15",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,13 +23,13 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 37.1,
-   "tmax_hoy": 38.3,
-   "tmin_hoy": 19.5,
-   "dias_consecutivos": 2,
-   "noche_tropical": false,
-   "icc": 42,
-   "nivel": "Canícula",
-   "color": "#FFCC44"
+   "tmax_hoy": 40.2,
+   "tmin_hoy": 20.4,
+   "dias_consecutivos": 3,
+   "noche_tropical": true,
+   "icc": 60,
+   "nivel": "Canícula intensa",
+   "color": "#FF8822"
   },
   "firma_climatica": {
    "nombre": "Granada",
@@ -45,9 +45,18 @@
   "avisos": {
    "total": 6,
    "rojos": 0,
-   "naranjas": 2,
-   "amarillos": 4,
+   "naranjas": 3,
+   "amarillos": 3,
    "items": [
+    {
+     "zona": "Cuenca del Genil",
+     "nivel": "naranja",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-07-30T13:00+02:00",
+     "fin": "2026-07-30T20:59+02:00",
+     "activo_ya": true
+    },
     {
      "zona": "Cuenca del Genil",
      "nivel": "naranja",
@@ -60,15 +69,6 @@
     {
      "zona": "Cuenca del Genil",
      "nivel": "naranja",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-07-30T13:00+02:00",
-     "fin": "2026-07-30T20:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Cuenca del Genil",
-     "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
      "inicio": "2026-08-01T13:00+02:00",
@@ -80,17 +80,17 @@
      "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
-     "inicio": "2026-07-31T13:00+02:00",
-     "fin": "2026-07-31T20:59+02:00",
-     "activo_ya": false
+     "inicio": "2026-07-30T13:00+02:00",
+     "fin": "2026-07-30T20:59+02:00",
+     "activo_ya": true
     },
     {
      "zona": "Guadix y Baza",
      "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
-     "inicio": "2026-07-30T13:00+02:00",
-     "fin": "2026-07-30T20:59+02:00",
+     "inicio": "2026-07-31T13:00+02:00",
+     "fin": "2026-07-31T20:59+02:00",
      "activo_ya": false
     },
     {
@@ -106,7 +106,7 @@
   },
   "incendios_ccaa": {
    "nombre": "Andalucía",
-   "focos_activos": 40,
+   "focos_activos": 45,
    "tiene_fuego": true,
    "etiqueta": "Actividad alta",
    "dias_consecutivos": 0,
@@ -117,9 +117,9 @@
    "mm_semana": 0.0,
    "mm_anual": 723.3,
    "media_anual_mm": 450,
-   "media_hasta_hoy_mm": 256.4,
+   "media_hasta_hoy_mm": 257.7,
    "anomalia_semana_pct": -100.0,
-   "anomalia_anual_pct": 182.1,
+   "anomalia_anual_pct": 180.7,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Muy lluvioso"
   },
@@ -145,10 +145,10 @@
    {
     "nombre": "Granada",
     "etiqueta": "Buena",
-    "aqi_europeo": 38,
-    "pm25": 10.5,
+    "aqi_europeo": 43,
+    "pm25": 11.8,
     "contaminante_dominante": "O₃",
-    "supera_oms": false,
+    "supera_oms": true,
     "sahariano": false
    }
   ],
@@ -183,7 +183,7 @@
    "tipo": "incendios",
    "icono": "🔥",
    "nivel": "alto",
-   "texto": "40 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h)",
+   "texto": "45 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h)",
    "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
    "prioridad": 84,
    "racha_dias": 1,
@@ -193,7 +193,7 @@
    "tipo": "aviso_naranja",
    "icono": "🟠",
    "nivel": "alto",
-   "texto": "Aviso naranja de AEMET en Granada por Altas temperaturas (2 zona(s))",
+   "texto": "Aviso naranja de AEMET en Granada por Altas temperaturas (3 zona(s))",
    "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
    "prioridad": 80,
    "racha_dias": 1,
@@ -213,12 +213,22 @@
    "tipo": "lluvia_abundante",
    "icono": "🌧️",
    "nivel": "medio",
-   "texto": "Año inusualmente lluvioso en Granada: 723.3 mm, un 182% más de lo normal",
+   "texto": "Año inusualmente lluvioso en Granada: 723.3 mm, un 181% más de lo normal",
    "url": "https://calentamientoglobal.es/lluvias-en-espana/",
    "prioridad": 60,
    "racha_dias": 1,
    "nuevo": false
+  },
+  {
+   "tipo": "canicula",
+   "icono": "☀️",
+   "nivel": "medio",
+   "texto": "Calor canicular en Granada: índice 60/100, máxima de 40.2 °C",
+   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
+   "prioridad": 58,
+   "racha_dias": 1,
+   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Granada a 30/07/2026: El calor de hoy en Granada (39.7 °C) es 14× más probable por el cambio climático, que le añade +2.3 °C. 40 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h). Aviso naranja de AEMET en Granada por Altas temperaturas (2 zona(s)). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Granada a 30/07/2026: El calor de hoy en Granada (39.7 °C) es 14× más probable por el cambio climático, que le añade +2.3 °C. 45 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h). Aviso naranja de AEMET en Granada por Altas temperaturas (3 zona(s)). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }

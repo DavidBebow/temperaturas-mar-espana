@@ -3,8 +3,8 @@
  "provincia": "Huelva",
  "ccaa": "Andalucía",
  "capital": "Huelva",
- "generado": "2026-07-30T11:20+02:00",
- "fecha_legible": "30/07/2026 a las 11:20",
+ "generado": "2026-07-30T18:15+02:00",
+ "fecha_legible": "30/07/2026 a las 18:15",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,11 +23,11 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 37.7,
-   "tmax_hoy": 27.5,
-   "tmin_hoy": 21.9,
+   "tmax_hoy": 31.5,
+   "tmin_hoy": 20.3,
    "dias_consecutivos": 0,
    "noche_tropical": true,
-   "icc": 11,
+   "icc": 7,
    "nivel": "Calor suave",
    "color": "#0066CC"
   },
@@ -43,36 +43,55 @@
    "racha_ifc3": 0
   },
   "avisos": {
-   "total": 0,
+   "total": 2,
    "rojos": 0,
    "naranjas": 0,
-   "amarillos": 0,
-   "items": []
+   "amarillos": 2,
+   "items": [
+    {
+     "zona": "Litoral de Huelva",
+     "nivel": "amarillo",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-07-31T13:00+02:00",
+     "fin": "2026-07-31T20:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Litoral de Huelva",
+     "nivel": "amarillo",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-01T13:00+02:00",
+     "fin": "2026-08-01T20:59+02:00",
+     "activo_ya": false
+    }
+   ]
   },
   "mar": [
    {
     "id": "huelva",
     "nombre": "Huelva",
-    "temperatura_actual": 21.2,
-    "anomalia": -2.3,
-    "etiqueta_anomalia": "Muy por debajo de la media",
-    "dias_consecutivos": 6,
-    "signo_consecutivo": "negativa"
+    "temperatura_actual": null,
+    "anomalia": null,
+    "etiqueta_anomalia": "Sin datos",
+    "dias_consecutivos": null,
+    "signo_consecutivo": null
    }
   ],
   "nivel_mar": [
    {
     "id": "huelva",
     "nombre": "Huelva",
-    "sla_actual_cm": 15.2,
-    "desviacion_cm": 15.5,
+    "sla_actual_cm": 14.8,
+    "desviacion_cm": 15.1,
     "etiqueta_anomalia": "Nivel muy elevado",
-    "dias_consecutivos": 76
+    "dias_consecutivos": 77
    }
   ],
   "incendios_ccaa": {
    "nombre": "Andalucía",
-   "focos_activos": 40,
+   "focos_activos": 45,
    "tiene_fuego": true,
    "etiqueta": "Actividad alta",
    "dias_consecutivos": 0,
@@ -83,9 +102,9 @@
    "mm_semana": 0.0,
    "mm_anual": 373.0,
    "media_anual_mm": 560,
-   "media_hasta_hoy_mm": 319.1,
+   "media_hasta_hoy_mm": 320.7,
    "anomalia_semana_pct": -100.0,
-   "anomalia_anual_pct": 16.9,
+   "anomalia_anual_pct": 16.3,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Lluvioso"
   },
@@ -94,18 +113,18 @@
     "id": "huelva",
     "nombre": "Huelva",
     "t_min_anoche": null,
-    "nt_mes": 14,
-    "nt_anyo": 23,
+    "nt_mes": 15,
+    "nt_anyo": 24,
     "etiqueta": "Sin datos"
    }
   ],
   "calidad_aire": [
    {
     "nombre": "Huelva",
-    "etiqueta": "Moderada",
-    "aqi_europeo": 40,
-    "pm25": 15.3,
-    "contaminante_dominante": "PM2.5",
+    "etiqueta": "Buena",
+    "aqi_europeo": 53,
+    "pm25": 13.1,
+    "contaminante_dominante": "O₃",
     "supera_oms": true,
     "sahariano": false
    }
@@ -131,9 +150,19 @@
    "tipo": "incendios",
    "icono": "🔥",
    "nivel": "alto",
-   "texto": "40 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h)",
+   "texto": "45 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h)",
    "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
    "prioridad": 84,
+   "racha_dias": 1,
+   "nuevo": false
+  },
+  {
+   "tipo": "noches_tropicales",
+   "icono": "🌙",
+   "nivel": "medio",
+   "texto": "Huelva acumula 15 noches tropicales este mes (24 en el año): el calor no da tregua ni de noche",
+   "url": "https://calentamientoglobal.es/noches-tropicales-espana/",
+   "prioridad": 66,
    "racha_dias": 1,
    "nuevo": false
   },
@@ -141,7 +170,7 @@
    "tipo": "nivel_mar_huelva",
    "icono": "🌊",
    "nivel": "medio",
-   "texto": "Nivel del mar muy elevado en Huelva: +15.5 cm sobre la media 1993-2012",
+   "texto": "Nivel del mar muy elevado en Huelva: +15.1 cm sobre la media 1993-2012",
    "url": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
    "prioridad": 64,
    "racha_dias": 1,
@@ -158,5 +187,5 @@
    "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Huelva a 30/07/2026: 40 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h). Nivel del mar muy elevado en Huelva: +15.5 cm sobre la media 1993-2012. Huelva ya suma 75 días por encima de 32 °C este año (media 1991-2020: 59; media 1961-1990: 52). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Huelva a 30/07/2026: 45 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h). Huelva acumula 15 noches tropicales este mes (24 en el año): el calor no da tregua ni de noche. Nivel del mar muy elevado en Huelva: +15.1 cm sobre la media 1993-2012. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
