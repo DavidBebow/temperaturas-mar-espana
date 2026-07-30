@@ -2,7 +2,7 @@ name: Climate Radar
 
 on:
   schedule:
-    - cron: "0 5,13,21 * * *"   # 3 veces al día (cada 8 h). España verano ~07:00, 15:00, 23:00
+    - cron: "0 * * * *"   # cada hora (punto dulce para cazar vídeo viral mientras sube)
   workflow_dispatch:
 
 permissions:
