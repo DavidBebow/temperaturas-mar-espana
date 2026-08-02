@@ -3,8 +3,8 @@
  "provincia": "Córdoba",
  "ccaa": "Andalucía",
  "capital": "Córdoba",
- "generado": "2026-08-01T17:43+02:00",
- "fecha_legible": "01/08/2026 a las 17:43",
+ "generado": "2026-08-02T11:00+02:00",
+ "fecha_legible": "02/08/2026 a las 11:00",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,58 +23,31 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 40.0,
-   "tmax_hoy": 42.6,
+   "tmax_hoy": 42.9,
    "tmin_hoy": 24.7,
    "dias_consecutivos": 5,
    "noche_tropical": true,
-   "icc": 82,
+   "icc": 84,
    "nivel": "Canícula extrema",
    "color": "#CC2200"
   },
   "firma_climatica": {
    "nombre": "Córdoba",
-   "tmax": 42.7,
-   "pr": 10.5,
+   "tmax": 38.5,
+   "pr": 3.4,
    "pr_tope": false,
-   "ifc": 3,
-   "delta": 2.5,
-   "percentil": 97.5,
+   "ifc": 2,
+   "delta": 1.9,
+   "percentil": 68.3,
    "lado": "calor",
-   "racha_ifc3": 2
+   "racha_ifc3": 0
   },
   "avisos": {
-   "total": 4,
+   "total": 1,
    "rojos": 0,
-   "naranjas": 3,
+   "naranjas": 0,
    "amarillos": 1,
    "items": [
-    {
-     "zona": "Campiña cordobesa",
-     "nivel": "naranja",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-08-01T13:00+02:00",
-     "fin": "2026-08-01T20:59+02:00",
-     "activo_ya": true
-    },
-    {
-     "zona": "Sierra y Pedroches",
-     "nivel": "naranja",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-08-01T13:00+02:00",
-     "fin": "2026-08-01T20:59+02:00",
-     "activo_ya": true
-    },
-    {
-     "zona": "Subbética cordobesa",
-     "nivel": "naranja",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-08-01T13:00+02:00",
-     "fin": "2026-08-01T20:59+02:00",
-     "activo_ya": true
-    },
     {
      "zona": "Campiña cordobesa",
      "nivel": "amarillo",
@@ -88,11 +61,11 @@
   },
   "incendios_ccaa": {
    "nombre": "Andalucía",
-   "focos_activos": 14,
+   "focos_activos": 15,
    "tiene_fuego": true,
    "etiqueta": "Actividad moderada",
-   "dias_consecutivos": 0,
-   "dias_anio_actual": 7
+   "dias_consecutivos": 1,
+   "dias_anio_actual": 8
   },
   "lluvias": {
    "mm_ayer": 0.0,
@@ -119,11 +92,11 @@
    {
     "nombre": "Córdoba",
     "etiqueta": "Buena",
-    "aqi_europeo": 41,
-    "pm25": 10.5,
+    "aqi_europeo": 38,
+    "pm25": 11.1,
     "contaminante_dominante": "O₃",
-    "supera_oms": true,
-    "sahariano": false
+    "supera_oms": false,
+    "sahariano": true
    }
   ],
   "dias32": {
@@ -147,52 +120,42 @@
    "tipo": "canicula_alta",
    "icono": "☀️",
    "nivel": "alto",
-   "texto": "Canícula intensa en Córdoba: índice de calor 82/100, máxima de 42.6 °C y 5 días seguidos de calor · 2.º día consecutivo",
+   "texto": "Canícula intensa en Córdoba: índice de calor 84/100, máxima de 42.9 °C y 5 días seguidos de calor · 3.º día consecutivo",
    "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
    "prioridad": 86,
-   "racha_dias": 2,
-   "nuevo": false
-  },
-  {
-   "tipo": "aviso_naranja",
-   "icono": "🟠",
-   "nivel": "alto",
-   "texto": "Aviso naranja de AEMET en Córdoba por Altas temperaturas (3 zona(s)) · 3.º día consecutivo",
-   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
-   "prioridad": 80,
    "racha_dias": 3,
    "nuevo": false
-  },
-  {
-   "tipo": "firma",
-   "icono": "🔬",
-   "nivel": "medio",
-   "texto": "El calor de hoy en Córdoba (42.7 °C) es 10× más probable por el cambio climático, que le añade +2.5 °C",
-   "url": "https://calentamientoglobal.es/firma-climatica/",
-   "prioridad": 74,
-   "racha_dias": 1,
-   "nuevo": true
   },
   {
    "tipo": "dias32",
    "icono": "🥵",
    "nivel": "medio",
-   "texto": "Córdoba ya suma 105 días por encima de 32 °C este año (media 1991-2020: 88; media 1961-1990: 72) · 3.º día consecutivo",
+   "texto": "Córdoba ya suma 105 días por encima de 32 °C este año (media 1991-2020: 88; media 1961-1990: 72) · 4.º día consecutivo",
    "url": "https://calentamientoglobal.es/observatorio-climatico/",
    "prioridad": 62,
-   "racha_dias": 3,
+   "racha_dias": 4,
    "nuevo": false
+  },
+  {
+   "tipo": "sahariano",
+   "icono": "🌫️",
+   "nivel": "medio",
+   "texto": "Episodio de polvo sahariano afectando a Córdoba",
+   "url": "https://calentamientoglobal.es/calidad-del-aire/",
+   "prioridad": 58,
+   "racha_dias": 1,
+   "nuevo": true
   },
   {
    "tipo": "incendios",
    "icono": "🔥",
    "nivel": "medio",
-   "texto": "14 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h) · 3.º día consecutivo",
+   "texto": "15 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h) · 4.º día consecutivo",
    "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
    "prioridad": 56,
-   "racha_dias": 3,
+   "racha_dias": 4,
    "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Córdoba a 01/08/2026: Canícula intensa en Córdoba: índice de calor 82/100, máxima de 42.6 °C y 5 días seguidos de calor. Aviso naranja de AEMET en Córdoba por Altas temperaturas (3 zona(s)). El calor de hoy en Córdoba (42.7 °C) es 10× más probable por el cambio climático, que le añade +2.5 °C. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Córdoba a 02/08/2026: Canícula intensa en Córdoba: índice de calor 84/100, máxima de 42.9 °C y 5 días seguidos de calor. Córdoba ya suma 105 días por encima de 32 °C este año (media 1991-2020: 88; media 1961-1990: 72). Episodio de polvo sahariano afectando a Córdoba. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }

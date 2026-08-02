@@ -3,8 +3,8 @@
  "provincia": "Las Palmas",
  "ccaa": "Canarias",
  "capital": "Las Palmas de Gran Canaria",
- "generado": "2026-08-01T17:43+02:00",
- "fecha_legible": "01/08/2026 a las 17:43",
+ "generado": "2026-08-02T11:00+02:00",
+ "fecha_legible": "02/08/2026 a las 11:00",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,24 +23,24 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 27.9,
-   "tmax_hoy": 30.4,
+   "tmax_hoy": 31.9,
    "tmin_hoy": 24.2,
    "dias_consecutivos": 3,
    "noche_tropical": true,
-   "icc": 68,
+   "icc": 76,
    "nivel": "Canícula intensa",
    "color": "#FF8822"
   },
   "firma_climatica": {
    "nombre": "Las Palmas de Gran Canaria",
-   "tmax": 30.3,
+   "tmax": 32.2,
    "pr": 100.0,
    "pr_tope": true,
    "ifc": 5,
-   "delta": 1.9,
-   "percentil": 97.4,
+   "delta": 2.3,
+   "percentil": 100.0,
    "lado": "calor",
-   "racha_ifc3": 2
+   "racha_ifc3": 3
   },
   "avisos": {
    "total": 0,
@@ -62,11 +62,11 @@
    {
     "id": "fuerteventura",
     "nombre": "Fuerteventura",
-    "temperatura_actual": 25.0,
-    "anomalia": 0.0,
-    "etiqueta_anomalia": "Normal",
-    "dias_consecutivos": 1,
-    "signo_consecutivo": "normal"
+    "temperatura_actual": null,
+    "anomalia": null,
+    "etiqueta_anomalia": "Sin datos",
+    "dias_consecutivos": null,
+    "signo_consecutivo": null
    },
    {
     "id": "lanzarote",
@@ -138,10 +138,10 @@
     "nombre": "Las Palmas",
     "etiqueta": "Moderada",
     "aqi_europeo": 37,
-    "pm25": 21.8,
+    "pm25": 18.1,
     "contaminante_dominante": "PM2.5",
     "supera_oms": true,
-    "sahariano": true
+    "sahariano": false
    }
   ],
   "dias32": {
@@ -153,8 +153,8 @@
    {
     "id": "gran_canaria",
     "nombre": "Gran Canaria",
-    "temp": 22.66,
-    "fecha": "2026-08-01",
+    "temp": 22.77,
+    "fecha": "2026-08-02",
     "max_anio": {
      "valor": 23.12,
      "fecha": "2026-07-24"
@@ -175,62 +175,52 @@
    "tipo": "firma",
    "icono": "🔬",
    "nivel": "alto",
-   "texto": "El calor de hoy en Las Palmas de Gran Canaria (30.3 °C) es al menos 100× más probable por el cambio climático, que le añade +1.9 °C · 2.º día consecutivo",
+   "texto": "El calor de hoy en Las Palmas de Gran Canaria (32.2 °C) es al menos 100× más probable por el cambio climático, que le añade +2.3 °C · 3.º día consecutivo",
    "url": "https://calentamientoglobal.es/firma-climatica/",
    "prioridad": 90,
-   "racha_dias": 2,
+   "racha_dias": 3,
    "nuevo": false
+  },
+  {
+   "tipo": "canicula_alta",
+   "icono": "☀️",
+   "nivel": "alto",
+   "texto": "Canícula intensa en Las Palmas: índice de calor 76/100, máxima de 31.9 °C y 3 días seguidos de calor",
+   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
+   "prioridad": 86,
+   "racha_dias": 1,
+   "nuevo": true
   },
   {
    "tipo": "nivel_mar_fuerteventura",
    "icono": "🌊",
    "nivel": "medio",
-   "texto": "Nivel del mar muy elevado en Fuerteventura: +14.4 cm sobre la media 1993-2012 · 3.º día consecutivo",
+   "texto": "Nivel del mar muy elevado en Fuerteventura: +14.4 cm sobre la media 1993-2012 · 4.º día consecutivo",
    "url": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
    "prioridad": 64,
-   "racha_dias": 3,
+   "racha_dias": 4,
    "nuevo": false
   },
   {
    "tipo": "dias32",
    "icono": "🥵",
    "nivel": "medio",
-   "texto": "Las Palmas ya suma 9 días por encima de 32 °C este año (media 1991-2020: 0; media 1961-1990: 0) · 3.º día consecutivo",
+   "texto": "Las Palmas ya suma 9 días por encima de 32 °C este año (media 1991-2020: 0; media 1961-1990: 0) · 4.º día consecutivo",
    "url": "https://calentamientoglobal.es/observatorio-climatico/",
    "prioridad": 62,
-   "racha_dias": 3,
+   "racha_dias": 4,
    "nuevo": false
   },
   {
    "tipo": "lluvia_abundante",
    "icono": "🌧️",
    "nivel": "medio",
-   "texto": "Año inusualmente lluvioso en Las Palmas: 482.0 mm, un 317% más de lo normal · 3.º día consecutivo",
+   "texto": "Año inusualmente lluvioso en Las Palmas: 482.0 mm, un 317% más de lo normal · 4.º día consecutivo",
    "url": "https://calentamientoglobal.es/lluvias-en-espana/",
    "prioridad": 60,
-   "racha_dias": 3,
+   "racha_dias": 4,
    "nuevo": false
-  },
-  {
-   "tipo": "canicula",
-   "icono": "☀️",
-   "nivel": "medio",
-   "texto": "Calor canicular en Las Palmas: índice 68/100, máxima de 30.4 °C · 2.º día consecutivo",
-   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
-   "prioridad": 58,
-   "racha_dias": 2,
-   "nuevo": false
-  },
-  {
-   "tipo": "sahariano",
-   "icono": "🌫️",
-   "nivel": "medio",
-   "texto": "Episodio de polvo sahariano afectando a Las Palmas",
-   "url": "https://calentamientoglobal.es/calidad-del-aire/",
-   "prioridad": 58,
-   "racha_dias": 1,
-   "nuevo": true
   }
  ],
- "texto_seo": "Situación climática en Las Palmas a 01/08/2026: El calor de hoy en Las Palmas de Gran Canaria (30.3 °C) es al menos 100× más probable por el cambio climático, que le añade +1.9 °C. Nivel del mar muy elevado en Fuerteventura: +14.4 cm sobre la media 1993-2012. Las Palmas ya suma 9 días por encima de 32 °C este año (media 1991-2020: 0; media 1961-1990: 0). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Las Palmas a 02/08/2026: El calor de hoy en Las Palmas de Gran Canaria (32.2 °C) es al menos 100× más probable por el cambio climático, que le añade +2.3 °C. Canícula intensa en Las Palmas: índice de calor 76/100, máxima de 31.9 °C y 3 días seguidos de calor. Nivel del mar muy elevado en Fuerteventura: +14.4 cm sobre la media 1993-2012. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
