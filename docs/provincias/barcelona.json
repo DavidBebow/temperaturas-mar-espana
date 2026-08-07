@@ -3,8 +3,8 @@
  "provincia": "Barcelona",
  "ccaa": "Cataluña",
  "capital": "Barcelona",
- "generado": "2026-08-07T10:00+02:00",
- "fecha_legible": "07/08/2026 a las 10:00",
+ "generado": "2026-08-07T17:37+02:00",
+ "fecha_legible": "07/08/2026 a las 17:37",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,11 +23,11 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 30.4,
-   "tmax_hoy": 31.9,
-   "tmin_hoy": 24.4,
+   "tmax_hoy": 31.8,
+   "tmin_hoy": 24.0,
    "dias_consecutivos": 3,
    "noche_tropical": true,
-   "icc": 64,
+   "icc": 62,
    "nivel": "Canícula intensa",
    "color": "#FF8822"
   },
@@ -43,11 +43,20 @@
    "racha_ifc3": 3
   },
   "avisos": {
-   "total": 9,
+   "total": 11,
    "rojos": 0,
-   "naranjas": 0,
-   "amarillos": 9,
+   "naranjas": 1,
+   "amarillos": 10,
    "items": [
+    {
+     "zona": "Prepirineo de Barcelona",
+     "nivel": "naranja",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-08-07T18:00+02:00",
+     "fin": "2026-08-07T23:59+02:00",
+     "activo_ya": false
+    },
     {
      "zona": "Depresión central de Barcelona",
      "nivel": "amarillo",
@@ -55,16 +64,7 @@
      "icono": "🌡️",
      "inicio": "2026-08-07T13:00+02:00",
      "fin": "2026-08-07T20:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Depresión central de Barcelona",
-     "nivel": "amarillo",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-08-09T13:00+02:00",
-     "fin": "2026-08-09T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Depresión central de Barcelona",
@@ -76,7 +76,7 @@
      "activo_ya": false
     },
     {
-     "zona": "Prelitoral de Barcelona",
+     "zona": "Depresión central de Barcelona",
      "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
@@ -91,6 +91,15 @@
      "icono": "🌡️",
      "inicio": "2026-08-08T13:00+02:00",
      "fin": "2026-08-08T20:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Prelitoral de Barcelona",
+     "nivel": "amarillo",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-09T13:00+02:00",
+     "fin": "2026-08-09T20:59+02:00",
      "activo_ya": false
     },
     {
@@ -114,19 +123,28 @@
     {
      "zona": "Prepirineo de Barcelona",
      "nivel": "amarillo",
-     "tipo": "Lluvias",
-     "icono": "🌧️",
-     "inicio": "2026-08-07T18:00+02:00",
-     "fin": "2026-08-07T23:59+02:00",
+     "tipo": "Tormentas",
+     "icono": "⛈️",
+     "inicio": "2026-08-08T16:00+02:00",
+     "fin": "2026-08-08T23:59+02:00",
      "activo_ya": false
     },
     {
      "zona": "Prepirineo de Barcelona",
      "nivel": "amarillo",
-     "tipo": "Tormentas",
-     "icono": "⛈️",
-     "inicio": "2026-08-08T16:00+02:00",
-     "fin": "2026-08-08T23:59+02:00",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-08T13:00+02:00",
+     "fin": "2026-08-08T20:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Prepirineo de Barcelona",
+     "nivel": "amarillo",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-09T13:00+02:00",
+     "fin": "2026-08-09T20:59+02:00",
      "activo_ya": false
     }
    ]
@@ -135,11 +153,11 @@
    {
     "id": "barcelona",
     "nombre": "Barcelona",
-    "temperatura_actual": null,
-    "anomalia": null,
-    "etiqueta_anomalia": "Sin datos",
-    "dias_consecutivos": null,
-    "signo_consecutivo": null
+    "temperatura_actual": 28.6,
+    "anomalia": 2.1,
+    "etiqueta_anomalia": "Muy por encima de la media",
+    "dias_consecutivos": 32,
+    "signo_consecutivo": "positiva"
    },
    {
     "id": "sitges",
@@ -171,7 +189,7 @@
   ],
   "incendios_ccaa": {
    "nombre": "Cataluña",
-   "focos_activos": 2,
+   "focos_activos": 4,
    "tiene_fuego": true,
    "etiqueta": "Actividad baja",
    "dias_consecutivos": 0,
@@ -182,9 +200,9 @@
    "mm_semana": 0.0,
    "mm_anual": 390.2,
    "media_anual_mm": 580,
-   "media_hasta_hoy_mm": 343.2,
+   "media_hasta_hoy_mm": 344.8,
    "anomalia_semana_pct": -100.0,
-   "anomalia_anual_pct": 13.7,
+   "anomalia_anual_pct": 13.2,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Normal"
   },
@@ -193,8 +211,8 @@
     "id": "barcelona",
     "nombre": "Barcelona",
     "t_min_anoche": null,
-    "nt_mes": 2,
-    "nt_anyo": 53,
+    "nt_mes": 3,
+    "nt_anyo": 54,
     "etiqueta": "Sin datos"
    }
   ],
@@ -203,7 +221,7 @@
     "nombre": "Barcelona",
     "etiqueta": "Buena",
     "aqi_europeo": 46,
-    "pm25": 9.1,
+    "pm25": 12.1,
     "contaminante_dominante": "O₃",
     "supera_oms": true,
     "sahariano": false
@@ -227,7 +245,7 @@
    {
     "id": "barcelona",
     "nombre": "Barcelona (costera)",
-    "temp": 28.27,
+    "temp": 28.52,
     "fecha": "2026-08-07",
     "max_anio": {
      "valor": 28.87,
@@ -256,6 +274,16 @@
    "nuevo": false
   },
   {
+   "tipo": "aviso_naranja",
+   "icono": "🟠",
+   "nivel": "alto",
+   "texto": "Aviso naranja de AEMET en Barcelona por Lluvias (1 zona(s)) · 4.º día consecutivo",
+   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "prioridad": 80,
+   "racha_dias": 4,
+   "nuevo": false
+  },
+  {
    "tipo": "firma",
    "icono": "🔬",
    "nivel": "medio",
@@ -269,7 +297,7 @@
    "tipo": "boya_anomalia_barcelona",
    "icono": "🌡️",
    "nivel": "medio",
-   "texto": "La boya de Barcelona (costera) está +2.6 °C sobre lo normal para la época (28.27 °C)",
+   "texto": "La boya de Barcelona (costera) está +2.6 °C sobre lo normal para la época (28.52 °C)",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 69,
    "racha_dias": 1,
@@ -289,22 +317,12 @@
    "tipo": "canicula",
    "icono": "☀️",
    "nivel": "medio",
-   "texto": "Calor canicular en Barcelona: índice 64/100, máxima de 31.9 °C · 3.º día consecutivo",
+   "texto": "Calor canicular en Barcelona: índice 62/100, máxima de 31.8 °C · 3.º día consecutivo",
    "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
    "prioridad": 58,
    "racha_dias": 3,
    "nuevo": false
-  },
-  {
-   "tipo": "incendios",
-   "icono": "🔥",
-   "nivel": "medio",
-   "texto": "2 foco(s) de calor activos detectados por satélite en Cataluña (últimas 48 h)",
-   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
-   "prioridad": 56,
-   "racha_dias": 1,
-   "nuevo": true
   }
  ],
- "texto_seo": "Situación climática en Barcelona a 07/08/2026: El mar en Sitges está a 29.2 °C, +3.2 °C sobre la media histórica, 70 días seguidos por encima de la media. El calor de hoy en Barcelona (31.3 °C) es 11× más probable por el cambio climático, que le añade +2.3 °C. La boya de Barcelona (costera) está +2.6 °C sobre lo normal para la época (28.27 °C). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Barcelona a 07/08/2026: El mar en Sitges está a 29.2 °C, +3.2 °C sobre la media histórica, 70 días seguidos por encima de la media. Aviso naranja de AEMET en Barcelona por Lluvias (1 zona(s)). El calor de hoy en Barcelona (31.3 °C) es 11× más probable por el cambio climático, que le añade +2.3 °C. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
