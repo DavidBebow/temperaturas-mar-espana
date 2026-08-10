@@ -3,8 +3,8 @@
  "provincia": "La Rioja",
  "ccaa": "La Rioja",
  "capital": "Logroño",
- "generado": "2026-08-10T10:17+02:00",
- "fecha_legible": "10/08/2026 a las 10:17",
+ "generado": "2026-08-10T17:39+02:00",
+ "fecha_legible": "10/08/2026 a las 17:39",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,13 +23,13 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 34.1,
-   "tmax_hoy": 36.3,
-   "tmin_hoy": 22.0,
-   "dias_consecutivos": 3,
+   "tmax_hoy": 35.0,
+   "tmin_hoy": 20.2,
+   "dias_consecutivos": 4,
    "noche_tropical": true,
-   "icc": 60,
-   "nivel": "Canícula intensa",
-   "color": "#FF8822"
+   "icc": 55,
+   "nivel": "Canícula",
+   "color": "#FFCC44"
   },
   "firma_climatica": {
    "nombre": "Logroño",
@@ -45,9 +45,18 @@
   "avisos": {
    "total": 4,
    "rojos": 0,
-   "naranjas": 0,
-   "amarillos": 4,
+   "naranjas": 1,
+   "amarillos": 3,
    "items": [
+    {
+     "zona": "Ribera del Ebro de La Rioja",
+     "nivel": "naranja",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-12T13:00+02:00",
+     "fin": "2026-08-12T20:59+02:00",
+     "activo_ya": false
+    },
     {
      "zona": "Ribera del Ebro de La Rioja",
      "nivel": "amarillo",
@@ -55,7 +64,7 @@
      "icono": "⛈️",
      "inicio": "2026-08-10T15:00+02:00",
      "fin": "2026-08-10T21:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Ribera del Ebro de La Rioja",
@@ -64,7 +73,7 @@
      "icono": "🌧️",
      "inicio": "2026-08-10T15:00+02:00",
      "fin": "2026-08-10T21:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Ribera del Ebro de La Rioja",
@@ -73,15 +82,6 @@
      "icono": "🌡️",
      "inicio": "2026-08-11T13:00+02:00",
      "fin": "2026-08-11T20:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Ribera del Ebro de La Rioja",
-     "nivel": "amarillo",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-08-12T13:00+02:00",
-     "fin": "2026-08-12T20:59+02:00",
      "activo_ya": false
     }
    ]
@@ -95,13 +95,13 @@
    "dias_anio_actual": 0
   },
   "lluvias": {
-   "mm_ayer": 0.0,
-   "mm_semana": 0.1,
-   "mm_anual": 515.6,
+   "mm_ayer": 0.1,
+   "mm_semana": 0.2,
+   "mm_anual": 516.3,
    "media_anual_mm": 500,
-   "media_hasta_hoy_mm": 300.0,
-   "anomalia_semana_pct": -99.0,
-   "anomalia_anual_pct": 71.9,
+   "media_hasta_hoy_mm": 301.4,
+   "anomalia_semana_pct": -97.9,
+   "anomalia_anual_pct": 71.3,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Muy lluvioso"
   },
@@ -119,8 +119,8 @@
    {
     "nombre": "Logroño",
     "etiqueta": "Buena",
-    "aqi_europeo": 33,
-    "pm25": 8.5,
+    "aqi_europeo": 37,
+    "pm25": 8.9,
     "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
@@ -139,6 +139,16 @@
  },
  "destacados": [
   {
+   "tipo": "aviso_naranja",
+   "icono": "🟠",
+   "nivel": "alto",
+   "texto": "Aviso naranja de AEMET en La Rioja por Altas temperaturas (1 zona(s))",
+   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "prioridad": 80,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
    "tipo": "firma",
    "icono": "🔬",
    "nivel": "medio",
@@ -152,7 +162,7 @@
    "tipo": "lluvia_abundante",
    "icono": "🌧️",
    "nivel": "medio",
-   "texto": "Año inusualmente lluvioso en La Rioja: 515.6 mm, un 72% más de lo normal · 12.º día consecutivo",
+   "texto": "Año inusualmente lluvioso en La Rioja: 516.3 mm, un 71% más de lo normal · 12.º día consecutivo",
    "url": "https://calentamientoglobal.es/lluvias-en-espana/",
    "prioridad": 60,
    "racha_dias": 12,
@@ -162,12 +172,12 @@
    "tipo": "canicula",
    "icono": "☀️",
    "nivel": "medio",
-   "texto": "Calor canicular en La Rioja: índice 60/100, máxima de 36.3 °C · 3.º día consecutivo",
+   "texto": "Calor canicular en La Rioja: índice 55/100, máxima de 35.0 °C · 3.º día consecutivo",
    "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
    "prioridad": 58,
    "racha_dias": 3,
    "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en La Rioja a 10/08/2026: El calor de hoy en Logroño (35.1 °C) es 11× más probable por el cambio climático, que le añade +4.6 °C. Año inusualmente lluvioso en La Rioja: 515.6 mm, un 72% más de lo normal. Calor canicular en La Rioja: índice 60/100, máxima de 36.3 °C. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en La Rioja a 10/08/2026: Aviso naranja de AEMET en La Rioja por Altas temperaturas (1 zona(s)). El calor de hoy en Logroño (35.1 °C) es 11× más probable por el cambio climático, que le añade +4.6 °C. Año inusualmente lluvioso en La Rioja: 516.3 mm, un 71% más de lo normal. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
