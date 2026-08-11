@@ -3,8 +3,8 @@
  "provincia": "Madrid",
  "ccaa": "Comunidad de Madrid",
  "capital": "Madrid",
- "generado": "2026-08-11T09:57+02:00",
- "fecha_legible": "11/08/2026 a las 09:57",
+ "generado": "2026-08-11T17:40+02:00",
+ "fecha_legible": "11/08/2026 a las 17:40",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,10 +23,10 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 36.5,
-   "tmax_hoy": 35.8,
-   "tmin_hoy": 19.8,
+   "tmax_hoy": 34.8,
+   "tmin_hoy": 21.8,
    "dias_consecutivos": 0,
-   "noche_tropical": false,
+   "noche_tropical": true,
    "icc": 22,
    "nivel": "Calor de verano",
    "color": "#44AA66"
@@ -45,17 +45,35 @@
   "avisos": {
    "total": 9,
    "rojos": 0,
-   "naranjas": 0,
-   "amarillos": 9,
+   "naranjas": 2,
+   "amarillos": 7,
    "items": [
     {
      "zona": "Metropolitana y Henares",
+     "nivel": "naranja",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-13T13:00+02:00",
+     "fin": "2026-08-13T20:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Sur, Vegas y Oeste",
+     "nivel": "naranja",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-13T13:00+02:00",
+     "fin": "2026-08-13T20:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Metropolitana y Henares",
      "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
      "inicio": "2026-08-11T13:00+02:00",
      "fin": "2026-08-11T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Metropolitana y Henares",
@@ -67,22 +85,13 @@
      "activo_ya": false
     },
     {
-     "zona": "Metropolitana y Henares",
-     "nivel": "amarillo",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-08-13T13:00+02:00",
-     "fin": "2026-08-13T20:59+02:00",
-     "activo_ya": false
-    },
-    {
      "zona": "Sierra de Madrid",
      "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
      "inicio": "2026-08-11T13:00+02:00",
      "fin": "2026-08-11T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Sierra de Madrid",
@@ -109,7 +118,7 @@
      "icono": "🌡️",
      "inicio": "2026-08-11T13:00+02:00",
      "fin": "2026-08-11T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Sur, Vegas y Oeste",
@@ -118,15 +127,6 @@
      "icono": "🌡️",
      "inicio": "2026-08-12T13:00+02:00",
      "fin": "2026-08-12T20:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Sur, Vegas y Oeste",
-     "nivel": "amarillo",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-08-13T13:00+02:00",
-     "fin": "2026-08-13T20:59+02:00",
      "activo_ya": false
     }
    ]
@@ -144,9 +144,9 @@
    "mm_semana": 0.0,
    "mm_anual": 398.3,
    "media_anual_mm": 440,
-   "media_hasta_hoy_mm": 265.2,
+   "media_hasta_hoy_mm": 266.4,
    "anomalia_semana_pct": -100.0,
-   "anomalia_anual_pct": 50.2,
+   "anomalia_anual_pct": 49.5,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Muy lluvioso"
   },
@@ -155,8 +155,8 @@
     "id": "madrid",
     "nombre": "Madrid",
     "t_min_anoche": null,
-    "nt_mes": 6,
-    "nt_anyo": 55,
+    "nt_mes": 7,
+    "nt_anyo": 56,
     "etiqueta": "Sin datos"
    }
   ],
@@ -164,10 +164,10 @@
    {
     "nombre": "Madrid",
     "etiqueta": "Buena",
-    "aqi_europeo": 40,
-    "pm25": 10.3,
+    "aqi_europeo": 48,
+    "pm25": 7.5,
     "contaminante_dominante": "O₃",
-    "supera_oms": false,
+    "supera_oms": true,
     "sahariano": false
    }
   ],
@@ -186,6 +186,17 @@
    "meses_secos_2050": 6.5
   }
  },
- "destacados": [],
- "texto_seo": "Sin anomalías climáticas destacables hoy en Madrid (11/08/2026). Seguimiento diario en el Observatorio Climático de calentamientoglobal.es."
+ "destacados": [
+  {
+   "tipo": "aviso_naranja",
+   "icono": "🟠",
+   "nivel": "alto",
+   "texto": "Aviso naranja de AEMET en Madrid por Altas temperaturas (2 zona(s))",
+   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "prioridad": 80,
+   "racha_dias": 1,
+   "nuevo": true
+  }
+ ],
+ "texto_seo": "Situación climática en Madrid a 11/08/2026: Aviso naranja de AEMET en Madrid por Altas temperaturas (2 zona(s)). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
