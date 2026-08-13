@@ -3,8 +3,8 @@
  "provincia": "Segovia",
  "ccaa": "Castilla y León",
  "capital": "Segovia",
- "generado": "2026-08-13T10:05+02:00",
- "fecha_legible": "13/08/2026 a las 10:05",
+ "generado": "2026-08-13T17:40+02:00",
+ "fecha_legible": "13/08/2026 a las 17:40",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,11 +23,11 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 32.3,
-   "tmax_hoy": 35.0,
-   "tmin_hoy": 17.7,
-   "dias_consecutivos": 7,
+   "tmax_hoy": 35.8,
+   "tmin_hoy": 19.2,
+   "dias_consecutivos": 8,
    "noche_tropical": false,
-   "icc": 64,
+   "icc": 71,
    "nivel": "Canícula intensa",
    "color": "#FF8822"
   },
@@ -43,10 +43,10 @@
    "racha_ifc3": 0
   },
   "avisos": {
-   "total": 4,
+   "total": 6,
    "rojos": 0,
    "naranjas": 0,
-   "amarillos": 4,
+   "amarillos": 6,
    "items": [
     {
      "zona": "Meseta de Segovia",
@@ -55,7 +55,7 @@
      "icono": "🌡️",
      "inicio": "2026-08-13T13:00+02:00",
      "fin": "2026-08-13T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Meseta de Segovia",
@@ -73,7 +73,7 @@
      "icono": "🌡️",
      "inicio": "2026-08-13T13:00+02:00",
      "fin": "2026-08-13T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Sistema Central de Segovia",
@@ -83,25 +83,43 @@
      "inicio": "2026-08-14T13:00+02:00",
      "fin": "2026-08-14T20:59+02:00",
      "activo_ya": false
+    },
+    {
+     "zona": "Sistema Central de Segovia",
+     "nivel": "amarillo",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-08-15T14:00+02:00",
+     "fin": "2026-08-15T21:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Sistema Central de Segovia",
+     "nivel": "amarillo",
+     "tipo": "Tormentas",
+     "icono": "⛈️",
+     "inicio": "2026-08-15T14:00+02:00",
+     "fin": "2026-08-15T21:59+02:00",
+     "activo_ya": false
     }
    ]
   },
   "incendios_ccaa": {
    "nombre": "Castilla y León",
-   "focos_activos": 18,
+   "focos_activos": 22,
    "tiene_fuego": true,
-   "etiqueta": "Actividad moderada",
-   "dias_consecutivos": 0,
-   "dias_anio_actual": 8
+   "etiqueta": "Actividad alta",
+   "dias_consecutivos": 1,
+   "dias_anio_actual": 9
   },
   "lluvias": {
    "mm_ayer": 0.0,
    "mm_semana": 0.0,
    "mm_anual": 575.9,
    "media_anual_mm": 480,
-   "media_hasta_hoy_mm": 291.9,
+   "media_hasta_hoy_mm": 293.3,
    "anomalia_semana_pct": -100.0,
-   "anomalia_anual_pct": 97.3,
+   "anomalia_anual_pct": 96.4,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Muy lluvioso"
   },
@@ -109,8 +127,8 @@
    {
     "nombre": "Segovia",
     "etiqueta": "Buena",
-    "aqi_europeo": 52,
-    "pm25": 7.1,
+    "aqi_europeo": 47,
+    "pm25": 8.5,
     "contaminante_dominante": "O₃",
     "supera_oms": true,
     "sahariano": false
@@ -134,6 +152,26 @@
  },
  "destacados": [
   {
+   "tipo": "canicula_alta",
+   "icono": "☀️",
+   "nivel": "alto",
+   "texto": "Canícula intensa en Segovia: índice de calor 71/100, máxima de 35.8 °C y 8 días seguidos de calor",
+   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
+   "prioridad": 86,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
+   "tipo": "incendios",
+   "icono": "🔥",
+   "nivel": "alto",
+   "texto": "22 foco(s) de calor activos detectados por satélite en Castilla y León (últimas 48 h) · 15.º día consecutivo",
+   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
+   "prioridad": 84,
+   "racha_dias": 15,
+   "nuevo": false
+  },
+  {
    "tipo": "dias32",
    "icono": "🥵",
    "nivel": "medio",
@@ -147,32 +185,12 @@
    "tipo": "lluvia_abundante",
    "icono": "🌧️",
    "nivel": "medio",
-   "texto": "Año inusualmente lluvioso en Segovia: 575.9 mm, un 97% más de lo normal · 15.º día consecutivo",
+   "texto": "Año inusualmente lluvioso en Segovia: 575.9 mm, un 96% más de lo normal · 15.º día consecutivo",
    "url": "https://calentamientoglobal.es/lluvias-en-espana/",
    "prioridad": 60,
    "racha_dias": 15,
    "nuevo": false
-  },
-  {
-   "tipo": "canicula",
-   "icono": "☀️",
-   "nivel": "medio",
-   "texto": "Calor canicular en Segovia: índice 64/100, máxima de 35.0 °C · 4.º día consecutivo",
-   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
-   "prioridad": 58,
-   "racha_dias": 4,
-   "nuevo": false
-  },
-  {
-   "tipo": "incendios",
-   "icono": "🔥",
-   "nivel": "medio",
-   "texto": "18 foco(s) de calor activos detectados por satélite en Castilla y León (últimas 48 h) · 15.º día consecutivo",
-   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
-   "prioridad": 56,
-   "racha_dias": 15,
-   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Segovia a 13/08/2026: Segovia ya suma 24 días por encima de 32 °C este año (media 1991-2020: 9; media 1961-1990: 2). Año inusualmente lluvioso en Segovia: 575.9 mm, un 97% más de lo normal. Calor canicular en Segovia: índice 64/100, máxima de 35.0 °C. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Segovia a 13/08/2026: Canícula intensa en Segovia: índice de calor 71/100, máxima de 35.8 °C y 8 días seguidos de calor. 22 foco(s) de calor activos detectados por satélite en Castilla y León (últimas 48 h). Segovia ya suma 24 días por encima de 32 °C este año (media 1991-2020: 9; media 1961-1990: 2). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
