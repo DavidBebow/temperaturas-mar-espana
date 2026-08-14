@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muertes atribuibles al calor en España — datos MoMo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#f7f8fa;color:#1b2a3a;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  #wrap{max-width:1080px;margin:0 auto;padding:16px 14px 22px}
+
+  #titulo{text-align:center;margin-bottom:14px}
+  #titulo .t{font-size:17px;font-weight:700;letter-spacing:-.01em}
+  #titulo .t b{color:#cc4400}
+  #titulo .s{font-size:11.5px;color:#6a7686;margin-top:2px}
+
+  #tabs{display:flex;gap:6px;justify-content:center;margin:0 auto 16px;width:max-content;
+    background:rgba(255,255,255,.9);border:1px solid #e2e6ec;border-radius:999px;padding:4px;
+    box-shadow:0 6px 20px rgba(20,30,50,.1)}
+  .tab{border:0;background:transparent;color:#5a6676;border-radius:999px;padding:6px 14px;
+    font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .tab.on{background:#cc4400;color:#fff}
+  .tab:hover:not(.on){color:#cc4400}
+
+  .grid{display:grid;grid-template-columns:290px 1fr;gap:14px;align-items:start}
+  .card{background:rgba(255,255,255,.96);border:1px solid #e2e6ec;border-radius:16px;
+    padding:16px 18px;box-shadow:0 10px 34px rgba(20,30,50,.09)}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#cc4400;margin-bottom:8px}
+  .big{font-size:46px;font-weight:700;color:#a12f00;letter-spacing:-.03em;line-height:1}
+  .big small{display:block;font-size:12px;font-weight:500;color:#6a7686;margin-top:9px;letter-spacing:0;line-height:1.5}
+  .card h4{font-size:12.5px;font-weight:700;margin-bottom:4px}
+  .card p{font-size:12px;color:#5a6676;line-height:1.55;margin-top:8px}
+
+  .mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  .mini div{background:#fbf6f0;border:1px solid #f0e6da;border-radius:12px;padding:11px 12px}
+  .mini .n{font-size:20px;font-weight:700;color:#a12f00;letter-spacing:-.02em;line-height:1}
+  .mini .l{font-size:10.5px;color:#6a7686;margin-top:5px;line-height:1.4}
+
+  #chart{width:100%;height:290px;display:block}
+  #chart text{fill:#9aa6b6;font-size:10px;font-family:inherit}
+  #chart text.val{fill:#5a6676;font-weight:700;font-size:10.5px}
+  .barra{cursor:pointer;transition:opacity .15s}
+  .barra:hover{opacity:.78}
+
+  #leyenda{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center;
+    margin-top:10px;font-size:11px;color:#5a6676}
+  #leyenda .lg{display:flex;align-items:center;gap:6px}
+  #leyenda .sw{width:13px;height:13px;border-radius:4px;border:1px solid rgba(0,0,0,.08)}
+
+  .rank{list-style:none;margin-top:6px}
+  .rank li{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#5a6676;
+    padding:5px 0;border-bottom:1px solid #eef1f5}
+  .rank li:last-child{border-bottom:none}
+  .rank li b{color:#a12f00;font-weight:700}
+
+  #pie{text-align:center;font-size:10.5px;color:#9aa6b6;margin-top:14px;line-height:1.6}
+  #pie a{color:#cc4400;text-decoration:none}
+  #pie a:hover{text-decoration:underline}
+
+  @media(max-width:780px){
+    .grid{grid-template-columns:1fr}
+    .big{font-size:38px}
+    #chart{height:240px}
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="titulo">
+    <div class="t">Observatorio climático · <b>Muertes atribuibles al calor</b></div>
+    <div class="s" id="subtitulo">Estimación diaria del sistema MoMo · Instituto de Salud Carlos III</div>
+  </div>
+
+  <div id="tabs">
+    <button class="tab on" data-view="verano">Verano en curso</button>
+    <button class="tab" data-view="meses">Mes a mes</button>
+    <button class="tab" data-view="contexto">La serie larga</button>
+  </div>
+
+  <div class="grid">
+    <div class="card" id="resumen"></div>
+    <div class="card">
+      <div class="eyebrow" id="chart-title">Defunciones atribuibles a la temperatura</div>
+      <svg id="chart" viewBox="0 0 720 290" preserveAspectRatio="xMidYMid meet"></svg>
+      <div id="leyenda">
+        <span class="lg"><span class="sw" style="background:#cc4400"></span> Atribuibles al calor</span>
+        <span class="lg"><span class="sw" style="background:#2a6df4"></span> Atribuibles al frío</span>
+        <span class="lg"><span class="sw" style="background:#e8a87c"></span> Mes incompleto</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="pie"></div>
+</div>
+
+<script>
+const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/calor_mortalidad.json';
+
+/* Copia de seguridad: si el JSON no carga, la pagina NUNCA sale vacia.
+   Datos reales consultados en el panel MoMo el 14/08/2026. */
+const PREVIEW = {
+  "actualizado":"2026-08-14",
+  "fuente":"MoMo · Centro Nacional de Epidemiología · Instituto de Salud Carlos III",
+  "verano_actual":{"anio":2026,"a_fecha":"2026-08-13","desde":"2026-06-01","atribuibles_calor":3851,"parcial":true},
+  "meses":[
+    {"mes":"2025-11","atribuibles":137,"signo":"frio"},
+    {"mes":"2025-12","atribuibles":278,"signo":"frio"},
+    {"mes":"2026-01","atribuibles":909,"signo":"frio"},
+    {"mes":"2026-02","atribuibles":51,"signo":"frio"},
+    {"mes":"2026-03","atribuibles":51,"signo":"frio"},
+    {"mes":"2026-04","atribuibles":49,"signo":"calor"},
+    {"mes":"2026-05","atribuibles":123,"signo":"calor"},
+    {"mes":"2026-06","atribuibles":936,"signo":"calor"},
+    {"mes":"2026-07","atribuibles":2024,"signo":"calor"},
+    {"mes":"2026-08","atribuibles":891,"signo":"calor","parcial":true}
+  ],
+  "doce_meses":{"observadas":452894,"base":441782,"exceso":11112,"atribuibles_temperatura":7121},
+  "contexto":{"total_2015_2025":27564,"peor_anio":{"anio":2022,"atribuibles":4789},
+    "riesgo_por_grado_min":9.1,"riesgo_por_grado_max":10.7},
+  "historico_anual":[{"anio":2022,"atribuibles_calor":4789}]
+};
+
+let D = PREVIEW, vista = 'verano';
+
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const nf = n => (n == null ? '—' : n.toLocaleString('es-ES'));
+
+function etiquetaMes(clave){
+  const [a, m] = clave.split('-');
+  return MESES[parseInt(m, 10) - 1] + ' ' + a.slice(2);
+}
+
+function fechaLarga(iso){
+  if(!iso) return '';
+  const [a, m, d] = iso.split('-');
+  const nombres = ['enero','febrero','marzo','abril','mayo','junio','julio',
+                   'agosto','septiembre','octubre','noviembre','diciembre'];
+  return parseInt(d, 10) + ' de ' + nombres[parseInt(m, 10) - 1] + ' de ' + a;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tarjeta izquierda                                                   */
+/* ------------------------------------------------------------------ */
+function pintarResumen(){
+  const el = document.getElementById('resumen');
+  const v  = D.verano_actual || {};
+  const c  = D.contexto || {};
+  const dm = D.doce_meses || {};
+
+  if(vista === 'contexto'){
+    el.innerHTML =
+      '<div class="eyebrow">Serie larga · 2015-2025</div>' +
+      '<div class="big">' + nf(c.total_2015_2025) +
+      '<small>muertes atribuibles a las altas temperaturas en España en once años, según las estimaciones de MoMo.</small></div>' +
+      '<div class="mini">' +
+        '<div><div class="n">' + nf(c.peor_anio && c.peor_anio.atribuibles) + '</div>' +
+        '<div class="l">el peor año de la serie, ' + (c.peor_anio ? c.peor_anio.anio : '') + '</div></div>' +
+        '<div><div class="n">+' + (c.riesgo_por_grado_min || '') + '%</div>' +
+        '<div class="l">más riesgo de morir por cada grado por encima del umbral</div></div>' +
+      '</div>' +
+      '<p>El riesgo de mortalidad sube entre un ' + c.riesgo_por_grado_min + ' % y un ' +
+      c.riesgo_por_grado_max + ' % por cada grado que la temperatura supera el umbral de cada zona.</p>';
+    return;
+  }
+
+  if(vista === 'meses'){
+    el.innerHTML =
+      '<div class="eyebrow">Últimos doce meses</div>' +
+      '<div class="big">' + nf(dm.atribuibles_temperatura) +
+      '<small>muertes atribuibles a la temperatura, sumando el calor del verano y el frío del invierno.</small></div>' +
+      '<div class="mini">' +
+        '<div><div class="n">' + nf(dm.observadas) + '</div><div class="l">defunciones observadas por todas las causas</div></div>' +
+        '<div><div class="n">' + nf(dm.exceso) + '</div><div class="l">exceso sobre la mortalidad esperada</div></div>' +
+      '</div>' +
+      '<p>MoMo separa las muertes atribuibles al <b>exceso</b> de temperatura de las atribuibles al <b>defecto</b>. En las barras naranjas manda el calor; en las azules, el frío.</p>';
+    return;
+  }
+
+  const meses  = (D.meses || []).filter(m => m.signo === 'calor' && m.mes >= (v.anio + '-06'));
+  const julio  = meses.find(m => m.mes.endsWith('-07'));
+  const junio  = meses.find(m => m.mes.endsWith('-06'));
+
+  el.innerHTML =
+    '<div class="eyebrow">Verano de ' + (v.anio || '') + ' · en curso</div>' +
+    '<div class="big">' + nf(v.atribuibles_calor) +
+    '<small>muertes atribuibles al calor en España desde el 1 de junio, según MoMo.</small></div>' +
+    '<div class="mini">' +
+      '<div><div class="n">' + nf(julio && julio.atribuibles) + '</div><div class="l">solo en julio, el mes más letal</div></div>' +
+      '<div><div class="n">' + nf(junio && junio.atribuibles) + '</div><div class="l">en junio, con la primera ola de calor</div></div>' +
+    '</div>' +
+    '<p>Cifra a ' + fechaLarga(v.a_fecha) + '. Agosto está incompleto y MoMo lo revisa al alza a medida que llegan las defunciones con retraso.</p>';
+}
+
+/* ------------------------------------------------------------------ */
+/* Grafico de barras                                                   */
+/* ------------------------------------------------------------------ */
+function pintarChart(){
+  const svg = document.getElementById('chart');
+  const tit = document.getElementById('chart-title');
+  const W = 720, H = 290, ML = 46, MR = 12, MT = 22, MB = 40;
+
+  let datos, titulo;
+  if(vista === 'contexto'){
+    const h = (D.historico_anual || []).slice().sort((a, b) => a.anio - b.anio);
+    datos = h.map(x => ({ etiqueta: String(x.anio), valor: x.atribuibles_calor, signo: 'calor' }));
+    titulo = 'Muertes atribuibles al calor, año a año';
+    if(datos.length < 2){
+      tit.textContent = titulo;
+      svg.innerHTML = '<text x="360" y="140" text-anchor="middle" style="font-size:12.5px;fill:#6a7686">' +
+        'La serie anual completa se publica cuando el observatorio la recopila.</text>' +
+        '<text x="360" y="164" text-anchor="middle" style="font-size:11.5px;fill:#9aa6b6">' +
+        'Dato disponible: ' + nf((D.contexto || {}).total_2015_2025) + ' muertes entre 2015 y 2025.</text>';
+      return;
+    }
+  } else {
+    datos = (D.meses || []).map(m => ({
+      etiqueta: etiquetaMes(m.mes), valor: m.atribuibles, signo: m.signo, parcial: !!m.parcial
+    }));
+    titulo = vista === 'verano'
+      ? 'Defunciones atribuibles a la temperatura, mes a mes'
+      : 'Defunciones atribuibles a la temperatura en los últimos doce meses';
+  }
+  tit.textContent = titulo;
+
+  const max = Math.max(...datos.map(d => d.valor), 10);
+  const paso = (W - ML - MR) / datos.length;
+  const ancho = Math.min(paso * 0.62, 54);
+  const escala = v => (H - MB) - (v / max) * (H - MT - MB);
+
+  let s = '';
+  /* Rejilla horizontal */
+  const pasos = 4;
+  for(let i = 0; i <= pasos; i++){
+    const v = Math.round(max / pasos * i);
+    const y = escala(v);
+    s += '<line x1="' + ML + '" y1="' + y + '" x2="' + (W - MR) + '" y2="' + y +
+         '" stroke="#eef1f5" stroke-width="1"/>' +
+         '<text x="' + (ML - 8) + '" y="' + (y + 3.5) + '" text-anchor="end">' + nf(v) + '</text>';
+  }
+
+  datos.forEach((d, i) => {
+    const x = ML + paso * i + (paso - ancho) / 2;
+    const y = escala(d.valor);
+    const h = (H - MB) - y;
+    const color = d.signo === 'frio' ? '#2a6df4' : (d.parcial ? '#e8a87c' : '#cc4400');
+    s += '<rect class="barra" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+         '" width="' + ancho.toFixed(1) + '" height="' + Math.max(h, 1).toFixed(1) +
+         '" rx="4" fill="' + color + '"><title>' + d.etiqueta + ': ' + nf(d.valor) +
+         ' defunciones atribuibles</title></rect>';
+    if(h > 20){
+      s += '<text class="val" x="' + (x + ancho / 2).toFixed(1) + '" y="' + (y - 5).toFixed(1) +
+           '" text-anchor="middle">' + nf(d.valor) + '</text>';
+    }
+    s += '<text x="' + (x + ancho / 2).toFixed(1) + '" y="' + (H - MB + 16) +
+         '" text-anchor="middle">' + d.etiqueta + '</text>';
+  });
+
+  svg.innerHTML = s;
+}
+
+function pintarPie(){
+  document.getElementById('pie').innerHTML =
+    'Fuente: <b>MoMo</b> · Sistema de Monitorización de la Mortalidad Diaria, Centro Nacional de Epidemiología, ' +
+    '<a href="https://momo.isciii.es/panel_momo/" target="_blank" rel="noopener">Instituto de Salud Carlos III</a>. ' +
+    'Actualizado el ' + fechaLarga(D.actualizado) + '.<br>' +
+    'MoMo estima el exceso de mortalidad atribuible a la temperatura mediante modelos estadísticos: no certifica la causa de cada defunción individual.';
+}
+
+function pintar(){ pintarResumen(); pintarChart(); pintarPie(); }
+
+document.querySelectorAll('.tab').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    vista = b.dataset.view;
+    pintar();
+  });
+});
+
+pintar();
+
+fetch(JSON_URL, { cache: 'no-store' })
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(j => { if(j && j.verano_actual){ D = j; pintar(); } })
+  .catch(e => console.warn('[calor-mortalidad] se mantiene la copia local:', e));
+</script>
+</body>
+</html>
