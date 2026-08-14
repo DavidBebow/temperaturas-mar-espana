@@ -76,6 +76,7 @@
 
   <div id="tabs">
     <button class="tab on" data-view="dias">Día a día</button>
+    <button class="tab" data-view="anios">Comparar veranos</button>
     <button class="tab" data-view="meses">Mes a mes</button>
     <button class="tab" data-view="contexto">La serie larga</button>
   </div>
@@ -85,11 +86,7 @@
     <div class="card">
       <div class="eyebrow" id="chart-title">Defunciones atribuibles a la temperatura</div>
       <svg id="chart" viewBox="0 0 720 290" preserveAspectRatio="xMidYMid meet"></svg>
-      <div id="leyenda">
-        <span class="lg"><span class="sw" style="background:#cc4400"></span> Atribuibles al calor</span>
-        <span class="lg"><span class="sw" style="background:#2a6df4"></span> Atribuibles al frío</span>
-        <span class="lg"><span class="sw" style="background:#e8a87c"></span> Dato aún provisional</span>
-      </div>
+      <div id="leyenda"></div>
     </div>
   </div>
 
@@ -143,6 +140,18 @@ function etiquetaDia(clave){
   return parseInt(d, 10) + ' ' + MESES[parseInt(m, 10) - 1];
 }
 
+/* Series acumuladas de cada verano, para la comparativa entre anos */
+function seriesVeranos(){
+  const anioActual = (D.verano_actual || {}).anio;
+  return Object.keys(D.veranos || {}).sort().map(clave => {
+    const val = D.veranos[clave] || {};
+    const vals = val.valores || [];
+    let suma = 0;
+    const acum = vals.map(v => { suma += (v || 0); return suma; });
+    return { anio: parseInt(clave, 10), acum, total: suma, actual: parseInt(clave, 10) === anioActual };
+  }).filter(s => s.acum.length);
+}
+
 /* Dias del verano en curso, ya ordenados */
 function diasVerano(){
   const anio = (D.verano_actual || {}).anio;
@@ -181,6 +190,31 @@ function pintarResumen(){
       '</div>' +
       '<p>El riesgo de mortalidad sube entre un ' + c.riesgo_por_grado_min + ' % y un ' +
       c.riesgo_por_grado_max + ' % por cada grado que la temperatura supera el umbral de cada zona.</p>';
+    return;
+  }
+
+  if(vista === 'anios'){
+    const ser = seriesVeranos();
+    const act = ser.find(s => s.actual);
+    const hasta = act ? act.acum.length : 0;
+    // Comparacion justa: todos los veranos, cortados a la misma altura del calendario.
+    const mismaFecha = ser.map(s => ({ anio: s.anio, v: s.acum[hasta - 1] || 0, actual: s.actual }))
+                          .sort((a, b) => b.v - a.v);
+    const pos = mismaFecha.findIndex(x => x.actual) + 1;
+    const peor = mismaFecha[0];
+    const filas = mismaFecha.slice(0, 6).map(x =>
+      '<li><span>' + x.anio + (x.actual ? ' <b style="color:#cc4400">· en curso</b>' : '') +
+      '</span><b>' + nf(x.v) + '</b></li>').join('');
+
+    el.innerHTML =
+      '<div class="eyebrow">Comparativa de veranos</div>' +
+      '<div class="big">' + (pos ? (pos + 'º') : '—') +
+      '<small>puesto del verano de ' + (act ? act.anio : '') + ' entre los ' + ser.length +
+      ' veranos de la serie, comparando a la misma fecha.</small></div>' +
+      '<h4 style="margin-top:14px">Muertes acumuladas a esta altura del verano</h4>' +
+      '<ul class="rank">' + filas + '</ul>' +
+      '<p>El peor a esta fecha fue ' + (peor ? peor.anio : '') + ', con ' + nf(peor ? peor.v : null) +
+      '. Cada línea del gráfico es un verano acumulado desde el 1 de junio.</p>';
     return;
   }
 
@@ -228,7 +262,73 @@ function pintarResumen(){
 /* ------------------------------------------------------------------ */
 /* Grafico de barras                                                   */
 /* ------------------------------------------------------------------ */
+/* Comparativa entre veranos: una linea acumulada por ano */
+function pintarChartAnios(){
+  const svg = document.getElementById('chart');
+  const tit = document.getElementById('chart-title');
+  const W = 720, H = 290, ML = 52, MR = 46, MT = 22, MB = 40;
+
+  const ser = seriesVeranos();
+  tit.textContent = 'Muertes acumuladas desde el 1 de junio, verano a verano';
+
+  if(ser.length < 2){
+    svg.innerHTML = '<text x="360" y="145" text-anchor="middle" style="font-size:12.5px;fill:#6a7686">' +
+      'La comparativa aparece cuando el observatorio haya recopilado más de un verano.</text>';
+    return;
+  }
+
+  const DIAS = 122;                       // 1 jun -> 30 sep
+  const max  = Math.max(...ser.map(s => s.total), 10);
+  const x = i => ML + (i / (DIAS - 1)) * (W - ML - MR);
+  const y = v => (H - MB) - (v / max) * (H - MT - MB);
+
+  let s = '';
+  for(let i = 0; i <= 4; i++){
+    const v = Math.round(max / 4 * i), yy = y(v);
+    s += '<line x1="' + ML + '" y1="' + yy + '" x2="' + (W - MR) + '" y2="' + yy +
+         '" stroke="#eef1f5" stroke-width="1"/>' +
+         '<text x="' + (ML - 8) + '" y="' + (yy + 3.5) + '" text-anchor="end">' + nf(v) + '</text>';
+  }
+  [[0, '1 jun'], [30, '1 jul'], [61, '1 ago'], [92, '1 sep'], [121, '30 sep']].forEach(([i, et]) => {
+    s += '<text x="' + x(i).toFixed(1) + '" y="' + (H - MB + 16) + '" text-anchor="middle">' + et + '</text>';
+  });
+
+  // El peor verano previo se resalta; el resto queda en gris de fondo.
+  const previos = ser.filter(v => !v.actual);
+  const peor = previos.length ? previos.reduce((a, b) => (b.total > a.total ? b : a)) : null;
+
+  const linea = (serie, color, grosor, opac) => {
+    const d = serie.acum.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+    return '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="' + grosor +
+           '" stroke-linejoin="round" stroke-linecap="round" opacity="' + opac + '"><title>Verano de ' +
+           serie.anio + ': ' + nf(serie.total) + ' muertes atribuibles al calor</title></path>';
+  };
+
+  ser.forEach(v => { if(!v.actual && (!peor || v.anio !== peor.anio)) s += linea(v, '#c9d0d9', 1.6, 1); });
+  if(peor) s += linea(peor, '#8a94a3', 2.2, 1);
+  const act = ser.find(v => v.actual);
+  if(act){
+    s += linea(act, '#cc4400', 3.2, 1);
+    const i = act.acum.length - 1;
+    s += '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(act.total).toFixed(1) +
+         '" r="4.5" fill="#cc4400"/>';
+  }
+
+  // Etiquetas al final de cada linea destacada, fuera del area de dibujo.
+  const etiq = (serie, color, peso) => {
+    const i = serie.acum.length - 1;
+    return '<text x="' + (x(i) + 7).toFixed(1) + '" y="' + (y(serie.acum[i]) + 3.5).toFixed(1) +
+           '" style="fill:' + color + ';font-weight:' + peso + ';font-size:11px">' + serie.anio + '</text>';
+  };
+  if(peor) s += etiq(peor, '#8a94a3', 600);
+  if(act)  s += etiq(act, '#cc4400', 700);
+
+  svg.innerHTML = s;
+}
+
 function pintarChart(){
+  if(vista === 'anios') return pintarChartAnios();
+
   const svg = document.getElementById('chart');
   const tit = document.getElementById('chart-title');
   const W = 720, H = 290, ML = 46, MR = 12, MT = 22, MB = 40;
@@ -316,11 +416,26 @@ function pintarPie(){
   document.getElementById('pie').innerHTML =
     'Fuente: <b>MoMo</b> · Sistema de Monitorización de la Mortalidad Diaria, Centro Nacional de Epidemiología, ' +
     '<a href="https://momo.isciii.es/panel_momo/" target="_blank" rel="noopener">Instituto de Salud Carlos III</a>. ' +
-    'Actualizado el ' + fechaLarga(D.actualizado) + '.<br>' +
-    'MoMo estima el exceso de mortalidad atribuible a la temperatura mediante modelos estadísticos: no certifica la causa de cada defunción individual.';
+    'Actualizado el ' + fechaLarga(D.actualizado) + '. MoMo publica a diario y este panel se refresca dos veces al día.<br>' +
+    'Los últimos días aparecen más bajos de lo que acabarán siendo: las defunciones tardan en llegar a los registros civiles y MoMo revisa esas cifras al alza durante las semanas siguientes. ' +
+    'El sistema estima el exceso de mortalidad atribuible a la temperatura mediante modelos estadísticos: no certifica la causa de cada defunción individual.';
 }
 
-function pintar(){ pintarResumen(); pintarChart(); pintarPie(); }
+function pintarLeyenda(){
+  const el = document.getElementById('leyenda');
+  const sw = (c, t) => '<span class="lg"><span class="sw" style="background:' + c + '"></span> ' + t + '</span>';
+  if(vista === 'anios'){
+    el.innerHTML = sw('#cc4400', 'Verano en curso') + sw('#8a94a3', 'El peor verano anterior') +
+                   sw('#c9d0d9', 'Resto de veranos');
+  } else if(vista === 'contexto'){
+    el.innerHTML = sw('#cc4400', 'Muertes atribuibles al calor, por verano');
+  } else {
+    el.innerHTML = sw('#cc4400', 'Atribuibles al calor') + sw('#2a6df4', 'Atribuibles al frío') +
+                   sw('#e8a87c', 'Dato aún provisional');
+  }
+}
+
+function pintar(){ pintarResumen(); pintarChart(); pintarLeyenda(); pintarPie(); }
 
 document.querySelectorAll('.tab').forEach(b => {
   b.addEventListener('click', () => {
