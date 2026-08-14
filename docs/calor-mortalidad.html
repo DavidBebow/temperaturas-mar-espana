@@ -75,7 +75,7 @@
   </div>
 
   <div id="tabs">
-    <button class="tab on" data-view="verano">Verano en curso</button>
+    <button class="tab on" data-view="dias">Día a día</button>
     <button class="tab" data-view="meses">Mes a mes</button>
     <button class="tab" data-view="contexto">La serie larga</button>
   </div>
@@ -88,7 +88,7 @@
       <div id="leyenda">
         <span class="lg"><span class="sw" style="background:#cc4400"></span> Atribuibles al calor</span>
         <span class="lg"><span class="sw" style="background:#2a6df4"></span> Atribuibles al frío</span>
-        <span class="lg"><span class="sw" style="background:#e8a87c"></span> Mes incompleto</span>
+        <span class="lg"><span class="sw" style="background:#e8a87c"></span> Dato aún provisional</span>
       </div>
     </div>
   </div>
@@ -123,14 +123,32 @@ const PREVIEW = {
   "historico_anual":[{"anio":2022,"atribuibles_calor":4789}]
 };
 
-let D = PREVIEW, vista = 'verano';
+let D = PREVIEW, vista = 'dias';
 
 const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-const nf = n => (n == null ? '—' : n.toLocaleString('es-ES'));
+
+/* Punto de millar SIEMPRE. toLocaleString('es-ES') no agrupa los numeros de
+   cuatro cifras (3851, 2024) y eso hacia que julio pareciera un ano. */
+const nf = n => (n == null || isNaN(n))
+  ? '—'
+  : String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
 function etiquetaMes(clave){
   const [a, m] = clave.split('-');
   return MESES[parseInt(m, 10) - 1] + ' ' + a.slice(2);
+}
+
+function etiquetaDia(clave){
+  const [, m, d] = clave.split('-');
+  return parseInt(d, 10) + ' ' + MESES[parseInt(m, 10) - 1];
+}
+
+/* Dias del verano en curso, ya ordenados */
+function diasVerano(){
+  const anio = (D.verano_actual || {}).anio;
+  return (D.dias || [])
+    .filter(x => x.fecha && x.fecha.slice(0, 4) === String(anio) && x.fecha >= anio + '-06-01')
+    .sort((a, b) => a.fecha.localeCompare(b.fecha));
 }
 
 function fechaLarga(iso){
@@ -179,19 +197,32 @@ function pintarResumen(){
     return;
   }
 
-  const meses  = (D.meses || []).filter(m => m.signo === 'calor' && m.mes >= (v.anio + '-06'));
-  const julio  = meses.find(m => m.mes.endsWith('-07'));
-  const junio  = meses.find(m => m.mes.endsWith('-06'));
+  const dias = diasVerano();
+  let mini, cola;
+
+  if(dias.length){
+    const peor    = dias.reduce((a, b) => (b.atribuibles > a.atribuibles ? b : a));
+    const ultimos = dias.slice(-7);
+    const media7  = Math.round(ultimos.reduce((s, x) => s + x.atribuibles, 0) / ultimos.length);
+    mini =
+      '<div><div class="n">' + nf(peor.atribuibles) + '</div><div class="l">el peor día del verano, el ' + etiquetaDia(peor.fecha) + '</div></div>' +
+      '<div><div class="n">' + nf(media7) + '</div><div class="l">media diaria de los últimos siete días</div></div>';
+    cola = '<p>Cada barra es un día. Los últimos son provisionales: MoMo los revisa al alza según llegan las defunciones con retraso.</p>';
+  } else {
+    const meses = (D.meses || []).filter(m => m.signo === 'calor' && m.mes >= (v.anio + '-06'));
+    const julio = meses.find(m => m.mes.endsWith('-07'));
+    const junio = meses.find(m => m.mes.endsWith('-06'));
+    mini =
+      '<div><div class="n">' + nf(julio && julio.atribuibles) + '</div><div class="l">solo en julio, el mes más letal</div></div>' +
+      '<div><div class="n">' + nf(junio && junio.atribuibles) + '</div><div class="l">en junio, con la primera ola de calor</div></div>';
+    cola = '<p>Cifra a ' + fechaLarga(v.a_fecha) + '. Agosto está incompleto y MoMo lo revisa al alza a medida que llegan las defunciones con retraso.</p>';
+  }
 
   el.innerHTML =
     '<div class="eyebrow">Verano de ' + (v.anio || '') + ' · en curso</div>' +
     '<div class="big">' + nf(v.atribuibles_calor) +
     '<small>muertes atribuibles al calor en España desde el 1 de junio, según MoMo.</small></div>' +
-    '<div class="mini">' +
-      '<div><div class="n">' + nf(julio && julio.atribuibles) + '</div><div class="l">solo en julio, el mes más letal</div></div>' +
-      '<div><div class="n">' + nf(junio && junio.atribuibles) + '</div><div class="l">en junio, con la primera ola de calor</div></div>' +
-    '</div>' +
-    '<p>Cifra a ' + fechaLarga(v.a_fecha) + '. Agosto está incompleto y MoMo lo revisa al alza a medida que llegan las defunciones con retraso.</p>';
+    '<div class="mini">' + mini + '</div>' + cola;
 }
 
 /* ------------------------------------------------------------------ */
@@ -215,13 +246,27 @@ function pintarChart(){
         'Dato disponible: ' + nf((D.contexto || {}).total_2015_2025) + ' muertes entre 2015 y 2025.</text>';
       return;
     }
+  } else if(vista === 'dias'){
+    const dias = diasVerano();
+    if(dias.length){
+      const corte = dias.length - 5;   // los ultimos dias aun se estan consolidando
+      datos = dias.map((x, i) => ({
+        etiqueta: etiquetaDia(x.fecha), valor: x.atribuibles,
+        signo: 'calor', parcial: x.parcial || i >= corte
+      }));
+      titulo = 'Defunciones atribuibles al calor, día a día, verano de ' + (D.verano_actual || {}).anio;
+    } else {
+      // Si aun no hay serie diaria, se muestra la mensual en vez de un hueco.
+      datos = (D.meses || []).map(m => ({
+        etiqueta: etiquetaMes(m.mes), valor: m.atribuibles, signo: m.signo, parcial: !!m.parcial
+      }));
+      titulo = 'Defunciones atribuibles a la temperatura, mes a mes';
+    }
   } else {
     datos = (D.meses || []).map(m => ({
       etiqueta: etiquetaMes(m.mes), valor: m.atribuibles, signo: m.signo, parcial: !!m.parcial
     }));
-    titulo = vista === 'verano'
-      ? 'Defunciones atribuibles a la temperatura, mes a mes'
-      : 'Defunciones atribuibles a la temperatura en los últimos doce meses';
+    titulo = 'Defunciones atribuibles a la temperatura en los últimos doce meses';
   }
   tit.textContent = titulo;
 
@@ -241,6 +286,10 @@ function pintarChart(){
          '<text x="' + (ML - 8) + '" y="' + (y + 3.5) + '" text-anchor="end">' + nf(v) + '</text>';
   }
 
+  // Con muchas barras (serie diaria) no caben ni los valores ni todas las fechas.
+  const densa = datos.length > 20;
+  const cadaN = densa ? Math.ceil(datos.length / 10) : 1;
+
   datos.forEach((d, i) => {
     const x = ML + paso * i + (paso - ancho) / 2;
     const y = escala(d.valor);
@@ -248,14 +297,16 @@ function pintarChart(){
     const color = d.signo === 'frio' ? '#2a6df4' : (d.parcial ? '#e8a87c' : '#cc4400');
     s += '<rect class="barra" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
          '" width="' + ancho.toFixed(1) + '" height="' + Math.max(h, 1).toFixed(1) +
-         '" rx="4" fill="' + color + '"><title>' + d.etiqueta + ': ' + nf(d.valor) +
-         ' defunciones atribuibles</title></rect>';
-    if(h > 20){
+         '" rx="' + (densa ? 1.5 : 4) + '" fill="' + color + '"><title>' + d.etiqueta + ': ' +
+         nf(d.valor) + ' defunciones atribuibles</title></rect>';
+    if(!densa && h > 20){
       s += '<text class="val" x="' + (x + ancho / 2).toFixed(1) + '" y="' + (y - 5).toFixed(1) +
            '" text-anchor="middle">' + nf(d.valor) + '</text>';
     }
-    s += '<text x="' + (x + ancho / 2).toFixed(1) + '" y="' + (H - MB + 16) +
-         '" text-anchor="middle">' + d.etiqueta + '</text>';
+    if(i % cadaN === 0 || i === datos.length - 1){
+      s += '<text x="' + (x + ancho / 2).toFixed(1) + '" y="' + (H - MB + 16) +
+           '" text-anchor="middle">' + d.etiqueta + '</text>';
+    }
   });
 
   svg.innerHTML = s;
