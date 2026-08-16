@@ -3,8 +3,8 @@
  "provincia": "Pontevedra",
  "ccaa": "Galicia",
  "capital": "Pontevedra",
- "generado": "2026-08-16T09:19+02:00",
- "fecha_legible": "16/08/2026 a las 09:19",
+ "generado": "2026-08-16T17:00+02:00",
+ "fecha_legible": "16/08/2026 a las 17:00",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,13 +23,13 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 31.1,
-   "tmax_hoy": 31.7,
-   "tmin_hoy": 20.8,
-   "dias_consecutivos": 1,
-   "noche_tropical": true,
-   "icc": 37,
-   "nivel": "Calor de verano",
-   "color": "#44AA66"
+   "tmax_hoy": 33.6,
+   "tmin_hoy": 19.0,
+   "dias_consecutivos": 2,
+   "noche_tropical": false,
+   "icc": 47,
+   "nivel": "Canícula",
+   "color": "#FFCC44"
   },
   "firma_climatica": {
    "nombre": "Pontevedra",
@@ -45,12 +45,12 @@
   "avisos": {
    "total": 3,
    "rojos": 0,
-   "naranjas": 0,
-   "amarillos": 3,
+   "naranjas": 1,
+   "amarillos": 2,
    "items": [
     {
      "zona": "Miño de Pontevedra",
-     "nivel": "amarillo",
+     "nivel": "naranja",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
      "inicio": "2026-08-17T13:00+02:00",
@@ -64,7 +64,7 @@
      "icono": "🌡️",
      "inicio": "2026-08-16T13:00+02:00",
      "fin": "2026-08-16T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Miño de Pontevedra",
@@ -81,39 +81,39 @@
    {
     "id": "vigo",
     "nombre": "Vigo",
-    "temperatura_actual": 17.9,
-    "anomalia": -3.1,
-    "etiqueta_anomalia": "Muy por debajo de la media",
-    "dias_consecutivos": 6,
-    "signo_consecutivo": "negativa"
+    "temperatura_actual": null,
+    "anomalia": null,
+    "etiqueta_anomalia": "Sin datos",
+    "dias_consecutivos": null,
+    "signo_consecutivo": null
    }
   ],
   "nivel_mar": [
    {
     "id": "vigo",
     "nombre": "Vigo",
-    "sla_actual_cm": 10.1,
-    "desviacion_cm": 10.1,
+    "sla_actual_cm": 11.4,
+    "desviacion_cm": 11.4,
     "etiqueta_anomalia": "Nivel muy elevado",
-    "dias_consecutivos": 93
+    "dias_consecutivos": 94
    }
   ],
   "incendios_ccaa": {
    "nombre": "Galicia",
-   "focos_activos": 8,
+   "focos_activos": 13,
    "tiene_fuego": true,
    "etiqueta": "Actividad moderada",
-   "dias_consecutivos": 0,
-   "dias_anio_actual": 4
+   "dias_consecutivos": 1,
+   "dias_anio_actual": 5
   },
   "lluvias": {
    "mm_ayer": 0.0,
    "mm_semana": 0.0,
    "mm_anual": 1175.0,
    "media_anual_mm": 1600,
-   "media_hasta_hoy_mm": 986.3,
+   "media_hasta_hoy_mm": 990.7,
    "anomalia_semana_pct": -100.0,
-   "anomalia_anual_pct": 19.1,
+   "anomalia_anual_pct": 18.6,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Lluvioso"
   },
@@ -130,9 +130,9 @@
   "calidad_aire": [
    {
     "nombre": "Pontevedra",
-    "etiqueta": "Excelente",
-    "aqi_europeo": 26,
-    "pm25": 4.2,
+    "etiqueta": "Buena",
+    "aqi_europeo": 34,
+    "pm25": 5.7,
     "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
@@ -151,6 +151,16 @@
  },
  "destacados": [
   {
+   "tipo": "aviso_naranja",
+   "icono": "🟠",
+   "nivel": "alto",
+   "texto": "Aviso naranja de AEMET en Pontevedra por Altas temperaturas (1 zona(s))",
+   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "prioridad": 80,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
    "tipo": "firma",
    "icono": "🔬",
    "nivel": "medio",
@@ -164,7 +174,7 @@
    "tipo": "nivel_mar_vigo",
    "icono": "🌊",
    "nivel": "medio",
-   "texto": "Nivel del mar muy elevado en Vigo: +10.1 cm sobre la media 1993-2012 · 8.º día consecutivo",
+   "texto": "Nivel del mar muy elevado en Vigo: +11.4 cm sobre la media 1993-2012 · 8.º día consecutivo",
    "url": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
    "prioridad": 64,
    "racha_dias": 8,
@@ -174,12 +184,12 @@
    "tipo": "incendios",
    "icono": "🔥",
    "nivel": "medio",
-   "texto": "8 foco(s) de calor activos detectados por satélite en Galicia (últimas 48 h) · 2.º día consecutivo",
+   "texto": "13 foco(s) de calor activos detectados por satélite en Galicia (últimas 48 h) · 2.º día consecutivo",
    "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
    "prioridad": 56,
    "racha_dias": 2,
    "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Pontevedra a 16/08/2026: El calor de hoy en Pontevedra (34.0 °C) es 9× más probable por el cambio climático, que le añade +2.6 °C. Nivel del mar muy elevado en Vigo: +10.1 cm sobre la media 1993-2012. 8 foco(s) de calor activos detectados por satélite en Galicia (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Pontevedra a 16/08/2026: Aviso naranja de AEMET en Pontevedra por Altas temperaturas (1 zona(s)). El calor de hoy en Pontevedra (34.0 °C) es 9× más probable por el cambio climático, que le añade +2.6 °C. Nivel del mar muy elevado en Vigo: +11.4 cm sobre la media 1993-2012. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }

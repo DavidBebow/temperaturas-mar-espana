@@ -3,8 +3,8 @@
  "provincia": "Murcia",
  "ccaa": "Región de Murcia",
  "capital": "Murcia",
- "generado": "2026-08-16T09:19+02:00",
- "fecha_legible": "16/08/2026 a las 09:19",
+ "generado": "2026-08-16T17:00+02:00",
+ "fecha_legible": "16/08/2026 a las 17:00",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,13 +23,13 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 36.9,
-   "tmax_hoy": 38.5,
-   "tmin_hoy": 23.6,
-   "dias_consecutivos": 2,
+   "tmax_hoy": 34.9,
+   "tmin_hoy": 24.1,
+   "dias_consecutivos": 0,
    "noche_tropical": true,
-   "icc": 56,
-   "nivel": "Canícula",
-   "color": "#FFCC44"
+   "icc": 27,
+   "nivel": "Calor de verano",
+   "color": "#44AA66"
   },
   "firma_climatica": {
    "nombre": "Murcia",
@@ -43,31 +43,41 @@
    "racha_ifc3": 0
   },
   "avisos": {
-   "total": 0,
+   "total": 1,
    "rojos": 0,
    "naranjas": 0,
-   "amarillos": 0,
-   "items": []
+   "amarillos": 1,
+   "items": [
+    {
+     "zona": "Vega del Segura",
+     "nivel": "amarillo",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-18T13:00+02:00",
+     "fin": "2026-08-18T20:59+02:00",
+     "activo_ya": false
+    }
+   ]
   },
   "mar": [
    {
     "id": "cartagena",
     "nombre": "Cartagena / Mar Menor",
-    "temperatura_actual": null,
-    "anomalia": null,
-    "etiqueta_anomalia": "Sin datos",
-    "dias_consecutivos": null,
-    "signo_consecutivo": null
+    "temperatura_actual": 29.4,
+    "anomalia": 1.9,
+    "etiqueta_anomalia": "Por encima de la media",
+    "dias_consecutivos": 33,
+    "signo_consecutivo": "positiva"
    }
   ],
   "nivel_mar": [
    {
     "id": "cartagena",
     "nombre": "Cartagena / Mar Menor",
-    "sla_actual_cm": 16.0,
-    "desviacion_cm": 16.6,
+    "sla_actual_cm": 16.1,
+    "desviacion_cm": 16.7,
     "etiqueta_anomalia": "Nivel muy elevado",
-    "dias_consecutivos": 93
+    "dias_consecutivos": 94
    }
   ],
   "incendios_ccaa": {
@@ -83,9 +93,9 @@
    "mm_semana": 0.0,
    "mm_anual": 253.1,
    "media_anual_mm": 300,
-   "media_hasta_hoy_mm": 184.9,
+   "media_hasta_hoy_mm": 185.8,
    "anomalia_semana_pct": -100.0,
-   "anomalia_anual_pct": 36.9,
+   "anomalia_anual_pct": 36.2,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Lluvioso"
   },
@@ -94,8 +104,8 @@
     "id": "murcia",
     "nombre": "Murcia",
     "t_min_anoche": null,
-    "nt_mes": 11,
-    "nt_anyo": 55,
+    "nt_mes": 12,
+    "nt_anyo": 56,
     "etiqueta": "Sin datos"
    },
    {
@@ -110,8 +120,8 @@
     "id": "lorca",
     "nombre": "Lorca",
     "t_min_anoche": null,
-    "nt_mes": 10,
-    "nt_anyo": 43,
+    "nt_mes": 11,
+    "nt_anyo": 44,
     "etiqueta": "Sin datos"
    }
   ],
@@ -119,8 +129,8 @@
    {
     "nombre": "Murcia",
     "etiqueta": "Buena",
-    "aqi_europeo": 38,
-    "pm25": 9.6,
+    "aqi_europeo": 39,
+    "pm25": 10.6,
     "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
@@ -144,7 +154,7 @@
    {
     "id": "cabo_de_palos",
     "nombre": "Cabo de Palos",
-    "temp": 29.12,
+    "temp": 29.06,
     "fecha": "2026-08-16",
     "max_anio": {
      "valor": 29.42,
@@ -166,7 +176,7 @@
    "tipo": "boya_anomalia_cabo_de_palos",
    "icono": "🌡️",
    "nivel": "medio",
-   "texto": "La boya de Cabo de Palos está +2.2 °C sobre lo normal para la época (29.12 °C) · 7.º día consecutivo",
+   "texto": "La boya de Cabo de Palos está +2.2 °C sobre lo normal para la época (29.06 °C) · 7.º día consecutivo",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 69,
    "racha_dias": 7,
@@ -176,22 +186,12 @@
    "tipo": "nivel_mar_cartagena",
    "icono": "🌊",
    "nivel": "medio",
-   "texto": "Nivel del mar muy elevado en Cartagena / Mar Menor: +16.6 cm sobre la media 1993-2012 · 18.º día consecutivo",
+   "texto": "Nivel del mar muy elevado en Cartagena / Mar Menor: +16.7 cm sobre la media 1993-2012 · 18.º día consecutivo",
    "url": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
    "prioridad": 64,
    "racha_dias": 18,
    "nuevo": false
-  },
-  {
-   "tipo": "canicula",
-   "icono": "☀️",
-   "nivel": "medio",
-   "texto": "Calor canicular en Murcia: índice 56/100, máxima de 38.5 °C · 3.º día consecutivo",
-   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
-   "prioridad": 58,
-   "racha_dias": 3,
-   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Murcia a 16/08/2026: La boya de Cabo de Palos está +2.2 °C sobre lo normal para la época (29.12 °C). Nivel del mar muy elevado en Cartagena / Mar Menor: +16.6 cm sobre la media 1993-2012. Calor canicular en Murcia: índice 56/100, máxima de 38.5 °C. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Murcia a 16/08/2026: La boya de Cabo de Palos está +2.2 °C sobre lo normal para la época (29.06 °C). Nivel del mar muy elevado en Cartagena / Mar Menor: +16.7 cm sobre la media 1993-2012. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
