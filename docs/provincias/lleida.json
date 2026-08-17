@@ -3,8 +3,8 @@
  "provincia": "Lleida",
  "ccaa": "Cataluña",
  "capital": "Lleida",
- "generado": "2026-08-17T09:39+02:00",
- "fecha_legible": "17/08/2026 a las 09:39",
+ "generado": "2026-08-17T17:02+02:00",
+ "fecha_legible": "17/08/2026 a las 17:02",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,13 +23,13 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 37.2,
-   "tmax_hoy": 36.8,
-   "tmin_hoy": 23.6,
-   "dias_consecutivos": 0,
+   "tmax_hoy": 38.0,
+   "tmin_hoy": 22.9,
+   "dias_consecutivos": 1,
    "noche_tropical": true,
-   "icc": 34,
-   "nivel": "Calor de verano",
-   "color": "#44AA66"
+   "icc": 44,
+   "nivel": "Canícula",
+   "color": "#FFCC44"
   },
   "firma_climatica": {
    "nombre": "Lleida",
@@ -45,21 +45,12 @@
   "avisos": {
    "total": 6,
    "rojos": 0,
-   "naranjas": 0,
-   "amarillos": 6,
+   "naranjas": 3,
+   "amarillos": 3,
    "items": [
     {
      "zona": "Depresión central de Lleida",
-     "nivel": "amarillo",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-08-17T13:00+02:00",
-     "fin": "2026-08-17T20:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Depresión central de Lleida",
-     "nivel": "amarillo",
+     "nivel": "naranja",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
      "inicio": "2026-08-18T13:00+02:00",
@@ -68,12 +59,30 @@
     },
     {
      "zona": "Depresión central de Lleida",
-     "nivel": "amarillo",
+     "nivel": "naranja",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
      "inicio": "2026-08-19T13:00+02:00",
      "fin": "2026-08-19T20:59+02:00",
      "activo_ya": false
+    },
+    {
+     "zona": "Pirineo de Lleida",
+     "nivel": "naranja",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-19T13:00+02:00",
+     "fin": "2026-08-19T20:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Depresión central de Lleida",
+     "nivel": "amarillo",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-17T13:00+02:00",
+     "fin": "2026-08-17T20:59+02:00",
+     "activo_ya": true
     },
     {
      "zona": "Pirineo de Lleida",
@@ -82,7 +91,7 @@
      "icono": "🌡️",
      "inicio": "2026-08-17T13:00+02:00",
      "fin": "2026-08-17T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Pirineo de Lleida",
@@ -91,35 +100,26 @@
      "icono": "🌡️",
      "inicio": "2026-08-18T13:00+02:00",
      "fin": "2026-08-18T20:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Pirineo de Lleida",
-     "nivel": "amarillo",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-08-19T13:00+02:00",
-     "fin": "2026-08-19T20:59+02:00",
      "activo_ya": false
     }
    ]
   },
   "incendios_ccaa": {
    "nombre": "Cataluña",
-   "focos_activos": 3,
+   "focos_activos": 4,
    "tiene_fuego": true,
    "etiqueta": "Actividad baja",
    "dias_consecutivos": 0,
    "dias_anio_actual": 10
   },
   "lluvias": {
-   "mm_ayer": 0.3,
+   "mm_ayer": 0.0,
    "mm_semana": 0.8,
-   "mm_anual": 305.5,
+   "mm_anual": 305.8,
    "media_anual_mm": 380,
-   "media_hasta_hoy_mm": 235.3,
+   "media_hasta_hoy_mm": 236.3,
    "anomalia_semana_pct": -89.0,
-   "anomalia_anual_pct": 29.8,
+   "anomalia_anual_pct": 29.4,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Lluvioso"
   },
@@ -137,8 +137,8 @@
    {
     "nombre": "Lleida",
     "etiqueta": "Buena",
-    "aqi_europeo": 41,
-    "pm25": 9.3,
+    "aqi_europeo": 43,
+    "pm25": 9.6,
     "contaminante_dominante": "O₃",
     "supera_oms": true,
     "sahariano": false
@@ -167,15 +167,25 @@
    "nuevo": false
   },
   {
+   "tipo": "aviso_naranja",
+   "icono": "🟠",
+   "nivel": "alto",
+   "texto": "Aviso naranja de AEMET en Lleida por Altas temperaturas (3 zona(s))",
+   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "prioridad": 80,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
    "tipo": "incendios",
    "icono": "🔥",
    "nivel": "medio",
-   "texto": "3 foco(s) de calor activos detectados por satélite en Cataluña (últimas 48 h) · 19.º día consecutivo",
+   "texto": "4 foco(s) de calor activos detectados por satélite en Cataluña (últimas 48 h) · 19.º día consecutivo",
    "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
    "prioridad": 56,
    "racha_dias": 19,
    "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Lleida a 17/08/2026: El calor de hoy en Lleida (37.9 °C) es 28× más probable por el cambio climático, que le añade +4.1 °C. 3 foco(s) de calor activos detectados por satélite en Cataluña (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Lleida a 17/08/2026: El calor de hoy en Lleida (37.9 °C) es 28× más probable por el cambio climático, que le añade +4.1 °C. Aviso naranja de AEMET en Lleida por Altas temperaturas (3 zona(s)). 4 foco(s) de calor activos detectados por satélite en Cataluña (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }

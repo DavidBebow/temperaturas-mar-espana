@@ -3,8 +3,8 @@
  "provincia": "Almería",
  "ccaa": "Andalucía",
  "capital": "Almería",
- "generado": "2026-08-17T09:39+02:00",
- "fecha_legible": "17/08/2026 a las 09:39",
+ "generado": "2026-08-17T17:02+02:00",
+ "fecha_legible": "17/08/2026 a las 17:02",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,13 +23,13 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 35.1,
-   "tmax_hoy": 36.3,
-   "tmin_hoy": 27.7,
-   "dias_consecutivos": 1,
+   "tmax_hoy": 39.4,
+   "tmin_hoy": 29.2,
+   "dias_consecutivos": 2,
    "noche_tropical": true,
-   "icc": 52,
-   "nivel": "Canícula",
-   "color": "#FFCC44"
+   "icc": 73,
+   "nivel": "Canícula intensa",
+   "color": "#FF8822"
   },
   "firma_climatica": {
    "nombre": "Almería",
@@ -43,10 +43,10 @@
    "racha_ifc3": 1
   },
   "avisos": {
-   "total": 1,
+   "total": 2,
    "rojos": 0,
    "naranjas": 0,
-   "amarillos": 1,
+   "amarillos": 2,
    "items": [
     {
      "zona": "Poniente y Almería Capital",
@@ -55,6 +55,15 @@
      "icono": "🌡️",
      "inicio": "2026-08-17T13:00+02:00",
      "fin": "2026-08-17T20:59+02:00",
+     "activo_ya": true
+    },
+    {
+     "zona": "Valle del Almanzora y Los Vélez",
+     "nivel": "amarillo",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-19T13:00+02:00",
+     "fin": "2026-08-19T20:59+02:00",
      "activo_ya": false
     }
    ]
@@ -63,39 +72,39 @@
    {
     "id": "almeria",
     "nombre": "Almería",
-    "temperatura_actual": 27.6,
-    "anomalia": 0.6,
-    "etiqueta_anomalia": "Ligeramente cálido",
-    "dias_consecutivos": 3,
-    "signo_consecutivo": "positiva"
+    "temperatura_actual": null,
+    "anomalia": null,
+    "etiqueta_anomalia": "Sin datos",
+    "dias_consecutivos": null,
+    "signo_consecutivo": null
    }
   ],
   "nivel_mar": [
    {
     "id": "almeria",
     "nombre": "Almería",
-    "sla_actual_cm": 11.4,
-    "desviacion_cm": 11.9,
+    "sla_actual_cm": 11.3,
+    "desviacion_cm": 11.8,
     "etiqueta_anomalia": "Nivel muy elevado",
-    "dias_consecutivos": 94
+    "dias_consecutivos": 95
    }
   ],
   "incendios_ccaa": {
    "nombre": "Andalucía",
-   "focos_activos": 22,
+   "focos_activos": 23,
    "tiene_fuego": true,
    "etiqueta": "Actividad alta",
    "dias_consecutivos": 0,
    "dias_anio_actual": 11
   },
   "lluvias": {
-   "mm_ayer": 0.0,
-   "mm_semana": 0.0,
-   "mm_anual": 135.0,
+   "mm_ayer": 0.1,
+   "mm_semana": 0.1,
+   "mm_anual": 135.2,
    "media_anual_mm": 220,
-   "media_hasta_hoy_mm": 136.2,
-   "anomalia_semana_pct": -100.0,
-   "anomalia_anual_pct": -0.9,
+   "media_hasta_hoy_mm": 136.8,
+   "anomalia_semana_pct": -97.6,
+   "anomalia_anual_pct": -1.2,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Normal"
   },
@@ -104,8 +113,8 @@
     "id": "almeria",
     "nombre": "Almería",
     "t_min_anoche": null,
-    "nt_mes": 12,
-    "nt_anyo": 76,
+    "nt_mes": 13,
+    "nt_anyo": 77,
     "etiqueta": "Sin datos"
    }
   ],
@@ -113,8 +122,8 @@
    {
     "nombre": "Almería",
     "etiqueta": "Buena",
-    "aqi_europeo": 38,
-    "pm25": 10.1,
+    "aqi_europeo": 39,
+    "pm25": 10.0,
     "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
@@ -143,7 +152,7 @@
    {
     "id": "cabo_de_gata",
     "nombre": "Cabo de Gata",
-    "temp": 26.01,
+    "temp": 26.02,
     "fecha": "2026-08-17",
     "max_anio": {
      "valor": 27.74,
@@ -172,10 +181,20 @@
    "nuevo": true
   },
   {
+   "tipo": "canicula_alta",
+   "icono": "☀️",
+   "nivel": "alto",
+   "texto": "Canícula intensa en Almería: índice de calor 73/100, máxima de 39.4 °C",
+   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
+   "prioridad": 86,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
    "tipo": "incendios",
    "icono": "🔥",
    "nivel": "alto",
-   "texto": "22 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h) · 19.º día consecutivo",
+   "texto": "23 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h) · 19.º día consecutivo",
    "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
    "prioridad": 84,
    "racha_dias": 19,
@@ -185,7 +204,7 @@
    "tipo": "boya_anomalia_cabo_de_gata",
    "icono": "🌡️",
    "nivel": "medio",
-   "texto": "La boya de Cabo de Gata está +3.0 °C sobre lo normal para la época (26.01 °C) · 19.º día consecutivo",
+   "texto": "La boya de Cabo de Gata está +3.0 °C sobre lo normal para la época (26.02 °C) · 19.º día consecutivo",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 69,
    "racha_dias": 19,
@@ -195,7 +214,7 @@
    "tipo": "nivel_mar_almeria",
    "icono": "🌊",
    "nivel": "medio",
-   "texto": "Nivel del mar muy elevado en Almería: +11.9 cm sobre la media 1993-2012 · 13.º día consecutivo",
+   "texto": "Nivel del mar muy elevado en Almería: +11.8 cm sobre la media 1993-2012 · 13.º día consecutivo",
    "url": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
    "prioridad": 64,
    "racha_dias": 13,
@@ -210,17 +229,7 @@
    "prioridad": 62,
    "racha_dias": 19,
    "nuevo": false
-  },
-  {
-   "tipo": "canicula",
-   "icono": "☀️",
-   "nivel": "medio",
-   "texto": "Calor canicular en Almería: índice 52/100, máxima de 36.3 °C · 2.º día consecutivo",
-   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
-   "prioridad": 58,
-   "racha_dias": 2,
-   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Almería a 17/08/2026: El calor de hoy en Almería (39.6 °C) es 27× más probable por el cambio climático, que le añade +1.7 °C. 22 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h). La boya de Cabo de Gata está +3.0 °C sobre lo normal para la época (26.01 °C). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Almería a 17/08/2026: El calor de hoy en Almería (39.6 °C) es 27× más probable por el cambio climático, que le añade +1.7 °C. Canícula intensa en Almería: índice de calor 73/100, máxima de 39.4 °C. 23 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
