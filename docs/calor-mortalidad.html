@@ -104,10 +104,19 @@ const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/calor_mor
 /* Copia de seguridad: si el JSON no carga, la pagina NUNCA sale vacia.
    Datos reales consultados en el panel MoMo el 14/08/2026. */
 const PREVIEW = {
-  "actualizado":"2026-08-14",
+  "actualizado":"2026-08-17",
   "fuente":"MoMo · Centro Nacional de Epidemiología · Instituto de Salud Carlos III",
-  "verano_actual":{"anio":2026,"a_fecha":"2026-08-13","desde":"2026-06-01","atribuibles_calor":3851,"parcial":true},
+  "verano_actual":{"anio":2026,"a_fecha":"2026-08-16","desde":"2026-06-01","atribuibles_calor":4178,"parcial":true},
+  /* Serie diaria real del verano de 2026, leida del panel MoMo el 17/08/2026.
+     Un valor por dia desde el 1 de junio. Validada: junio 939, julio 2.025. */
+  "dias_compacto":{"desde":"2026-06-01","valores":[
+    15,12,12,9,4,3,2,2,1,0,0,1,4,15,16,16,15,15,14,13,14,38,68,100,113,106,97,88,78,68,
+    51,36,35,36,44,64,94,118,134,142,129,115,102,83,65,56,45,42,40,39,43,47,48,49,50,54,
+    48,45,51,57,63,60,59,65,68,64,67,61,65,76,80,76,73,79,101,115,105]},
   "meses":[
+    {"mes":"2025-08","atribuibles":1088,"signo":"calor"},
+    {"mes":"2025-09","atribuibles":173,"signo":"calor"},
+    {"mes":"2025-10","atribuibles":11,"signo":"frio"},
     {"mes":"2025-11","atribuibles":137,"signo":"frio"},
     {"mes":"2025-12","atribuibles":278,"signo":"frio"},
     {"mes":"2026-01","atribuibles":909,"signo":"frio"},
@@ -115,14 +124,35 @@ const PREVIEW = {
     {"mes":"2026-03","atribuibles":51,"signo":"frio"},
     {"mes":"2026-04","atribuibles":49,"signo":"calor"},
     {"mes":"2026-05","atribuibles":123,"signo":"calor"},
-    {"mes":"2026-06","atribuibles":936,"signo":"calor"},
-    {"mes":"2026-07","atribuibles":2024,"signo":"calor"},
-    {"mes":"2026-08","atribuibles":891,"signo":"calor","parcial":true}
+    {"mes":"2026-06","atribuibles":939,"signo":"calor"},
+    {"mes":"2026-07","atribuibles":2025,"signo":"calor"},
+    {"mes":"2026-08","atribuibles":1214,"signo":"calor","parcial":true}
   ],
   "doce_meses":{"observadas":452894,"base":441782,"exceso":11112,"atribuibles_temperatura":7121},
   "contexto":{"total_2015_2025":27564,"peor_anio":{"anio":2022,"atribuibles":4789},
     "riesgo_por_grado_min":9.1,"riesgo_por_grado_max":10.7},
-  "historico_anual":[{"anio":2022,"atribuibles_calor":4789}]
+  /* Serie historica leida verano a verano del panel MoMo el 17/08/2026, usando
+     el selector de Periodo. Contraste: 2015-2025 suma 27.522 frente a las 27.564
+     que publica Sanidad (0,15 % por redondeo diario) y 2022 da 4.788 frente a
+     los 4.789 oficiales. */
+  "comparativa_mensual":{
+    "06":{"2015":168,"2016":70,"2017":999,"2018":92,"2019":202,"2020":54,"2021":40,
+          "2022":827,"2023":141,"2024":30,"2025":409,"2026":939},
+    "07":{"2015":1795,"2016":879,"2017":794,"2018":123,"2019":1085,"2020":574,"2021":560,
+          "2022":2216,"2023":685,"2024":675,"2025":1062,"2026":2025},
+    "08":{"2015":462,"2016":686,"2017":974,"2018":1307,"2019":302,"2020":838,"2021":779,
+          "2022":1609,"2023":1990,"2024":1270,"2025":2184,"2026":1214},
+    "09":{"2015":61,"2016":618,"2017":40,"2018":84,"2019":26,"2020":88,"2021":50,
+          "2022":78,"2023":188,"2024":33,"2025":173}
+  },
+  "historico_anual":[
+    {"anio":2015,"atribuibles_calor":2486},{"anio":2016,"atribuibles_calor":2253},
+    {"anio":2017,"atribuibles_calor":2807},{"anio":2018,"atribuibles_calor":1606},
+    {"anio":2019,"atribuibles_calor":1615},{"anio":2020,"atribuibles_calor":1554},
+    {"anio":2021,"atribuibles_calor":1429},{"anio":2022,"atribuibles_calor":4730},
+    {"anio":2023,"atribuibles_calor":3004},{"anio":2024,"atribuibles_calor":2008},
+    {"anio":2025,"atribuibles_calor":3828}
+  ]
 };
 
 let D = PREVIEW, vista = 'dias';
@@ -160,12 +190,46 @@ function comparativaMensual(){
   return out;
 }
 
-/* Dias del verano en curso, ya ordenados */
+function sumaDias(fechaISO, n){
+  const d = new Date(fechaISO + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+/* Dias del verano en curso. Acepta las dos formas: la lista completa que
+   escribe el script y la version compacta que viaja dentro de este archivo. */
 function diasVerano(){
-  const anio = (D.verano_actual || {}).anio;
-  return (D.dias || [])
-    .filter(x => x.fecha && x.fecha.slice(0, 4) === String(anio) && x.fecha >= anio + '-06-01')
-    .sort((a, b) => a.fecha.localeCompare(b.fecha));
+  if(D.dias && D.dias.length){
+    const anio = (D.verano_actual || {}).anio;
+    return D.dias
+      .filter(x => x.fecha && x.fecha >= anio + '-06-01')
+      .sort((a, b) => a.fecha.localeCompare(b.fecha));
+  }
+  const c = D.dias_compacto;
+  if(c && c.valores && c.valores.length){
+    return c.valores.map((v, i) => ({ fecha: sumaDias(c.desde, i), atribuibles: v }));
+  }
+  return [];
+}
+
+/* Fichas de ayer, semana y mes. Si el JSON no las trae hechas, se calculan
+   aqui a partir de la serie diaria. */
+function resumenDias(){
+  if(D.resumen_dias && D.resumen_dias.ayer) return D.resumen_dias;
+  const dias = diasVerano();
+  if(!dias.length) return null;
+  const ayerISO = sumaDias(new Date().toISOString().slice(0, 10), -1);
+  const reg = [...dias].reverse().find(r => r.fecha <= ayerISO) || dias[dias.length - 1];
+  const u7 = dias.slice(-7);
+  const mesUlt = dias[dias.length - 1].fecha.slice(0, 7);
+  const delMes = dias.filter(r => r.fecha.slice(0, 7) === mesUlt);
+  return {
+    ayer:   { fecha: reg.fecha, atribuibles: reg.atribuibles, es_ayer: reg.fecha === ayerISO },
+    semana: { atribuibles: u7.reduce((s, r) => s + r.atribuibles, 0),
+              desde: u7[0].fecha, hasta: u7[u7.length - 1].fecha, dias: u7.length },
+    mes:    { mes: mesUlt, dias: delMes.length,
+              atribuibles: delMes.reduce((s, r) => s + r.atribuibles, 0) }
+  };
 }
 
 function fechaLarga(iso){
@@ -222,19 +286,26 @@ function pintarResumen(){
        ';font-weight:600">' + (f.dif >= 0 ? '+' : '') + f.dif + '%</span>') +
       '</b></li>').join('');
 
-    const cerrados = filas.filter(f => f.dif != null);
-    const medioDif = cerrados.length
-      ? Math.round(cerrados.reduce((s, f) => s + f.dif, 0) / cerrados.length) : null;
+    // Puesto del verano en curso entre todos los de la serie.
+    const totalActual = (D.verano_actual || {}).atribuibles_calor;
+    const previos = (D.historico_anual || []).map(x => x.atribuibles_calor);
+    const peor = previos.length ? Math.max(...previos) : null;
+    const anioPeor = peor != null
+      ? (D.historico_anual.find(x => x.atribuibles_calor === peor) || {}).anio : null;
+    const puesto = (totalActual != null && previos.length)
+      ? previos.filter(v => v > totalActual).length + 1 : null;
+    const total = previos.length + 1;
 
     el.innerHTML =
-      '<div class="eyebrow">Comparativa por meses</div>' +
-      '<div class="big">' + (medioDif == null ? '—' : (medioDif >= 0 ? '+' : '') + medioDif + '%') +
-      '<small>de diferencia media entre el verano de ' + anioActual +
-      ' y la media de los veranos anteriores de la serie.</small></div>' +
-      '<h4 style="margin-top:14px">' + anioActual + ' frente a la media histórica</h4>' +
+      '<div class="eyebrow">Comparativa de veranos</div>' +
+      '<div class="big">' + (puesto ? puesto + 'º' : '—') +
+      '<small>verano más mortífero de los ' + total + ' de la serie, y aún no ha terminado.' +
+      (peor != null ? ' El récord es ' + anioPeor + ', con ' + nf(peor) + '.' : '') +
+      '</small></div>' +
+      '<h4 style="margin-top:14px">' + anioActual + ' frente a la media de cada mes</h4>' +
       '<ul class="rank">' + (lista || '<li><span>Sin datos suficientes</span></li>') + '</ul>' +
-      '<p>Cada grupo de barras del gráfico es un mes. La barra naranja es ' + anioActual +
-      '; las grises, los mismos meses de años anteriores.</p>';
+      '<p>Cada grupo de barras del gráfico es un mes. La naranja es ' + anioActual +
+      '; las grises, ese mismo mes en años anteriores.</p>';
     return;
   }
 
@@ -251,7 +322,7 @@ function pintarResumen(){
     return;
   }
 
-  const r = D.resumen_dias;
+  const r = resumenDias();
   let mini, cola, clases;
 
   if(r && r.ayer){
@@ -474,7 +545,9 @@ pintar();
 
 fetch(JSON_URL, { cache: 'no-store' })
   .then(r => r.ok ? r.json() : Promise.reject(r.status))
-  .then(j => { if(j && j.verano_actual){ D = j; pintar(); } })
+  /* Se fusiona: lo que traiga el JSON manda, y lo que le falte (por ejemplo la
+     serie diaria, mientras el script no la publique) sale de la copia local. */
+  .then(j => { if(j && j.verano_actual){ D = Object.assign({}, PREVIEW, j); pintar(); } })
   .catch(e => console.warn('[calor-mortalidad] se mantiene la copia local:', e));
 </script>
 </body>
