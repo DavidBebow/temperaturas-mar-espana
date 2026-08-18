@@ -3,93 +3,224 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Embalses de Guadalajara — Estado semanal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Embalses por provincia · Boletín Hidrológico MITECO</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  :root{--bg:#07101a;--bg2:#0b1822;--border:#162636;--text:#c8dff0;--muted:#4a6a85;--accent:#1a8fcf;}
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
-  #cabecera{background:var(--bg2);padding:10px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--border);}
-  .cab-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-  #back-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);transition:color .2s,border-color .2s;}
-  #back-btn:hover{color:var(--text);border-color:var(--accent);}
-  #cabecera h1{font-size:13px;font-weight:500;letter-spacing:.06em;color:#e4f0ff;text-transform:uppercase;}
-  #cabecera h1 span{color:var(--accent);}
-  #meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
-  #meta p{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
-  #leyenda{background:#090f18;padding:6px 18px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);}
-  #leyenda strong{color:#7a9aaa;font-weight:500;margin-right:4px;}
-  .ley{display:flex;align-items:center;gap:5px;}
-  .ley-dot{width:10px;height:10px;border-radius:50%;}
-  .hint{margin-left:auto;font-size:10px;color:#2e4a62;}
-  #mapa{width:100%;height:calc(100vh - 88px);min-height:420px;background:var(--bg);}
-  .emb-marker{display:flex;flex-direction:column;align-items:center;cursor:pointer;}
-  .emb-circulo{border-radius:50%;border:2px solid rgba(255,255,255,.25);box-shadow:0 3px 14px rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;}
-  .emb-pct{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:white;text-shadow:0 1px 3px rgba(0,0,0,.9);line-height:1;}
-  .emb-label{font-size:9px;font-weight:600;color:rgba(255,255,255,.9);text-shadow:0 1px 3px rgba(0,0,0,.9);margin-top:3px;line-height:1;text-align:center;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .leaflet-popup-content-wrapper{background:#09141f!important;border:1px solid #1a3550!important;border-radius:14px!important;box-shadow:0 10px 40px rgba(0,0,0,.85)!important;color:var(--text)!important;padding:0!important;}
-  .leaflet-popup-content{margin:0!important;}
-  .leaflet-popup-tip{background:#09141f!important;}
-  .leaflet-popup-close-button{color:var(--muted)!important;top:10px!important;right:12px!important;}
-  .popup-wrap{padding:18px 20px;min-width:240px;}
-  .popup-nombre{font-size:15px;font-weight:600;color:#e8f4ff;margin-bottom:2px;}
-  .popup-sub{font-size:11px;color:var(--muted);margin-bottom:10px;}
-  .popup-pct{font-size:36px;font-weight:300;letter-spacing:-.03em;margin:4px 0 2px;font-family:'DM Mono',monospace;}
-  .popup-etiq{font-size:11px;color:var(--muted);margin-bottom:12px;}
-  .popup-bar-bg{background:#0d1e2e;border-radius:4px;height:6px;margin-bottom:14px;overflow:hidden;}
-  .popup-bar{height:100%;border-radius:4px;}
-  .popup-fila{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #0f2035;font-size:12px;color:var(--muted);}
-  .popup-fila:last-of-type{border-bottom:none;}
-  .popup-fila span:last-child{font-family:'DM Mono',monospace;font-weight:500;color:#c0daf0;}
-  .leaflet-control-zoom a{background:var(--bg2)!important;color:var(--muted)!important;border-color:var(--border)!important;}
-  .leaflet-control-attribution{background:rgba(7,16,26,.9)!important;color:#2a4a60!important;font-size:10px!important;}
+  :root{--bg:#f7f9fb;--ink:#1d1d1f;--soft:#6e6e73;--line:#dfe5ea;--card:#ffffff;--agua:#0071b8}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1060px;margin:0 auto;padding:22px 18px 26px}
+
+  .top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+  .eyebrow{font-size:10.5px;letter-spacing:.14em;color:var(--soft);text-transform:uppercase;font-weight:700}
+  h1{margin:3px 0 0;font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  h1 b{color:var(--agua)}
+  .et{font-size:11.5px;font-weight:800;color:#fff;border-radius:8px;padding:5px 11px;letter-spacing:.04em;flex:none}
+  .volver{font-size:12.5px;font-weight:700;color:var(--agua);text-decoration:none;flex:none}
+
+  .band{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 0}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 15px}
+  .stat .n{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+  .stat .l{font-size:11px;color:var(--soft);margin-top:3px;line-height:1.35}
+  .stat .d{font-size:11px;font-weight:700;margin-top:3px}
+
+  .frase{margin:14px 0 0;background:#eef4f9;border:1px solid #d8e6f1;border-radius:14px;
+    padding:12px 16px;font-size:14px;line-height:1.6;color:#27333d}
+  .frase b{font-variant-numeric:tabular-nums}
+
+  .spark{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 15px;margin:12px 0 0;display:none}
+  .spark .k{font-size:9.5px;letter-spacing:.12em;color:var(--soft);text-transform:uppercase;font-weight:700;margin-bottom:6px}
+
+  .cols{display:grid;grid-template-columns:1fr 330px;gap:14px;margin-top:14px;align-items:start}
+  .lista{display:flex;flex-direction:column;gap:10px}
+  .emb{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 16px}
+  .emb .nm{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .emb .nm b{font-size:15px;font-weight:800;letter-spacing:-.01em}
+  .emb .nm .pc{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;flex:none}
+  .emb .meta{font-size:11px;color:var(--soft);margin-top:1px}
+  .emb .bar{position:relative;height:9px;background:#e8edf2;border-radius:5px;margin:10px 0 4px}
+  .emb .bar .fill{position:absolute;top:0;bottom:0;left:0;border-radius:5px;transition:width .8s cubic-bezier(.2,.7,.3,1)}
+  .emb .bar .tick{position:absolute;top:-3px;width:2.5px;height:15px;border-radius:2px}
+  .emb .cmp{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--soft);margin-top:7px;font-variant-numeric:tabular-nums}
+  .emb .cmp span b{color:var(--ink);font-weight:800}
+  .emb .cmp .m1::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;background:#7a8894;margin-right:5px}
+  .emb .cmp .m10::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;background:#1d1d1f;margin-right:5px}
+
+  .mapa{position:sticky;top:14px}
+  .mapa .box{background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden}
+  #mini{height:330px}
+  .mapa .leyenda{display:flex;gap:10px;flex-wrap:wrap;padding:10px 13px;font-size:10.5px;color:var(--soft)}
+  .mapa .leyenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+
+  .fuente{margin-top:18px;padding-top:12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--soft);
+    display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .fuente a{color:var(--agua);text-decoration:none;font-weight:600}
+  #err{padding:60px 20px;text-align:center;color:var(--soft)}
+
+  @media(max-width:860px){
+    .band{grid-template-columns:repeat(2,1fr)}
+    .cols{grid-template-columns:1fr}
+    .mapa{position:static;order:-1}
+    #mini{height:240px}
+  }
 </style>
 </head>
 <body>
-<div id="cabecera">
-  <div class="cab-left">
-    <a id="back-btn" href="https://davidbebow.github.io/temperaturas-mar-espana/embalses.html">← Mapa España</a>
-    <h1>💧 Embalses de <span>Guadalajara</span></h1>
+<div class="wrap" id="app" style="display:none">
+  <div class="top">
+    <div>
+      <div class="eyebrow" id="eyebrow">—</div>
+      <h1>Embalses de <b id="prov">—</b></h1>
+    </div>
+    <span class="et" id="et">—</span>
+    <a class="volver" id="volver" target="_top" style="display:none">← Mapa de España</a>
   </div>
-  <div id="meta">
-    <p id="txt-resumen">Cargando...</p>
-    <p id="txt-fecha"></p>
+
+  <div class="band">
+    <div class="stat"><div class="n" id="pct">—</div><div class="l">de la capacidad, embalsado esta semana</div><div class="d" id="delta"></div></div>
+    <div class="stat"><div class="n" id="pct1a" style="color:#556270">—</div><div class="l">hace un año, misma semana</div></div>
+    <div class="stat"><div class="n" id="pct10" style="color:#556270">—</div><div class="l">media de los últimos 10 años</div></div>
+    <div class="stat"><div class="n" id="vol">—</div><div class="l" id="voll">hm³ embalsados</div></div>
+  </div>
+
+  <p class="frase" id="frase"></p>
+
+  <div class="spark" id="spark">
+    <div class="k">Evolución del % embalsado · últimos 2 años</div>
+    <svg id="sparksvg" width="100%" height="72" viewBox="0 0 600 72" preserveAspectRatio="none"></svg>
+  </div>
+
+  <div class="cols">
+    <div class="lista" id="lista"></div>
+    <div class="mapa">
+      <div class="box">
+        <div id="mini"></div>
+        <div class="leyenda">
+          <span><i style="background:#CC2200"></i>&lt;20%</span>
+          <span><i style="background:#FF8822"></i>20–40</span>
+          <span><i style="background:#FFCC44"></i>40–60</span>
+          <span><i style="background:#44AA66"></i>60–80</span>
+          <span><i style="background:#0077DD"></i>&gt;80%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fuente">
+    <span>Datos: <a href="https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/boletin-hidrologico.html" target="_blank" rel="noopener">Boletín Hidrológico Semanal — MITECO</a> · actualización automática semanal</span>
+    <span id="fecha">—</span>
   </div>
 </div>
-<div id="leyenda">
-  <strong>% embalsado:</strong>
-  <div class="ley"><div class="ley-dot" style="background:#CC2200"></div>Crítico &lt;20%</div>
-  <div class="ley"><div class="ley-dot" style="background:#FF8822"></div>Bajo 20–40%</div>
-  <div class="ley"><div class="ley-dot" style="background:#FFCC44"></div>Moderado 40–60%</div>
-  <div class="ley"><div class="ley-dot" style="background:#44AA66"></div>Bueno 60–80%</div>
-  <div class="ley"><div class="ley-dot" style="background:#0077DD"></div>Muy bueno &gt;80%</div>
-  <span class="hint">Tamaño = capacidad · Clic para detalles</span>
-</div>
-<div id="mapa"></div>
+<div id="err">Cargando datos de los embalses…</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const JSON_URL='https://davidbebow.github.io/temperaturas-mar-espana/embalses/guadalajara.json';
-const CAP_MIN=8,CAP_MAX=1640,R_MIN=28,R_MAX=68;
-function colorPct(p){if(p==null)return'#888';if(p<20)return'#CC2200';if(p<40)return'#FF8822';if(p<60)return'#FFCC44';if(p<80)return'#44AA66';return'#0077DD';}
-function tam(c){return Math.round(R_MIN+((Math.min(Math.max(c,CAP_MIN),CAP_MAX)-CAP_MIN)/(CAP_MAX-CAP_MIN))*(R_MAX-R_MIN));}
-function icono(e){const s=tam(e.capacidad_hm3),col=colorPct(e.pct),tx=e.pct!=null?e.pct+'%':'—',lbl=e.nombre.length>10?e.nombre.substring(0,9)+'…':e.nombre;
-return L.divIcon({html:`<div class="emb-marker"><div class="emb-circulo" style="width:${s}px;height:${s}px;background:${col}bb"><div class="emb-pct">${tx}</div></div><div class="emb-label" style="max-width:${s+20}px">${lbl}</div></div>`,className:'',iconSize:null,iconAnchor:[s/2+5,s/2+14],popupAnchor:[0,-(s/2+16)]});}
-function popup(e){const col=colorPct(e.pct),pctTx=e.pct!=null?e.pct+'%':'Sin datos',barra=e.pct??0,volTx=e.volumen_hm3!=null?e.volumen_hm3.toFixed(1)+' Hm³':'—',libre=(e.volumen_hm3!=null&&e.pct!=null)?(e.capacidad_hm3-e.volumen_hm3).toFixed(1)+' Hm³':'—';
-return`<div class="popup-wrap"><div class="popup-nombre">💧 ${e.nombre}</div><div class="popup-sub">Río ${e.rio??'—'} · ${e.municipio??'—'} · <em>${e.provincia}</em></div><div class="popup-pct" style="color:${col}">${pctTx}</div><div class="popup-etiq">${e.etiqueta??'—'}</div><div class="popup-bar-bg"><div class="popup-bar" style="width:${barra}%;background:${col}"></div></div><div class="popup-fila"><span>Volumen actual</span><span>${volTx}</span></div><div class="popup-fila"><span>Capacidad total</span><span>${e.capacidad_hm3} Hm³</span></div><div class="popup-fila"><span>Volumen libre</span><span>${libre}</span></div><div class="popup-fila"><span>Estado</span><span>${e.etiqueta??'—'}</span></div></div>`;}
-const mapa=L.map('mapa',{center:[40.7,-2.8],zoom:8});
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri | MITECO',maxZoom:14}).addTo(mapa);
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:14,opacity:.55}).addTo(mapa);
-fetch(JSON_URL+'?_='+Date.now()).then(r=>r.json()).then(data=>{
-  const pct=data.pct_media,col=colorPct(pct);
-  document.getElementById('txt-resumen').innerHTML=`Media: <strong style="color:${col}">${pct!=null?pct+'%':'—'}</strong> · ${data.total_embalses} embalses`;
-  document.getElementById('txt-fecha').textContent='Actualizado: '+(data.fecha_legible||'—');
-  let p1=null;
-  (data.embalses||[]).forEach(e=>{const m=L.marker([e.lat,e.lon],{icon:icono(e)}).addTo(mapa).bindPopup(popup(e),{maxWidth:290});if(e.id==='entrepeñas')p1=m;});
-  if(p1)setTimeout(()=>p1.openPopup(),700);
-}).catch(e=>{document.getElementById('txt-resumen').textContent='Error al cargar datos';});
+const BASE='https://davidbebow.github.io/temperaturas-mar-espana/embalses/';
+const MAPA_NACIONAL='https://davidbebow.github.io/temperaturas-mar-espana/embalses.html';
+
+// La provincia sale de ?p=… o, si este archivo es una copia {slug}.html, del propio nombre.
+function slugActual(){
+  const q=new URLSearchParams(location.search).get('p');
+  if(q) return q.toLowerCase();
+  const f=location.pathname.split('/').pop().replace(/\.html?$/,'');
+  return (f && f!=='provincia')?f:null;
+}
+const cuencaTxt=c=>{
+  if(/^(Segura|Tajo|Duero|Ebro|Júcar|Guadiana|Guadalquivir|Cantábrico Occidental|Cantábrico Oriental)$/.test(c))return 'Cuenca del '+c;
+  if(c==='Miño - Sil')return 'Cuenca Miño-Sil';
+  if(c==='Galicia Costa')return 'Demarcación Galicia Costa';
+  return c.indexOf('Cuenca')===0?c:'Cuenca '+c;
+};
+const pretty=n=>{const m=n.match(/^(.+),\s*(La|El|Los|Las|Nª Sª de|A|As|Os)$/);return m?m[2]+' '+m[1]:n};
+const fmt=n=>n==null?'—':n.toLocaleString('es-ES',{maximumFractionDigits:1});
+const pctTxt=p=>p==null?'—':fmt(p)+'%';
+
+const slug=slugActual();
+if(!slug){document.getElementById('err').textContent='Provincia no indicada (…/provincia.html?p=murcia)';}
+else fetch(BASE+slug+'.json?_='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).then(pintar)
+  .catch(()=>{document.getElementById('err').textContent='No hay datos de embalses para esta provincia.'});
+
+function pintar(d){
+  document.getElementById('err').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('eyebrow').textContent=d.comunidad+' · '+d.total_embalses+' embalses monitorizados · semana del '+d.fecha_legible;
+  document.getElementById('prov').textContent=d.provincia;
+  const et=document.getElementById('et'); et.textContent=d.etiqueta; et.style.background=d.color;
+  const pe=document.getElementById('pct'); pe.textContent=pctTxt(d.pct_media); pe.style.color=d.color;
+  document.getElementById('pct1a').textContent=pctTxt(d.pct_hace_1a);
+  document.getElementById('pct10').textContent=pctTxt(d.pct_media_10a);
+  document.getElementById('vol').textContent=fmt(d.volumen_total_hm3);
+  document.getElementById('voll').textContent='hm³ embalsados de '+fmt(d.capacidad_total_hm3)+' hm³';
+  if(d.pct_media!=null&&d.pct_hace_1a!=null){
+    const dif=Math.round((d.pct_media-d.pct_hace_1a)*10)/10, up=dif>=0;
+    const el=document.getElementById('delta');
+    el.textContent=(up?'▲ +':'▼ ')+fmt(dif)+' pts vs hace un año';
+    el.style.color=up?'#2e7d46':'#CC2200';
+  }
+  document.getElementById('frase').innerHTML=
+    'Los embalses de la provincia de <b>'+d.provincia+'</b> están al <b>'+pctTxt(d.pct_media)+
+    '</b> de su capacidad en la semana del '+d.fecha_legible+
+    ' ('+fmt(d.volumen_total_hm3)+' hm³ de '+fmt(d.capacidad_total_hm3)+' hm³). '+
+    'Hace un año estaban al <b>'+pctTxt(d.pct_hace_1a)+'</b> y la media de los últimos 10 años para estas fechas es del <b>'+
+    pctTxt(d.pct_media_10a)+'</b>. Fuente: Boletín Hidrológico Semanal del MITECO.';
+  document.getElementById('fecha').textContent='Boletín del '+d.fecha_legible;
+  const volver=document.getElementById('volver');
+  volver.href=MAPA_NACIONAL; volver.style.display='inline';
+
+  sparkline(d.serie||[]);
+
+  // tarjetas
+  const w=v=>Math.max(0,Math.min(100,v||0));
+  document.getElementById('lista').innerHTML=(d.embalses||[]).map(e=>
+    '<div class="emb">'+
+      '<div class="nm"><b>'+pretty(e.nombre)+'</b><span class="pc" style="color:'+e.color+'">'+pctTxt(e.pct)+'</span></div>'+
+      '<div class="meta">'+cuencaTxt(e.cuenca)+(e.electrico?' · uso hidroeléctrico':'')+' · capacidad '+fmt(e.capacidad_hm3)+' hm³</div>'+
+      '<div class="bar"><div class="fill" style="width:'+w(e.pct)+'%;background:'+e.color+'"></div>'+
+        (e.pct_hace_1a!=null?'<div class="tick" style="left:'+w(e.pct_hace_1a)+'%;background:#7a8894"></div>':'')+
+        (e.pct_media_10a!=null?'<div class="tick" style="left:'+w(e.pct_media_10a)+'%;background:#1d1d1f"></div>':'')+
+      '</div>'+
+      '<div class="cmp">'+
+        '<span>Ahora <b>'+pctTxt(e.pct)+'</b> · '+fmt(e.volumen_hm3)+' hm³</span>'+
+        '<span class="m1">Hace un año <b>'+pctTxt(e.pct_hace_1a)+'</b></span>'+
+        '<span class="m10">Media 10 años <b>'+pctTxt(e.pct_media_10a)+'</b></span>'+
+      '</div>'+
+    '</div>').join('');
+
+  // mini mapa
+  const conCoord=(d.embalses||[]).filter(e=>e.lat&&e.lon);
+  if(conCoord.length){
+    const mini=L.map('mini',{zoomSnap:.25,attributionControl:false,scrollWheelZoom:false});
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',opacity:.9}).addTo(mini);
+    const g=L.featureGroup(conCoord.map(e=>{
+      const r=6+Math.sqrt(e.capacidad_hm3||1)*.9;
+      return L.circleMarker([e.lat,e.lon],{radius:Math.min(r,22),color:'#fff',weight:1.5,
+        fillColor:e.color,fillOpacity:.9})
+        .bindTooltip('<b>'+pretty(e.nombre)+'</b><br>'+pctTxt(e.pct)+' · '+fmt(e.volumen_hm3)+'/'+fmt(e.capacidad_hm3)+' hm³');
+    })).addTo(mini);
+    mini.fitBounds(g.getBounds().pad(.25));
+  } else {
+    document.querySelector('.mapa').style.display='none';
+  }
+
+  // avisar de la altura al padre (las páginas de WordPress ajustan el iframe)
+  const avisar=()=>parent.postMessage({embalsesAltura:document.body.scrollHeight,slug:slug},'*');
+  setTimeout(avisar,300); setTimeout(avisar,1200);
+  window.addEventListener('resize',avisar);
+}
+
+function sparkline(serie){
+  if(!serie||serie.length<8)return;
+  const svg=document.getElementById('sparksvg');
+  const vals=serie.map(s=>s.pct), min=Math.max(0,Math.min(...vals)-6), max=Math.min(100,Math.max(...vals)+6);
+  const X=i=>i/(vals.length-1)*600, Y=v=>66-(v-min)/(max-min)*58;
+  let p='M'+X(0)+','+Y(vals[0]);
+  vals.forEach((v,i)=>{if(i)p+='L'+X(i)+','+Y(v)});
+  svg.innerHTML='<path d="'+p+' L600,72 L0,72 Z" fill="rgba(0,113,184,.10)"/>'+
+    '<path d="'+p+'" fill="none" stroke="#0071b8" stroke-width="2.2" stroke-linejoin="round"/>';
+  document.getElementById('spark').style.display='block';
+}
 </script>
 </body>
 </html>
