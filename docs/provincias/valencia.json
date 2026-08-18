@@ -3,8 +3,8 @@
  "provincia": "Valencia",
  "ccaa": "Comunitat Valenciana",
  "capital": "Valencia",
- "generado": "2026-08-17T17:02+02:00",
- "fecha_legible": "17/08/2026 a las 17:02",
+ "generado": "2026-08-18T09:24+02:00",
+ "fecha_legible": "18/08/2026 a las 09:24",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -33,20 +33,20 @@
   },
   "firma_climatica": {
    "nombre": "Valencia",
-   "tmax": 32.5,
+   "tmax": 33.3,
    "pr": 1.8,
    "pr_tope": false,
    "ifc": 1,
    "delta": 1.3,
-   "percentil": 80.0,
+   "percentil": 87.0,
    "lado": "calor",
    "racha_ifc3": 0
   },
   "avisos": {
-   "total": 7,
+   "total": 9,
    "rojos": 0,
    "naranjas": 3,
-   "amarillos": 4,
+   "amarillos": 6,
    "items": [
     {
      "zona": "Interior sur de Valencia",
@@ -103,12 +103,30 @@
      "activo_ya": false
     },
     {
+     "zona": "Litoral norte de Valencia",
+     "nivel": "amarillo",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-20T13:00+02:00",
+     "fin": "2026-08-20T20:59+02:00",
+     "activo_ya": false
+    },
+    {
      "zona": "Litoral sur de Valencia",
      "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
      "inicio": "2026-08-18T13:00+02:00",
      "fin": "2026-08-18T20:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Litoral sur de Valencia",
+     "nivel": "amarillo",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-08-20T13:00+02:00",
+     "fin": "2026-08-20T20:59+02:00",
      "activo_ya": false
     }
    ]
@@ -117,11 +135,11 @@
    {
     "id": "valencia",
     "nombre": "Valencia",
-    "temperatura_actual": null,
-    "anomalia": null,
-    "etiqueta_anomalia": "Sin datos",
-    "dias_consecutivos": null,
-    "signo_consecutivo": null
+    "temperatura_actual": 29.4,
+    "anomalia": 2.4,
+    "etiqueta_anomalia": "Muy por encima de la media",
+    "dias_consecutivos": 37,
+    "signo_consecutivo": "positiva"
    }
   ],
   "nivel_mar": [
@@ -144,7 +162,7 @@
   ],
   "incendios_ccaa": {
    "nombre": "Comunidad Valenciana",
-   "focos_activos": 2,
+   "focos_activos": 1,
    "tiene_fuego": true,
    "etiqueta": "Actividad baja",
    "dias_consecutivos": 0,
@@ -174,9 +192,9 @@
   "calidad_aire": [
    {
     "nombre": "Valencia",
-    "etiqueta": "Moderada",
-    "aqi_europeo": 57,
-    "pm25": 15.7,
+    "etiqueta": "Buena",
+    "aqi_europeo": 47,
+    "pm25": 14.6,
     "contaminante_dominante": "O₃",
     "supera_oms": true,
     "sahariano": false
@@ -200,8 +218,8 @@
    {
     "id": "valencia",
     "nombre": "Valencia",
-    "temp": 28.48,
-    "fecha": "2026-08-17",
+    "temp": 28.62,
+    "fecha": "2026-08-18",
     "max_anio": {
      "valor": 29.09,
      "fecha": "2026-08-15"
@@ -222,52 +240,62 @@
    "tipo": "aviso_naranja",
    "icono": "🟠",
    "nivel": "alto",
-   "texto": "Aviso naranja de AEMET en Valencia por Altas temperaturas (3 zona(s))",
+   "texto": "Aviso naranja de AEMET en Valencia por Altas temperaturas (3 zona(s)) · 2.º día consecutivo",
    "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
    "prioridad": 80,
-   "racha_dias": 1,
-   "nuevo": true
+   "racha_dias": 2,
+   "nuevo": false
   },
   {
    "tipo": "sequia",
    "icono": "🏜️",
    "nivel": "medio",
-   "texto": "Déficit de lluvia en Valencia: 172.9 mm acumulados este año, un 38% menos de lo normal a estas alturas · 19.º día consecutivo",
+   "texto": "Déficit de lluvia en Valencia: 172.9 mm acumulados este año, un 38% menos de lo normal a estas alturas · 20.º día consecutivo",
    "url": "https://calentamientoglobal.es/lluvias-en-espana/",
    "prioridad": 72,
-   "racha_dias": 19,
+   "racha_dias": 20,
    "nuevo": false
+  },
+  {
+   "tipo": "mar_anomalia_valencia",
+   "icono": "🌡️",
+   "nivel": "medio",
+   "texto": "El mar en Valencia está a 29.4 °C, +2.4 °C sobre la media histórica, 37 días seguidos por encima de la media",
+   "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
+   "prioridad": 70,
+   "racha_dias": 1,
+   "nuevo": true
   },
   {
    "tipo": "boya_anomalia_valencia",
    "icono": "🌡️",
    "nivel": "medio",
-   "texto": "La boya de Valencia está +2.3 °C sobre lo normal para la época (28.48 °C) · 19.º día consecutivo",
+   "texto": "La boya de Valencia está +2.3 °C sobre lo normal para la época (28.62 °C) · 20.º día consecutivo",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 69,
-   "racha_dias": 19,
+   "racha_dias": 20,
    "nuevo": false
   },
   {
    "tipo": "nivel_mar_valencia_sur",
    "icono": "🌊",
    "nivel": "medio",
-   "texto": "Nivel del mar muy elevado en Costa Valencia Sur: +12.4 cm sobre la media 1993-2012 · 6.º día consecutivo",
+   "texto": "Nivel del mar muy elevado en Costa Valencia Sur: +12.4 cm sobre la media 1993-2012 · 7.º día consecutivo",
    "url": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
    "prioridad": 64,
-   "racha_dias": 6,
+   "racha_dias": 7,
    "nuevo": false
   },
   {
    "tipo": "incendios",
    "icono": "🔥",
    "nivel": "medio",
-   "texto": "2 foco(s) de calor activos detectados por satélite en Comunidad Valenciana (últimas 48 h) · 19.º día consecutivo",
+   "texto": "1 foco(s) de calor activos detectados por satélite en Comunidad Valenciana (últimas 48 h) · 20.º día consecutivo",
    "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
    "prioridad": 56,
-   "racha_dias": 19,
+   "racha_dias": 20,
    "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Valencia a 17/08/2026: Aviso naranja de AEMET en Valencia por Altas temperaturas (3 zona(s)). Déficit de lluvia en Valencia: 172.9 mm acumulados este año, un 38% menos de lo normal a estas alturas. La boya de Valencia está +2.3 °C sobre lo normal para la época (28.48 °C). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Valencia a 18/08/2026: Aviso naranja de AEMET en Valencia por Altas temperaturas (3 zona(s)). Déficit de lluvia en Valencia: 172.9 mm acumulados este año, un 38% menos de lo normal a estas alturas. El mar en Valencia está a 29.4 °C, +2.4 °C sobre la media histórica, 37 días seguidos por encima de la media. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
