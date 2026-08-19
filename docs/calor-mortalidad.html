@@ -55,6 +55,15 @@
   #leyenda .lg{display:flex;align-items:center;gap:6px}
   #leyenda .sw{width:13px;height:13px;border-radius:4px;border:1px solid rgba(0,0,0,.08)}
 
+  #selprov{width:100%;font-family:inherit;font-size:13.5px;font-weight:600;color:#1b2a3a;
+    background:#fff;border:1px solid #e2e6ec;border-radius:10px;padding:9px 11px;margin-bottom:12px;
+    cursor:pointer;-webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cc4400' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 9px center;background-size:15px;padding-right:30px}
+  #selprov:focus{outline:none;border-color:#cc4400}
+  .aviso{background:#fbf6f0;border:1px solid #f0e6da;border-radius:10px;padding:10px 12px;
+    font-size:11.5px;color:#6a7686;line-height:1.5;margin-top:10px}
+
   .rank{list-style:none;margin-top:6px}
   .rank li{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#5a6676;
     padding:5px 0;border-bottom:1px solid #eef1f5}
@@ -81,6 +90,7 @@
 
   <div id="tabs">
     <button class="tab on" data-view="dias">Día a día</button>
+    <button class="tab" data-view="provincia">Por provincia</button>
     <button class="tab" data-view="anios">Comparar años</button>
     <button class="tab" data-view="meses">Mes a mes</button>
     <button class="tab" data-view="contexto">La serie larga</button>
@@ -155,7 +165,24 @@ const PREVIEW = {
   ]
 };
 
-let D = PREVIEW, vista = 'dias';
+/* ?p=murcia abre directamente la pestana provincial con esa provincia puesta.
+   Es lo que permite incrustar la herramienta en /cambio-climatico-en-{slug}/.
+   ?solo=1 ademas oculta las pestanas, para dejar solo la vista provincial. */
+const PARAMS   = new URLSearchParams(location.search);
+const PROV_URL = (PARAMS.get('p') || '').toLowerCase().trim();
+const SOLO     = PARAMS.get('solo') === '1';
+
+/* Grafias alternativas que pueden venir en la URL de una pagina de provincia */
+const ALIAS_PROV = {
+  'coruna':'a-coruna', 'la-coruna':'a-coruna', 'araba':'alava',
+  'islas-baleares':'baleares', 'castello':'castellon', 'gerona':'girona',
+  'guipuzcoa':'gipuzkoa', 'lerida':'lleida', 'rioja':'la-rioja',
+  'vizcaya':'bizkaia', 'tenerife':'santa-cruz-de-tenerife'
+};
+
+let D = PREVIEW;
+let provSel = ALIAS_PROV[PROV_URL] || PROV_URL || null;
+let vista = provSel ? 'provincia' : 'dias';
 
 const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
@@ -194,6 +221,30 @@ function sumaDias(fechaISO, n){
   const d = new Date(fechaISO + 'T12:00:00');
   d.setDate(d.getDate() + n);
   return d.toISOString().slice(0, 10);
+}
+
+/* ---------- Provincias ---------- */
+function provincias(){ return D.provincias || {}; }
+
+function listaProvincias(){
+  return Object.keys(provincias())
+    .map(s => ({ slug: s, nombre: provincias()[s].nombre || s }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+}
+
+function provinciaActual(){
+  const P = provincias();
+  if(provSel && P[provSel]) return Object.assign({ slug: provSel }, P[provSel]);
+  const l = listaProvincias();
+  if(!l.length) return null;
+  provSel = l[0].slug;
+  return Object.assign({ slug: provSel }, P[provSel]);
+}
+
+/* Serie diaria de una provincia, expandida a pares {fecha, atribuibles} */
+function diasProvincia(p){
+  if(!p || !p.valores) return [];
+  return p.valores.map((v, i) => ({ fecha: sumaDias(p.desde, i), atribuibles: v }));
 }
 
 /* Dias del verano en curso. Acepta las dos formas: la lista completa que
@@ -262,6 +313,53 @@ function pintarResumen(){
       '</div>' +
       '<p>El riesgo de mortalidad sube entre un ' + c.riesgo_por_grado_min + ' % y un ' +
       c.riesgo_por_grado_max + ' % por cada grado que la temperatura supera el umbral de cada zona.</p>';
+    return;
+  }
+
+  if(vista === 'provincia'){
+    const lista = listaProvincias();
+    if(!lista.length){
+      el.innerHTML =
+        '<div class="eyebrow">Por provincia</div>' +
+        '<p style="font-size:13px;margin-top:10px">El desglose provincial aparece en cuanto el observatorio publique los datos por provincia. Mientras tanto, la cifra nacional está en la pestaña «Día a día».</p>';
+      return;
+    }
+    // Si la URL pidio una provincia que no esta en los datos, se dice, en vez
+    // de mostrar otra distinta sin avisar.
+    if(PROV_URL && !provincias()[provSel]){
+      el.innerHTML =
+        '<div class="eyebrow">Por provincia</div>' +
+        '<p style="font-size:13px;margin-top:10px">No hay datos publicados para «' +
+        PROV_URL.replace(/[<>&]/g, '') + '». Elige otra provincia en la lista.</p>' +
+        '<select id="selprov" aria-label="Elegir provincia">' +
+        lista.map(x => '<option value="' + x.slug + '">' + x.nombre + '</option>').join('') +
+        '</select>';
+      return;
+    }
+    const p = provinciaActual();
+    const opciones = lista.map(x =>
+      '<option value="' + x.slug + '"' + (x.slug === p.slug ? ' selected' : '') + '>' +
+      x.nombre + '</option>').join('');
+    const nac = (D.verano_actual || {}).atribuibles_calor;
+    const cuota = (nac && p.verano != null) ? (p.verano / nac * 100) : null;
+
+    el.innerHTML =
+      '<div class="eyebrow">Verano de ' + ((D.verano_actual || {}).anio || '') + ' · por provincia</div>' +
+      '<select id="selprov" aria-label="Elegir provincia">' + opciones + '</select>' +
+      '<div class="big">' + nf(p.verano) +
+      '<small>muertes atribuibles al calor en ' + p.nombre +
+      ' desde el 1 de junio, según MoMo.</small></div>' +
+      '<div class="mini tres">' +
+        '<div class="destacado"><div class="n">' + nf(p.ayer && p.ayer.atribuibles) + '</div>' +
+        '<div class="l">' + (p.ayer && p.ayer.es_ayer ? 'ayer' : ('el ' + etiquetaDia((p.ayer || {}).fecha || ''))) + '</div></div>' +
+        '<div><div class="n">' + nf(p.semana) + '</div><div class="l">últimos 7 días</div></div>' +
+        '<div><div class="n">' + nf(p.mes && p.mes.atribuibles) + '</div><div class="l">en lo que va de mes</div></div>' +
+      '</div>' +
+      (cuota != null
+        ? '<p>Es el ' + cuota.toFixed(1).replace('.', ',') + ' % de las ' + nf(nac) +
+          ' muertes atribuibles al calor registradas en toda España este verano.</p>'
+        : '') +
+      '<div class="aviso">En provincias pequeñas las cifras diarias son bajas y muy variables: conviene mirar el acumulado del verano antes que el dato de un día suelto.</div>';
     return;
   }
 
@@ -442,6 +540,21 @@ function pintarChart(){
         'Dato disponible: ' + nf((D.contexto || {}).total_2015_2025) + ' muertes entre 2015 y 2025.</text>';
       return;
     }
+  } else if(vista === 'provincia'){
+    const p = provinciaActual();
+    const dias = diasProvincia(p);
+    if(!dias.length){
+      tit.textContent = 'Defunciones atribuibles al calor por provincia';
+      svg.innerHTML = '<text x="360" y="145" text-anchor="middle" style="font-size:12.5px;fill:#6a7686">' +
+        'El desglose provincial aparece cuando el observatorio lo publique.</text>';
+      return;
+    }
+    const corte = dias.length - 5;
+    datos = dias.map((x, i) => ({
+      etiqueta: etiquetaDia(x.fecha), valor: x.atribuibles,
+      signo: 'calor', parcial: i >= corte
+    }));
+    titulo = 'Defunciones atribuibles al calor en ' + p.nombre + ', día a día';
   } else if(vista === 'dias'){
     const dias = diasVerano();
     if(dias.length){
@@ -520,7 +633,9 @@ function pintarPie(){
 function pintarLeyenda(){
   const el = document.getElementById('leyenda');
   const sw = (c, t) => '<span class="lg"><span class="sw" style="background:' + c + '"></span> ' + t + '</span>';
-  if(vista === 'anios'){
+  if(vista === 'provincia'){
+    el.innerHTML = sw('#cc4400', 'Atribuibles al calor') + sw('#e8a87c', 'Dato aún provisional');
+  } else if(vista === 'anios'){
     el.innerHTML = sw('#cc4400', 'Verano en curso') + sw('#b8c0cc', 'Años anteriores');
   } else if(vista === 'contexto'){
     el.innerHTML = sw('#cc4400', 'Muertes atribuibles al calor, por verano');
@@ -530,24 +645,46 @@ function pintarLeyenda(){
   }
 }
 
-function pintar(){ pintarResumen(); pintarChart(); pintarLeyenda(); pintarPie(); }
+function pintar(){
+  pintarResumen(); pintarChart(); pintarLeyenda(); pintarPie();
+  // El desplegable se recrea con la tarjeta, asi que se reengancha aqui.
+  const sel = document.getElementById('selprov');
+  if(sel){
+    sel.addEventListener('change', e => { provSel = e.target.value; pintar(); });
+  }
+}
+
+function marcarPestana(){
+  document.querySelectorAll('.tab').forEach(x =>
+    x.classList.toggle('on', x.dataset.view === vista));
+}
 
 document.querySelectorAll('.tab').forEach(b => {
   b.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
-    b.classList.add('on');
     vista = b.dataset.view;
+    marcarPestana();
     pintar();
   });
 });
 
+/* Incrustada en una pagina de provincia con ?solo=1: se ocultan las pestanas.
+   Solo si hay datos provinciales: si aun no los hay, es preferible dejarlas
+   visibles para que la herramienta siga sirviendo de algo. */
+function ajustarPestanas(){
+  const t = document.getElementById('tabs');
+  if(!t) return;
+  t.style.display = (SOLO && Object.keys(provincias()).length) ? 'none' : '';
+}
+
+marcarPestana();
+ajustarPestanas();
 pintar();
 
 fetch(JSON_URL, { cache: 'no-store' })
   .then(r => r.ok ? r.json() : Promise.reject(r.status))
   /* Se fusiona: lo que traiga el JSON manda, y lo que le falte (por ejemplo la
      serie diaria, mientras el script no la publique) sale de la copia local. */
-  .then(j => { if(j && j.verano_actual){ D = Object.assign({}, PREVIEW, j); pintar(); } })
+  .then(j => { if(j && j.verano_actual){ D = Object.assign({}, PREVIEW, j); ajustarPestanas(); pintar(); } })
   .catch(e => console.warn('[calor-mortalidad] se mantiene la copia local:', e));
 </script>
 </body>
