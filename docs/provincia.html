@@ -43,6 +43,9 @@
     transition:width .8s cubic-bezier(.2,.7,.3,1); }
   .ficha-agua .barra-agua u { position:absolute; top:-3px; width:2px; height:13px; border-radius:2px;
     text-decoration:none; }
+  .ficha-calor { display:block; text-decoration:none; color:inherit;
+    transition:box-shadow .18s ease; }
+  .ficha-calor:hover { box-shadow:0 3px 12px rgba(20,30,50,0.10); }
   /* Foco · lo destacado */
   #foco { background:#fff; border:1px solid #e6e8ec; border-radius:16px; padding:18px 20px;
     margin-bottom:16px; box-shadow:0 2px 8px rgba(20,30,50,0.05); }
@@ -172,29 +175,24 @@ async function enriquecerAgua(provincia, slugProv) {
    calor_mortalidad.json pesa un par de megas porque lleva la serie diaria de cada
    provincia, así que se pide cuando el navegador está ocioso y la tarjeta se añade
    al final de la rejilla. Si falla o la provincia no está, no se añade nada. */
-async function cargarCalor(slugProv) {
+async function cargarCalor(provincia, slugProv) {
   try {
     const r = await fetch("https://davidbebow.github.io/temperaturas-mar-espana/calor_mortalidad.json");
     if (!r.ok) return;
     const d = await r.json();
     if (slugProv !== slug) return;            // el usuario ha cambiado de provincia
     const p = (d.provincias || {})[slugCal(slugProv)];
-    if (!p) return;
+    if (!p || p.verano == null) return;
     const anio = d.verano_actual && d.verano_actual.anio ? d.verano_actual.anio : "";
-    let f = "";
-    if (p.verano != null) f += fila("Este verano, desde el 1 de junio", numES(p.verano), "mal");
-    if (p.mes && p.mes.atribuibles != null) {
-      const m = MESES[parseInt(String(p.mes.mes).slice(5,7), 10)] || "este mes";
-      f += fila("En " + m + (p.mes.dias ? ` (${p.mes.dias} días)` : ""), numES(p.mes.atribuibles));
-    }
-    if (p.semana != null) f += fila("Últimos 7 días", numES(p.semana));
-    if (p.ayer && p.ayer.atribuibles != null && p.ayer.fecha)
-      f += fila("El " + parseInt(p.ayer.fecha.slice(8,10),10) + " de " + MESES[parseInt(p.ayer.fecha.slice(5,7),10)],
-                numES(p.ayer.atribuibles));
-    if (!f) return;
-    const cont = document.getElementById("tarjetas");
-    if (cont) cont.insertAdjacentHTML("beforeend",
-      tarjeta("🌡️ Muertes por calor" + (anio ? " · verano " + anio : ""), URL_CALOR_WEB, f));
+    const cont = document.getElementById("fichas");
+    if (!cont) return;
+    cont.insertAdjacentHTML("beforeend",
+      `<a class="ficha ficha-calor" href="${URL_CALOR_WEB}" target="_top" ` +
+        `title="Ver el panel de muertes por calor en España">` +
+        `<div class="num calor">${numES(p.verano)}</div>` +
+        `<div class="cap">muertes atribuibles al calor en ${provincia} ` +
+        `este verano${anio ? " de " + anio : ""}, desde el 1 de junio</div>` +
+      `</a>`);
   } catch(err) {}
 }
 
@@ -299,8 +297,7 @@ async function cargar() {
     `<div id="pie">Datos: <a href="${U.observatorio}" target="_top">Observatorio Climático de calentamientoglobal.es</a> · ` +
     `Licencia CC-BY 4.0 — cita “calentamientoglobal.es” · AEMET · NASA FIRMS · Copernicus · NOAA · Puertos del Estado · Open-Meteo · MITECO</div>`;
   enriquecerAgua(d.provincia, slug);
-  if ("requestIdleCallback" in window) requestIdleCallback(() => cargarCalor(slug), {timeout:4000});
-  else setTimeout(() => cargarCalor(slug), 1500);
+  cargarCalor(d.provincia, slug);
 }
 async function initSelector() {
   try {
