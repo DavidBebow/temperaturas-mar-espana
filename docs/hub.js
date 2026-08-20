@@ -1,7 +1,5 @@
 /* Hub de provincias · calentamientoglobal.es
-   Subir a: docs/hub.js del repo temperaturas-mar-espana
-   Lee: provincias/index.json, provincias/{slug}.json, embalses.json y
-        calor_mortalidad.json · Poblacion INE (tabla 2852) hardcodeada. */
+   Subir a: docs/hub.js del repo temperaturas-mar-espana */
 (function(){
   "use strict";
   var BASE = "https://davidbebow.github.io/temperaturas-mar-espana/provincias/";
@@ -107,6 +105,18 @@
       return x.temp!=null && x.record_max && x.record_max.valor!=null && Math.sign(x.temp-x.record_max.valor)!==-1; });
     if(!b.length) return null;
     return b.sort(function(a,c){ return (c.temp-c.record_max.valor)-(a.temp-a.record_max.valor); })[0]; }
+  /* --------------------------------------------------------------------
+     Los rankings porcentuales de embalses exigen una capacidad minima.
+     Sin esto, una provincia con un unico embalse de 6 hm3 al 100 % encabeza
+     "los embalses mas llenos de Espana", que es cierto y a la vez absurdo:
+     no es comparable con los 6.752 hm3 de Caceres. El umbral deja fuera las
+     capacidades testimoniales, no a las provincias secas.
+  -------------------------------------------------------------------- */
+  var CAP_MIN_HM3 = 50;
+  function embOK(e){
+    return e && e.pct_media!=null && e.capacidad_total_hm3!=null &&
+           Math.sign(e.capacidad_total_hm3-CAP_MIN_HM3)!==-1; }
+
   /* Boya que mas rapido se calienta, que puede no ser la mas caliente. */
   function boyaTend(d){
     var b=(d.i.boyas||[]).filter(function(x){ return x.tendencia_decada!=null; });
@@ -321,15 +331,23 @@
 
   /* ---- Se activan solos cuando los JSON incluyan estos campos ---------- */
   { id:"embalses", t:"Los embalses más bajos", url:U.embalses, futuro:true,
-    val:function(d){ return (d.i.embalses && d.i.embalses.pct_media!=null)? -d.i.embalses.pct_media : null; },
+    val:function(d){ return embOK(d.i.embalses)? -d.i.embalses.pct_media : null; },
     cifra:function(d,v){ return num(-v,1)+" %"; },
     desc:function(d){ var e=d.i.embalses;
-      return "De su capacidad"+(e.n_embalses?" ("+e.n_embalses+" embalses)":"")+
+      return num(e.volumen_total_hm3,0)+" de "+num(e.capacidad_total_hm3,0)+" hm³ en "+
+        pl(e.n_embalses,"embalse","embalses")+
         (e.pct_hace_un_anio!=null?" · hace un año: "+num(e.pct_hace_un_anio,1)+" %":"")+"."; },
-    frase:function(d,v){ var e=d.i.embalses;
-      return "Los embalses de "+d.provincia+" están al "+num(-v,1)+" % de su capacidad"+
-        (e.pct_hace_un_anio!=null?", frente al "+num(e.pct_hace_un_anio,1)+" % de hace un año":"")+"."; },
-    amb:"Un embalse pertenece a una cuenca, no a una provincia: el agua que almacena puede abastecer a otra." },
+    frase:function(d,v){ var e=d.i.embalses, x=-v;
+      var comp="";
+      if(e.pct_hace_un_anio!=null){
+        var dif=Math.round((x-e.pct_hace_un_anio)*10)/10;
+        comp = (Math.sign(dif)===-1) ? ", "+num(Math.abs(dif),1)+" puntos menos que hace un año"
+             : (Math.sign(dif)===1)  ? ", aunque "+num(dif,1)+" puntos más que hace un año"
+             : ", igual que hace un año";
+      }
+      return "Los embalses de "+d.provincia+" están al "+num(x,1)+" % de su capacidad"+comp+
+        " ("+num(e.volumen_total_hm3,0)+" de "+num(e.capacidad_total_hm3,0)+" hm³)."; },
+    amb:"Solo provincias con más de 50 hm³ de capacidad. Un embalse pertenece a una cuenca, no a una provincia: el agua que almacena puede abastecer a otra." },
 
   { id:"muertes", t:"Mayor mortalidad atribuida al calor", url:U.muertes, futuro:true,
     /* Solo tasa por 100.000, nunca el absoluto (que premiaria a Madrid y
@@ -347,7 +365,7 @@
   /* ---- Embalses: lo que se mueve, que es lo que da titular ------------- */
   { id:"emb_caida", t:"La mayor caída de embalses en un año", url:U.embalses,
     val:function(d){ var e=d.i.embalses;
-      if(!e || e.pct_hace_un_anio==null) return null;
+      if(!embOK(e) || e.pct_hace_un_anio==null) return null;
       var v = e.pct_hace_un_anio - e.pct_media;
       return (Math.sign(v)===1) ? Math.round(v*10)/10 : null; },
     cifra:function(d,v){ return "−"+num(v,1)+" pts"; },
@@ -355,11 +373,11 @@
       return "Del "+num(e.pct_hace_un_anio,1)+" % de hace un año al "+num(e.pct_media,1)+" % de hoy."; },
     frase:function(d,v){ var e=d.i.embalses;
       return "Los embalses de "+d.provincia+" han perdido "+num(v,1)+" puntos en un año: del "+num(e.pct_hace_un_anio,1)+" % de su capacidad al "+num(e.pct_media,1)+" % actual."; },
-    amb:"Solo provincias cuyos embalses están por debajo de hace un año. Fuente: Boletín Hidrológico del MITECO." },
+    amb:"Provincias con más de 50 hm³ de capacidad cuyos embalses están por debajo de hace un año. Fuente: Boletín Hidrológico del MITECO." },
 
   { id:"emb_hm3", t:"Más agua perdida en un año", url:U.embalses,
     val:function(d){ var e=d.i.embalses;
-      if(!e || e.pct_hace_un_anio==null || e.capacidad_total_hm3==null) return null;
+      if(!embOK(e) || e.pct_hace_un_anio==null) return null;
       var v = (e.pct_hace_un_anio - e.pct_media)/100 * e.capacidad_total_hm3;
       return (Math.sign(v)===1) ? Math.round(v*10)/10 : null; },
     cifra:function(d,v){ return num(v,0)+" hm³"; },
@@ -371,7 +389,7 @@
 
   { id:"emb_vs10a", t:"Más por debajo de su media de diez años", url:U.embalses,
     val:function(d){ var e=d.i.embalses;
-      if(!e || e.pct_media_10a==null) return null;
+      if(!embOK(e) || e.pct_media_10a==null) return null;
       var v = e.pct_media_10a - e.pct_media;
       return (Math.sign(v)===1) ? Math.round(v*10)/10 : null; },
     cifra:function(d,v){ return "−"+num(v,1)+" pts"; },
@@ -379,16 +397,16 @@
       return "Está al "+num(e.pct_media,1)+" % frente al "+num(e.pct_media_10a,1)+" % que es su media para estas fechas."; },
     frase:function(d,v){ var e=d.i.embalses;
       return "Los embalses de "+d.provincia+" están "+num(v,1)+" puntos por debajo de su media de los últimos diez años para estas fechas: "+num(e.pct_media,1)+" % frente al "+num(e.pct_media_10a,1)+" % habitual."; },
-    amb:"Compara cada provincia consigo misma, no con las demás: es el indicador más honesto de los tres." },
+    amb:"Compara cada provincia consigo misma, no con las demás: es el indicador más honesto de los tres. Solo provincias con más de 50 hm³." },
 
   { id:"emb_llenos", t:"Los embalses más llenos", url:U.embalses,
-    val:function(d){ return (d.i.embalses && d.i.embalses.pct_media!=null)? d.i.embalses.pct_media : null; },
+    val:function(d){ return embOK(d.i.embalses)? d.i.embalses.pct_media : null; },
     cifra:function(d,v){ return num(v,1)+" %"; },
     desc:function(d){ var e=d.i.embalses;
       return e.etiqueta+" · "+num(e.volumen_total_hm3,0)+" de "+num(e.capacidad_total_hm3,0)+" hm³."; },
     frase:function(d,v){ var e=d.i.embalses;
       return "Los embalses de "+d.provincia+" están al "+num(v,1)+" % de su capacidad, el nivel más alto de España: "+num(e.volumen_total_hm3,0)+" de "+num(e.capacidad_total_hm3,0)+" hectómetros cúbicos."; },
-    amb:"Entre las 46 provincias con embalses en el Boletín Hidrológico." },
+    amb:"Entre las provincias con más de 50 hm³ de capacidad embalsada. Se excluyen las de capacidad testimonial, donde un 100 % no es comparable." },
 
   /* ---- Mortalidad: siempre en tasa y sin las de fiabilidad baja -------- */
   { id:"mort_mes", t:"Mayor mortalidad por calor este mes", url:U.muertes,
@@ -732,7 +750,7 @@
       var mediana = tasas[Math.floor(tasas.length/2)];
       var cruce = fiables.filter(function(d){
         var e=d.i.embalses, m=d.i.mortalidad_calor;
-        return e && e.pct_media!=null &&
+        return embOK(e) &&
                Math.sign(e.pct_media-40)===-1 &&
                Math.sign(m.tasa_100k-mediana)===1;
       }).sort(function(a,b){ return a.i.embalses.pct_media-b.i.embalses.pct_media; }).slice(0,8);
