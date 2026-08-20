@@ -9,7 +9,6 @@
   body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
     background:#f4f5f7; color:#2b2f36; }
   #envoltorio { max-width:1100px; margin:0 auto; padding:18px 16px 30px; }
-
   /* Cabecera */
   #cabecera { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap;
     gap:12px; margin-bottom:16px; }
@@ -20,7 +19,6 @@
   .sub { font-size:12.5px; color:#7a8089; margin-top:5px; }
   #selector { background:#fff; color:#15181d; border:1px solid #d9dde3; border-radius:10px;
     padding:9px 12px; font-size:14px; font-weight:600; box-shadow:0 1px 3px rgba(20,30,50,0.05); }
-
   /* Fichas de datos clave */
   #fichas { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px;
     margin-bottom:16px; }
@@ -29,7 +27,22 @@
   .ficha .num { font-size:27px; font-weight:800; color:#1653d6; letter-spacing:-0.5px; line-height:1.1; }
   .ficha .num.calor { color:#e35a12; }
   .ficha .cap { font-size:12px; color:#6b7280; margin-top:6px; line-height:1.4; }
-
+  /* Ficha ancha de agua embalsada · va encima de las fichas clave */
+  #fila-agua { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px;
+    margin-bottom:12px; }
+  #fila-agua:empty { display:none; }
+  .ficha-agua { grid-column:span 2; display:block; position:relative;
+    text-decoration:none; color:inherit; transition:box-shadow .18s ease; }
+  .ficha-agua:hover { box-shadow:0 3px 12px rgba(20,30,50,0.10); }
+  .ficha-agua .cap b { color:#1d2026; font-weight:700; font-variant-numeric:tabular-nums; }
+  .ficha-agua .et-agua { position:absolute; top:15px; right:16px; font-size:10.5px; font-weight:800;
+    color:#fff; border-radius:7px; padding:3px 9px; letter-spacing:0.3px; }
+  .ficha-agua .barra-agua { position:relative; height:7px; border-radius:4px; background:#e8edf2;
+    margin-top:11px; }
+  .ficha-agua .barra-agua i { position:absolute; top:0; bottom:0; left:0; border-radius:4px;
+    transition:width .8s cubic-bezier(.2,.7,.3,1); }
+  .ficha-agua .barra-agua u { position:absolute; top:-3px; width:2px; height:13px; border-radius:2px;
+    text-decoration:none; }
   /* Foco · lo destacado */
   #foco { background:#fff; border:1px solid #e6e8ec; border-radius:16px; padding:18px 20px;
     margin-bottom:16px; box-shadow:0 2px 8px rgba(20,30,50,0.05); }
@@ -43,7 +56,6 @@
   .destacado a { color:#1653d6; text-decoration:none; font-size:12px; white-space:nowrap; font-weight:600; }
   .destacado:first-child .tx { font-size:16.5px; }
   .sin-dest { color:#5f8f6e; font-size:14px; padding:6px 0; }
-
   /* Tarjetas de indicadores */
   #tarjetas { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:12px; }
   .tarjeta { background:#fff; border:1px solid #e6e8ec; border-radius:14px; padding:15px 17px;
@@ -57,7 +69,6 @@
   .fila .k { color:#6b7280; }
   .fila .v { font-weight:700; color:#1d2026; text-align:right; }
   .fila .v.mal { color:#d4380d; } .fila .v.bien { color:#2e8b57; }
-
   #pie { margin:22px 0 6px; font-size:11.5px; color:#8a9099; text-align:center; line-height:1.7; }
   #pie a { color:#1653d6; }
   #cargando { text-align:center; padding:70px 0; color:#8a9099; }
@@ -81,7 +92,6 @@ const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
 let slug = params.get("p") || "murcia";
 const signo = n => (n>0?"+":"")+n;
-
 function fila(k, v, clase) {
   if (v === null || v === undefined || v === "") return "";
   return `<div class="fila"><span class="k">${k}</span><span class="v ${clase||""}">${v}</span></div>`;
@@ -95,6 +105,59 @@ function ficha(num, cap, calor) {
   return `<div class="ficha"><div class="num ${calor?"calor":""}">${num}</div><div class="cap">${cap}</div></div>`;
 }
 
+/* ─────────────── Ficha ancha de agua embalsada (MITECO) ─────────────── */
+/* El JSON de embalses usa guion bajo y conserva la eñe; aquí usamos guiones. */
+const ALIAS_EMB = { "a-coruna":"a_coruña", "la-coruna":"a_coruña", "coruna":"a_coruña",
+  "gipuzkoa":"guipuzcoa", "araba":"alava", "islas-baleares":"baleares" };
+const slugEmb = s => ALIAS_EMB[s] || String(s||"").replace(/-/g,"_");
+const numES = (v,dec) => v==null ? "—"
+  : Number(v).toLocaleString("es-ES",{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0});
+const pctES = v => v==null ? "—" : numES(v,1)+" %";
+const w100 = v => Math.max(0, Math.min(100, v||0));
+/* Misma escala de color que el Boletín Hidrológico. */
+const colorEmb = p => p==null?"#8E8E93":p<20?"#CC2200":p<40?"#FF8822":p<60?"#FFCC44":p<80?"#44AA66":"#0077DD";
+const etiqEmb  = p => p==null?"Sin datos":p<20?"Crítico":p<40?"Bajo":p<60?"Moderado":p<80?"Bueno":"Muy bueno";
+const urlEmb = s => "https://calentamientoglobal.es/embalses-" + (s==="cordoba"?"de-cordoba":s) + "/";
+
+function fichaAgua(e, provincia, slugProv) {
+  if (!e || e.pct_media == null) return "";
+  const c  = e.color || colorEmb(e.pct_media);
+  const et = e.etiqueta || etiqEmb(e.pct_media);
+  const n  = e.total_embalses;
+  const cuantos = n ? (n===1 ? "su único embalse" : `sus ${n} embalses`) : "sus embalses";
+  const extra = [];
+  if (e.volumen_total_hm3!=null && e.capacidad_total_hm3!=null)
+    extra.push(`<b>${numES(e.volumen_total_hm3)}</b> de ${numES(e.capacidad_total_hm3)} hm³`);
+  if (e.pct_hace_1a!=null)    extra.push(`hace un año <b>${pctES(e.pct_hace_1a)}</b>`);
+  if (e.pct_media_10a!=null)  extra.push(`media 10 años <b>${pctES(e.pct_media_10a)}</b>`);
+  const marcas =
+    (e.pct_hace_1a!=null   ? `<u style="left:${w100(e.pct_hace_1a)}%;background:#7a8894"></u>` : "") +
+    (e.pct_media_10a!=null ? `<u style="left:${w100(e.pct_media_10a)}%;background:#1d2026"></u>` : "");
+  return `<a class="ficha ficha-agua" href="${e.url_web || urlEmb(slugProv)}" target="_top" ` +
+    `title="Ver el detalle de los embalses de ${provincia}">` +
+    `<span class="et-agua" style="background:${c}">${et}</span>` +
+    `<div class="num" style="color:${c}">${pctES(e.pct_media)}</div>` +
+    `<div class="cap">del agua embalsada en ${cuantos} de ${provincia}` +
+      (extra.length ? " · " + extra.join(" · ") : "") + `</div>` +
+    `<div class="barra-agua"><i style="width:${w100(e.pct_media)}%;background:${c}"></i>${marcas}</div>` +
+  `</a>`;
+}
+
+/* El JSON de la provincia trae el % embalsado, pero no la comparativa con hace
+   un año ni con la media de 10 años. Eso se pide aparte y se repinta la ficha.
+   Si falla, se queda la versión inicial: nunca desaparece el dato. */
+async function enriquecerAgua(provincia, slugProv) {
+  try {
+    const r = await fetch(`https://davidbebow.github.io/temperaturas-mar-espana/embalses/${slugEmb(slugProv)}.json`);
+    if (!r.ok) return;
+    const e = await r.json();
+    if (slugProv !== slug) return;            // el usuario ha cambiado de provincia
+    const cont = document.getElementById("fila-agua");
+    const html = fichaAgua(e, provincia, slugProv);
+    if (cont && html) cont.innerHTML = html;
+  } catch(err) {}
+}
+
 async function cargar() {
   $("#contenido").innerHTML = '<div id="cargando">Cargando datos…</div>';
   let d;
@@ -104,7 +167,8 @@ async function cargar() {
   document.title = `El cambio climático en ${d.provincia} — CalentamientoGlobal.es`;
   $("#titulo").innerHTML = `El cambio climático en <span>${d.provincia}</span>`;
   $("#subtitulo").textContent = `${d.ccaa} · actualizado el ${d.fecha_legible} · AEMET · NASA · Copernicus · NOAA · Puertos del Estado`;
-
+  /* Ficha ancha de agua embalsada (vacía si la provincia no tiene embalses en el boletín) */
+  const fa = fichaAgua(i.embalses, d.provincia, slug);
   /* Fichas clave */
   let fh = "";
   if (i.canicula) fh += ficha(i.canicula.tmax_hoy+"°", "máxima prevista hoy en la provincia", true);
@@ -122,12 +186,10 @@ async function cargar() {
   if (nocTop) fh += ficha(nocTop.nt_anyo, `noches tropicales este año en ${nocTop.nombre}`);
   if (i.incendios_ccaa && i.incendios_ccaa.focos_activos>0)
     fh += ficha(i.incendios_ccaa.focos_activos, `focos activos en ${i.incendios_ccaa.nombre} (48 h)`, true);
-
   /* Destacados */
   const dest = (d.destacados||[]).map(x =>
     `<div class="destacado ${x.nivel}"><span class="ic">${x.icono}</span><span class="tx">${x.texto}</span> <a href="${x.url}" target="_top">ver →</a></div>`
   ).join("") || '<div class="sin-dest">Sin anomalías climáticas destacables ahora mismo.</div>';
-
   /* Tarjetas */
   let t = "";
   if (i.boyas) t += tarjeta("🛟 Boyas de Puertos del Estado", U.mar,
@@ -172,7 +234,7 @@ async function cargar() {
   if (i.calidad_aire) t += tarjeta("💨 Calidad del aire", U.aire,
     i.calidad_aire.map(c=>fila(c.nombre, c.etiqueta + (c.contaminante_dominante?" ("+c.contaminante_dominante+")":""), (c.supera_oms?"mal":"bien"))).join(""));
   if (i.embalses) { const e=i.embalses;
-    t += tarjeta("💧 Embalses", U.observatorio,
+    t += tarjeta("💧 Embalses", e.url_web || urlEmb(slug),
     fila("Nivel medio", e.pct_media+" %", e.pct_media<=35?"mal":e.pct_media>=60?"bien":"") +
     fila("Volumen", e.volumen_total_hm3+" / "+e.capacidad_total_hm3+" hm³") +
     fila("Situación", e.etiqueta)); }
@@ -188,15 +250,15 @@ async function cargar() {
     fila("Días de calor extremo", m.dias_calor_extremo_hoy+" → "+m.dias_calor_extremo_2050, "mal") +
     fila("Noches tropicales", m.noches_tropicales_hoy+" → "+m.noches_tropicales_2050) +
     fila("Meses secos", m.meses_secos_hoy+" → "+m.meses_secos_2050)); }
-
   $("#contenido").innerHTML =
+    `<div id="fila-agua">${fa}</div>` +
     `<div id="fichas">${fh}</div>` +
     `<div id="foco"><div class="kicker">Foco · lo destacado hoy</div>${dest}</div>` +
     `<div id="tarjetas">${t}</div>` +
     `<div id="pie">Datos: <a href="${U.observatorio}" target="_top">Observatorio Climático de calentamientoglobal.es</a> · ` +
     `Licencia CC-BY 4.0 — cita “calentamientoglobal.es” · AEMET · NASA FIRMS · Copernicus · NOAA · Puertos del Estado · Open-Meteo · MITECO</div>`;
+  if (i.embalses) enriquecerAgua(d.provincia, slug);
 }
-
 async function initSelector() {
   try {
     const idx = await (await fetch("provincias/index.json", {cache:"no-store"})).json();
