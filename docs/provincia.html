@@ -107,9 +107,11 @@ function ficha(num, cap, calor) {
 
 /* ─────────────── Ficha ancha de agua embalsada (MITECO) ─────────────── */
 /* El JSON de embalses usa guion bajo y conserva la eñe; aquí usamos guiones. */
-const ALIAS_EMB = { "a-coruna":"a_coruña", "la-coruna":"a_coruña", "coruna":"a_coruña",
-  "gipuzkoa":"guipuzcoa", "araba":"alava", "islas-baleares":"baleares" };
-const slugEmb = s => ALIAS_EMB[s] || String(s||"").replace(/-/g,"_");
+/* Los slugs del panel usan guion bajo (a_coruna, ciudad_real, la_rioja…); se
+   normalizan y solo se traducen los que no coinciden con el JSON de embalses. */
+const ALIAS_EMB = { "a_coruna":"a_coruña", "la_coruna":"a_coruña", "coruna":"a_coruña",
+  "gipuzkoa":"guipuzcoa", "araba":"alava", "islas_baleares":"baleares" };
+const slugEmb = s => { const n = String(s||"").toLowerCase().replace(/-/g,"_"); return ALIAS_EMB[n] || n; };
 const numES = (v,dec) => v==null ? "—"
   : Number(v).toLocaleString("es-ES",{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0});
 const pctES = v => v==null ? "—" : numES(v,1)+" %";
@@ -118,6 +120,13 @@ const w100 = v => Math.max(0, Math.min(100, v||0));
 const colorEmb = p => p==null?"#8E8E93":p<20?"#CC2200":p<40?"#FF8822":p<60?"#FFCC44":p<80?"#44AA66":"#0077DD";
 const etiqEmb  = p => p==null?"Sin datos":p<20?"Crítico":p<40?"Bajo":p<60?"Moderado":p<80?"Bueno":"Muy bueno";
 const urlEmb = s => "https://calentamientoglobal.es/embalses-" + (s==="cordoba"?"de-cordoba":s) + "/";
+const MESES = ["","enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+/* MoMo usa guiones; el panel, guion bajo. */
+const ALIAS_CAL = { "la-coruna":"a-coruna", "coruna":"a-coruna", "vizcaya":"bizkaia",
+  "guipuzcoa":"gipuzkoa", "araba":"alava", "islas-baleares":"baleares",
+  "tenerife":"santa-cruz-de-tenerife", "rioja":"la-rioja" };
+const slugCal = s => { const n = String(s||"").toLowerCase().replace(/_/g,"-"); return ALIAS_CAL[n] || n; };
+const URL_CALOR_WEB = "https://calentamientoglobal.es/muertes-por-calor-espana/";
 
 function fichaAgua(e, provincia, slugProv) {
   if (!e || e.pct_media == null) return "";
@@ -156,6 +165,36 @@ async function enriquecerAgua(provincia, slugProv) {
     const cont = document.getElementById("fila-agua");
     const html = fichaAgua(e, provincia, slugProv);
     if (cont && html) cont.innerHTML = html;
+  } catch(err) {}
+}
+
+/* Tarjeta de muertes atribuibles al calor (MoMo, Instituto de Salud Carlos III).
+   calor_mortalidad.json pesa un par de megas porque lleva la serie diaria de cada
+   provincia, así que se pide cuando el navegador está ocioso y la tarjeta se añade
+   al final de la rejilla. Si falla o la provincia no está, no se añade nada. */
+async function cargarCalor(slugProv) {
+  try {
+    const r = await fetch("https://davidbebow.github.io/temperaturas-mar-espana/calor_mortalidad.json");
+    if (!r.ok) return;
+    const d = await r.json();
+    if (slugProv !== slug) return;            // el usuario ha cambiado de provincia
+    const p = (d.provincias || {})[slugCal(slugProv)];
+    if (!p) return;
+    const anio = d.verano_actual && d.verano_actual.anio ? d.verano_actual.anio : "";
+    let f = "";
+    if (p.verano != null) f += fila("Este verano, desde el 1 de junio", numES(p.verano), "mal");
+    if (p.mes && p.mes.atribuibles != null) {
+      const m = MESES[parseInt(String(p.mes.mes).slice(5,7), 10)] || "este mes";
+      f += fila("En " + m + (p.mes.dias ? ` (${p.mes.dias} días)` : ""), numES(p.mes.atribuibles));
+    }
+    if (p.semana != null) f += fila("Últimos 7 días", numES(p.semana));
+    if (p.ayer && p.ayer.atribuibles != null && p.ayer.fecha)
+      f += fila("El " + parseInt(p.ayer.fecha.slice(8,10),10) + " de " + MESES[parseInt(p.ayer.fecha.slice(5,7),10)],
+                numES(p.ayer.atribuibles));
+    if (!f) return;
+    const cont = document.getElementById("tarjetas");
+    if (cont) cont.insertAdjacentHTML("beforeend",
+      tarjeta("🌡️ Muertes por calor" + (anio ? " · verano " + anio : ""), URL_CALOR_WEB, f));
   } catch(err) {}
 }
 
@@ -260,6 +299,8 @@ async function cargar() {
     `<div id="pie">Datos: <a href="${U.observatorio}" target="_top">Observatorio Climático de calentamientoglobal.es</a> · ` +
     `Licencia CC-BY 4.0 — cita “calentamientoglobal.es” · AEMET · NASA FIRMS · Copernicus · NOAA · Puertos del Estado · Open-Meteo · MITECO</div>`;
   enriquecerAgua(d.provincia, slug);
+  if ("requestIdleCallback" in window) requestIdleCallback(() => cargarCalor(slug), {timeout:4000});
+  else setTimeout(() => cargarCalor(slug), 1500);
 }
 async function initSelector() {
   try {
