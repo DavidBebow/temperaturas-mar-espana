@@ -1,5 +1,16 @@
-/* Hub de provincias · calentamientoglobal.es
-   Subir a: docs/hub.js del repo temperaturas-mar-espana */
+/* ==========================================================================
+   Hub de provincias · calentamientoglobal.es
+   Subir a: docs/hub.js del repo temperaturas-mar-espana
+   Lleva DENTRO el CSS y la logica: el bloque de Elementor no hay que
+   volver a tocarlo aunque cambien los estilos.
+========================================================================== */
+(function(){
+  if(document.getElementById("cch-css")) return;
+  var st=document.createElement("style"); st.id="cch-css";
+  st.appendChild(document.createTextNode(".cchub{--ink:#15181d;--soft:#6b7280;--faint:#9aa1ab;--line:#e6e8ec;--bg2:#f7f8fa;\n  --accent:#cc4400;--accentd:#a12f00;--blue:#1653d6;--green:#2e8b57;--red:#d4380d;\n  max-width:1120px;margin:0 auto;padding:0 6px;\n  font-family:-apple-system,BlinkMacSystemFont,\"SF Pro Display\",\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif;\n  color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.65}\n.cchub *{box-sizing:border-box}\n.cchub .eyebrow{display:inline-block;font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px}\n.cchub h1{font-size:42px;line-height:1.1;letter-spacing:-.025em;margin:0 0 14px;font-weight:800}\n.cchub h2{font-size:25px;line-height:1.2;letter-spacing:-.02em;margin:44px 0 6px;font-weight:800}\n.cchub .h2sub{font-size:14.5px;color:var(--soft);margin:0 0 18px}\n.cchub .sub{font-size:18.5px;color:var(--soft);margin:0 0 10px;line-height:1.55}\n.cchub p{font-size:16.5px;margin:0 0 14px}\n.cchub a{color:var(--accent);text-decoration:none}\n.cchub a:hover{text-decoration:underline}\n.cchub strong{color:var(--ink);font-weight:700}\n.cchub .stamp{font-size:12.5px;color:var(--faint);margin:0 0 26px}\n.cchub .stamp b{color:var(--soft);font-weight:600}\n\n/* Dato del dia */\n.cch-hero{background:linear-gradient(135deg,#fff6f0,#fdfbf9);border:1px solid #f0d9c8;\n  border-left:5px solid var(--accent);border-radius:18px;padding:24px 26px;margin:0 0 12px}\n.cch-hero .k{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}\n.cch-hero .big{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.25;margin:10px 0 8px}\n.cch-hero .who{font-size:14px;color:var(--soft)}\n\n/* Panel destacado de embalses */\n.cch-agua{background:linear-gradient(135deg,#0d3b56,#12557a);border-radius:20px;\n  padding:28px 30px;margin:16px 0 0;color:#fff}\n.cch-agua .k{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:#7fc4e8;font-weight:700}\n.cch-agua .tit{font-size:31px;font-weight:800;letter-spacing:-.025em;line-height:1.15;margin:10px 0 6px}\n.cch-agua .sub2{font-size:14.5px;color:#b9d9ec;line-height:1.6;margin-bottom:16px}\n.cch-agua .sub2 b{color:#fff}\n.cch-bar{height:13px;border-radius:8px;background:rgba(255,255,255,.16);overflow:hidden;margin-bottom:6px}\n.cch-bar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#3aa6d8,#7fd4f5)}\n.cch-agua .ref{display:flex;justify-content:space-between;font-size:11.5px;color:#8fb8d0;margin-bottom:22px}\n.cch-agua .eti{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#7fc4e8;font-weight:700;margin-bottom:12px}\n.cch-ap{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}\n.cch-ap a{display:block;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);\n  border-radius:13px;padding:14px 15px;color:#fff!important;text-decoration:none!important;transition:background .15s}\n.cch-ap a:hover{background:rgba(255,255,255,.14);text-decoration:none!important}\n.cch-ap .pn2{font-size:13.5px;font-weight:700;margin-bottom:8px}\n.cch-ap .pc{font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1}\n.cch-ap .bb{height:7px;border-radius:5px;background:rgba(255,255,255,.16);overflow:hidden;margin:9px 0 7px}\n.cch-ap .bb i{display:block;height:100%;border-radius:5px}\n.cch-ap .dd{font-size:11px;color:#a8c9dd;line-height:1.4}\n.cch-agua .pie2{font-size:12px;color:#8fb8d0;margin-top:18px;line-height:1.6;\n  border-top:1px solid rgba(255,255,255,.13);padding-top:14px}\n.cch-agua .pie2 a{color:#7fd4f5}\n@media(max-width:680px){.cch-agua{padding:20px 18px}.cch-agua .tit{font-size:23px}}\n\n/* Panel destacado de mortalidad por calor */\n.cch-mort{background:#f7f3f1;border:1px solid #e6dbd5;border-left:5px solid #a4553c;\n  border-radius:18px;padding:26px 28px;margin:16px 0 0}\n.cch-mort .k{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:#a4553c;font-weight:700}\n.cch-mort .tit{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.18;margin:10px 0 8px;color:var(--ink)}\n.cch-mort .sub2{font-size:15px;color:var(--soft);line-height:1.65;margin-bottom:18px}\n.cch-mort .sub2 b{color:var(--ink)}\n.cch-mort .eti{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:#a4553c;font-weight:700;margin-bottom:12px}\n.cch-mp{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:12px}\n.cch-mp a{display:block;background:#fff;border:1px solid #e6dbd5;border-radius:13px;padding:14px 15px;\n  color:var(--ink)!important;text-decoration:none!important;transition:border-color .15s}\n.cch-mp a:hover{border-color:#a4553c;text-decoration:none!important}\n.cch-mp .pn3{font-size:13.5px;font-weight:700;margin-bottom:7px}\n.cch-mp .pv{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1;color:#8a4430}\n.cch-mp .pu{font-size:10.5px;color:var(--faint);margin-top:5px;line-height:1.35}\n.cch-mort .pie2{font-size:12.5px;color:var(--soft);margin-top:18px;line-height:1.65;\n  border-top:1px solid #e6dbd5;padding-top:14px}\n@media(max-width:680px){.cch-mort{padding:19px 18px}.cch-mort .tit{font-size:21px}}\n\n/* Espana hoy · agregados nacionales */\n.cch-nac{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin:18px 0 0}\n.cch-n{background:#20293a;border-radius:15px;padding:20px 21px;color:#fff}\n.cch-n .t{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9fb0c9;margin-bottom:10px;line-height:1.35}\n.cch-n .n{font-size:33px;font-weight:800;letter-spacing:-.03em;line-height:1;color:#fff}\n.cch-n .d{font-size:12.5px;color:#a9b8cc;margin-top:9px;line-height:1.5}\n.cch-n .d b{color:#fff}\n.cch-cruce{background:#fff;border:1px solid var(--line);border-radius:15px;padding:6px 20px;margin-top:18px}\n.cch-cruce .r{display:flex;gap:12px;align-items:baseline;padding:12px 0;border-bottom:1px solid #eef0f2;font-size:15px}\n.cch-cruce .r:last-child{border-bottom:none}\n.cch-cruce .r .pp{font-weight:800;min-width:150px}\n.cch-cruce .r .vv{color:var(--soft);font-size:13.5px}\n\n/* Tarjetas de record */\n.cch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:14px;margin:18px 0 0}\n.cch-rec{background:#fff;border:1px solid var(--line);border-radius:15px;padding:18px 19px;\n  box-shadow:0 1px 3px rgba(20,30,50,.04);display:flex;flex-direction:column}\n.cch-rec .t{font-size:12px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:11px;line-height:1.35}\n.cch-rec .n{font-size:31px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--blue)}\n.cch-rec.calor .n{color:var(--accentd)}\n.cch-rec .p{font-size:16.5px;font-weight:700;margin-top:7px}\n.cch-rec .d{font-size:13px;color:var(--soft);margin-top:7px;line-height:1.45;flex:1}\n.cch-rec .amb{font-size:11px;color:var(--faint);margin-top:11px;padding-top:9px;border-top:1px solid #f1f2f4}\n.cch-rec .pod{font-size:12px;color:var(--soft);margin-top:9px;line-height:1.6}\n.cch-rec .pod b{color:var(--ink)}\n\n/* Titulares */\n.cch-tit{background:var(--bg2);border:1px solid var(--line);border-radius:15px;padding:6px 20px;margin-top:18px}\n.cch-tit .row{display:flex;gap:13px;align-items:flex-start;padding:14px 0;border-bottom:1px solid #eaecef;font-size:15.5px;line-height:1.5}\n.cch-tit .row:last-child{border-bottom:none}\n.cch-tit .row .ix{flex-shrink:0;width:23px;height:23px;border-radius:50%;background:var(--accent);color:#fff;\n  font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}\n.cch-tit .row .tx{flex:1}\n.cch-tit .row .src{display:block;font-size:11.5px;color:var(--faint);margin-top:4px}\n.cch-tit .cp{flex-shrink:0;background:#fff;border:1px solid var(--line);border-radius:7px;\n  font-size:11.5px;color:var(--soft);padding:4px 9px;cursor:pointer;font-weight:600}\n.cch-tit .cp:hover{border-color:var(--accent);color:var(--accent)}\n\n/* Buscador */\n.cch-tools{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 16px}\n.cch-tools input,.cch-tools select{background:#fff;border:1px solid var(--line);border-radius:10px;\n  padding:10px 13px;font-size:14.5px;color:var(--ink);font-family:inherit}\n.cch-tools input{flex:1;min-width:200px}\n.cch-tools input:focus,.cch-tools select:focus{outline:none;border-color:var(--accent)}\n\n/* Fichas de provincia */\n.cch-prov{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:13px}\n.cch-card{display:block;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 17px;\n  box-shadow:0 1px 3px rgba(20,30,50,.04);color:var(--ink)!important;text-decoration:none!important;\n  transition:border-color .15s,transform .15s,box-shadow .15s}\n.cch-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 18px rgba(20,30,50,.09);text-decoration:none!important}\n.cch-card .pn{font-size:17.5px;font-weight:800;letter-spacing:-.01em}\n.cch-card .cc{font-size:11.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}\n.cch-card .top{font-size:12.5px;color:var(--soft);margin-top:10px;line-height:1.45;min-height:36px}\n.cch-card .mets{display:flex;gap:14px;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px solid #f1f2f4}\n.cch-card .met .mv{font-size:15.5px;font-weight:800;color:var(--blue);line-height:1}\n.cch-card .met .mv.calor{color:var(--accentd)}\n.cch-card .met .ml{font-size:10.5px;color:var(--faint);margin-top:3px}\n.cch-card .go{font-size:12.5px;color:var(--accent);font-weight:700;margin-top:12px}\n\n/* Tabla */\n.cch-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:16px;\n  border:1px solid var(--line);border-radius:14px;background:#fff}\n.cch-tbl{border-collapse:collapse;width:100%;font-size:13.5px;min-width:760px}\n.cch-tbl th{background:#2f3a4a;color:#fff;padding:11px 12px;text-align:left;font-weight:600;\n  font-size:12px;cursor:pointer;white-space:nowrap;user-select:none;position:sticky;top:0}\n.cch-tbl th:hover{background:#3c4a5e}\n.cch-tbl th .ar{opacity:.45;font-size:10px}\n.cch-tbl td{padding:9px 12px;border-bottom:1px solid #f1f2f4}\n.cch-tbl tbody tr:hover{background:#fafbfc}\n.cch-tbl td:first-child{font-weight:700}\n.cch-tbl td.num{text-align:right;font-variant-numeric:tabular-nums}\n.cch-tbl .na{color:#c8ccd2}\n\n.cch-note{background:var(--bg2);border-left:3px solid var(--faint);border-radius:0 11px 11px 0;\n  padding:14px 18px;margin:20px 0 0;font-size:14px;color:var(--soft);line-height:1.6}\n.cch-note b{color:var(--ink)}\n.cch-load{text-align:center;padding:44px 0;color:var(--faint);font-size:14.5px}\n.cch-err{background:#fff6f4;border:1px solid #f3d0c6;border-radius:12px;padding:16px 18px;font-size:14.5px;color:#8a3520}\n.cch-hide{display:none!important}\n@media(max-width:680px){\n  .cchub h1{font-size:31px}.cchub .sub{font-size:16.5px}.cchub h2{font-size:21px}\n  .cch-hero .big{font-size:21px}.cch-hero{padding:19px 18px}\n}"));
+  document.head.appendChild(st);
+})();
+
 (function(){
   "use strict";
   var BASE = "https://davidbebow.github.io/temperaturas-mar-espana/provincias/";
@@ -557,6 +568,25 @@
       " provincias · AEMET · Puertos del Estado · Copernicus · NASA FIRMS · NOAA · Open-Meteo · MITECO · ISCIII"+extra;
   }
 
+  /* --------------------------------------------------------------------
+     Posicion fija de algunas tarjetas dentro de la parrilla de records.
+     El resto conserva el orden natural. Si un ranking no tiene datos ese
+     dia, simplemente no aparece y los demas se recolocan solos.
+  -------------------------------------------------------------------- */
+  var POS_FIJA = { embalses:4, emb_caida:6 };
+  function ordenarTarjetas(rk){
+    var fijos=[], resto=[];
+    rk.forEach(function(x){ if(POS_FIJA[x.R.id]) fijos.push(x); else resto.push(x); });
+    fijos.sort(function(a,b){ return POS_FIJA[a.R.id]-POS_FIJA[b.R.id]; });
+    var out = resto.slice();
+    fijos.forEach(function(x){
+      var p = POS_FIJA[x.R.id]-1;
+      if(Math.sign(p-out.length)===1) p = out.length;
+      out.splice(p, 0, x);
+    });
+    return out;
+  }
+
   /* ======================================================================
      CALCULO DE RANKINGS
   ====================================================================== */
@@ -608,7 +638,7 @@
     }
 
     /* ---- Tarjetas de record ------------------------------------------ */
-    var recs = rk.map(function(x){
+    var recs = ordenarTarjetas(rk).map(function(x){
       var g=x.lista[0];
       var podio = x.lista.slice(1,4).map(function(y,k){
         return '<b>'+(k+2)+'.</b> '+esc(y.d.provincia)+' · '+esc(x.R.cifra(y.d,y.v));
@@ -750,22 +780,44 @@
         '</div>';
     }
 
+    /* ---- Mortalidad atribuida al calor: bloque destacado --------------- */
+    var mortHtml = "";
+    if(mor && mor.verano_actual && mor.verano_actual.atribuibles_calor!=null){
+      var VV = mor.verano_actual, desdeTxt = fechaLarga(VV.desde);
+      var fiab = datos.filter(function(d){ var m=d.i.mortalidad_calor;
+        return m && m.tasa_100k!=null && m.fiabilidad!=="baja"; })
+        .sort(function(a,b){ return b.i.mortalidad_calor.tasa_100k-a.i.mortalidad_calor.tasa_100k; });
+      var top = fiab.slice(0,6).map(function(d){
+        var m=d.i.mortalidad_calor;
+        return '<a href="'+urlProv(d.slug)+'">'+
+          '<div class="pn3">'+esc(d.provincia)+'</div>'+
+          '<div class="pv">'+esc(num(m.tasa_100k,1))+'</div>'+
+          '<div class="pu">por 100.000 hab. · '+esc(num(m.atribuible_verano,0))+' estimadas</div></a>';
+      }).join("");
+
+      mortHtml =
+        '<div class="cch-mort">'+
+          '<div class="k">Mortalidad atribuida al calor · MoMo, Instituto de Salud Carlos III</div>'+
+          '<div class="tit">'+esc(num(VV.atribuibles_calor,0))+' defunciones atribuibles al exceso de temperatura en España</div>'+
+          '<div class="sub2">Estimación acumulada'+(desdeTxt? ' desde el <b>'+esc(desdeTxt)+'</b>' : '')+
+            (VV.parcial? ', con el verano aún en curso' : '')+'. '+
+            'Es un cálculo estadístico del exceso de fallecimientos por todas las causas asociado a la temperatura, '+
+            '<b>no un recuento de muertes certificadas por golpe de calor</b>, que son muchas menos.</div>'+
+          (top? '<div class="eti">Provincias con mayor mortalidad relativa</div><div class="cch-mp">'+top+'</div>' : '')+
+          '<div class="pie2"><b>Cómo leer estas cifras.</b> Se ordenan por tasa por 100.000 habitantes y nunca por la cifra absoluta, '+
+          'que situaría siempre arriba a las provincias más pobladas. Quedan fuera de la comparación las de menos de 300.000 habitantes, '+
+          'donde la estimación no se distingue del ruido. Y el periodo importa: la cifra de un verano completo no es comparable con la de '+
+          'una ola de calor concreta ni con las muertes por golpe de calor registradas por los servicios sanitarios.</div>'+
+        '</div>';
+    }
+
     /* ---- España hoy: agregados que ninguna provincia puede dar --------- */
     var nacHtml = "";
     var tarjNac = [];
 
     /* Los embalses ya tienen su propio panel destacado arriba: aquí no se repiten. */
 
-    if(mor && mor.verano_actual && mor.verano_actual.atribuibles_calor!=null){
-      var V=mor.verano_actual;
-      tarjNac.push({
-        t:"Defunciones atribuibles al calor",
-        n:num(V.atribuibles_calor,0),
-        d:"Estimación de <b>MoMo (ISCIII)</b> para toda España desde el "+
-          (V.desde? V.desde.split("-").reverse().join("/") : "1/6")+
-          (V.parcial? " · verano en curso" : "")+". No son muertes certificadas por calor."
-      });
-    }
+    /* La mortalidad tiene su propio panel destacado arriba: aquí no se repite. */
 
     var conAviso = datos.filter(function(d){ return d.i.avisos && Math.sign(d.i.avisos.total)===1; });
     if(conAviso.length){
@@ -833,6 +885,7 @@
     app.innerHTML =
       heroHtml +
       aguaHtml +
+      mortHtml +
       nacHtml +
 
       '<h2>Los récords de España, hoy</h2>'+
