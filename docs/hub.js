@@ -1,10 +1,56 @@
 /* Hub de provincias · calentamientoglobal.es
    Subir a: docs/hub.js del repo temperaturas-mar-espana
-   Servido en: https://davidbebow.github.io/temperaturas-mar-espana/hub.js
-   Requiere en la pagina un <div id="cch-app"></div> y un <p id="cch-stamp"></p> */
+   Lee: provincias/index.json, provincias/{slug}.json, embalses.json y
+        calor_mortalidad.json · Poblacion INE (tabla 2852) hardcodeada. */
 (function(){
   "use strict";
   var BASE = "https://davidbebow.github.io/temperaturas-mar-espana/provincias/";
+
+  /* Ficheros globales del observatorio (no van dentro de cada provincia) */
+  var URL_EMBALSES   = "https://davidbebow.github.io/temperaturas-mar-espana/embalses.json";
+  var URL_MORTALIDAD = "https://davidbebow.github.io/temperaturas-mar-espana/calor_mortalidad.json";
+
+  /* --------------------------------------------------------------------
+     POBLACION PROVINCIAL · INE, tabla 2852 (cifras oficiales del Padron)
+     Hace falta porque ningun JSON del observatorio la trae, y sin ella no
+     se puede calcular la tasa por 100.000 ni el nivel de fiabilidad.
+     Cambia muy despacio: un desfase de un ano es irrelevante para una tasa.
+  -------------------------------------------------------------------- */
+  var POBLACION = {
+    madrid:6751251, barcelona:5714730, valencia:2589312, sevilla:1947852,
+    alicante:1881762, malaga:1695651, murcia:1518486, cadiz:1245960,
+    baleares:1173008, bizkaia:1154334, laspalmas:1128539, acoruna:1120134,
+    sctenerife:1044405, asturias:1011792, zaragoza:967452, pontevedra:944275,
+    granada:921338, tarragona:822309, girona:786596, cordoba:776789,
+    almeria:731792, gipuzkoa:726033, toledo:709403, badajoz:669943,
+    navarra:661537, jaen:627190, castellon:587064, cantabria:584507,
+    huelva:525835, valladolid:519361, ciudadreal:492591, leon:451706,
+    lleida:439727, caceres:389558, albacete:386464, burgos:356055,
+    alava:333626, salamanca:327338, lugo:326013, larioja:319796,
+    ourense:305223, guadalajara:265588, huesca:224264, cuenca:195516,
+    zamora:168725, palencia:159123, avila:158421, segovia:153663,
+    teruel:134545, soria:88747, ceuta:83517, melilla:86261
+  };
+
+  /* --------------------------------------------------------------------
+     Los tres ficheros usan convenciones de slug distintas:
+       panel/hub    a_coruna   sc_tenerife            gipuzkoa
+       embalses     a_coruña   (no existe)            guipuzcoa
+       mortalidad   a-coruna   santa-cruz-de-tenerife gipuzkoa
+     canon() reduce cualquiera de las tres a una misma clave.
+  -------------------------------------------------------------------- */
+  var ALIAS = {
+    guipuzcoa:"gipuzkoa", vizcaya:"bizkaia", araba:"alava",
+    santacruzdetenerife:"sctenerife", tenerife:"sctenerife",
+    lacoruna:"acoruna", gerona:"girona", lerida:"lleida", orense:"ourense",
+    illesbalears:"baleares", islasbaleares:"baleares", islesbalears:"baleares"
+  };
+  function canon(x){
+    var v = String(x||"").toLowerCase().replace(/ñ/g,"n")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[_\-\s.]+/g,"");
+    return ALIAS[v] || v;
+  }
 
   /* --- Slugs del JSON que NO coinciden con el slug de WordPress ----------- */
   var SLUG_WP = {
@@ -18,7 +64,9 @@
 
   /* --- Utilidades -------------------------------------------------------- */
   function num(n,d){ if(n===null||n===undefined||isNaN(n)) return null;
-    return Number(n).toFixed(d===undefined?1:d).replace(".",","); }
+    var v=Number(n).toFixed(d===undefined?1:d).split(".");
+    v[0]=v[0].replace(/\B(?=(\d{3})+(?!\d))/g,".");   /* 4464 -> 4.464 */
+    return v.length===2 ? v[0]+","+v[1] : v[0]; }
   function sig(n,d){ var v=num(n,d); if(v===null) return null; return (n>0?"+":"")+v; }
   /* Concordancia de numero: evita "1 dias consecutivos" en un titular. */
   function pl(n,s,p){ return n+" "+(Math.abs(n)===1? s : p); }
@@ -105,7 +153,8 @@
   { id:"mar_anom", t:"Mayor anomalía del mar", calor:true, url:U.mar,
     val:function(d){ var m=maxMar(d); return m?m.anomalia:null; },
     cifra:function(d,v){ return sig(v,1)+" °C"; },
-    desc:function(d){ var m=maxMar(d); return m.nombre+", a "+num(m.temperatura_actual,1)+" °C sobre su media histórica."; },
+    desc:function(d){ var m=maxMar(d);
+      return m.nombre+", a "+num(m.temperatura_actual,1)+" °C, frente a su media histórica para estas fechas."; },
     frase:function(d,v){ var m=maxMar(d);
       return "El mar en "+loc(d,m.nombre)+" está a "+num(m.temperatura_actual,1)+" °C, "+sig(v,1)+" °C por encima de su media histórica."; },
     amb:"Entre las provincias costeras con punto de medición." },
@@ -283,6 +332,9 @@
     amb:"Un embalse pertenece a una cuenca, no a una provincia: el agua que almacena puede abastecer a otra." },
 
   { id:"muertes", t:"Mayor mortalidad atribuida al calor", url:U.muertes, futuro:true,
+    /* Solo tasa por 100.000, nunca el absoluto (que premiaria a Madrid y
+       Barcelona por poblacion). Y fuera las provincias de fiabilidad "baja",
+       donde la estimacion de MoMo no se distingue del ruido. */
     val:function(d){ var m=d.i.mortalidad_calor;
       if(!m||m.tasa_100k==null||m.fiabilidad==="baja") return null; return m.tasa_100k; },
     cifra:function(d,v){ return num(v,1); },
@@ -290,7 +342,77 @@
       return "Defunciones estimadas por 100.000 habitantes atribuibles al exceso de temperatura ("+m.atribuible_verano+" en total)."; },
     frase:function(d,v){ var m=d.i.mortalidad_calor;
       return "MoMo estima "+m.atribuible_verano+" defunciones atribuibles al exceso de temperatura en "+d.provincia+" este verano, una tasa de "+num(v,1)+" por cada 100.000 habitantes."; },
-    amb:"Estimación de MoMo (ISCIII). No son muertes certificadas por calor. Se excluyen del ranking las provincias donde la estimación no es fiable por tamaño de población." }
+    amb:"Estimación de MoMo (ISCIII). No son muertes certificadas por calor. Se excluyen del ranking las provincias donde la estimación no es fiable por tamaño de población." },
+
+  /* ---- Embalses: lo que se mueve, que es lo que da titular ------------- */
+  { id:"emb_caida", t:"La mayor caída de embalses en un año", url:U.embalses,
+    val:function(d){ var e=d.i.embalses;
+      if(!e || e.pct_hace_un_anio==null) return null;
+      var v = e.pct_hace_un_anio - e.pct_media;
+      return (Math.sign(v)===1) ? Math.round(v*10)/10 : null; },
+    cifra:function(d,v){ return "−"+num(v,1)+" pts"; },
+    desc:function(d){ var e=d.i.embalses;
+      return "Del "+num(e.pct_hace_un_anio,1)+" % de hace un año al "+num(e.pct_media,1)+" % de hoy."; },
+    frase:function(d,v){ var e=d.i.embalses;
+      return "Los embalses de "+d.provincia+" han perdido "+num(v,1)+" puntos en un año: del "+num(e.pct_hace_un_anio,1)+" % de su capacidad al "+num(e.pct_media,1)+" % actual."; },
+    amb:"Solo provincias cuyos embalses están por debajo de hace un año. Fuente: Boletín Hidrológico del MITECO." },
+
+  { id:"emb_hm3", t:"Más agua perdida en un año", url:U.embalses,
+    val:function(d){ var e=d.i.embalses;
+      if(!e || e.pct_hace_un_anio==null || e.capacidad_total_hm3==null) return null;
+      var v = (e.pct_hace_un_anio - e.pct_media)/100 * e.capacidad_total_hm3;
+      return (Math.sign(v)===1) ? Math.round(v*10)/10 : null; },
+    cifra:function(d,v){ return num(v,0)+" hm³"; },
+    desc:function(d){ var e=d.i.embalses;
+      return "Menos que hace un año, sobre una capacidad de "+num(e.capacidad_total_hm3,0)+" hm³ en "+e.n_embalses+" embalses."; },
+    frase:function(d,v){ var e=d.i.embalses;
+      return "Los embalses de "+d.provincia+" almacenan "+num(v,0)+" hectómetros cúbicos menos que hace un año, sobre una capacidad total de "+num(e.capacidad_total_hm3,0)+" hm³."; },
+    amb:"Volumen absoluto, no porcentaje: favorece a las provincias con más capacidad embalsada." },
+
+  { id:"emb_vs10a", t:"Más por debajo de su media de diez años", url:U.embalses,
+    val:function(d){ var e=d.i.embalses;
+      if(!e || e.pct_media_10a==null) return null;
+      var v = e.pct_media_10a - e.pct_media;
+      return (Math.sign(v)===1) ? Math.round(v*10)/10 : null; },
+    cifra:function(d,v){ return "−"+num(v,1)+" pts"; },
+    desc:function(d){ var e=d.i.embalses;
+      return "Está al "+num(e.pct_media,1)+" % frente al "+num(e.pct_media_10a,1)+" % que es su media para estas fechas."; },
+    frase:function(d,v){ var e=d.i.embalses;
+      return "Los embalses de "+d.provincia+" están "+num(v,1)+" puntos por debajo de su media de los últimos diez años para estas fechas: "+num(e.pct_media,1)+" % frente al "+num(e.pct_media_10a,1)+" % habitual."; },
+    amb:"Compara cada provincia consigo misma, no con las demás: es el indicador más honesto de los tres." },
+
+  { id:"emb_llenos", t:"Los embalses más llenos", url:U.embalses,
+    val:function(d){ return (d.i.embalses && d.i.embalses.pct_media!=null)? d.i.embalses.pct_media : null; },
+    cifra:function(d,v){ return num(v,1)+" %"; },
+    desc:function(d){ var e=d.i.embalses;
+      return e.etiqueta+" · "+num(e.volumen_total_hm3,0)+" de "+num(e.capacidad_total_hm3,0)+" hm³."; },
+    frase:function(d,v){ var e=d.i.embalses;
+      return "Los embalses de "+d.provincia+" están al "+num(v,1)+" % de su capacidad, el nivel más alto de España: "+num(e.volumen_total_hm3,0)+" de "+num(e.capacidad_total_hm3,0)+" hectómetros cúbicos."; },
+    amb:"Entre las 46 provincias con embalses en el Boletín Hidrológico." },
+
+  /* ---- Mortalidad: siempre en tasa y sin las de fiabilidad baja -------- */
+  { id:"mort_mes", t:"Mayor mortalidad por calor este mes", url:U.muertes,
+    val:function(d){ var m=d.i.mortalidad_calor;
+      if(!m || !m.mes || !m.poblacion || m.fiabilidad==="baja") return null;
+      return Math.round(m.mes.atribuibles / m.poblacion * 100000 * 10)/10; },
+    cifra:function(d,v){ return num(v,1); },
+    desc:function(d){ var m=d.i.mortalidad_calor;
+      return m.mes.atribuibles+" defunciones estimadas en "+m.mes.dias+" días, por 100.000 habitantes."; },
+    frase:function(d,v){ var m=d.i.mortalidad_calor;
+      return "MoMo estima "+m.mes.atribuibles+" defunciones atribuibles al exceso de temperatura en "+d.provincia+" en lo que va de mes, "+num(v,1)+" por cada 100.000 habitantes."; },
+    amb:"Estimación de MoMo (ISCIII), no muertes certificadas. Excluidas las provincias de menos de 300.000 habitantes." },
+
+  { id:"mort_semana", t:"Mayor mortalidad por calor esta semana", url:U.muertes,
+    val:function(d){ var m=d.i.mortalidad_calor;
+      if(!m || m.atribuible_semana==null || !m.poblacion || m.fiabilidad==="baja") return null;
+      if(Math.sign(m.atribuible_semana)!==1) return null;
+      return Math.round(m.atribuible_semana / m.poblacion * 100000 * 10)/10; },
+    cifra:function(d,v){ return num(v,1); },
+    desc:function(d){ var m=d.i.mortalidad_calor;
+      return m.atribuible_semana+" defunciones estimadas en los últimos siete días, por 100.000 habitantes."; },
+    frase:function(d,v){ var m=d.i.mortalidad_calor;
+      return "En los últimos siete días MoMo estima "+m.atribuible_semana+" defunciones atribuibles al exceso de temperatura en "+d.provincia+", "+num(v,1)+" por cada 100.000 habitantes."; },
+    amb:"Estimación de MoMo (ISCIII), no muertes certificadas. Excluidas las provincias de menos de 300.000 habitantes." }
   ];
 
   /* ======================================================================
@@ -298,26 +420,109 @@
   ====================================================================== */
   var app = document.getElementById("cch-app");
 
+  /* Los tres origenes se piden a la vez. Si alguno de los dos globales falla,
+     el hub sigue funcionando sin esa seccion: nunca bloquea el render. */
+  function pedir(url){
+    return fetch(url,{cache:"no-store"})
+      .then(function(r){ return r.json(); })
+      .catch(function(){ return null; });
+  }
+
   fetch(BASE+"index.json",{cache:"no-store"})
     .then(function(r){ return r.json(); })
     .then(function(idx){
-      document.getElementById("cch-stamp").innerHTML =
-        "Datos actualizados el <b>"+esc(idx.fecha_legible)+"</b> · "+idx.total_provincias+
-        " provincias · AEMET · Puertos del Estado · Copernicus · NASA FIRMS · NOAA · Open-Meteo";
-      return Promise.all(idx.provincias.map(function(p){
-        return fetch(BASE+p.slug+".json",{cache:"no-store"})
-          .then(function(r){ return r.json(); })
-          .then(function(j){ return {slug:p.slug, provincia:j.provincia, ccaa:j.ccaa,
-                                     capital:j.capital, i:j.indicadores||{},
-                                     top:p.top, novedades:p.novedades||[]}; })
-          .catch(function(){ return {slug:p.slug, provincia:p.provincia, ccaa:p.ccaa,
-                                     i:{}, top:p.top, novedades:[]}; });
-      })).then(function(datos){ pintar(idx, datos); });
+      return Promise.all([
+        Promise.all(idx.provincias.map(function(p){
+          return fetch(BASE+p.slug+".json",{cache:"no-store"})
+            .then(function(r){ return r.json(); })
+            .then(function(j){ return {slug:p.slug, provincia:j.provincia, ccaa:j.ccaa,
+                                       capital:j.capital, i:j.indicadores||{},
+                                       generado:j.generado,
+                                       top:p.top, novedades:p.novedades||[]}; })
+            .catch(function(){ return {slug:p.slug, provincia:p.provincia, ccaa:p.ccaa,
+                                       i:{}, top:p.top, novedades:[]}; });
+        })),
+        pedir(URL_EMBALSES),
+        pedir(URL_MORTALIDAD)
+      ]).then(function(res){
+        var datos=res[0], emb=res[1], mor=res[2];
+        fusionar(datos, emb, mor);
+        sello(idx, datos, emb, mor);
+        pintar(idx, datos, emb, mor);
+      });
     })
     .catch(function(){
       app.innerHTML = '<div class="cch-err">No se han podido cargar los datos del observatorio en este momento. '+
         'Puedes consultar cada provincia desde el <a href="'+U.obs+'">Observatorio climático</a>.</div>';
     });
+
+  /* ======================================================================
+     FUSION · deja embalses y mortalidad dentro de cada provincia, con los
+     mismos nombres de campo que usan los rankings.
+  ====================================================================== */
+  function fusionar(datos, emb, mor){
+    var mapaE={}, mapaM={};
+    if(emb && emb.provincias) emb.provincias.forEach(function(e){ mapaE[canon(e.slug)]=e; });
+    if(mor && mor.provincias) Object.keys(mor.provincias).forEach(function(k){ mapaM[canon(k)]=mor.provincias[k]; });
+
+    datos.forEach(function(d){
+      var k = canon(d.slug);
+
+      var e = mapaE[k];
+      if(e && e.pct!=null){
+        d.i.embalses = {
+          pct_media: e.pct,
+          pct_hace_un_anio: e.pct_hace_1a,
+          pct_media_10a: e.pct_media_10a,
+          volumen_total_hm3: e.volumen_total_hm3,
+          capacidad_total_hm3: e.capacidad_total_hm3,
+          n_embalses: e.total_embalses,
+          etiqueta: e.etiqueta,
+          url_web: e.url_web
+        };
+      }
+
+      var m = mapaM[k], pob = POBLACION[k];
+      if(m && m.verano!=null){
+        var fiab = null, tasa = null;
+        if(pob){
+          tasa = Math.round(m.verano / pob * 100000 * 10) / 10;
+          /* Umbral acordado: por debajo de 300.000 habitantes la estimacion
+             de MoMo no se distingue del ruido y queda fuera de los rankings. */
+          fiab = (Math.sign(pob-300000)===-1) ? "baja"
+               : (Math.sign(pob-700000)===-1) ? "media" : "alta";
+        }
+        d.i.mortalidad_calor = {
+          fuente:"MoMo · ISCIII",
+          atribuible_verano: m.verano,
+          atribuible_ayer: m.ayer ? m.ayer.atribuibles : null,
+          atribuible_semana: m.semana,
+          mes: m.mes || null,
+          poblacion: pob || null,
+          tasa_100k: tasa,
+          fiabilidad: fiab
+        };
+      }
+    });
+  }
+
+  /* Sello de fecha: se usa la mas reciente de las tres fuentes, porque
+     index.json puede ir un dia por detras de los ficheros de provincia. */
+  function sello(idx, datos, emb, mor){
+    var f = idx.fecha_legible;
+    var g = datos.map(function(d){ return d.generado; }).filter(Boolean).sort();
+    if(g.length){
+      var ult = g[g.length-1];
+      var p = ult.split("T");
+      if(p.length===2) f = p[0].split("-").reverse().join("/")+" a las "+p[1].slice(0,5);
+    }
+    var extra = "";
+    if(emb && emb.fecha_legible) extra += " · Embalses: boletín del "+esc(emb.fecha_legible);
+    if(mor && mor.actualizado) extra += " · Mortalidad: MoMo (ISCIII)";
+    document.getElementById("cch-stamp").innerHTML =
+      "Datos actualizados el <b>"+esc(f)+"</b> · "+idx.total_provincias+
+      " provincias · AEMET · Puertos del Estado · Copernicus · NASA FIRMS · NOAA · Open-Meteo · MITECO · ISCIII"+extra;
+  }
 
   /* ======================================================================
      CALCULO DE RANKINGS
@@ -351,7 +556,7 @@
   /* ======================================================================
      PINTADO
   ====================================================================== */
-  function pintar(idx, datos){
+  function pintar(idx, datos, emb, mor){
     var rk = calcular(datos);
     var porId={}; rk.forEach(function(x){ porId[x.R.id]=x; });
 
@@ -435,7 +640,11 @@
       {k:"nt", t:"Noches trop.", f:function(d){ var n=maxNoc(d); return n? n.nt_anyo : null; }, dec:0},
       {k:"d32", t:"Días >32 °C", f:function(d){ return d.i.dias32? d.i.dias32.actual : null; }, dec:0},
       {k:"lluv", t:"Lluvia año %", f:function(d){ return d.i.lluvias? d.i.lluvias.anomalia_anual_pct : null; }},
-      {k:"emb", t:"Embalses %", f:function(d){ return d.i.embalses? d.i.embalses.pct_media : null; }}
+      {k:"emb", t:"Embalses %", f:function(d){ return d.i.embalses? d.i.embalses.pct_media : null; }},
+      /* Mortalidad: se muestra la TASA, nunca el absoluto. La columna aparece
+         sola el dia que el campo exista en los JSON. */
+      {k:"mort", t:"Atrib. calor /100k", f:function(d){
+        return d.i.mortalidad_calor? d.i.mortalidad_calor.tasa_100k : null; }}
     ];
     var usadas = COLS.filter(function(c){
       if(c.txt) return true;
@@ -452,9 +661,100 @@
       }).join("")+'</tr>';
     }).join("");
 
+    /* ---- España hoy: agregados que ninguna provincia puede dar --------- */
+    var nacHtml = "";
+    var tarjNac = [];
+
+    if(emb && emb.nacional && emb.nacional.pct!=null){
+      var N=emb.nacional, dif=(N.pct_hace_1a!=null)? Math.round((N.pct-N.pct_hace_1a)*10)/10 : null;
+      tarjNac.push({
+        t:"Embalses de España",
+        n:num(N.pct,1)+" %",
+        d:"<b>"+num(N.volumen_total_hm3,0)+"</b> de "+num(N.capacidad_total_hm3,0)+" hm³ en "+
+          N.total_embalses+" embalses"+
+          (dif!==null? " · "+(Math.sign(dif)===-1? num(Math.abs(dif),1)+" pts menos"
+                                                    : num(dif,1)+" pts más")+" que hace un año" : "")+
+          (N.pct_media_10a!=null? " · media de 10 años: "+num(N.pct_media_10a,1)+" %" : "")
+      });
+    }
+
+    if(mor && mor.verano_actual && mor.verano_actual.atribuibles_calor!=null){
+      var V=mor.verano_actual;
+      tarjNac.push({
+        t:"Defunciones atribuibles al calor",
+        n:num(V.atribuibles_calor,0),
+        d:"Estimación de <b>MoMo (ISCIII)</b> para toda España desde el "+
+          (V.desde? V.desde.split("-").reverse().join("/") : "1/6")+
+          (V.parcial? " · verano en curso" : "")+". No son muertes certificadas por calor."
+      });
+    }
+
+    var conAviso = datos.filter(function(d){ return d.i.avisos && Math.sign(d.i.avisos.total)===1; });
+    if(conAviso.length){
+      var rojos=0, naranjas=0;
+      conAviso.forEach(function(d){ rojos+=d.i.avisos.rojos||0; naranjas+=d.i.avisos.naranjas||0; });
+      tarjNac.push({
+        t:"Provincias con avisos activos",
+        n:conAviso.length+" de 52",
+        d:(rojos? "<b>"+pl(rojos,"rojo","rojos")+"</b> · " : "")+
+          (naranjas? pl(naranjas,"naranja","naranjas")+" · " : "")+
+          "avisos meteorológicos vigentes de AEMET"
+      });
+    }
+
+    var vistoCC={}, focos=0;
+    datos.forEach(function(d){ var f=d.i.incendios_ccaa;
+      if(f && f.focos_activos && !vistoCC[f.nombre]){ vistoCC[f.nombre]=1; focos+=f.focos_activos; } });
+    if(focos){
+      tarjNac.push({
+        t:"Focos de calor activos",
+        n:num(focos,0),
+        d:"Detectados por satélite en las últimas 48 h en "+
+          pl(Object.keys(vistoCC).length,"comunidad","comunidades")+
+          ". Un foco no es siempre un incendio forestal."
+      });
+    }
+
+    if(tarjNac.length){
+      nacHtml = '<h2>España hoy</h2>'+
+        '<p class="h2sub">Totales del conjunto del país, sumando las 52 provincias. Son las cifras que no aparecen en ninguna página provincial por separado.</p>'+
+        '<div class="cch-nac">'+tarjNac.map(function(x){
+          return '<div class="cch-n"><div class="t">'+esc(x.t)+'</div><div class="n">'+esc(x.n)+'</div><div class="d">'+x.d+'</div></div>';
+        }).join("")+'</div>';
+    }
+
+    /* ---- Cruce: dónde coinciden embalses bajos y mortalidad alta ------- */
+    var cruceHtml = "";
+    var fiables = datos.filter(function(d){ var m=d.i.mortalidad_calor;
+      return m && m.tasa_100k!=null && m.fiabilidad!=="baja"; });
+    if(fiables.length && emb){
+      var tasas = fiables.map(function(d){ return d.i.mortalidad_calor.tasa_100k; }).sort(function(a,b){ return a-b; });
+      var mediana = tasas[Math.floor(tasas.length/2)];
+      var cruce = fiables.filter(function(d){
+        var e=d.i.embalses, m=d.i.mortalidad_calor;
+        return e && e.pct_media!=null &&
+               Math.sign(e.pct_media-40)===-1 &&
+               Math.sign(m.tasa_100k-mediana)===1;
+      }).sort(function(a,b){ return a.i.embalses.pct_media-b.i.embalses.pct_media; }).slice(0,8);
+      if(cruce.length){
+        cruceHtml = '<h2>Dónde coinciden la sequía y el calor</h2>'+
+          '<p class="h2sub">Provincias con los embalses por debajo del 40 % de su capacidad y, a la vez, una mortalidad atribuida al calor superior a la mediana nacional. Son dos indicadores independientes que aquí se solapan.</p>'+
+          '<div class="cch-cruce">'+cruce.map(function(d){
+            var e=d.i.embalses, m=d.i.mortalidad_calor;
+            return '<div class="r"><span class="pp"><a href="'+urlProv(d.slug)+'">'+esc(d.provincia)+'</a></span>'+
+              '<span class="vv">Embalses al <b>'+esc(num(e.pct_media,1))+' %</b> · '+
+              esc(num(m.tasa_100k,1))+' defunciones estimadas por 100.000 hab. este verano</span></div>';
+          }).join("")+'</div>'+
+          '<div class="cch-note"><b>Cómo leer este cruce.</b> Que ambas cosas ocurran en la misma provincia no significa que una cause la otra. '+
+          'Los embalses bajos responden a la lluvia acumulada de meses y a la demanda de riego; la mortalidad atribuida al calor depende sobre todo de la temperatura de estos días y de la estructura de edad de la población. '+
+          'Lo que este listado señala es <b>dónde se acumulan las dos presiones a la vez</b>, no una relación causal entre ellas.</div>';
+      }
+    }
+
     /* ---- Montaje ------------------------------------------------------ */
     app.innerHTML =
       heroHtml +
+      nacHtml +
 
       '<h2>Los récords de España, hoy</h2>'+
       '<p class="h2sub">Cada tarjeta compara las 52 provincias en un indicador y se recalcula al abrir la página. Debajo del primer puesto aparecen el segundo, el tercero y el cuarto.</p>'+
@@ -464,6 +764,7 @@
       '<p class="h2sub">Frases completas, con la cifra, la unidad, el lugar y el ámbito del dato. Pensadas para copiar y pegar en una redacción. Si citas alguna, la licencia es CC-BY 4.0 y basta con mencionar «calentamientoglobal.es».</p>'+
       '<div class="cch-tit">'+tits+'</div>'+
 
+      cruceHtml +
       '<h2>Las 52 provincias</h2>'+
       '<p class="h2sub">Cada ficha lleva al observatorio de esa provincia, con su panel de datos en directo y su contexto climático propio.</p>'+
       '<div class="cch-tools">'+
