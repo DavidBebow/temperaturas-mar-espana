@@ -143,9 +143,10 @@ function fichaAgua(e, provincia, slugProv) {
   `</a>`;
 }
 
-/* El JSON de la provincia trae el % embalsado, pero no la comparativa con hace
-   un año ni con la media de 10 años. Eso se pide aparte y se repinta la ficha.
-   Si falla, se queda la versión inicial: nunca desaparece el dato. */
+/* Hoy los datos de embalses NO vienen en provincias/{slug}.json, así que se piden
+   a embalses/{slug}.json, que es un archivo pequeño. Si algún día el generador
+   añadiera indicadores.embalses, la ficha se pintaría ya en el primer render y
+   esta petición solo la completaría con la comparativa. */
 async function enriquecerAgua(provincia, slugProv) {
   try {
     const r = await fetch(`https://davidbebow.github.io/temperaturas-mar-espana/embalses/${slugEmb(slugProv)}.json`);
@@ -167,7 +168,8 @@ async function cargar() {
   document.title = `El cambio climático en ${d.provincia} — CalentamientoGlobal.es`;
   $("#titulo").innerHTML = `El cambio climático en <span>${d.provincia}</span>`;
   $("#subtitulo").textContent = `${d.ccaa} · actualizado el ${d.fecha_legible} · AEMET · NASA · Copernicus · NOAA · Puertos del Estado`;
-  /* Ficha ancha de agua embalsada (vacía si la provincia no tiene embalses en el boletín) */
+  /* Ficha ancha de agua embalsada. Sale vacía en el primer render (el dato no viene
+     en este JSON) y la rellena enriquecerAgua() un instante después. */
   const fa = fichaAgua(i.embalses, d.provincia, slug);
   /* Fichas clave */
   let fh = "";
@@ -257,7 +259,7 @@ async function cargar() {
     `<div id="tarjetas">${t}</div>` +
     `<div id="pie">Datos: <a href="${U.observatorio}" target="_top">Observatorio Climático de calentamientoglobal.es</a> · ` +
     `Licencia CC-BY 4.0 — cita “calentamientoglobal.es” · AEMET · NASA FIRMS · Copernicus · NOAA · Puertos del Estado · Open-Meteo · MITECO</div>`;
-  if (i.embalses) enriquecerAgua(d.provincia, slug);
+  enriquecerAgua(d.provincia, slug);
 }
 async function initSelector() {
   try {
