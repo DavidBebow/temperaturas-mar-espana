@@ -76,6 +76,15 @@
     return nom+" ("+d.provincia+")"; }
   function esc(s){ return String(s==null?"":s)
     .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  var MESES=["enero","febrero","marzo","abril","mayo","junio","julio",
+             "agosto","septiembre","octubre","noviembre","diciembre"];
+  /* "2026-06-01" -> "1 de junio" */
+  function fechaLarga(iso){
+    if(!iso) return null;
+    var p=String(iso).split("-");
+    if(p.length!==3) return null;
+    return parseInt(p[2],10)+" de "+MESES[parseInt(p[1],10)-1];
+  }
   function diaDelAnio(){ var h=new Date(), i=new Date(h.getFullYear(),0,0);
     return Math.floor((h-i)/86400000); }
 
@@ -358,9 +367,11 @@
     cifra:function(d,v){ return num(v,1); },
     desc:function(d){ var m=d.i.mortalidad_calor;
       return "Defunciones estimadas por 100.000 habitantes atribuibles al exceso de temperatura ("+m.atribuible_verano+" en total)."; },
-    frase:function(d,v){ var m=d.i.mortalidad_calor;
-      return "MoMo estima "+m.atribuible_verano+" defunciones atribuibles al exceso de temperatura en "+d.provincia+" este verano, una tasa de "+num(v,1)+" por cada 100.000 habitantes."; },
-    amb:"Estimación de MoMo (ISCIII). No son muertes certificadas por calor. Se excluyen del ranking las provincias donde la estimación no es fiable por tamaño de población." },
+    frase:function(d,v){ var m=d.i.mortalidad_calor, des=fechaLarga(m.desde);
+      return "MoMo estima "+m.atribuible_verano+" defunciones atribuibles al exceso de temperatura en "+
+        d.provincia+(des? " desde el "+des : " este verano")+
+        ", una tasa de "+num(v,1)+" por cada 100.000 habitantes."; },
+    amb:"Estimación de MoMo (ISCIII) para el verano completo. No son muertes certificadas por golpe de calor, que son muchas menos, ni cifras de una ola concreta. Se excluyen las provincias de menos de 300.000 habitantes." },
 
   /* ---- Embalses: lo que se mueve, que es lo que da titular ------------- */
   { id:"emb_caida", t:"La mayor caída de embalses en un año", url:U.embalses,
@@ -512,6 +523,10 @@
         }
         d.i.mortalidad_calor = {
           fuente:"MoMo · ISCIII",
+          /* El periodo es imprescindible: la misma provincia tiene cifras muy
+             distintas segun se cuente el verano entero, un mes o una ola de
+             calor concreta. Sin la fecha, el dato no se puede comparar. */
+          desde: (mor && mor.verano_actual)? mor.verano_actual.desde : null,
           atribuible_verano: m.verano,
           atribuible_ayer: m.ayer ? m.ayer.atribuibles : null,
           atribuible_semana: m.semana,
@@ -679,22 +694,67 @@
       }).join("")+'</tr>';
     }).join("");
 
+    /* ---- Agua embalsada: bloque destacado en cabecera ------------------ */
+    var aguaHtml = "";
+    if(emb && emb.nacional && emb.nacional.pct!=null){
+      var A=emb.nacional;
+      var difA = (A.pct_hace_1a!=null)? Math.round((A.pct-A.pct_hace_1a)*10)/10 : null;
+      var dif10 = (A.pct_media_10a!=null)? Math.round((A.pct-A.pct_media_10a)*10)/10 : null;
+
+      /* Color segun lo llena que este: rojo si bajo, azul si normal */
+      function colorPct(p){
+        if(Math.sign(p-25)===-1) return "#e8553c";
+        if(Math.sign(p-40)===-1) return "#e8963c";
+        if(Math.sign(p-60)===-1) return "#4aa8d8";
+        return "#5fd0a0";
+      }
+
+      var criticas = datos.filter(function(d){ return embOK(d.i.embalses); })
+        .sort(function(a,b){ return a.i.embalses.pct_media-b.i.embalses.pct_media; })
+        .slice(0,6);
+
+      var tarjetasP = criticas.map(function(d){
+        var e=d.i.embalses;
+        var dif = (e.pct_hace_un_anio!=null)? Math.round((e.pct_media-e.pct_hace_un_anio)*10)/10 : null;
+        var pie = (dif===null) ? num(e.capacidad_total_hm3,0)+" hm³ de capacidad"
+          : (Math.sign(dif)===-1) ? num(Math.abs(dif),1)+" pts menos que hace un año"
+          : (Math.sign(dif)===1)  ? num(dif,1)+" pts más que hace un año"
+          : "igual que hace un año";
+        return '<a href="'+urlProv(d.slug)+'">'+
+          '<div class="pn2">'+esc(d.provincia)+'</div>'+
+          '<div class="pc">'+esc(num(e.pct_media,1))+' %</div>'+
+          '<div class="bb"><i style="width:'+Math.max(2,Math.min(100,e.pct_media))+'%;background:'+colorPct(e.pct_media)+'"></i></div>'+
+          '<div class="dd">'+esc(pie)+'</div></a>';
+      }).join("");
+
+      aguaHtml =
+        '<div class="cch-agua">'+
+          '<div class="k">💧 El agua embalsada · Boletín Hidrológico del MITECO</div>'+
+          '<div class="tit">Los embalses de España están al '+esc(num(A.pct,1))+' % de su capacidad</div>'+
+          '<div class="sub2"><b>'+esc(num(A.volumen_total_hm3,0))+'</b> de '+esc(num(A.capacidad_total_hm3,0))+
+            ' hectómetros cúbicos en '+esc(num(A.total_embalses,0))+' embalses'+
+            (difA!==null ? ' · <b>'+(Math.sign(difA)===-1 ? esc(num(Math.abs(difA),1))+' puntos menos'
+                                                          : esc(num(difA,1))+' puntos más')+'</b> que hace un año' : '')+
+            (dif10!==null ? ' · '+(Math.sign(dif10)===-1 ? esc(num(Math.abs(dif10),1))+' por debajo'
+                                                         : esc(num(dif10,1))+' por encima')+' de su media de diez años' : '')+
+          '</div>'+
+          '<div class="cch-bar"><i style="width:'+Math.max(1,Math.min(100,A.pct))+'%"></i></div>'+
+          '<div class="ref"><span>0 %</span><span>Media de 10 años: '+
+            (A.pct_media_10a!=null? esc(num(A.pct_media_10a,1))+' %' : '—')+'</span><span>100 %</span></div>'+
+          (tarjetasP ? '<div class="eti">Las seis provincias con los embalses más bajos</div>'+
+                       '<div class="cch-ap">'+tarjetasP+'</div>' : '')+
+          '<div class="pie2">Los embalses se actualizan los martes con el Boletín Hidrológico del MITECO. '+
+          'Un embalse pertenece a una <b>cuenca</b>, no a una provincia: el agua que almacena puede abastecer a territorios vecinos. '+
+          'Se excluyen las provincias con menos de 50 hm³ de capacidad, donde el porcentaje no es comparable. '+
+          '<a href="'+U.embalses+'">Ver todos los embalses →</a></div>'+
+        '</div>';
+    }
+
     /* ---- España hoy: agregados que ninguna provincia puede dar --------- */
     var nacHtml = "";
     var tarjNac = [];
 
-    if(emb && emb.nacional && emb.nacional.pct!=null){
-      var N=emb.nacional, dif=(N.pct_hace_1a!=null)? Math.round((N.pct-N.pct_hace_1a)*10)/10 : null;
-      tarjNac.push({
-        t:"Embalses de España",
-        n:num(N.pct,1)+" %",
-        d:"<b>"+num(N.volumen_total_hm3,0)+"</b> de "+num(N.capacidad_total_hm3,0)+" hm³ en "+
-          N.total_embalses+" embalses"+
-          (dif!==null? " · "+(Math.sign(dif)===-1? num(Math.abs(dif),1)+" pts menos"
-                                                    : num(dif,1)+" pts más")+" que hace un año" : "")+
-          (N.pct_media_10a!=null? " · media de 10 años: "+num(N.pct_media_10a,1)+" %" : "")
-      });
-    }
+    /* Los embalses ya tienen su propio panel destacado arriba: aquí no se repiten. */
 
     if(mor && mor.verano_actual && mor.verano_actual.atribuibles_calor!=null){
       var V=mor.verano_actual;
@@ -772,6 +832,7 @@
     /* ---- Montaje ------------------------------------------------------ */
     app.innerHTML =
       heroHtml +
+      aguaHtml +
       nacHtml +
 
       '<h2>Los récords de España, hoy</h2>'+
