@@ -1,0 +1,123 @@
+name: Actualizar tarjetas de prensa
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+# Mismo patron que actualizar_embalses.yml: se ejecuta desde el publico, trae el
+# script del repo privado (clima-scripts) y commitea el resultado en docs/.
+#
+# Que produce:
+#   docs/prensa/img/embalses-{slug}-{fecha}.png   tarjeta fechada (historico)
+#   docs/prensa/img/embalses-{slug}.png           alias estable (la ultima)
+#   docs/prensa/img/calor-{slug}-{fecha}.png
+#   docs/prensa/img/calor-{slug}.png
+#   docs/prensa/titulares.json                    indice que consulta el plugin de WP
+#
+# IMPORTANTE: parte_prensa.py NO va aqui. Ese lleva correos de periodistas
+# (contactos.json) y se ejecuta en tu maquina. Aqui solo lo publico.
+on:
+  schedule:
+    - cron: '0 5 * * *'     # todos los dias, 07:00 hora peninsular (verano)
+  # Ademas, en cuanto termina el de embalses (martes/miercoles): asi la tarjeta
+  # de agua sale con el boletin del MITECO del dia, no con el de la semana pasada.
+  workflow_run:
+    workflows: ["Actualizar embalses"]
+    types: [completed]
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/actualizar_tarjetas_prensa.yml'
+concurrency:
+  group: actualizar-tarjetas-prensa
+  cancel-in-progress: false
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  tarjetas:
+    runs-on: ubuntu-latest
+    # Si lo dispara workflow_run, solo cuando el de embalses acabo bien.
+    if: >
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: clima-scripts
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar Pillow
+        timeout-minutes: 5
+        run: pip install --quiet Pillow
+
+      # --local docs es lo que importa: los JSON del repo ya estan actualizados,
+      # pero GitHub Pages todavia sirve los de la ejecucion anterior. Sin esto,
+      # las tarjetas de hoy saldrian con los datos de ayer.
+      - name: Generar las tarjetas
+        timeout-minutes: 12
+        run: |
+          set -euo pipefail
+          python clima-scripts/generar_tarjetas_prensa.py \
+            --local docs \
+            --salida docs/prensa
+
+      # Las tarjetas fechadas se acumulan (2 por provincia y dia = ~38.000 al
+      # ano). Se conservan 60 dias, que es mas que de sobra para que un medio
+      # recupere la imagen de una pieza reciente. Los alias sin fecha nunca se
+      # borran: son los que enlaza el plugin.
+      - name: Limpiar tarjetas de mas de 60 dias
+        run: |
+          find docs/prensa/img -name '*-20*.png' -type f -mtime +60 -delete || true
+
+      - name: Guardar cambios
+        id: guardar
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git pull --rebase --autostash
+          git add -A docs/prensa/
+          if git diff --staged --quiet; then
+            echo "Sin cambios"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Tarjetas de prensa: $(date +'%d/%m/%Y %H:%M')"
+            for intento in 1 2 3 4 5; do
+              git push && break
+              echo "Push fallo. Reintento $intento/5 en 15s..."
+              sleep 15
+              git pull --rebase --autostash
+            done
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Avisa a Bing y a los buscadores con IA de que las salas de prensa de
+      # WordPress tienen datos nuevos. Nunca tumba el job: el dato ya esta
+      # publicado aunque el ping falle.
+      - name: Notificar a IndexNow (Bing/IA)
+        if: steps.guardar.outputs.changed == 'true'
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+          INDEXNOW_HOST: calentamientoglobal.es
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          d = json.loads(pathlib.Path("docs/prensa/titulares.json").read_text("utf-8"))
+          urls = [f"https://calentamientoglobal.es/prensa/{s}/" for s in d.get("provincias", {})]
+          urls.insert(0, "https://calentamientoglobal.es/prensa/")
+          pathlib.Path("docs/prensa/_ping_urls.txt").write_text("\n".join(urls), "utf-8")
+          print(f"{len(urls)} URLs para IndexNow")
+          PY
+          if [ -s docs/prensa/_ping_urls.txt ]; then
+            python indexnow_ping.py --file docs/prensa/_ping_urls.txt
+          fi
