@@ -51,6 +51,15 @@ jobs:
           token: ${{ secrets.SCRIPTS_TOKEN }}
           path: clima-scripts
 
+      # Sincronizar ANTES de generar nada. Si se hace despues, los archivos
+      # recien creados son «untracked» y el merge aborta antes de poder
+      # anadirlos: es exactamente lo que fallaba.
+      - name: Sincronizar con el remoto
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git pull --rebase --autostash || true
+
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
@@ -78,10 +87,18 @@ jobs:
       #
       # Va DESPUES de las tarjetas y sin --local: necesita los 52 JSON de
       # provincias, que los genera otro flujo y ya estan publicados en Pages.
+      # Se genera en /tmp y solo se copia ranking.json. Los otros dos archivos
+      # que produce el script —la tabla completa y el parte en HTML— son para
+      # leerlos tu, no para publicarlos: son 75 KB y una pagina interna que no
+      # pinta nada en GitHub Pages.
       - name: Calcular el ranking nacional
         timeout-minutes: 10
         continue-on-error: true
-        run: python clima-scripts/ranking_prensa.py --salida docs/prensa
+        run: |
+          set -euo pipefail
+          python clima-scripts/ranking_prensa.py --salida /tmp/ranking
+          mkdir -p docs/prensa
+          cp /tmp/ranking/ranking.json docs/prensa/ranking.json
 
       # Las tarjetas fechadas se acumulan (2 por provincia y dia = ~38.000 al
       # ano). Se conservan 60 dias, que es mas que de sobra para que un medio
@@ -94,9 +111,6 @@ jobs:
       - name: Guardar cambios
         id: guardar
         run: |
-          git config --local user.email "accion@github.com"
-          git config --local user.name "GitHub Actions Bot"
-          git pull --rebase --autostash
           git add -A docs/prensa/   # tarjetas, titulares.json y ranking.json
           if git diff --staged --quiet; then
             echo "Sin cambios"
