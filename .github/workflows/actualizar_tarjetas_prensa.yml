@@ -102,22 +102,51 @@ jobs:
       # Avisa a Bing y a los buscadores con IA de que las salas de prensa de
       # WordPress tienen datos nuevos. Nunca tumba el job: el dato ya esta
       # publicado aunque el ping falle.
+      # Avisa a Bing y a los buscadores con IA de que las salas de prensa de
+      # WordPress tienen datos nuevos.
+      #
+      # Solo se envian las URLs que responden 200. Mientras no hayas creado las
+      # paginas en WordPress, todas dan 404 y no se manda ninguna: anunciar a
+      # Bing paginas que no existen no sirve de nada y ensucia el dominio.
+      #
+      # El paso nunca tumba el job ni deja un rojo enganoso: si el ping falla,
+      # avisa y sigue. El dato ya esta publicado aunque Bing no se entere hoy.
       - name: Notificar a IndexNow (Bing/IA)
         if: steps.guardar.outputs.changed == 'true'
         continue-on-error: true
-        timeout-minutes: 5
+        timeout-minutes: 6
         env:
           INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
           INDEXNOW_HOST: calentamientoglobal.es
         run: |
           python - <<'PY'
-          import json, pathlib
+          import json, pathlib, urllib.request, urllib.error
           d = json.loads(pathlib.Path("docs/prensa/titulares.json").read_text("utf-8"))
-          urls = [f"https://calentamientoglobal.es/prensa/{s}/" for s in d.get("provincias", {})]
-          urls.insert(0, "https://calentamientoglobal.es/prensa/")
-          pathlib.Path("docs/prensa/_ping_urls.txt").write_text("\n".join(urls), "utf-8")
-          print(f"{len(urls)} URLs para IndexNow")
+          urls = ["https://calentamientoglobal.es/prensa/"]
+          urls += [f"https://calentamientoglobal.es/prensa/{s}/" for s in d.get("provincias", {})]
+
+          def viva(u):
+              req = urllib.request.Request(u, method="HEAD",
+                                           headers={"User-Agent": "calentamientoglobal.es/ci"})
+              try:
+                  with urllib.request.urlopen(req, timeout=15) as r:
+                      return r.status == 200
+              except Exception:
+                  return False
+
+          # Si el indice no existe, las 52 tampoco: no hace falta comprobarlas una a una.
+          vivas = [u for u in urls if viva(u)] if viva(urls[0]) else []
+          pathlib.Path("docs/prensa/_ping_urls.txt").write_text("\n".join(vivas), "utf-8")
+          if not vivas:
+              print("::warning::Las salas de prensa aun no existen en WordPress "
+                    "(/prensa/ da 404). No se envia nada a IndexNow. "
+                    "Crea las paginas con ?cgsp_crear_paginas=1 y relanza.")
+          else:
+              print(f"{len(vivas)} de {len(urls)} URLs vivas para IndexNow")
           PY
           if [ -s docs/prensa/_ping_urls.txt ]; then
-            python indexnow_ping.py --file docs/prensa/_ping_urls.txt
+            python indexnow_ping.py --file docs/prensa/_ping_urls.txt \
+              || echo "::warning::IndexNow rechazo el envio. Comprueba que \
+          https://calentamientoglobal.es/\$INDEXNOW_KEY.txt devuelve la clave en \
+          texto plano. No afecta a las tarjetas, que ya estan publicadas."
           fi
