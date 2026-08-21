@@ -9,6 +9,7 @@ name: Actualizar tarjetas de prensa
 #   docs/prensa/img/calor-{slug}-{fecha}.png
 #   docs/prensa/img/calor-{slug}.png
 #   docs/prensa/titulares.json                    indice que consulta el plugin de WP
+#   docs/prensa/ranking.json                      puesto de cada provincia en Espana
 #
 # IMPORTANTE: parte_prensa.py NO va aqui. Ese lleva correos de periodistas
 # (contactos.json) y se ejecuta en tu maquina. Aqui solo lo publico.
@@ -70,6 +71,18 @@ jobs:
             --local docs \
             --salida docs/prensa
 
+      # El ranking nacional: compara las 52 provincias y publica en qué puesto
+      # esta cada una. Es lo que hace que la sala de prensa de Salamanca pueda
+      # decir «1.a de Espana en exceso de dias sobre 32 grados» en vez de solo
+      # dar su porcentaje de embalses.
+      #
+      # Va DESPUES de las tarjetas y sin --local: necesita los 52 JSON de
+      # provincias, que los genera otro flujo y ya estan publicados en Pages.
+      - name: Calcular el ranking nacional
+        timeout-minutes: 10
+        continue-on-error: true
+        run: python clima-scripts/ranking_prensa.py --salida docs/prensa
+
       # Las tarjetas fechadas se acumulan (2 por provincia y dia = ~38.000 al
       # ano). Se conservan 60 dias, que es mas que de sobra para que un medio
       # recupere la imagen de una pieza reciente. Los alias sin fecha nunca se
@@ -84,7 +97,7 @@ jobs:
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
           git pull --rebase --autostash
-          git add -A docs/prensa/
+          git add -A docs/prensa/   # tarjetas, titulares.json y ranking.json
           if git diff --staged --quiet; then
             echo "Sin cambios"
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -99,9 +112,6 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # Avisa a Bing y a los buscadores con IA de que las salas de prensa de
-      # WordPress tienen datos nuevos. Nunca tumba el job: el dato ya esta
-      # publicado aunque el ping falle.
       # Avisa a Bing y a los buscadores con IA de que las salas de prensa de
       # WordPress tienen datos nuevos.
       #
