@@ -3,8 +3,8 @@
  "provincia": "Cádiz",
  "ccaa": "Andalucía",
  "capital": "Cádiz",
- "generado": "2026-08-22T09:19+02:00",
- "fecha_legible": "22/08/2026 a las 09:19",
+ "generado": "2026-08-22T16:59+02:00",
+ "fecha_legible": "22/08/2026 a las 16:59",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,11 +23,11 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 35.2,
-   "tmax_hoy": 23.3,
-   "tmin_hoy": 22.5,
+   "tmax_hoy": 23.2,
+   "tmin_hoy": 21.7,
    "dias_consecutivos": 0,
    "noche_tropical": true,
-   "icc": 13,
+   "icc": 11,
    "nivel": "Calor suave",
    "color": "#0066CC"
   },
@@ -53,47 +53,47 @@
    {
     "id": "cadiz",
     "nombre": "Cádiz",
-    "temperatura_actual": 22.7,
-    "anomalia": -2.3,
-    "etiqueta_anomalia": "Muy por debajo de la media",
-    "dias_consecutivos": 18,
-    "signo_consecutivo": "negativa"
+    "temperatura_actual": null,
+    "anomalia": null,
+    "etiqueta_anomalia": "Sin datos",
+    "dias_consecutivos": null,
+    "signo_consecutivo": null
    }
   ],
   "nivel_mar": [
    {
     "id": "cadiz",
     "nombre": "Cádiz",
-    "sla_actual_cm": 9.3,
-    "desviacion_cm": 9.5,
-    "etiqueta_anomalia": "Por encima de la media",
-    "dias_consecutivos": 99
+    "sla_actual_cm": 10.1,
+    "desviacion_cm": 10.3,
+    "etiqueta_anomalia": "Nivel muy elevado",
+    "dias_consecutivos": 100
    },
    {
     "id": "bahia_cadiz",
     "nombre": "Bahía de Cádiz",
-    "sla_actual_cm": 9.1,
-    "desviacion_cm": 9.3,
+    "sla_actual_cm": 9.9,
+    "desviacion_cm": 10.1,
     "etiqueta_anomalia": "Por encima de la media",
-    "dias_consecutivos": 99
+    "dias_consecutivos": 100
    }
   ],
   "incendios_ccaa": {
    "nombre": "Andalucía",
-   "focos_activos": 16,
+   "focos_activos": 26,
    "tiene_fuego": true,
-   "etiqueta": "Actividad moderada",
+   "etiqueta": "Actividad alta",
    "dias_consecutivos": 0,
    "dias_anio_actual": 12
   },
   "lluvias": {
-   "mm_ayer": 0.0,
-   "mm_semana": 0.2,
-   "mm_anual": 496.5,
+   "mm_ayer": 1.2,
+   "mm_semana": 1.4,
+   "mm_anual": 498.2,
    "media_anual_mm": 640,
-   "media_hasta_hoy_mm": 405.0,
-   "anomalia_semana_pct": -98.4,
-   "anomalia_anual_pct": 22.6,
+   "media_hasta_hoy_mm": 406.8,
+   "anomalia_semana_pct": -88.5,
+   "anomalia_anual_pct": 22.5,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Lluvioso"
   },
@@ -102,8 +102,8 @@
     "id": "cadiz",
     "nombre": "Cádiz",
     "t_min_anoche": null,
-    "nt_mes": 17,
-    "nt_anyo": 81,
+    "nt_mes": 18,
+    "nt_anyo": 82,
     "etiqueta": "Sin datos"
    }
   ],
@@ -111,8 +111,8 @@
    {
     "nombre": "Cádiz",
     "etiqueta": "Buena",
-    "aqi_europeo": 31,
-    "pm25": 5.1,
+    "aqi_europeo": 39,
+    "pm25": 5.8,
     "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
@@ -137,7 +137,7 @@
    {
     "id": "golfo_de_cadiz",
     "nombre": "Golfo de Cádiz",
-    "temp": 21.92,
+    "temp": 21.66,
     "fecha": "2026-08-22",
     "max_anio": {
      "valor": 24.28,
@@ -156,14 +156,34 @@
  },
  "destacados": [
   {
+   "tipo": "incendios",
+   "icono": "🔥",
+   "nivel": "alto",
+   "texto": "26 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h) · 24.º día consecutivo",
+   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
+   "prioridad": 84,
+   "racha_dias": 24,
+   "nuevo": false
+  },
+  {
    "tipo": "noches_tropicales",
    "icono": "🌙",
    "nivel": "medio",
-   "texto": "Cádiz acumula 17 noches tropicales este mes (81 en el año): el calor no da tregua ni de noche · 4.º día consecutivo",
+   "texto": "Cádiz acumula 18 noches tropicales este mes (82 en el año): el calor no da tregua ni de noche · 4.º día consecutivo",
    "url": "https://calentamientoglobal.es/noches-tropicales-espana/",
    "prioridad": 66,
    "racha_dias": 4,
    "nuevo": false
+  },
+  {
+   "tipo": "nivel_mar_cadiz",
+   "icono": "🌊",
+   "nivel": "medio",
+   "texto": "Nivel del mar muy elevado en Cádiz: +10.3 cm sobre la media 1993-2012",
+   "url": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
+   "prioridad": 64,
+   "racha_dias": 1,
+   "nuevo": true
   },
   {
    "tipo": "dias32",
@@ -174,17 +194,7 @@
    "prioridad": 62,
    "racha_dias": 24,
    "nuevo": false
-  },
-  {
-   "tipo": "incendios",
-   "icono": "🔥",
-   "nivel": "medio",
-   "texto": "16 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h) · 24.º día consecutivo",
-   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
-   "prioridad": 56,
-   "racha_dias": 24,
-   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Cádiz a 22/08/2026: Cádiz acumula 17 noches tropicales este mes (81 en el año): el calor no da tregua ni de noche. Cádiz ya suma 47 días por encima de 32 °C este año (media 1991-2020: 34; media 1961-1990: 28). 16 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Cádiz a 22/08/2026: 26 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h). Cádiz acumula 18 noches tropicales este mes (82 en el año): el calor no da tregua ni de noche. Nivel del mar muy elevado en Cádiz: +10.3 cm sobre la media 1993-2012. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
