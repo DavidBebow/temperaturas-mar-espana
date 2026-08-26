@@ -3,8 +3,8 @@
  "provincia": "A Coruña",
  "ccaa": "Galicia",
  "capital": "A Coruña",
- "generado": "2026-08-26T09:32+02:00",
- "fecha_legible": "26/08/2026 a las 09:32",
+ "generado": "2026-08-26T18:05+02:00",
+ "fecha_legible": "26/08/2026 a las 18:05",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,11 +23,11 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 26.3,
-   "tmax_hoy": 23.1,
-   "tmin_hoy": 17.5,
+   "tmax_hoy": 19.8,
+   "tmin_hoy": 15.9,
    "dias_consecutivos": 0,
    "noche_tropical": false,
-   "icc": 4,
+   "icc": 0,
    "nivel": "Calor suave",
    "color": "#0066CC"
   },
@@ -43,12 +43,21 @@
    "racha_ifc3": 0
   },
   "avisos": {
-   "total": 6,
+   "total": 9,
    "rojos": 0,
-   "naranjas": 0,
-   "amarillos": 6,
+   "naranjas": 1,
+   "amarillos": 8,
    "items": [
     {
+     "zona": "Oeste de A Coruña",
+     "nivel": "naranja",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-08-26T09:00+02:00",
+     "fin": "2026-08-26T17:59+02:00",
+     "activo_ya": true
+    },
+    {
      "zona": "Interior de A Coruña",
      "nivel": "amarillo",
      "tipo": "Tormentas",
@@ -101,6 +110,24 @@
      "inicio": "2026-08-26T06:00+02:00",
      "fin": "2026-08-26T17:59+02:00",
      "activo_ya": true
+    },
+    {
+     "zona": "Suroeste de A Coruña",
+     "nivel": "amarillo",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-08-27T00:00+02:00",
+     "fin": "2026-08-27T09:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Suroeste de A Coruña",
+     "nivel": "amarillo",
+     "tipo": "Tormentas",
+     "icono": "⛈️",
+     "inicio": "2026-08-27T00:00+02:00",
+     "fin": "2026-08-27T09:59+02:00",
+     "activo_ya": false
     }
    ]
   },
@@ -111,7 +138,7 @@
     "temperatura_actual": 17.1,
     "anomalia": -3.4,
     "etiqueta_anomalia": "Muy por debajo de la media",
-    "dias_consecutivos": 38,
+    "dias_consecutivos": 39,
     "signo_consecutivo": "negativa"
    }
   ],
@@ -119,28 +146,28 @@
    {
     "id": "coruna",
     "nombre": "A Coruña",
-    "sla_actual_cm": 7.0,
-    "desviacion_cm": 6.9,
+    "sla_actual_cm": 7.5,
+    "desviacion_cm": 7.4,
     "etiqueta_anomalia": "Por encima de la media",
-    "dias_consecutivos": 103
+    "dias_consecutivos": 104
    }
   ],
   "incendios_ccaa": {
    "nombre": "Galicia",
-   "focos_activos": 3,
-   "tiene_fuego": true,
-   "etiqueta": "Actividad baja",
+   "focos_activos": 0,
+   "tiene_fuego": false,
+   "etiqueta": "Sin detecciones recientes",
    "dias_consecutivos": 0,
    "dias_anio_actual": 5
   },
   "lluvias": {
-   "mm_ayer": 3.3,
-   "mm_semana": 4.4,
-   "mm_anual": 862.0,
+   "mm_ayer": 4.6,
+   "mm_semana": 9.0,
+   "mm_anual": 865.2,
    "media_anual_mm": 1050,
-   "media_hasta_hoy_mm": 676.0,
-   "anomalia_semana_pct": -78.2,
-   "anomalia_anual_pct": 27.5,
+   "media_hasta_hoy_mm": 678.9,
+   "anomalia_semana_pct": -55.4,
+   "anomalia_anual_pct": 27.4,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Lluvioso"
   },
@@ -166,8 +193,8 @@
    {
     "nombre": "A Coruña",
     "etiqueta": "Excelente",
-    "aqi_europeo": 33,
-    "pm25": 4.5,
+    "aqi_europeo": 30,
+    "pm25": 2.4,
     "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
@@ -177,7 +204,7 @@
    {
     "id": "estaca_de_bares",
     "nombre": "Estaca de Bares",
-    "temp": 20.92,
+    "temp": 20.7,
     "fecha": "2026-08-26",
     "max_anio": {
      "valor": 22.16,
@@ -195,7 +222,7 @@
    {
     "id": "villano_sisargas",
     "nombre": "Villano-Sisargas",
-    "temp": 19.89,
+    "temp": 19.62,
     "fecha": "2026-08-26",
     "max_anio": {
      "valor": 20.79,
@@ -214,25 +241,25 @@
  },
  "destacados": [
   {
+   "tipo": "aviso_naranja",
+   "icono": "🟠",
+   "nivel": "alto",
+   "texto": "Aviso naranja de AEMET en A Coruña por Lluvias (1 zona(s))",
+   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "prioridad": 80,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
    "tipo": "boya_anomalia_estaca_de_bares",
    "icono": "🌡️",
    "nivel": "medio",
-   "texto": "La boya de Estaca de Bares está +2.3 °C sobre lo normal para la época (20.92 °C) · 12.º día consecutivo",
+   "texto": "La boya de Estaca de Bares está +2.3 °C sobre lo normal para la época (20.7 °C) · 12.º día consecutivo",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 69,
    "racha_dias": 12,
    "nuevo": false
-  },
-  {
-   "tipo": "incendios",
-   "icono": "🔥",
-   "nivel": "medio",
-   "texto": "3 foco(s) de calor activos detectados por satélite en Galicia (últimas 48 h) · 5.º día consecutivo",
-   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
-   "prioridad": 56,
-   "racha_dias": 5,
-   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en A Coruña a 26/08/2026: La boya de Estaca de Bares está +2.3 °C sobre lo normal para la época (20.92 °C). 3 foco(s) de calor activos detectados por satélite en Galicia (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en A Coruña a 26/08/2026: Aviso naranja de AEMET en A Coruña por Lluvias (1 zona(s)). La boya de Estaca de Bares está +2.3 °C sobre lo normal para la época (20.7 °C). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
