@@ -3,8 +3,8 @@
  "provincia": "Zaragoza",
  "ccaa": "Aragón",
  "capital": "Zaragoza",
- "generado": "2026-09-02T13:44+02:00",
- "fecha_legible": "02/09/2026 a las 13:44",
+ "generado": "2026-09-02T20:05+02:00",
+ "fecha_legible": "02/09/2026 a las 20:05",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,11 +23,11 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 37.8,
-   "tmax_hoy": 33.3,
-   "tmin_hoy": 19.8,
+   "tmax_hoy": 34.7,
+   "tmin_hoy": 21.5,
    "dias_consecutivos": 0,
-   "noche_tropical": false,
-   "icc": 5,
+   "noche_tropical": true,
+   "icc": 15,
    "nivel": "Calor suave",
    "color": "#0066CC"
   },
@@ -45,9 +45,18 @@
   "avisos": {
    "total": 6,
    "rojos": 0,
-   "naranjas": 1,
-   "amarillos": 5,
+   "naranjas": 2,
+   "amarillos": 4,
    "items": [
+    {
+     "zona": "Cinco Villas de Zaragoza",
+     "nivel": "naranja",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-09-04T13:00+02:00",
+     "fin": "2026-09-04T20:59+02:00",
+     "activo_ya": false
+    },
     {
      "zona": "Ribera del Ebro de Zaragoza",
      "nivel": "naranja",
@@ -62,12 +71,12 @@
      "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
-     "inicio": "2026-09-04T13:00+02:00",
-     "fin": "2026-09-04T20:59+02:00",
+     "inicio": "2026-09-03T13:00+02:00",
+     "fin": "2026-09-03T20:59+02:00",
      "activo_ya": false
     },
     {
-     "zona": "Cinco Villas de Zaragoza",
+     "zona": "Ibérica zaragozana",
      "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
@@ -82,15 +91,6 @@
      "icono": "🌡️",
      "inicio": "2026-09-04T13:00+02:00",
      "fin": "2026-09-04T20:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Ibérica zaragozana",
-     "nivel": "amarillo",
-     "tipo": "Altas temperaturas",
-     "icono": "🌡️",
-     "inicio": "2026-09-03T13:00+02:00",
-     "fin": "2026-09-03T20:59+02:00",
      "activo_ya": false
     },
     {
@@ -106,20 +106,20 @@
   },
   "incendios_ccaa": {
    "nombre": "Aragón",
-   "focos_activos": 8,
+   "focos_activos": 32,
    "tiene_fuego": true,
-   "etiqueta": "Actividad moderada",
+   "etiqueta": "Actividad alta",
    "dias_consecutivos": 0,
    "dias_anio_actual": 14
   },
   "lluvias": {
    "mm_ayer": 0.0,
-   "mm_semana": 0.1,
+   "mm_semana": 0.0,
    "mm_anual": 279.7,
    "media_anual_mm": 315,
-   "media_hasta_hoy_mm": 208.8,
-   "anomalia_semana_pct": -98.3,
-   "anomalia_anual_pct": 34.0,
+   "media_hasta_hoy_mm": 209.7,
+   "anomalia_semana_pct": -100.0,
+   "anomalia_anual_pct": 33.4,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Lluvioso"
   },
@@ -137,10 +137,10 @@
    {
     "nombre": "Zaragoza",
     "etiqueta": "Buena",
-    "aqi_europeo": 32,
+    "aqi_europeo": 47,
     "pm25": 5.8,
     "contaminante_dominante": "O₃",
-    "supera_oms": false,
+    "supera_oms": true,
     "sahariano": false
    }
   ],
@@ -162,10 +162,20 @@
  },
  "destacados": [
   {
+   "tipo": "incendios",
+   "icono": "🔥",
+   "nivel": "alto",
+   "texto": "32 foco(s) de calor activos detectados por satélite en Aragón (últimas 48 h) · 35.º día consecutivo",
+   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
+   "prioridad": 84,
+   "racha_dias": 35,
+   "nuevo": false
+  },
+  {
    "tipo": "aviso_naranja",
    "icono": "🟠",
    "nivel": "alto",
-   "texto": "Aviso naranja de AEMET en Zaragoza por Altas temperaturas (1 zona(s))",
+   "texto": "Aviso naranja de AEMET en Zaragoza por Altas temperaturas (2 zona(s))",
    "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
    "prioridad": 80,
    "racha_dias": 1,
@@ -180,17 +190,7 @@
    "prioridad": 62,
    "racha_dias": 35,
    "nuevo": false
-  },
-  {
-   "tipo": "incendios",
-   "icono": "🔥",
-   "nivel": "medio",
-   "texto": "8 foco(s) de calor activos detectados por satélite en Aragón (últimas 48 h) · 35.º día consecutivo",
-   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
-   "prioridad": 56,
-   "racha_dias": 35,
-   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Zaragoza a 02/09/2026: Aviso naranja de AEMET en Zaragoza por Altas temperaturas (1 zona(s)). Zaragoza ya suma 74 días por encima de 32 °C este año (media 1991-2020: 50; media 1961-1990: 32). 8 foco(s) de calor activos detectados por satélite en Aragón (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Zaragoza a 02/09/2026: 32 foco(s) de calor activos detectados por satélite en Aragón (últimas 48 h). Aviso naranja de AEMET en Zaragoza por Altas temperaturas (2 zona(s)). Zaragoza ya suma 74 días por encima de 32 °C este año (media 1991-2020: 50; media 1961-1990: 32). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }

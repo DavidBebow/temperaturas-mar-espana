@@ -3,8 +3,8 @@
  "provincia": "Barcelona",
  "ccaa": "Cataluña",
  "capital": "Barcelona",
- "generado": "2026-09-02T13:44+02:00",
- "fecha_legible": "02/09/2026 a las 13:44",
+ "generado": "2026-09-02T20:05+02:00",
+ "fecha_legible": "02/09/2026 a las 20:05",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,11 +23,11 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 30.4,
-   "tmax_hoy": 28.8,
-   "tmin_hoy": 22.4,
+   "tmax_hoy": 30.0,
+   "tmin_hoy": 22.2,
    "dias_consecutivos": 0,
    "noche_tropical": true,
-   "icc": 25,
+   "icc": 30,
    "nivel": "Calor de verano",
    "color": "#44AA66"
   },
@@ -43,13 +43,22 @@
    "racha_ifc3": 11
   },
   "avisos": {
-   "total": 2,
+   "total": 3,
    "rojos": 0,
-   "naranjas": 0,
+   "naranjas": 1,
    "amarillos": 2,
    "items": [
     {
      "zona": "Depresión central de Barcelona",
+     "nivel": "naranja",
+     "tipo": "Altas temperaturas",
+     "icono": "🌡️",
+     "inicio": "2026-09-04T13:00+02:00",
+     "fin": "2026-09-04T20:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Prelitoral de Barcelona",
      "nivel": "amarillo",
      "tipo": "Altas temperaturas",
      "icono": "🌡️",
@@ -72,19 +81,19 @@
    {
     "id": "barcelona",
     "nombre": "Barcelona",
-    "temperatura_actual": 26.9,
-    "anomalia": 1.9,
-    "etiqueta_anomalia": "Por encima de la media",
-    "dias_consecutivos": 56,
+    "temperatura_actual": 27.2,
+    "anomalia": 2.2,
+    "etiqueta_anomalia": "Muy por encima de la media",
+    "dias_consecutivos": 57,
     "signo_consecutivo": "positiva"
    },
    {
     "id": "sitges",
     "nombre": "Sitges",
-    "temperatura_actual": 27.2,
-    "anomalia": 2.7,
+    "temperatura_actual": 27.5,
+    "anomalia": 3.0,
     "etiqueta_anomalia": "Muy por encima de la media",
-    "dias_consecutivos": 92,
+    "dias_consecutivos": 93,
     "signo_consecutivo": "positiva"
    }
   ],
@@ -108,20 +117,20 @@
   ],
   "incendios_ccaa": {
    "nombre": "Cataluña",
-   "focos_activos": 20,
+   "focos_activos": 26,
    "tiene_fuego": true,
-   "etiqueta": "Actividad moderada",
+   "etiqueta": "Actividad alta",
    "dias_consecutivos": 0,
    "dias_anio_actual": 12
   },
   "lluvias": {
    "mm_ayer": 0.0,
-   "mm_semana": 3.5,
+   "mm_semana": 0.2,
    "mm_anual": 406.9,
    "media_anual_mm": 580,
-   "media_hasta_hoy_mm": 384.5,
-   "anomalia_semana_pct": -68.5,
-   "anomalia_anual_pct": 5.8,
+   "media_hasta_hoy_mm": 386.1,
+   "anomalia_semana_pct": -98.2,
+   "anomalia_anual_pct": 5.4,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Normal"
   },
@@ -139,9 +148,9 @@
    {
     "nombre": "Barcelona",
     "etiqueta": "Buena",
-    "aqi_europeo": 26,
-    "pm25": 7.4,
-    "contaminante_dominante": "NO₂",
+    "aqi_europeo": 45,
+    "pm25": 9.1,
+    "contaminante_dominante": "O₃",
     "supera_oms": true,
     "sahariano": false
    }
@@ -169,7 +178,7 @@
    {
     "id": "barcelona",
     "nombre": "Barcelona (costera)",
-    "temp": 25.58,
+    "temp": 25.75,
     "fecha": "2026-09-02",
     "max_anio": {
      "valor": 28.4,
@@ -188,6 +197,36 @@
  },
  "destacados": [
   {
+   "tipo": "mar_anomalia_sitges",
+   "icono": "🌡️",
+   "nivel": "alto",
+   "texto": "El mar en Sitges está a 27.5 °C, +3.0 °C sobre la media histórica, 93 días seguidos por encima de la media · 2.º día consecutivo",
+   "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
+   "prioridad": 88,
+   "racha_dias": 2,
+   "nuevo": false
+  },
+  {
+   "tipo": "incendios",
+   "icono": "🔥",
+   "nivel": "alto",
+   "texto": "26 foco(s) de calor activos detectados por satélite en Cataluña (últimas 48 h) · 8.º día consecutivo",
+   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
+   "prioridad": 84,
+   "racha_dias": 8,
+   "nuevo": false
+  },
+  {
+   "tipo": "aviso_naranja",
+   "icono": "🟠",
+   "nivel": "alto",
+   "texto": "Aviso naranja de AEMET en Barcelona por Altas temperaturas (1 zona(s))",
+   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "prioridad": 80,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
    "tipo": "firma",
    "icono": "🔬",
    "nivel": "medio",
@@ -198,20 +237,10 @@
    "nuevo": true
   },
   {
-   "tipo": "mar_anomalia_sitges",
-   "icono": "🌡️",
-   "nivel": "medio",
-   "texto": "El mar en Sitges está a 27.2 °C, +2.7 °C sobre la media histórica, 92 días seguidos por encima de la media · 2.º día consecutivo",
-   "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
-   "prioridad": 70,
-   "racha_dias": 2,
-   "nuevo": false
-  },
-  {
    "tipo": "boya_anomalia_barcelona",
    "icono": "🌡️",
    "nivel": "medio",
-   "texto": "La boya de Barcelona (costera) está +2.8 °C sobre lo normal para la época (25.58 °C) · 13.º día consecutivo",
+   "texto": "La boya de Barcelona (costera) está +2.8 °C sobre lo normal para la época (25.75 °C) · 13.º día consecutivo",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 69,
    "racha_dias": 13,
@@ -226,27 +255,7 @@
    "prioridad": 64,
    "racha_dias": 8,
    "nuevo": false
-  },
-  {
-   "tipo": "dias32",
-   "icono": "🥵",
-   "nivel": "medio",
-   "texto": "Barcelona ya suma 17 días por encima de 32 °C este año (media 1991-2020: 1; media 1961-1990: 0) · 2.º día consecutivo",
-   "url": "https://calentamientoglobal.es/observatorio-climatico/",
-   "prioridad": 62,
-   "racha_dias": 2,
-   "nuevo": false
-  },
-  {
-   "tipo": "incendios",
-   "icono": "🔥",
-   "nivel": "medio",
-   "texto": "20 foco(s) de calor activos detectados por satélite en Cataluña (últimas 48 h) · 8.º día consecutivo",
-   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
-   "prioridad": 56,
-   "racha_dias": 8,
-   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Barcelona a 02/09/2026: El calor de hoy en Barcelona (29.8 °C) es 7× más probable por el cambio climático, que le añade +2.0 °C. El mar en Sitges está a 27.2 °C, +2.7 °C sobre la media histórica, 92 días seguidos por encima de la media. La boya de Barcelona (costera) está +2.8 °C sobre lo normal para la época (25.58 °C). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Barcelona a 02/09/2026: El mar en Sitges está a 27.5 °C, +3.0 °C sobre la media histórica, 93 días seguidos por encima de la media. 26 foco(s) de calor activos detectados por satélite en Cataluña (últimas 48 h). Aviso naranja de AEMET en Barcelona por Altas temperaturas (1 zona(s)). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
