@@ -3,7 +3,12 @@ name: firma-precalculo-climatologias
 # Se lanza A MANO (Run workflow). Solo hace falta una vez,
 # y repetirlo una vez al año (enero) para incorporar el año cerrado.
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      rehacer:
+        description: "Recalcular tambien las capitales que ya tienen JSON. Necesario al cambiar la rejilla de percentiles."
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -16,13 +21,32 @@ jobs:
       - name: Descargar el repositorio
         uses: actions/checkout@v4
 
+      # Los scripts viven en el repo privado. Antes este workflow usaba la copia
+      # de scripts/ del repo publico, que se quedaba atras cada vez que se
+      # tocaba clima-scripts.
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: clima-scripts
+
+      - name: Aislar los scripts del control de versiones
+        run: rm -rf clima-scripts/.git
+
       - name: Preparar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Precalcular climatologías (52 capitales, ERA5 1940–2025)
-        run: python scripts/firma_precalcular.py
+        run: |
+          if [ "${{ inputs.rehacer }}" = "true" ]; then
+            echo "Recalculo completo: se rehacen las 52 capitales."
+            python clima-scripts/firma_precalcular.py --rehacer
+          else
+            python clima-scripts/firma_precalcular.py
+          fi
 
       # Se ejecuta SIEMPRE (aunque el paso anterior falle por límite de tasa):
       # así el progreso parcial queda guardado y el próximo Run retoma donde quedó.
