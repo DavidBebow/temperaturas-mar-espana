@@ -96,8 +96,8 @@ function refreshMap(){ if(map){ map.invalidateSize(); recenter(); } }
 
 function initMap(){
   map=L.map('map',{minZoom:4,maxZoom:9}).setView([39.5,-3.5],5);
-  // Fondo principal: CARTO (limpio). Si sus teselas se bloquean/fallan, pasa solo a OpenStreetMap.
-  var carto=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO'});
+  // Fondo principal: callejero gris del IGN. Si sus teselas fallan, pasa a OpenStreetMap.
+  var carto=L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',{attribution:'&copy; Instituto Geográfico Nacional de España'});
   var osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'});
   var swapped=false;
   carto.on('tileerror',function(){ if(!swapped){swapped=true; try{map.removeLayer(carto);}catch(e){} osm.addTo(map); setTimeout(refreshMap,50);} });

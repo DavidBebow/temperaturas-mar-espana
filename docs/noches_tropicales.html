@@ -398,9 +398,9 @@
         ...{ center: VISTAS.peninsula.center, zoom: VISTAS.peninsula.zoom }
       });
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 18,
-        attribution: "&copy; OpenStreetMap &copy; CARTO · Datos: AEMET"
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 16,
+        attribution: "&copy; Esri · Datos: AEMET"
       }).addTo(map);
 
       // Conmutador Península / Canarias

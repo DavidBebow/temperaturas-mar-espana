@@ -117,8 +117,8 @@ function scnText(v){
 }
 
 const map=L.map('map',{minZoom:5,maxZoom:14,center:[39.33,-0.32],zoom:11,zoomControl:true});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
-  {subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO · Elevación: AWS Terrain Tiles',maxZoom:19}).addTo(map);
+L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',
+  {attribution:'&copy; Instituto Geográfico Nacional de España · Elevación: AWS Terrain Tiles',maxZoom:19}).addTo(map);
 map.createPane('labels'); map.getPane('labels').style.zIndex=650; map.getPane('labels').style.pointerEvents='none';
 
 // ---- capa de inundación: decodifica tiles de elevación (terrarium) en canvas ----
@@ -152,8 +152,8 @@ const FloodLayer = L.GridLayer.extend({
 const flood=new FloodLayer({opacity:0.85,maxNativeZoom:14,maxZoom:19,tileSize:256,pane:'overlayPane'}).addTo(map);
 
 // etiquetas de costa por encima del agua
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
-  {subdomains:'abcd',opacity:.95,maxZoom:19,pane:'labels'}).addTo(map);
+L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBaseTodo-nofondo&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+  {opacity:.95,maxZoom:19,pane:'labels'}).addTo(map);
 
 // ---- controles ----
 const slider=document.getElementById('slider');

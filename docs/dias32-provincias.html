@@ -188,8 +188,8 @@
   // ---------- mapa ----------
   function initMap(){
     map=L.map('map',{minZoom:4,maxZoom:8,scrollWheelZoom:false,attributionControl:true}).setView([40.0,-3.4],5);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
-      {subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO'}).addTo(map);
+    L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',
+      {attribution:'&copy; Instituto Geográfico Nacional de España'}).addTo(map);
     GEO.reduce(function(pr,url){return pr.catch(function(){return fetch(url).then(function(r){if(!r.ok)throw 0;return r.json();});});},Promise.reject())
       .then(function(gj){
         matchFeatures(gj);

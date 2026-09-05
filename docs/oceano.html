@@ -136,11 +136,11 @@ function init(hoy, hist, png){
     worldCopyJump:false, maxBounds:world, maxBoundsViscosity:1.0,
     attributionControl:true, center:[15,0], zoom:2
   });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
-    {attribution:'© OpenStreetMap, © CARTO · Datos: NOAA Coral Reef Watch',subdomains:'abcd',noWrap:true}).addTo(map);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    {attribution:'&copy; Esri · Datos: NOAA Coral Reef Watch',noWrap:true}).addTo(map);
   L.imageOverlay(png, world, {opacity:0.9}).addTo(map);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
-    {subdomains:'abcd',opacity:0.55,noWrap:true}).addTo(map);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+    {opacity:0.55,noWrap:true}).addTo(map);
   map.fitBounds(world, {padding:[6,6]});
 
   const g=hoy.global;

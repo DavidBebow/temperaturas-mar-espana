@@ -133,8 +133,8 @@ function colorAnom(a){
 }
 
 const map=L.map("map",{zoomControl:true,scrollWheelZoom:false}).setView([40,-3.4],6);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
-  attribution:'© OpenStreetMap · © CARTO · Caudal: GloFAS / Copernicus vía Open-Meteo (modelizado)',
+L.tileLayer("https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}",{
+  attribution:'&copy; Instituto Geográfico Nacional de España · Caudal: GloFAS / Copernicus vía Open-Meteo (modelizado)',
   maxZoom:18
 }).addTo(map);
 map.on("focus",()=>map.scrollWheelZoom.enable());

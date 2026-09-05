@@ -174,8 +174,8 @@ const map=L.map('map',{zoomSnap:.25,minZoom:5,maxZoom:9,attributionControl:true}
   .fitBounds([[35.7,-9.6],[43.95,3.5]]);
 map.attributionControl.setPrefix(false);
 map.attributionControl.addAttribution('Datos: <a href="https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/boletin-hidrologico.html" target="_blank" rel="noopener">Boletín Hidrológico Semanal · MITECO</a>');
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
-  {subdomains:'abcd',opacity:.55}).addTo(map);
+L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',
+  {opacity:.55,attribution:'&copy; Instituto Geográfico Nacional de España'}).addTo(map);
 
 let DATA=null, porNombre={}, capa=null, seleccion=null;
 

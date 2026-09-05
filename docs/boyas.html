@@ -398,10 +398,8 @@ Promise.all([
   nH=D.meses.length;IX=nH;tot=nH+1+D.meses_futuro.length;idx=IX;
 
   map=L.map('map',{minZoom:4,maxZoom:11,zoomSnap:.25,scrollWheelZoom:true,center:[39.6,-3.5],zoom:5.25});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
-    {subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO · Datos: Puertos del Estado vía Copernicus Marine'}).addTo(map);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
-    {subdomains:'abcd',opacity:.6,pane:'markerPane'}).addTo(map);
+  L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',
+    {attribution:'&copy; Instituto Geográfico Nacional de España · Datos: Puertos del Estado vía Copernicus Marine'}).addTo(map);
 
   Object.keys(D.boyas).forEach(function(id){var b=D.boyas[id];
     mk[id]=L.marker([b.lat,b.lon],{icon:markIcon(b,val(b,idx),5),riseOnHover:true}).addTo(map);

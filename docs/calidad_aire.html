@@ -257,9 +257,9 @@
   };
 
   const mapa = L.map('ca-mapa', { center:[40.2,-3.5], zoom:5, zoomControl:true, scrollWheelZoom:true });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:'© OpenStreetMap · © CARTO · Datos: Open-Meteo · CAMS Copernicus · Incendios: NASA FIRMS',
-    subdomains:'abcd', maxZoom:12
+  L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}', {
+    attribution:'&copy; Instituto Geográfico Nacional de España · Datos: Open-Meteo · CAMS Copernicus · Focos térmicos: NASA FIRMS',
+    maxZoom:12
   }).addTo(mapa);
 
   const txtColor = c => (c === '#FFCC44') ? '#5a4400' : '#ffffff';
