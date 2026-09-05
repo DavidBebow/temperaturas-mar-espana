@@ -223,7 +223,7 @@
     if (!datos.avisos.length) $('vacio').hidden = false;
 
     const mapa = L.map('mapa', {zoomControl:true, attributionControl:false, scrollWheelZoom:false});
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {maxZoom:10}).addTo(mapa);
+    L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}', {maxZoom:10}).addTo(mapa);
     capa = L.geoJSON(geo, {
       style: estilo,
       onEachFeature: (f, l) => {
