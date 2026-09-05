@@ -3,8 +3,8 @@
  "provincia": "A Coruña",
  "ccaa": "Galicia",
  "capital": "A Coruña",
- "generado": "2026-09-05T12:56+02:00",
- "fecha_legible": "05/09/2026 a las 12:56",
+ "generado": "2026-09-05T18:57+02:00",
+ "fecha_legible": "05/09/2026 a las 18:57",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,13 +23,13 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 26.3,
-   "tmax_hoy": 22.8,
-   "tmin_hoy": 15.9,
-   "dias_consecutivos": 0,
+   "tmax_hoy": 31.1,
+   "tmin_hoy": 17.7,
+   "dias_consecutivos": 1,
    "noche_tropical": false,
-   "icc": 2,
-   "nivel": "Calor suave",
-   "color": "#0066CC"
+   "icc": 50,
+   "nivel": "Canícula",
+   "color": "#FFCC44"
   },
   "firma_climatica": {
    "nombre": "A Coruña",
@@ -55,7 +55,7 @@
      "icono": "🌡️",
      "inicio": "2026-09-05T13:00+02:00",
      "fin": "2026-09-05T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Noroeste de A Coruña",
@@ -64,7 +64,7 @@
      "icono": "🌡️",
      "inicio": "2026-09-05T13:00+02:00",
      "fin": "2026-09-05T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Suroeste de A Coruña",
@@ -73,7 +73,7 @@
      "icono": "🌡️",
      "inicio": "2026-09-05T13:00+02:00",
      "fin": "2026-09-05T20:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     }
    ]
   },
@@ -81,10 +81,10 @@
    {
     "id": "coruna",
     "nombre": "A Coruña",
-    "temperatura_actual": 18.7,
-    "anomalia": -1.3,
-    "etiqueta_anomalia": "Por debajo de la media",
-    "dias_consecutivos": 48,
+    "temperatura_actual": 19.2,
+    "anomalia": -0.8,
+    "etiqueta_anomalia": "Ligeramente frío",
+    "dias_consecutivos": 49,
     "signo_consecutivo": "negativa"
    }
   ],
@@ -100,20 +100,20 @@
   ],
   "incendios_ccaa": {
    "nombre": "Galicia",
-   "focos_activos": 0,
-   "tiene_fuego": false,
-   "etiqueta": "Sin detecciones recientes",
+   "focos_activos": 2,
+   "tiene_fuego": true,
+   "etiqueta": "Actividad baja",
    "dias_consecutivos": 0,
    "dias_anio_actual": 5
   },
   "lluvias": {
    "mm_ayer": 0.0,
-   "mm_semana": 11.8,
+   "mm_semana": 3.2,
    "mm_anual": 903.4,
    "media_anual_mm": 1050,
-   "media_hasta_hoy_mm": 704.8,
-   "anomalia_semana_pct": -41.6,
-   "anomalia_anual_pct": 28.2,
+   "media_hasta_hoy_mm": 707.7,
+   "anomalia_semana_pct": -84.2,
+   "anomalia_anual_pct": 27.7,
    "etiqueta_semana": "Muy seco",
    "etiqueta_anual": "Lluvioso"
   },
@@ -139,10 +139,10 @@
    {
     "nombre": "A Coruña",
     "etiqueta": "Buena",
-    "aqi_europeo": 23,
-    "pm25": 5.4,
+    "aqi_europeo": 50,
+    "pm25": 11.7,
     "contaminante_dominante": "O₃",
-    "supera_oms": false,
+    "supera_oms": true,
     "sahariano": false
    }
   ],
@@ -155,7 +155,7 @@
    {
     "id": "estaca_de_bares",
     "nombre": "Estaca de Bares",
-    "temp": 21.31,
+    "temp": 21.26,
     "fecha": "2026-09-05",
     "max_anio": {
      "valor": 21.93,
@@ -173,7 +173,7 @@
    {
     "id": "villano_sisargas",
     "nombre": "Villano-Sisargas",
-    "temp": 19.75,
+    "temp": 19.79,
     "fecha": "2026-09-05",
     "max_anio": {
      "valor": 19.92,
@@ -195,7 +195,7 @@
    "tipo": "boya_anomalia_estaca_de_bares",
    "icono": "🌡️",
    "nivel": "medio",
-   "texto": "La boya de Estaca de Bares está +2.3 °C sobre lo normal para la época (21.31 °C) · 22.º día consecutivo",
+   "texto": "La boya de Estaca de Bares está +2.3 °C sobre lo normal para la época (21.26 °C) · 22.º día consecutivo",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 69,
    "racha_dias": 22,
@@ -210,7 +210,27 @@
    "prioridad": 62,
    "racha_dias": 5,
    "nuevo": false
+  },
+  {
+   "tipo": "canicula",
+   "icono": "☀️",
+   "nivel": "medio",
+   "texto": "Calor canicular en A Coruña: índice 50/100, máxima de 31.1 °C",
+   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
+   "prioridad": 58,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
+   "tipo": "incendios",
+   "icono": "🔥",
+   "nivel": "medio",
+   "texto": "2 foco(s) de calor activos detectados por satélite en Galicia (últimas 48 h)",
+   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
+   "prioridad": 56,
+   "racha_dias": 1,
+   "nuevo": true
   }
  ],
- "texto_seo": "Situación climática en A Coruña a 05/09/2026: La boya de Estaca de Bares está +2.3 °C sobre lo normal para la época (21.31 °C). A Coruña ya suma 1 días por encima de 32 °C este año (media 1991-2020: 0; media 1961-1990: 0). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en A Coruña a 05/09/2026: La boya de Estaca de Bares está +2.3 °C sobre lo normal para la época (21.26 °C). A Coruña ya suma 1 días por encima de 32 °C este año (media 1991-2020: 0; media 1961-1990: 0). Calor canicular en A Coruña: índice 50/100, máxima de 31.1 °C. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
