@@ -3,14 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Firma Climática · ¿Cuánto cambio climático hay en el calor de hoy?</title>
+<title>Desplazamiento climático observado · ¿Cada cuánto se daba un día así?</title>
 <style>
   :root{
     --ink:#1a1410; --soft:#7a7168; --line:#ece7df; --bg2:#faf8f4; --card:#fff;
     --accent:#e0531f; --accent2:#b23410;
-    /* escala del índice, tonos suaves para fondo claro */
-    --c-neg:#3b82f6; --c-0:#9aa3ad; --c-1:#f6c445; --c-2:#f59e2c;
-    --c-3:#ef7d22; --c-4:#e0531f; --c-5:#b91c1c;
+    --alerta:#b91c1c; --alerta-bg:#fdeceb;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:#fff;color:var(--ink);
@@ -32,10 +30,9 @@
   .kpi{background:#fff;border:1px solid var(--line);border-radius:13px;padding:10px 15px;font-size:13px;color:var(--soft)}
   .kpi b{color:var(--ink);font-size:16px;display:block;margin-top:1px}
 
-  /* Leyenda */
-  .leyenda{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;
-    margin:16px 0 6px;font-size:10.5px;text-align:center}
-  .leyenda div{flex:1;padding:7px 3px;font-weight:700;color:#fff;line-height:1.25}
+  /* Nota de lectura de la tabla */
+  .nota-metodo{font-size:13.5px;color:var(--soft);margin:16px 0 2px;line-height:1.55}
+  .nota-metodo b{color:var(--ink);font-weight:600}
 
   /* Buscador */
   .search{position:relative;max-width:440px;margin:20px auto 4px}
@@ -56,9 +53,9 @@
   td .rank{color:var(--soft);font-size:13px}
   td .cap{font-weight:700}
   td .prov{color:var(--soft);font-size:12px;font-weight:400}
-  .chip{display:inline-block;min-width:40px;text-align:center;padding:4px 10px;border-radius:9px;
-    font-weight:800;font-size:13px;color:#fff}
-  .racha{color:var(--accent);font-weight:700;font-size:12px}
+  .sinprec{display:inline-block;padding:3px 9px;border-radius:8px;font-weight:700;font-size:12.5px;
+    background:var(--alerta-bg);color:var(--alerta);white-space:nowrap}
+  td.antes{font-weight:600}
   .muted{color:var(--soft)}
 
   .src{font-size:12px;color:var(--soft);text-align:center;margin-top:26px;
@@ -75,22 +72,15 @@
 <body>
 <div class="wrap">
   <div class="eyebrow">Observatorio climático · en directo</div>
-  <h1>Firma Climática</h1>
-  <p class="sub">¿Cuánto cambio climático hay en el calor de hoy? El índice diario, capital a capital.</p>
+  <h1>¿Cada cuánto se daba un día así?</h1>
+  <p class="sub">La máxima de hoy, capital a capital, comparada con el clima de 1951-1980 y con el de 1996-2025. Sin modelos ni escenarios: sólo lo que se midió.</p>
 
   <div id="estado">Cargando el dato del día…</div>
 
   <div id="contenido" style="display:none">
     <div class="titular" id="titular"></div>
 
-    <div class="leyenda">
-      <div style="background:var(--c-neg)">−5…−1<br>menos probable</div>
-      <div style="background:var(--c-0)">0<br>sin señal</div>
-      <div style="background:var(--c-1)">+1</div>
-      <div style="background:var(--c-2)">+2</div>
-      <div style="background:var(--c-3)">+3<br>señal fuerte</div>
-      <div style="background:var(--c-4)">+4</div>
-      <div style="background:var(--c-5)">+5<br>excepcional</div>
+    <p class="nota-metodo">Cada fila dice cuántos años pasaban, de media, entre dos días tan cálidos como el de hoy <b>por estas fechas</b>. A la izquierda, en el clima de 1951-1980. A la derecha, en el de 1996-2025.</p>
     </div>
 
     <div class="search">
@@ -101,82 +91,116 @@
       <table>
         <thead><tr>
           <th>#</th><th>Capital</th>
-          <th class="num">Tmáx</th><th class="num">Índice</th>
-          <th class="num hide">× más probable</th><th class="num">°C añadidos</th>
-          <th class="num hide">Racha ≥+3</th>
+          <th class="num">Máxima</th>
+          <th class="num">En 1951-1980</th>
+          <th class="num">En 1996-2025</th>
+          <th class="num hide">Desplazamiento</th>
         </tr></thead>
         <tbody id="cuerpo"></tbody>
       </table>
     </div>
 
     <p class="src">
-      <b>Método:</b> índice de desplazamiento climático observado. Compara la probabilidad de la máxima de
-      hoy en el clima actual (1996–2025) frente al de antes (1951–1980), con datos ERA5 para cada capital y
-      día del calendario. El índice es log₂ de la razón de probabilidades, acotado a ±5. «°C añadidos»: un
-      día igual de raro en el clima de antes habría sido esos grados más fresco. No es una atribución formal
-      con modelos: es estadística sobre datos observados, con metodología abierta.<br>
-      Datos: ERA5 (Copernicus) vía Open-Meteo · Licencia CC-BY 4.0 · <b>Cita: calentamientoglobal.es</b>
+      <b>Método.</b> Para cada capital y cada día del calendario se toman todas las máximas observadas
+      en una ventana de ±10 días, en dos periodos: 1951-1980 y 1996-2025. Son unas 630 observaciones por
+      periodo. La máxima prevista para hoy se sitúa dentro de cada una de esas dos distribuciones y se
+      traduce a cada cuánto se daba un día así <b>por estas fechas</b>. No hay modelos, ni escenarios, ni
+      contrafactual, ni ajuste de una curva teórica: sólo el recuento de lo que se midió.<br>
+      <b>Límites, que también son parte del dato.</b> Con 630 observaciones, la serie no distingue nada
+      más raro que un día cada 30 años: por encima de eso decimos «menos de 1 cada 30 años», y si la
+      máxima supera todo lo observado entonces, «no se registró». El «desplazamiento» son los grados que
+      habría que quitarle al día de hoy para que fuese igual de raro en el clima de 1951-1980; cuando no
+      hay precedente se da como cota inferior. Y ERA5 es un reanálisis en rejilla, no un termómetro: es la
+      misma fuente en los dos periodos, pero el número no es la lectura del observatorio de la ciudad.<br>
+      <b>Antes aquí se publicaba</b> un multiplicador («N veces más probable») y un índice de −5 a +5.
+      Se retiraron el 5 de septiembre de 2026: el intervalo de confianza del multiplicador abarcaba
+      órdenes de magnitud y el índice imitaba una escala ajena.<br>
+      Datos: ERA5 (Copernicus) vía Open-Meteo. Los cálculos, los puestos y los titulares son elaboración
+      propia, reutilizables con CC BY 4.0 citando a <b>calentamientoglobal.es</b>; los datos de origen
+      conservan la licencia de su organismo.
       · <span id="actualizado"></span>
     </p>
   </div>
 </div>
 
 <script>
-const COLOR = ifc => {
-  if (ifc <= -1) return "var(--c-neg)";
-  return {0:"var(--c-0)",1:"var(--c-1)",2:"var(--c-2)",3:"var(--c-3)",4:"var(--c-4)",5:"var(--c-5)"}[ifc] || "var(--c-0)";
-};
-const chip = ifc => `<span class="chip" style="background:${COLOR(ifc)}">${ifc>0?"+"+ifc:ifc}</span>`;
+var CIUDADES = [];
 
-let CIUDADES = [];
-function pinta(filtro=""){
-  const f = filtro.trim().toLowerCase();
-  document.getElementById("cuerpo").innerHTML = CIUDADES
-    .filter(c => !f || c.nombre.toLowerCase().includes(f) || c.provincia.toLowerCase().includes(f))
-    .map((c,i) => `<tr>
-      <td class="rank">${i+1}</td>
-      <td><span class="cap">${c.nombre}</span> <span class="prov">${c.provincia}</span></td>
-      <td class="num">${c.tmax.toFixed(1)}°</td>
-      <td class="num">${chip(c.ifc)}</td>
-      <td class="num hide">${c.ifc<=0 ? '<span class="muted">—</span>' : "×"+c.pr.toFixed(1)+(c.pr_tope?"+":"")}</td>
-      <td class="num">${c.delta>0?"+":""}${c.delta.toFixed(1)}</td>
-      <td class="num hide">${c.racha_ifc3>=2 ? `<span class="racha">${c.racha_ifc3} días</span>` : '<span class="muted">—</span>'}</td>
-    </tr>`).join("");
+function esc(x){ return String(x).replace(/[&<>]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+function num(x, dec){ return Number(x).toLocaleString("es-ES", {minimumFractionDigits:dec, maximumFractionDigits:dec}); }
+
+// Cada cuanto se daba un dia asi. null significa "mas raro de lo que la serie
+// distingue"; sin_precedente, que no ocurrio ni una vez en el periodo.
+function retorno(anios, tope, sinPrecedente){
+  if (sinPrecedente) return "<span class=\"sinprec\">no se registró</span>";
+  if (anios === null || anios === undefined) return "menos de 1 cada " + num(tope,0) + " años";
+  if (anios < 1.05) return "casi todos los años";
+  return "1 cada " + num(anios,1) + " años";
 }
 
-fetch("firma_climatica.json?_="+Date.now())
-  .then(r => r.json())
-  .then(d => {
-    CIUDADES = d.ciudades;
-    const r = d.resumen, top = d.ciudades[0];
-    const fecha = new Date(d.fecha+"T12:00:00")
-      .toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
-    let frase;
-    if (r.ifc_max >= 3)
-      frase = `El calor de hoy en <em>${top.nombre}</em> es <em>×${top.pr.toFixed(0)}${top.pr_tope?"+":""} veces más probable</em> por el cambio climático, con <em>${top.delta>0?"+":""}${top.delta.toFixed(1)} °C añadidos</em>.`;
-    else if (r.ifc_max >= 1)
-      frase = `Hoy la firma del cambio climático es moderada. El máximo es <em>${top.nombre}</em>, con índice ${top.ifc>0?"+"+top.ifc:top.ifc}.`;
-    else
-      frase = `Hoy el cambio climático no deja firma detectable en las temperaturas: un día dentro de lo normal.`;
-    document.getElementById("titular").innerHTML = `
-      <div class="day">${fecha}</div>
-      <div class="big">${frase}</div>
-      <div class="kpis">
-        <div class="kpi">Capitales con señal fuerte (≥+3)<b>${r.capitales_ifc3}</b></div>
-        <div class="kpi">Índice medio nacional<b>${r.ifc_medio>0?"+"+r.ifc_medio:r.ifc_medio}</b></div>
-        <div class="kpi">Máximo °C añadidos<b>${r.delta_max>0?"+":""}${r.delta_max} °C</b></div>
-      </div>`;
-    document.getElementById("actualizado").textContent = "Actualizado: "+d.generado_utc+" UTC";
+// Primero lo que no tiene precedente; despues, lo que mas raro era antes.
+function orden(a, b){
+  var ra = a.sin_precedente ? Infinity : (a.retorno_antes === null ? a.tope_anios : a.retorno_antes);
+  var rb = b.sin_precedente ? Infinity : (b.retorno_antes === null ? b.tope_anios : b.retorno_antes);
+  if (rb !== ra) return rb - ra;
+  return (b.delta || 0) - (a.delta || 0);
+}
+
+function pinta(filtro){
+  var f = (filtro || "").trim().toLowerCase();
+  document.getElementById("cuerpo").innerHTML = CIUDADES
+    .filter(function(c){ return !f || c.nombre.toLowerCase().indexOf(f) >= 0 || c.provincia.toLowerCase().indexOf(f) >= 0; })
+    .map(function(c, i){
+      var d = (c.delta > 0 ? "+" : "") + num(c.delta,1) + " °C";
+      if (c.delta_es_cota) d = "al menos " + d;
+      return "<tr>" +
+        "<td class=\"rank\">" + (i+1) + "</td>" +
+        "<td><span class=\"cap\">" + esc(c.nombre) + "</span> <span class=\"prov\">" + esc(c.provincia) + "</span></td>" +
+        "<td class=\"num\">" + num(c.tmax,1) + "°</td>" +
+        "<td class=\"num antes\">" + retorno(c.retorno_antes, c.tope_anios, c.sin_precedente) + "</td>" +
+        "<td class=\"num\">" + retorno(c.retorno_ahora, c.tope_anios, false) + "</td>" +
+        "<td class=\"num hide\">" + d + "</td>" +
+      "</tr>";
+    }).join("");
+}
+
+fetch("firma_climatica.json?_=" + Date.now())
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    CIUDADES = (d.ciudades || []).slice().sort(orden);
+    if (!CIUDADES.length) throw new Error("sin ciudades");
+    var fecha = new Date(d.fecha + "T12:00:00").toLocaleDateString("es-ES", {weekday:"long", day:"numeric", month:"long"});
+    var top = CIUDADES[0];
+    var sinPrec = CIUDADES.filter(function(c){ return c.sin_precedente; });
+    var frase;
+    if (top.sin_precedente) {
+      frase = "En <em>" + esc(top.nombre) + "</em> se esperan <em>" + num(top.tmax,1) + " °C</em>. " +
+              "Entre 1951 y 1980 <em>no se registró ningún día así</em> por estas fechas: el máximo fue " +
+              num(top.max_antes,1) + " °C.";
+    } else {
+      frase = "Una máxima de <em>" + num(top.tmax,1) + " °C</em> se daba en <em>" + esc(top.nombre) + "</em> " +
+              retorno(top.retorno_antes, top.tope_anios, false) + " en el clima de 1951-1980. " +
+              "En el de ahora, <em>" + retorno(top.retorno_ahora, top.tope_anios, false) + "</em>.";
+    }
+    var maxDelta = CIUDADES.reduce(function(m, c){ return Math.max(m, c.delta || 0); }, 0);
+    document.getElementById("titular").innerHTML =
+      "<div class=\"day\">" + fecha + "</div>" +
+      "<div class=\"big\">" + frase + "</div>" +
+      "<div class=\"kpis\">" +
+        "<div class=\"kpi\">Capitales sin precedente en 1951-1980<b>" + sinPrec.length + " de " + CIUDADES.length + "</b></div>" +
+        "<div class=\"kpi\">Mayor desplazamiento del día<b>+" + num(maxDelta,1) + " °C</b></div>" +
+        "<div class=\"kpi\">Hasta donde llega la serie<b>" + num(top.tope_anios,0) + " años</b></div>" +
+      "</div>";
+    document.getElementById("actualizado").textContent = "Actualizado: " + d.generado_utc + " UTC";
     document.getElementById("estado").style.display = "none";
     document.getElementById("contenido").style.display = "block";
     pinta();
   })
-  .catch(() => {
+  .catch(function(){
     document.getElementById("estado").innerHTML =
-      "Aún no hay datos. Ejecuta el workflow <b>firma-climatica-diaria</b> en GitHub Actions.";
+      "Aún no hay datos del día. El cálculo corre dos veces al día; vuelve en un rato.";
   });
 
-document.getElementById("buscador").addEventListener("input", e => pinta(e.target.value));
-</script>
+document.getElementById("buscador").addEventListener("input", function(e){ pinta(e.target.value); });</script>
 </body>
 </html>
