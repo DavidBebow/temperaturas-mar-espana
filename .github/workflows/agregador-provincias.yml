@@ -50,6 +50,18 @@ jobs:
           git pull --rebase origin main
           git push
 
+      # Bloque SSR de las 52 fichas provinciales (metas cg_ssr_html / cg_ssr_jsonld).
+      # Sin este paso los bloques se quedan congelados en la fecha en que se
+      # escribieron a mano: hasta el 5 de septiembre de 2026 seguian publicando
+      # el multiplicador de la firma climatica, retirado ese dia.
+      - name: Publicar las fichas provinciales en WordPress
+        env:
+          DOCS_DIR: ${{ github.workspace }}/docs
+          WP_URL: https://calentamientoglobal.es
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+        run: python privado/publicar_fichas_wp.py
+
       - name: Publicar en WordPress (opcional)
         if: ${{ vars.WP_PUBLICAR == 'true' }}
         env:
