@@ -98,8 +98,8 @@ document.getElementById('legbar').innerHTML=COLS.map(c=>'<i style="background:'+
 
 let DATA, PER, step=0, layer;
 const map=L.map('map',{minZoom:2,maxZoom:6,zoomSnap:.25,worldCopyJump:false,maxBounds:[[-85,-180],[85,180]],maxBoundsViscosity:1,center:[26,12],zoom:2.2});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',noWrap:true,attribution:'© OpenStreetMap, © CARTO · Datos: World Bank CCKP'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',noWrap:true,opacity:.6,pane:'markerPane'}).addTo(map);
+L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',{subdomains:'abcd',noWrap:true,attribution:'© Instituto Geográfico Nacional de España · Datos: World Bank CCKP'}).addTo(map);
+L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBaseTodo-nofondo&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',{subdomains:'abcd',noWrap:true,opacity:.6,pane:'markerPane'}).addTo(map);
 
 Promise.all([
   fetch('desertificacion.json?_='+Date.now()).then(r=>r.json()),
