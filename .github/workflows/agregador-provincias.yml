@@ -59,7 +59,9 @@ jobs:
           DOCS_DIR: ${{ github.workspace }}/docs
           WP_URL: https://calentamientoglobal.es
           WP_USER: ${{ secrets.WP_USER }}
-          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          # La contrasena de aplicacion vigente vive en WP_APP_AGOSTO;
+          # WP_APP_PASSWORD es la antigua y devuelve 401.
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
         run: python privado/publicar_fichas_wp.py
 
       - name: Publicar en WordPress (opcional)
@@ -68,7 +70,9 @@ jobs:
           DOCS_DIR: ${{ github.workspace }}/docs
           WP_URL: https://calentamientoglobal.es
           WP_USER: ${{ secrets.WP_USER }}
-          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          # La contrasena de aplicacion vigente vive en WP_APP_AGOSTO;
+          # WP_APP_PASSWORD es la antigua y devuelve 401.
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
         run: |
           pip install requests
           python privado/publicar_wordpress.py
