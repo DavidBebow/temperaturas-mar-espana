@@ -1,0 +1,63 @@
+name: Publicar resúmenes en WordPress
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+#
+# Mismo patrón que embalses, superficie, firma y el agregador provincial: el
+# flujo corre AQUI, en el publico, donde ya estan los docs/*.json; el .py vive
+# en clima-scripts (privado) y se trae en un checkout temporal del runner. La
+# logica nunca se copia a este repo.
+#
+# Que hace: reescribe los metas cg_ssr_html / cg_ssr_jsonld de 60 paginas
+# (1 portada + 46 embalses + 13 herramientas) con las cifras del dia. Sin el,
+# esos bloques se quedan con la fecha en que se escribieron a mano —el 28 de
+# agosto— y siguen diciendo "actualizado" encima de cifras viejas.
+#
+# No commitea nada: escribe directamente en WordPress por REST.
+
+on:
+  schedule:
+    # Despues de los flujos de datos de la manana y de la tarde (UTC).
+    - cron: '0 8 * * *'
+    - cron: '0 16 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/publicar_resumenes.yml'
+
+concurrency:
+  group: publicar-resumenes
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Publicar los bloques
+        env:
+          CG_DOCS: ${{ github.workspace }}/docs
+          WP_URL: https://calentamientoglobal.es
+          WP_USER: ${{ secrets.WP_USER }}
+          # La contrasena de aplicacion vigente vive en WP_APP_AGOSTO;
+          # WP_APP_PASSWORD es la antigua y devuelve 401.
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
+        run: python privado/publicar_resumenes_wp.py
+
+# El script aborta si un JSON tiene mas de 48 horas, asi que si un flujo de
+# datos falla no publicara cifras viejas haciendolas pasar por las de hoy.
