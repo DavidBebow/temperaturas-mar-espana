@@ -1,468 +1,459 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lluvias en España — Por Provincia</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lluvias en España — Por provincia</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; background: #0a1218; }
-  #mapa { width: 100%; height: 530px; background: #0a1218; }
-
-  /* ── CABECERA ── */
-  #cabecera {
-    background: #060e14;
-    color: white;
-    padding: 10px 16px;
-    display: flex; justify-content: space-between;
-    align-items: center; flex-wrap: wrap; gap: 8px;
-    border-bottom: 1px solid #1a3040;
-  }
-  #cabecera h2 { font-size: 14px; font-weight: 500; color: #e0f0ff; }
-  #info-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-  #resumen    { font-size: 11px; color: #5a8aaa; }
-  #ultima-act { font-size: 11px; color: #4a6a8a; }
-
-  /* ── CONTROLES ── */
-  #controles {
-    background: #080c12;
-    padding: 8px 16px;
-    display: flex; flex-wrap: wrap; gap: 8px;
-    align-items: center;
-    border-bottom: 1px solid #1a3040;
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#06101a;
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#dceaf6;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;
   }
 
-  /* Selector de período */
-  .btn-periodo {
-    padding: 5px 14px;
-    border-radius: 20px;
-    border: 1px solid #1e3a5a;
-    background: #0d1828;
-    color: #7a9aaa;
-    font-size: 11px; font-weight: 600;
-    cursor: pointer;
-    transition: all .2s;
+  /* ---------- CABECERA ---------- */
+  #cabecera{
+    position:relative;z-index:500;
+    background:linear-gradient(180deg,#08192a 0%,#061220 100%);
+    padding:13px 20px;display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:8px;border-bottom:1px solid #12304a;
   }
-  .btn-periodo:hover  { border-color: #3a6080; color: #c0dff0; }
-  .btn-periodo.activo { background: #1a4060; border-color: #4a90c0; color: #e0f4ff; }
+  #cabecera h2{
+    font-size:15px;font-weight:600;letter-spacing:-.01em;color:#eaf5ff;
+    display:flex;align-items:center;gap:9px;
+  }
+  #cabecera h2 .dot{
+    width:9px;height:9px;border-radius:50%;background:#3fa7e8;flex-shrink:0;
+    box-shadow:0 0 0 0 rgba(63,167,232,.6);animation:pulso 2.2s infinite;
+  }
+  @keyframes pulso{
+    0%{box-shadow:0 0 0 0 rgba(63,167,232,.55)}
+    70%{box-shadow:0 0 0 9px rgba(63,167,232,0)}
+    100%{box-shadow:0 0 0 0 rgba(63,167,232,0)}
+  }
+  #info-derecha{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
+  #resumen{font-size:12px;color:#6f8ba3}
+  #resumen b{color:#5cbcf0;font-weight:700}
+  #ultima-act{font-size:11px;color:#4f6c85}
 
-  /* Toggle litros / anomalía */
-  #toggle-wrap {
-    margin-left: auto;
-    display: flex; align-items: center; gap: 10px;
-    font-size: 11px; color: #5a8aaa;
+  /* ---------- CONTROLES ---------- */
+  #controles{
+    position:relative;z-index:500;background:#081827;border-bottom:1px solid #12304a;
+    padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
   }
-  .toggle-btn {
-    padding: 5px 14px; border-radius: 20px;
-    border: 1px solid #1e3a5a; background: #0d1828;
-    color: #7a9aaa; font-size: 11px; font-weight: 600;
-    cursor: pointer; transition: all .2s;
+  .grupo{display:flex;align-items:center;gap:7px}
+  .grupo>.et{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:#4f6c85;
+    margin-right:2px}
+  .pill{
+    background:#0d2437;border:1px solid #1b3d5c;color:#9fbdd6;
+    padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;
+    transition:background .15s,color .15s,border-color .15s;font-family:inherit;
   }
-  .toggle-btn:hover  { border-color: #3a6080; color: #c0dff0; }
-  .toggle-btn.activo { background: #1a3050; border-color: #4a80b0; color: #e0f4ff; }
+  .pill:hover{background:#123049;color:#dceaf6}
+  .pill.activo{background:#1f6ea8;border-color:#2f8fd0;color:#fff}
 
-  /* ── LEYENDA ── */
-  #leyenda {
-    background: #080c12;
-    padding: 7px 16px;
-    display: flex; flex-wrap: wrap; gap: 10px;
-    align-items: center;
-    border-bottom: 1px solid #1a3040;
-    font-size: 11px; color: #7a9aaa;
-    transition: opacity .3s;
+  /* ---------- LEYENDA ---------- */
+  #leyenda{
+    position:relative;z-index:500;background:#06121f;border-bottom:1px solid #12304a;
+    padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    font-size:11.5px;color:#7e9bb4;
   }
-  #leyenda strong { color: #9abccc; font-weight: 500; }
-  .ley-item { display: flex; align-items: center; gap: 4px; }
-  .ley-dot  { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+  #leyenda strong{color:#a8c4da;font-weight:600;font-size:11.5px}
+  #leyenda-items{display:flex;flex-wrap:wrap;gap:6px 13px;align-items:center}
+  .ley-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .ley-dot{width:13px;height:13px;border-radius:4px;display:inline-block;
+    border:1px solid rgba(255,255,255,.14)}
+  #leyenda .pista{margin-left:auto;font-size:10.5px;color:#45657e}
 
-  /* ── POPUP ── */
-  .leaflet-popup-content-wrapper {
-    background: #0a1828 !important;
-    border: 1px solid #1e3a5c !important;
-    border-radius: 14px !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.8) !important;
-    color: #e0eeff !important;
-  }
-  .leaflet-popup-tip         { background: #0a1828 !important; }
-  .leaflet-popup-close-button{ color: #4a6a8a !important; }
+  /* ---------- MAPA ---------- */
+  #envoltorio{position:relative;flex:1;min-height:0}
+  #mapa{position:absolute;inset:0;background:#06101a}
 
-  .popup-titulo { font-weight: 700; font-size: 15px; margin-bottom: 3px; color: #e8f0ff; }
-  .popup-sub    { font-size: 11px; color: #4a6a8a; margin-bottom: 10px; }
-  .popup-valor  { font-size: 28px; font-weight: 300; color: #e8f0ff; letter-spacing: -0.02em; margin: 6px 0 2px; }
-  .popup-barra-wrap {
-    margin: 8px 0 12px; background: #0d1a28;
-    border-radius: 6px; height: 6px; overflow: hidden;
+  /* ---------- PANEL FLOTANTE ---------- */
+  #panel{
+    position:absolute;left:14px;bottom:14px;z-index:600;width:236px;max-width:calc(100% - 28px);
+    background:rgba(9,24,38,.94);border:1px solid #1b3d5c;border-radius:14px;
+    box-shadow:0 8px 28px rgba(0,0,0,.5);overflow:hidden;backdrop-filter:blur(8px);
   }
-  .popup-barra { height: 100%; border-radius: 6px; transition: width .4s ease; }
-  .popup-dato {
-    display: flex; justify-content: space-between;
-    padding: 5px 0; border-bottom: 1px solid #1a2a40;
-    font-size: 12px; color: #7a9aaa;
+  #panel .pg-cab{
+    padding:11px 14px 9px;border-bottom:1px solid #14314b;font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.07em;color:#5cbcf0;
+    display:flex;justify-content:space-between;align-items:baseline;gap:8px;
   }
-  .popup-dato:last-of-type { border-bottom: none; }
-  .popup-dato span:last-child { font-weight: 600; color: #c8e0f0; }
-  .popup-tag {
-    display: inline-block; margin-top: 10px;
-    padding: 3px 12px; border-radius: 12px;
-    font-size: 10px; font-weight: 700; color: white;
+  #panel .pg-cab small{font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#456f8e;
+    text-transform:none}
+  #panel .pg-lista{max-height:214px;overflow-y:auto}
+  .pg-card{
+    padding:9px 14px;border-bottom:1px solid #102a41;cursor:pointer;
+    display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    transition:background .12s;
   }
-  .popup-seccion {
-    margin-top: 10px; padding-top: 10px;
-    border-top: 1px solid #1a2a40;
-    font-size: 11px; color: #4a6a8a;
-    font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
-  }
+  .pg-card:last-child{border-bottom:0}
+  .pg-card:hover{background:#102a41}
+  .pg-zona{font-size:13px;font-weight:600;color:#dceaf6;line-height:1.3}
+  .pg-prov{font-size:10.5px;color:#5b7d97;margin-top:1px}
+  .pg-mm{font-size:14.5px;font-weight:700;white-space:nowrap;letter-spacing:-.01em}
+  #panel .vacio{padding:14px;font-size:12px;color:#5b7d97;line-height:1.5}
+  #panel.plegado .pg-lista{display:none}
+  #panel .cerrar{background:none;border:0;color:#456f8e;cursor:pointer;font-size:15px;
+    line-height:1;padding:0 0 0 6px;font-family:inherit}
+  #panel .cerrar:hover{color:#9fbdd6}
 
-  .leaflet-control-zoom a {
-    background: #0a1828 !important; color: #7a9aaa !important;
-    border-color: #1e3a5c !important;
+  /* ---------- POPUP ---------- */
+  .leaflet-popup-content-wrapper{
+    background:#0a1c2c !important;border:1px solid #1e4468 !important;border-radius:14px !important;
+    box-shadow:0 10px 34px rgba(0,0,0,.6) !important;color:#dceaf6 !important;
   }
-  .leaflet-control-attribution {
-    background: rgba(6,8,18,0.85) !important;
-    color: #4a6a8a !important; font-size: 10px !important;
+  .leaflet-popup-content{margin:15px 17px !important;font-family:inherit}
+  .leaflet-popup-tip{background:#0a1c2c !important;border:1px solid #1e4468 !important}
+  .leaflet-popup-close-button{color:#456f8e !important;font-size:20px !important;
+    padding:8px 9px 0 0 !important}
+  .leaflet-popup-close-button:hover{color:#dceaf6 !important}
+  .popup-titulo{font-size:16px;font-weight:700;letter-spacing:-.01em;color:#fff;line-height:1.25}
+  .popup-sub{font-size:11px;color:#5b7d97;margin:2px 0 12px}
+  .popup-valor{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .popup-etq{font-size:11.5px;margin:5px 0 10px;font-weight:600}
+  .popup-barra-wrap{height:6px;background:#0f2942;border-radius:4px;overflow:hidden;margin:0 0 13px}
+  .popup-barra{height:100%;border-radius:4px;transition:width .3s}
+  .popup-dato{display:flex;justify-content:space-between;gap:14px;padding:6px 0;
+    border-bottom:1px solid #10293f;font-size:12px}
+  .popup-dato:last-of-type{border-bottom:0}
+  .popup-dato>span:first-child{color:#6f8ba3}
+  .popup-dato>span:last-child{font-weight:600;text-align:right}
+  .popup-seccion{font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:#456f8e;
+    margin:12px 0 3px;padding-top:9px;border-top:1px solid #14314b}
+  .popup-tres{display:flex;gap:8px;margin:12px 0 0;padding:10px 0 0;
+    border-top:1px solid #14314b;text-align:center}
+  .popup-tres>div{flex:1}
+  .popup-tres b{display:block;font-size:13.5px;font-weight:700;color:#dceaf6;letter-spacing:-.01em}
+  .popup-tres span{display:block;margin-top:2px;font-size:9.5px;text-transform:uppercase;
+    letter-spacing:.06em;color:#456f8e}
+  .popup-ficha{
+    display:block;margin:13px 0 0;padding:9px 12px;background:#12507f;border-radius:9px;
+    color:#fff !important;text-decoration:none;font-size:12.5px;font-weight:600;text-align:center;
+  }
+  .popup-ficha:hover{background:#1a6aa6}
+  .popup-nota{font-size:10.5px;color:#456f8e;line-height:1.45;margin:9px 0 0}
+
+  .leaflet-control-zoom{border:none !important;box-shadow:0 4px 16px rgba(0,0,0,.5) !important;
+    border-radius:12px !important;overflow:hidden}
+  .leaflet-control-zoom a{background:#0a1c2c !important;color:#9fbdd6 !important;
+    border-color:#14314b !important;width:34px !important;height:34px !important;
+    line-height:34px !important;font-size:18px !important}
+  .leaflet-control-zoom a:hover{background:#12304a !important;color:#fff !important}
+  .leaflet-bar a:first-child{border-radius:12px 12px 0 0 !important}
+  .leaflet-bar a:last-child{border-radius:0 0 12px 12px !important}
+  .leaflet-control-attribution{background:rgba(6,16,26,.85) !important;color:#456f8e !important;
+    font-size:10px !important;border-radius:8px 0 0 0 !important;padding:2px 8px !important}
+  .leaflet-control-attribution a{color:#6f9fc4 !important}
+
+  @media(max-width:680px){
+    #cabecera{padding:11px 14px}
+    #cabecera h2{font-size:13.5px}
+    #controles{padding:9px 14px;gap:12px}
+    .grupo>.et{display:none}
+    .pill{padding:6px 11px;font-size:12px}
+    #leyenda{padding:8px 14px;font-size:11px}
+    #leyenda .pista{display:none}
+    #panel{left:10px;right:10px;bottom:10px;width:auto}
+    #panel .pg-lista{max-height:132px}
   }
 </style>
 </head>
 <body>
 
-<!-- CABECERA -->
 <div id="cabecera">
-  <h2>🌧️ Precipitaciones en España — Por Provincia</h2>
+  <h2><span class="dot"></span> Lluvia en España por provincia</h2>
   <div id="info-derecha">
-    <span id="resumen">Cargando datos...</span>
+    <span id="resumen">Cargando datos…</span>
     <span id="ultima-act"></span>
   </div>
 </div>
 
-<!-- CONTROLES: período + toggle -->
 <div id="controles">
-  <button class="btn-periodo activo" data-periodo="ayer">Ayer</button>
-  <button class="btn-periodo"       data-periodo="semana">Últimos 7 días</button>
-  <button class="btn-periodo"       data-periodo="anual">Acumulado anual</button>
-
-  <div id="toggle-wrap">
-    <span>Ver como:</span>
-    <button class="toggle-btn activo" data-modo="litros">💧 Litros (mm)</button>
-    <button class="toggle-btn"        data-modo="anomalia">📊 Anomalía histórica</button>
+  <div class="grupo">
+    <span class="et">Periodo</span>
+    <button class="pill activo" data-periodo="ayer">Último día</button>
+    <button class="pill" data-periodo="semana">7 días</button>
+    <button class="pill" data-periodo="anual">Este año</button>
+  </div>
+  <div class="grupo">
+    <span class="et">Ver</span>
+    <button class="pill activo" data-modo="litros">Litros caídos</button>
+    <button class="pill" data-modo="anomalia">Frente a lo normal</button>
   </div>
 </div>
 
-<!-- LEYENDA (se actualiza dinámicamente) -->
 <div id="leyenda">
-  <strong id="leyenda-titulo">Precipitación (mm):</strong>
+  <strong id="leyenda-titulo">Precipitación</strong>
   <div id="leyenda-items"></div>
-  <span style="margin-left:auto;font-size:10px;color:#4a6a8a">Clic en una provincia para más detalles</span>
+  <span class="pista">Toca una provincia para ver su detalle</span>
 </div>
 
-<div id="mapa"></div>
+<div id="envoltorio">
+  <div id="mapa"></div>
+  <div id="panel">
+    <div class="pg-cab"><span id="panel-titulo">Dónde más ha llovido</span>
+      <button class="cerrar" id="panel-cerrar" aria-label="Plegar">−</button></div>
+    <div class="pg-lista" id="panel-lista"></div>
+  </div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ─── CONFIGURACIÓN ────────────────────────────────────────────────────────
+// ─── CONFIGURACIÓN ────────────────────────────────────────────────────────────
 const JSON_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/lluvias_nacional.json';
 const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-provinces.geojson';
+const SITIO       = 'https://calentamientoglobal.es/lluvias-en-espana/';
 
-// Mapa de nombres del GeoJSON → id de provincia en nuestro JSON
-// Nombres exactos del GeoJSON spain-provinces (obtenidos directamente del fichero)
 const NOMBRE_A_ID = {
-  'A Coruña':'acoruna',
-  'Alacant/Alicante':'alicante',
-  'Albacete':'albacete',
-  'Almería':'almeria',
-  'Araba/Álava':'alava',
-  'Asturias':'asturias',
-  'Badajoz':'badajoz',
-  'Barcelona':'barcelona',
-  'Bizkaia/Vizcaya':'vizcaya',
-  'Burgos':'burgos',
-  'Cantabria':'cantabria',
-  'Castelló/Castellón':'castellon',
-  'Ceuta':'ceuta',
-  'Ciudad Real':'ciudad_real',
-  'Cuenca':'cuenca',
-  'Cáceres':'caceres',
-  'Cádiz':'cadiz',
-  'Córdoba':'cordoba',
-  'Gipuzkoa/Guipúzcoa':'guipuzcoa',
-  'Girona':'girona',
-  'Granada':'granada',
-  'Guadalajara':'guadalajara',
-  'Huelva':'huelva',
-  'Huesca':'huesca',
-  'Illes Balears':'baleares',
-  'Jaén':'jaen',
-  'La Rioja':'rioja',
-  'Las Palmas':'canarias_las_p',
-  'León':'leon',
-  'Lleida':'lleida',
-  'Lugo':'lugo',
-  'Madrid':'madrid',
-  'Melilla':'melilla',
-  'Murcia':'murcia',
-  'Málaga':'malaga',
-  'Navarra':'navarra',
-  'Ourense':'ourense',
-  'Palencia':'palencia',
-  'Pontevedra':'pontevedra',
-  'Salamanca':'salamanca',
-  'Santa Cruz De Tenerife':'canarias_sc_tf',
-  'Segovia':'segovia',
-  'Sevilla':'sevilla',
-  'Soria':'soria',
-  'Tarragona':'tarragona',
-  'Teruel':'teruel',
-  'Toledo':'toledo',
-  'Valladolid':'valladolid',
-  'València/Valencia':'valencia',
-  'Zamora':'zamora',
-  'Zaragoza':'zaragoza',
-  'Ávila':'avila',
+  'A Coruña':'acoruna','Alacant/Alicante':'alicante','Albacete':'albacete','Almería':'almeria',
+  'Araba/Álava':'alava','Asturias':'asturias','Badajoz':'badajoz','Barcelona':'barcelona',
+  'Bizkaia/Vizcaya':'vizcaya','Burgos':'burgos','Cantabria':'cantabria',
+  'Castelló/Castellón':'castellon','Ceuta':'ceuta','Ciudad Real':'ciudad_real','Cuenca':'cuenca',
+  'Cáceres':'caceres','Cádiz':'cadiz','Córdoba':'cordoba','Gipuzkoa/Guipúzcoa':'guipuzcoa',
+  'Girona':'girona','Granada':'granada','Guadalajara':'guadalajara','Huelva':'huelva',
+  'Huesca':'huesca','Illes Balears':'baleares','Jaén':'jaen','La Rioja':'rioja',
+  'Las Palmas':'canarias_las_p','León':'leon','Lleida':'lleida','Lugo':'lugo','Madrid':'madrid',
+  'Melilla':'melilla','Murcia':'murcia','Málaga':'malaga','Navarra':'navarra','Ourense':'ourense',
+  'Palencia':'palencia','Pontevedra':'pontevedra','Salamanca':'salamanca',
+  'Santa Cruz De Tenerife':'canarias_sc_tf','Segovia':'segovia','Sevilla':'sevilla','Soria':'soria',
+  'Tarragona':'tarragona','Teruel':'teruel','Toledo':'toledo','Valladolid':'valladolid',
+  'València/Valencia':'valencia','Zamora':'zamora','Zaragoza':'zaragoza','Ávila':'avila',
 };
 
-// ─── ESCALAS DE COLOR ─────────────────────────────────────────────────────
-function colorLitros(mm, periodo) {
-  if (mm === null || mm === undefined) return '#1e2e3a';
-  const umbrales = {
-    ayer:   [0, 1, 3, 8, 15, 30],
-    semana: [0, 5, 15, 30, 60, 120],
-    anual:  [0, 100, 250, 500, 800, 1200],
-  };
-  const u = umbrales[periodo] || umbrales.ayer;
-  const colores = ['#101820','#1e4060','#1e6090','#1e90c0','#22b8e8','#44d4ff','#88eeff'];
-  for (let i = u.length - 1; i >= 0; i--) {
-    if (mm >= u[i]) return colores[i + 1];
-  }
-  return colores[0];
-}
+// Cada provincia del mapa con su ficha en el sitio. El mapa es lo que mas trafico
+// tiene y hasta ahora no enlazaba a ninguna de las paginas que cuelgan de el.
+const ID_A_SLUG = {"almeria":"almeria","cadiz":"cadiz","cordoba":"cordoba","granada":"granada",
+"huelva":"huelva","jaen":"jaen","malaga":"malaga","sevilla":"sevilla","huesca":"huesca",
+"teruel":"teruel","zaragoza":"zaragoza","asturias":"asturias","baleares":"baleares",
+"canarias_las_p":"las-palmas","canarias_sc_tf":"santa-cruz-de-tenerife","cantabria":"cantabria",
+"albacete":"albacete","ciudad_real":"ciudad-real","cuenca":"cuenca","guadalajara":"guadalajara",
+"toledo":"toledo","avila":"avila","burgos":"burgos","leon":"leon","palencia":"palencia",
+"salamanca":"salamanca","segovia":"segovia","soria":"soria","valladolid":"valladolid",
+"zamora":"zamora","barcelona":"barcelona","girona":"girona","lleida":"lleida",
+"tarragona":"tarragona","badajoz":"badajoz","caceres":"caceres","acoruna":"a-coruna","lugo":"lugo",
+"ourense":"ourense","pontevedra":"pontevedra","rioja":"la-rioja","madrid":"madrid",
+"murcia":"murcia","navarra":"navarra","alava":"alava","guipuzcoa":"gipuzkoa","vizcaya":"bizkaia",
+"alicante":"alicante","castellon":"castellon","valencia":"valencia","ceuta":"ceuta",
+"melilla":"melilla"};
 
-function colorAnomalia(pct) {
-  if (pct === null || pct === undefined) return '#1e2e3a';
-  if (pct < -40)  return '#8B1A1A';
-  if (pct < -15)  return '#CC3300';
-  if (pct <  15)  return '#8a7830';
-  if (pct <  40)  return '#2288CC';
-  return '#0044AA';
-}
-
-// ─── LEYENDAS ─────────────────────────────────────────────────────────────
-const LEYENDAS = {
-  litros_ayer: {
-    titulo: 'Precipitación ayer (mm):',
-    items: [
-      { color:'#101820', label:'0 mm' },
-      { color:'#1e4060', label:'< 1 mm' },
-      { color:'#1e6090', label:'1–3 mm' },
-      { color:'#1e90c0', label:'3–8 mm' },
-      { color:'#22b8e8', label:'8–15 mm' },
-      { color:'#44d4ff', label:'15–30 mm' },
-      { color:'#88eeff', label:'> 30 mm' },
-    ]
-  },
-  litros_semana: {
-    titulo: 'Precipitación 7 días (mm):',
-    items: [
-      { color:'#101820', label:'0 mm' },
-      { color:'#1e4060', label:'< 5 mm' },
-      { color:'#1e6090', label:'5–15 mm' },
-      { color:'#1e90c0', label:'15–30 mm' },
-      { color:'#22b8e8', label:'30–60 mm' },
-      { color:'#44d4ff', label:'60–120 mm' },
-      { color:'#88eeff', label:'> 120 mm' },
-    ]
-  },
-  litros_anual: {
-    titulo: 'Acumulado anual (mm):',
-    items: [
-      { color:'#101820', label:'< 100 mm' },
-      { color:'#1e4060', label:'100–250 mm' },
-      { color:'#1e6090', label:'250–500 mm' },
-      { color:'#1e90c0', label:'500–800 mm' },
-      { color:'#22b8e8', label:'800–1200 mm' },
-      { color:'#88eeff', label:'> 1200 mm' },
-    ]
-  },
-  anomalia: {
-    titulo: 'Anomalía vs media histórica:',
-    items: [
-      { color:'#8B1A1A', label:'Muy seco < −40%' },
-      { color:'#CC3300', label:'Seco −40–−15%' },
-      { color:'#8a7830', label:'Normal ±15%' },
-      { color:'#2288CC', label:'Lluvioso +15–40%' },
-      { color:'#0044AA', label:'Muy lluvioso > +40%' },
-    ]
-  }
+const CAMPOS = {
+  ayer:   {mm:'mm_ayer',   anom:'anomalia_ayer_pct',   etq:'etiqueta_ayer',   media:'media_diaria_mm'},
+  semana: {mm:'mm_semana', anom:'anomalia_semana_pct', etq:'etiqueta_semana', media:'media_semana_mm'},
+  anual:  {mm:'mm_anual',  anom:'anomalia_anual_pct',  etq:'etiqueta_anual',  media:'media_hasta_hoy_mm'},
 };
 
-function actualizarLeyenda(periodo, modo) {
-  const clave = modo === 'anomalia' ? 'anomalia' : `litros_${periodo}`;
-  const ley = LEYENDAS[clave] || LEYENDAS.litros_ayer;
-  document.getElementById('leyenda-titulo').textContent = ley.titulo;
-  document.getElementById('leyenda-items').innerHTML = ley.items.map(i =>
-    `<span class="ley-item" style="display:inline-flex;align-items:center;gap:4px;margin-right:8px">
-      <span class="ley-dot" style="background:${i.color}"></span>${i.label}
-    </span>`
+// ─── ESCALAS ──────────────────────────────────────────────────────────────────
+const UMBRALES = {ayer:[0,1,3,8,15,30], semana:[0,5,15,30,60,120], anual:[0,100,250,500,800,1200]};
+const AZULES   = ['#0a1a26','#12405f','#176a95','#1f97c9','#37bde8','#6ad8f7','#a8ecff'];
+
+function colorLitros(mm, periodo){
+  if (mm === null || mm === undefined) return '#16293a';
+  const u = UMBRALES[periodo] || UMBRALES.ayer;
+  for (let i = u.length - 1; i >= 0; i--) if (mm >= u[i]) return AZULES[i + 1];
+  return AZULES[0];
+}
+function colorAnomalia(p){
+  if (p === null || p === undefined) return '#16293a';
+  if (p < -40) return '#a02615';
+  if (p < -15) return '#d2571f';
+  if (p <  15) return '#8a7f3a';
+  if (p <  40) return '#2b8ecd';
+  return '#1257a8';
+}
+
+// ─── LEYENDA ──────────────────────────────────────────────────────────────────
+function etiquetasLitros(periodo){
+  const u = UMBRALES[periodo];
+  const t = [`0 mm`, `< ${u[1]} mm`];
+  for (let i = 1; i < u.length - 1; i++) t.push(`${u[i]}–${u[i+1]} mm`);
+  t.push(`> ${u[u.length-1]} mm`);
+  return t.map((label, i) => ({color: AZULES[i], label}));
+}
+const LEY_ANOM = [
+  {color:'#a02615', label:'Muy seco · bajo −40 %'},
+  {color:'#d2571f', label:'Seco · −40 a −15 %'},
+  {color:'#8a7f3a', label:'Normal · ±15 %'},
+  {color:'#2b8ecd', label:'Lluvioso · +15 a +40 %'},
+  {color:'#1257a8', label:'Muy lluvioso · más de +40 %'},
+];
+const TITULOS = {
+  ayer:'Lluvia del último día', semana:'Lluvia de 7 días', anual:'Acumulado del año',
+};
+function actualizarLeyenda(){
+  const items = modoActual === 'anomalia' ? LEY_ANOM : etiquetasLitros(periodoActual);
+  document.getElementById('leyenda-titulo').textContent =
+    modoActual === 'anomalia' ? 'Frente a lo normal de esta época' : TITULOS[periodoActual];
+  document.getElementById('leyenda-items').innerHTML = items.map(i =>
+    `<span class="ley-item"><span class="ley-dot" style="background:${i.color}"></span>${i.label}</span>`
   ).join('');
 }
 
-// ─── POPUP ────────────────────────────────────────────────────────────────
-function construirPopup(p, periodo, modo) {
-  const mmKey    = { ayer:'mm_ayer', semana:'mm_semana', anual:'mm_anual' }[periodo];
-  const anomKey  = { ayer:'anomalia_ayer_pct', semana:'anomalia_semana_pct', anual:'anomalia_anual_pct' }[periodo];
-  const etqKey   = { ayer:'etiqueta_ayer', semana:'etiqueta_semana', anual:'etiqueta_anual' }[periodo];
-  const mediaKey = { ayer:'media_diaria_mm', semana:'media_semana_mm', anual:'media_hasta_hoy_mm' }[periodo];
+// ─── FORMATO ──────────────────────────────────────────────────────────────────
+const nf = new Intl.NumberFormat('es-ES', {maximumFractionDigits:1});
+const mmTxt = v => (v === null || v === undefined) ? '—' : nf.format(v) + ' mm';
+const pctTxt = v => (v === null || v === undefined) ? '—' : (v > 0 ? '+' : '') + nf.format(v) + ' %';
 
-  const mm    = p[mmKey];
-  const anom  = p[anomKey];
-  const etq   = p[etqKey] || '—';
-  const media = p[mediaKey];
-
-  const color  = modo === 'anomalia' ? colorAnomalia(anom) : colorLitros(mm, periodo);
-  const barra  = modo === 'anomalia'
+// ─── POPUP ────────────────────────────────────────────────────────────────────
+function construirPopup(p){
+  const c = CAMPOS[periodoActual];
+  const mm = p[c.mm], anom = p[c.anom], media = p[c.media];
+  const color = modoActual === 'anomalia' ? colorAnomalia(anom) : colorLitros(mm, periodoActual);
+  const tope = {ayer:40, semana:150, anual:1500}[periodoActual];
+  const barra = modoActual === 'anomalia'
     ? Math.min(100, Math.abs(anom || 0) * 1.5)
-    : Math.min(100, ((mm || 0) / ({ ayer:40, semana:150, anual:1500 }[periodo])) * 100);
-
-  const periodoLabel = { ayer:'ayer', semana:'últimos 7 días', anual:'acumulado anual' }[periodo];
-
-  const anomStr = anom !== null ? (anom > 0 ? '+' : '') + anom + '%' : '—';
-  const mmStr   = mm !== null ? mm.toFixed(1) + ' mm' : '—';
+    : Math.min(100, ((mm || 0) / tope) * 100);
+  const slug = ID_A_SLUG[p.id];
+  const cuando = {ayer:'el último día con dato', semana:'en 7 días', anual:'en lo que va de año'}[periodoActual];
+  // La fila de la media necesita su propia redaccion: "Lo normal el último día
+  // con dato" no se entiende. Lo que se compara es contra lo tipico de la epoca.
+  const normalTxt = {ayer:'Lo normal en un día de esta época',
+                     semana:'Lo normal en una semana de esta época',
+                     anual:'Lo normal a estas alturas del año'}[periodoActual];
 
   return `
-    <div style="min-width:240px">
-      <div class="popup-titulo">🌧️ ${p.nombre}</div>
+    <div style="min-width:250px">
+      <div class="popup-titulo">${p.nombre}</div>
       <div class="popup-sub">${p.ccaa}</div>
-      <div class="popup-valor" style="color:${color}">
-        ${modo === 'anomalia' ? anomStr : mmStr}
+      <div class="popup-valor" style="color:${color}">${modoActual === 'anomalia' ? pctTxt(anom) : mmTxt(mm)}</div>
+      <div class="popup-etq" style="color:${color}">${p[c.etq] || '—'} · ${cuando}</div>
+      <div class="popup-barra-wrap"><div class="popup-barra" style="width:${barra}%;background:${color}"></div></div>
+
+      <div class="popup-dato"><span>Ha caído</span><span>${mmTxt(mm)}</span></div>
+      <div class="popup-dato"><span>${normalTxt}</span><span>${mmTxt(media)}</span></div>
+      <div class="popup-dato"><span>Diferencia</span><span style="color:${colorAnomalia(anom)}">${pctTxt(anom)}</span></div>
+
+      <div class="popup-tres">
+        <div><b>${mmTxt(p.mm_ayer)}</b><span>último día</span></div>
+        <div><b>${mmTxt(p.mm_semana)}</b><span>7 días</span></div>
+        <div><b>${mmTxt(p.mm_anual)}</b><span>del año</span></div>
       </div>
-      <div style="font-size:11px;color:${color};margin-bottom:4px">${etq} · ${periodoLabel}</div>
-      <div class="popup-barra-wrap">
-        <div class="popup-barra" style="width:${barra}%;background:${color}"></div>
-      </div>
 
-      <div class="popup-dato"><span>Precipitación ${periodoLabel}</span><span>${mmStr}</span></div>
-      <div class="popup-dato"><span>Media histórica (referencia)</span><span>${media !== undefined ? media.toFixed(1) + ' mm' : '—'}</span></div>
-      <div class="popup-dato"><span>Anomalía</span><span style="color:${colorAnomalia(anom)}">${anomStr}</span></div>
-      <div class="popup-dato"><span>Media anual histórica</span><span>${p.media_anual_mm} mm/año</span></div>
-
-      <div class="popup-seccion">Resumen del período</div>
-      <div class="popup-dato"><span>Ayer</span><span>${p.mm_ayer !== null ? p.mm_ayer.toFixed(1) + ' mm' : '—'}</span></div>
-      <div class="popup-dato"><span>Últimos 7 días</span><span>${p.mm_semana !== null ? p.mm_semana.toFixed(1) + ' mm' : '—'}</span></div>
-      <div class="popup-dato"><span>Acumulado anual</span><span>${p.mm_anual !== null ? Math.round(p.mm_anual) + ' mm' : '—'}</span></div>
-
-      <span class="popup-tag" style="background:${color}99;border:1px solid ${color}">${etq}</span>
+      ${slug ? `<a class="popup-ficha" href="${SITIO}${slug}/" target="_top">Ver los municipios de ${p.nombre} →</a>` : ''}
     </div>`;
 }
 
-// ─── MAPA ─────────────────────────────────────────────────────────────────
-const mapa = L.map('mapa', { center: [40.0, -3.5], zoom: 5 });
+// ─── MAPA ─────────────────────────────────────────────────────────────────────
+const mapa = L.map('mapa', {center:[40.0,-3.5], zoom:5, zoomControl:true});
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  {attribution:'© Esri · Lluvia: Open-Meteo (ERA5) · Medias: ERA5-Land', maxZoom:10}).addTo(mapa);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:10, opacity:0.45}).addTo(mapa);
 
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '© Esri | Datos: AEMET OpenData', maxZoom: 10
-}).addTo(mapa);
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
-  maxZoom: 10, opacity: 0.5
-}).addTo(mapa);
+let datosMap = {}, capaGeojson = null, capaPorId = {};
+let periodoActual = 'ayer', modoActual = 'litros';
 
-let datosMap     = {};
-let capaGeojson  = null;
-let periodoActual = 'ayer';
-let modoActual    = 'litros';
-let datosGlobal   = null;
-
-function estiloCapas(feature) {
-  const nombre = feature.properties.name || feature.properties.NAME || '';
-  const id     = NOMBRE_A_ID[nombre];
-  const p      = id ? datosMap[id] : null;
-  if (!p) return { fillColor:'#1e2e3a', fillOpacity:0.35, color:'#1a3040', weight:0.8, opacity:0.6 };
-
-  const mmKey   = { ayer:'mm_ayer', semana:'mm_semana', anual:'mm_anual' }[periodoActual];
-  const anomKey = { ayer:'anomalia_ayer_pct', semana:'anomalia_semana_pct', anual:'anomalia_anual_pct' }[periodoActual];
-  const color   = modoActual === 'anomalia'
-    ? colorAnomalia(p[anomKey])
-    : colorLitros(p[mmKey], periodoActual);
-
-  return { fillColor:color, fillOpacity:0.80, color:'#1a3040', weight:0.8, opacity:0.7 };
+function estilo(feature){
+  const p = datosMap[NOMBRE_A_ID[feature.properties.name || feature.properties.NAME || '']];
+  if (!p) return {fillColor:'#16293a', fillOpacity:.3, color:'#12304a', weight:.8, opacity:.5};
+  const c = CAMPOS[periodoActual];
+  const color = modoActual === 'anomalia' ? colorAnomalia(p[c.anom]) : colorLitros(p[c.mm], periodoActual);
+  return {fillColor:color, fillOpacity:.85, color:'#0c2136', weight:.9, opacity:.8};
 }
 
-function actualizarMapa() {
-  if (!capaGeojson) return;
-  capaGeojson.setStyle(estiloCapas);
-  actualizarLeyenda(periodoActual, modoActual);
-}
+// ─── PANEL: las tres que destacan en el periodo elegido ───────────────────────
+function actualizarPanel(){
+  const c = CAMPOS[periodoActual];
+  const lista = Object.values(datosMap).filter(p => p[c.mm] !== null && p[c.mm] !== undefined);
+  const seco = modoActual === 'anomalia';
+  // En modo anomalia interesa el extremo, no el maximo: la provincia mas lejos
+  // de lo normal, para arriba o para abajo.
+  const orden = seco
+    ? lista.slice().sort((a,b) => Math.abs(b[c.anom]||0) - Math.abs(a[c.anom]||0))
+    : lista.slice().sort((a,b) => b[c.mm] - a[c.mm]);
+  const top = orden.slice(0, 5);
+  document.getElementById('panel-titulo').textContent =
+    seco ? 'Lo más lejos de lo normal' : 'Dónde más ha llovido';
 
-function actualizarPopups() {
-  if (!capaGeojson) return;
-  capaGeojson.eachLayer(layer => {
-    const nombre = layer.feature?.properties?.name || layer.feature?.properties?.NAME || '';
-    const id     = NOMBRE_A_ID[nombre];
-    const p      = id ? datosMap[id] : null;
-    if (p) {
-      layer.setPopupContent(construirPopup(p, periodoActual, modoActual));
-    }
+  // Si en todo el pais no ha caido nada, decirlo. Una lista de cinco ceros
+  // parece un fallo de carga, y no lo es: hay dias asi.
+  if (!seco && top.every(p => (p[c.mm] || 0) === 0)){
+    document.getElementById('panel-lista').innerHTML =
+      '<div class="vacio">No ha llovido en ninguna provincia en este periodo. ' +
+      'Pasa: en verano puede estar toda España a cero durante semanas.</div>';
+    return;
+  }
+  document.getElementById('panel-lista').innerHTML = top.map(p => {
+    const val = seco ? pctTxt(p[c.anom]) : mmTxt(p[c.mm]);
+    const col = seco ? colorAnomalia(p[c.anom]) : colorLitros(p[c.mm], periodoActual);
+    return `<div class="pg-card" data-id="${p.id}">
+        <div><div class="pg-zona">${p.nombre}</div><div class="pg-prov">${p.ccaa}</div></div>
+        <div class="pg-mm" style="color:${col}">${val}</div></div>`;
+  }).join('');
+  document.querySelectorAll('.pg-card').forEach(el => {
+    el.addEventListener('click', () => {
+      const capa = capaPorId[el.dataset.id];
+      if (!capa) return;
+      mapa.fitBounds(capa.getBounds(), {maxZoom:7, padding:[40,40]});
+      capa.openPopup();
+    });
   });
 }
 
-// ─── CONTROLES ────────────────────────────────────────────────────────────
-document.querySelectorAll('.btn-periodo').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.btn-periodo').forEach(b => b.classList.remove('activo'));
-    btn.classList.add('activo');
-    periodoActual = btn.dataset.periodo;
-    actualizarMapa();
-    actualizarPopups();
+function refrescar(){
+  if (capaGeojson) capaGeojson.setStyle(estilo);
+  actualizarLeyenda();
+  actualizarPanel();
+  Object.entries(capaPorId).forEach(([id, capa]) => {
+    if (datosMap[id]) capa.setPopupContent(construirPopup(datosMap[id]));
   });
+}
+
+// ─── CONTROLES ────────────────────────────────────────────────────────────────
+document.querySelectorAll('[data-periodo]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-periodo]').forEach(x => x.classList.remove('activo'));
+  b.classList.add('activo'); periodoActual = b.dataset.periodo; refrescar();
+}));
+document.querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-modo]').forEach(x => x.classList.remove('activo'));
+  b.classList.add('activo'); modoActual = b.dataset.modo; refrescar();
+}));
+document.getElementById('panel-cerrar').addEventListener('click', function(){
+  const p = document.getElementById('panel');
+  p.classList.toggle('plegado');
+  this.textContent = p.classList.contains('plegado') ? '+' : '−';
 });
 
-document.querySelectorAll('.toggle-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('activo'));
-    btn.classList.add('activo');
-    modoActual = btn.dataset.modo;
-    actualizarMapa();
-    actualizarPopups();
-  });
-});
-
-// ─── CARGA DE DATOS ───────────────────────────────────────────────────────
+// ─── CARGA ────────────────────────────────────────────────────────────────────
 Promise.all([
   fetch(JSON_URL + '?t=' + Date.now()).then(r => r.json()),
-  fetch(GEOJSON_URL).then(r => r.json())
+  fetch(GEOJSON_URL).then(r => r.json()),
 ])
 .then(([data, geojson]) => {
-  datosGlobal = data;
   (data.provincias || []).forEach(p => { datosMap[p.id] = p; });
 
-  const total = data.provincias?.length || 0;
-  const demo  = data.demo_mode ? ' · ⚠ Modo demo (sin API key)' : '';
-  document.getElementById('resumen').textContent =
-    `${total} provincias · Fuente: ${data.fuente}${demo}`;
-  document.getElementById('ultima-act').textContent =
-    'Actualizado: ' + (data.fecha_legible || '—');
-
-  actualizarLeyenda(periodoActual, modoActual);
+  document.getElementById('resumen').innerHTML =
+    `<b>${data.provincias.length}</b> provincias · lluvia de Open-Meteo (ERA5)`;
+  // La FECHA DEL DATO, no la de la ejecucion. El archivo llega con retraso
+  // variable y antes esta linea decia "ayer" un dia 7 con datos del 5.
+  document.getElementById('ultima-act').textContent = data.fecha_datos
+    ? 'Datos hasta el ' + data.fecha_datos
+    : 'Actualizado: ' + (data.fecha_legible || '—');
 
   capaGeojson = L.geoJSON(geojson, {
-    style: estiloCapas,
-    onEachFeature: function(feature, layer) {
-      const nombre = feature.properties.name || feature.properties.NAME || '';
-      const id     = NOMBRE_A_ID[nombre];
-      const p      = id ? datosMap[id] : null;
+    style: estilo,
+    onEachFeature: (feature, capa) => {
+      const id = NOMBRE_A_ID[feature.properties.name || feature.properties.NAME || ''];
+      const p = id ? datosMap[id] : null;
       if (!p) return;
-
-      layer.bindPopup(construirPopup(p, periodoActual, modoActual), { maxWidth: 280 });
-      layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1.5 }));
-      layer.on('mouseout',  () => capaGeojson.resetStyle(layer));
-
-      // Abrir Murcia por defecto
-      if (id === 'murcia') {
-        setTimeout(() => layer.openPopup(), 900);
-      }
+      capaPorId[id] = capa;
+      capa.bindPopup(construirPopup(p), {maxWidth:300, autoPanPadding:[24,24]});
+      capa.on('mouseover', () => capa.setStyle({fillOpacity:.98, weight:1.8, color:'#5cbcf0'}));
+      capa.on('mouseout',  () => capaGeojson.resetStyle(capa));
     }
   }).addTo(mapa);
+
+  refrescar();
 })
 .catch(err => {
   console.error(err);
-  document.getElementById('resumen').textContent = 'Error al cargar datos';
+  document.getElementById('resumen').textContent = 'No se han podido cargar los datos';
+  document.getElementById('panel-lista').innerHTML =
+    '<div class="vacio">No se han podido cargar los datos. Vuelve a intentarlo en unos minutos.</div>';
 });
 </script>
 </body>
