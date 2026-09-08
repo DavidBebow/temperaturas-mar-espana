@@ -161,6 +161,46 @@
     #panel{left:10px;right:10px;bottom:10px;width:auto}
     #panel .pg-lista{max-height:132px}
   }
+
+/* ─── Capa de municipios y su ficha ─────────────────────────────────────── */
+#mun-ficha{position:absolute;top:12px;right:12px;width:290px;max-width:calc(100% - 24px);
+  background:rgba(10,22,33,.94);backdrop-filter:blur(8px);border:1px solid #1d3d57;
+  border-radius:14px;padding:16px 18px 18px;color:#e8f1f8;z-index:1000;display:none;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);max-height:calc(100% - 24px);overflow:auto}
+#mun-ficha.visible{display:block}
+#leyenda .ley-punto{display:inline-block;width:9px;height:9px;border-radius:50%;
+  border:1px solid rgba(10,28,44,.55);vertical-align:-1px}
+#leyenda .ley-punto + .ley-punto{margin-left:2px}
+#leyenda .ley-mun{opacity:.92;gap:0}
+#leyenda .ley-mun span:last-child{margin-left:6px}
+#mun-ficha .mf-k{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#7fa8c9}
+#mun-ficha h3{margin:2px 0 10px;font-size:20px;font-weight:700;letter-spacing:-.02em;color:#fff}
+#mun-ficha .mf-x{position:absolute;top:12px;right:14px;cursor:pointer;color:#7fa8c9;
+  font-size:16px;line-height:1;padding:4px}
+#mun-ficha .mf-x:hover{color:#fff}
+#mun-ficha .mf-n{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
+#mun-ficha .mf-et{font-size:12.5px;margin-top:3px}
+#mun-ficha .mf-barra{height:8px;background:#16293a;border-radius:5px;margin:14px 0 4px;
+  position:relative}
+#mun-ficha .mf-barra i{display:block;height:100%;border-radius:5px}
+#mun-ficha .mf-cien{position:absolute;top:-4px;bottom:-4px;left:50%;width:0;
+  border-left:1px dashed #8fa8bd}
+#mun-ficha .mf-pie{font-size:10.5px;color:#7fa8c9;margin:0 0 12px}
+#mun-ficha .mf-fila{display:flex;justify-content:space-between;gap:12px;font-size:13px;
+  padding:7px 0;border-bottom:1px solid #17324a}
+#mun-ficha .mf-fila:last-of-type{border-bottom:0}
+#mun-ficha .mf-fila span{color:#9db8cf}
+#mun-ficha .mf-fila b{font-weight:600;text-align:right}
+#mun-ficha .mf-frase{margin:12px 0 0;font-size:13.5px;line-height:1.5;color:#cfe2f2}
+#mun-ficha .mf-frase b{color:#fff}
+#mun-ficha .mf-cta{display:block;margin-top:14px;padding:11px 14px;background:#1257a8;
+  color:#fff;text-decoration:none;border-radius:10px;font-size:13.5px;font-weight:600;
+  text-align:center}
+#mun-ficha .mf-cta:hover{background:#1a6cc9}
+#mun-ficha .mf-nota{margin-top:10px;font-size:11px;color:#7b93a8;line-height:1.45}
+@media(max-width:760px){
+  #mun-ficha{top:auto;left:10px;right:10px;bottom:10px;width:auto;max-height:52%}
+}
 </style>
 </head>
 <body>
@@ -181,6 +221,10 @@
     <button class="pill" data-periodo="anual">Este año</button>
   </div>
   <div class="grupo">
+    <span class="et">Capa</span>
+    <button class="pill activo" id="btn-mun">Municipios</button>
+  </div>
+  <div class="grupo">
     <span class="et">Ver</span>
     <button class="pill activo" data-modo="litros">Litros caídos</button>
     <button class="pill" data-modo="anomalia">Frente a lo normal</button>
@@ -195,6 +239,20 @@
 
 <div id="envoltorio">
   <div id="mapa"></div>
+  <div id="mun-ficha">
+    <div class="mf-x" id="mf-x">&#10005;</div>
+    <div class="mf-k" id="mf-prov">&mdash;</div>
+    <h3 id="mf-nom">&mdash;</h3>
+    <div class="mf-n" id="mf-pct">&mdash;</div>
+    <div class="mf-et" id="mf-et">&mdash;</div>
+    <div class="mf-barra"><i id="mf-barra"></i><span class="mf-cien"></span></div>
+    <div class="mf-pie">La l&iacute;nea marca lo normal para estas alturas del a&ntilde;o</div>
+    <div class="mf-fila"><span>Ha ca&iacute;do</span><b id="mf-mm">&mdash;</b></div>
+    <div class="mf-fila"><span>Lo normal a estas alturas</span><b id="mf-med">&mdash;</b></div>
+    <div class="mf-frase" id="mf-puesto">&mdash;</div>
+    <a class="mf-cta" id="mf-cta" target="_top">Ver la ficha completa &rarr;</a>
+    <div class="mf-nota" id="mf-nota"></div>
+  </div>
   <div id="panel">
     <div class="pg-cab"><span id="panel-titulo">Dónde más ha llovido</span>
       <button class="cerrar" id="panel-cerrar" aria-label="Plegar">−</button></div>
@@ -208,6 +266,7 @@
 const JSON_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/lluvias_nacional.json';
 const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-provinces.geojson';
 const SITIO       = 'https://calentamientoglobal.es/lluvias-en-espana/';
+const MUNI_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/municipios_mapa.json';
 
 const NOMBRE_A_ID = {
   'A Coruña':'acoruna','Alacant/Alicante':'alicante','Albacete':'albacete','Almería':'almeria',
@@ -288,15 +347,42 @@ function actualizarLeyenda(){
   const items = modoActual === 'anomalia' ? LEY_ANOM : etiquetasLitros(periodoActual);
   document.getElementById('leyenda-titulo').textContent =
     modoActual === 'anomalia' ? 'Frente a lo normal de esta época' : TITULOS[periodoActual];
-  document.getElementById('leyenda-items').innerHTML = items.map(i =>
+  let html = items.map(i =>
     `<span class="ley-item"><span class="ley-dot" style="background:${i.color}"></span>${i.label}</span>`
   ).join('');
+
+  // Los puntos de municipio SIEMPRE van por anomalia anual, tambien cuando las
+  // provincias estan en litros. Sin esta linea el mapa tendria dos escalas de
+  // color a la vez sin decirlo, y el mismo azul significaria dos cosas: un mapa
+  // asi engaña mas que uno sin colores.
+  if (munVisible && munDatos){
+    // Los cinco tramos, no un punto de muestra: si la capa de municipios tiene
+    // su propia escala de color, hay que enseñarla entera o el lector no sabe
+    // que significa el rojo de un punto.
+    const muestra = [-60, -25, 0, 25, 60]
+      .map(v => `<span class="ley-punto" style="background:${colorMunicipio(v)}"></span>`)
+      .join('');
+    html += `<span class="ley-item ley-mun">${muestra}` +
+            `<span>Municipios: seco → lluvioso, acumulado del año frente a lo normal</span></span>`;
+  }
+  document.getElementById('leyenda-items').innerHTML = html;
 }
 
 // ─── FORMATO ──────────────────────────────────────────────────────────────────
 const nf = new Intl.NumberFormat('es-ES', {maximumFractionDigits:1});
 const mmTxt = v => (v === null || v === undefined) ? '—' : nf.format(v) + ' mm';
 const pctTxt = v => (v === null || v === undefined) ? '—' : (v > 0 ? '+' : '') + nf.format(v) + ' %';
+
+// "2026-08-31" -> "31 de agosto de 2026". Se parte la cadena a mano en vez de
+// pasarla por new Date(): un ISO sin hora lo interpreta el navegador como UTC y
+// en España eso adelanta la fecha un dia entero durante el horario de verano.
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio',
+               'agosto','septiembre','octubre','noviembre','diciembre'];
+function fechaLarga(iso){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return iso || '—';
+  return Number(m[3]) + ' de ' + MESES[Number(m[2]) - 1] + ' de ' + m[1];
+}
 
 // ─── POPUP ────────────────────────────────────────────────────────────────────
 function construirPopup(p){
@@ -340,9 +426,9 @@ function construirPopup(p){
 // ─── MAPA ─────────────────────────────────────────────────────────────────────
 const mapa = L.map('mapa', {center:[40.0,-3.5], zoom:5, zoomControl:true});
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-  {attribution:'© Esri · Lluvia: Open-Meteo (ERA5) · Medias: ERA5-Land', maxZoom:10}).addTo(mapa);
+  {attribution:'© Esri · Lluvia: Open-Meteo (ERA5) · Medias: ERA5-Land', maxZoom:12}).addTo(mapa);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-  {maxZoom:10, opacity:0.45}).addTo(mapa);
+  {maxZoom:12, opacity:0.45}).addTo(mapa);
 
 let datosMap = {}, capaGeojson = null, capaPorId = {};
 let periodoActual = 'ayer', modoActual = 'litros';
@@ -417,6 +503,218 @@ document.getElementById('panel-cerrar').addEventListener('click', function(){
   p.classList.toggle('plegado');
   this.textContent = p.classList.contains('plegado') ? '+' : '−';
 });
+
+
+// ─── CAPA DE MUNICIPIOS ───────────────────────────────────────────────────────
+//
+// Se dibuja en CANVAS y no en SVG. Con 999 puntos la diferencia no se nota, pero
+// el destino son los 8.132 municipios de España y con SVG eso son 8.132 nodos
+// en el DOM: el mapa deja de responder al arrastrarlo. El canvas dibuja pixeles.
+//
+// El fichero llega en arrays posicionales, no en objetos con nombre de campo.
+// Ver la cabecera de mapa_municipios.py: con objetos, el fichero completo pasa
+// del megabyte y medio y hay que bajarlo entero antes de pintar el primer punto.
+const MUN = {ine:0, nombre:1, ruta:2, lat:3, lon:4, mm:5, mediana:6, puesto:7, de:8, prov:9};
+// PANEL PROPIO, POR ENCIMA DE LAS PROVINCIAS, Y EN SVG.
+//
+// Dos cosas que se descubrieron probando y que conviene no deshacer:
+//
+// 1. Sin panel propio, Leaflet pone la capa de municipios en el mismo panel que
+//    el geojson y ademas DEBAJO (z-index 100 frente a 200). Con el relleno
+//    provincial al 85 % de opacidad encima, los puntos salian grises y apagados
+//    por muy vivo que fuera su color, y ningun clic llegaba a ellos: el SVG de
+//    las provincias se los quedaba todos.
+//
+// 2. La primera version usaba L.canvas, que es lo indicado para muchos puntos.
+//    Pero un canvas es un RECTANGULO opaco para el raton: subido por encima de
+//    las provincias, se tragaba tambien los clics en el hueco entre puntos y el
+//    mapa provincial dejaba de abrir sus fichas. Un SVG no: cada circulo responde
+//    al raton y el hueco entre circulos deja pasar el clic a la provincia de
+//    abajo. Es la unica forma de que las dos capas convivan.
+//
+//    El coste es un nodo del DOM por municipio. Medido con los 8.132 del objetivo
+//    final: repintar 140 ms, quince arrastres 179 ms. Se aguanta. Si algun dia
+//    dejara de aguantar, la salida NO es volver al canvas (rompe la capa de
+//    abajo) sino dibujar solo los municipios del encuadre visible.
+mapa.createPane('municipios');
+mapa.getPane('municipios').style.zIndex = 450;   // entre overlayPane (400) y shadowPane (500)
+const lienzo = L.svg({padding:.3, pane:'municipios'});
+let capaMun = null, munVisible = true, munDatos = null, munSel = null;
+
+// El porcentaje se convierte a la MISMA escala de anomalia que usan las
+// provincias (−40/−15/+15/+40), para que un color signifique lo mismo en las dos
+// capas. Un mapa donde el mismo rojo quiere decir dos cosas distintas segun la
+// capa es peor que un mapa sin colores.
+const munAnom = f => f[MUN.mediana] > 0 ? (f[MUN.mm] / f[MUN.mediana]) * 100 - 100 : null;
+
+// Mismos cinco tramos que colorAnomalia y mismos tonos, pero encendidos. Los
+// colores de las provincias estan calculados para rellenar un poligono grande
+// sobre un mapa oscuro; ese mismo tono en un punto de cuatro pixeles, dibujado
+// ENCIMA de una provincia que ya es azul, desaparece. Se comprobo mirando la
+// captura: los municipios se veian como manchas grises apenas distinguibles del
+// relleno. Lo que tiene que significar lo mismo en las dos capas es el TRAMO,
+// no el valor exacto del color.
+function colorMunicipio(p){
+  if (p === null || p === undefined) return '#8fa6b8';
+  if (p < -40) return '#ff5233';
+  if (p < -15) return '#ff9d4d';
+  if (p <  15) return '#ede4b0';
+  if (p <  40) return '#6ec6ff';
+  return '#1e88ff';
+}
+
+function munEtiqueta(a){
+  if (a === null) return '—';
+  if (a < -40) return 'Muy seco';
+  if (a < -15) return 'Seco';
+  if (a <  15) return 'Normal';
+  if (a <  40) return 'Lluvioso';
+  return 'Muy lluvioso';
+}
+// EL PUESTO 1 ES EL AÑO MAS HUMEDO, no el mas seco. Comprobado contra los datos:
+// las celdas con puesto 1-5 van al 144 % de su mediana y las de puesto 41-45 al
+// 83 %. La primera version de esta ficha decia "12.º más seco" de un municipio
+// que iba al 119 % de lo normal, y esa contradiccion en la misma tarjeta fue lo
+// que delato el fallo.
+//
+// Y se cuenta desde el extremo mas cercano: de un año en el puesto 40 de 45 se
+// dice que es el 6.º mas seco, no el 40.º mas lluvioso. Es como lo diria una
+// persona.
+function munPuesto(puesto, de){
+  const desdeSeco = de - puesto + 1;
+  const cual = puesto <= de / 2
+    ? '<b>' + puesto + '.º más lluvioso</b>'
+    : '<b>' + desdeSeco + '.º más seco</b>';
+  return 'Es el ' + cual + ' de los últimos ' + de + ' años.';
+}
+
+function munRadio(){
+  const z = mapa.getZoom();
+  return z <= 5 ? 3 : z <= 6 ? 3.8 : z <= 7 ? 4.8 : z <= 8 ? 6 : 7.5;
+}
+// El borde se adelgaza al alejarse. Con un radio de 3 px, un borde de 1,2 px se
+// come mas de la mitad del punto y lo que se ve es el borde, no el color.
+function munBorde(){
+  const z = mapa.getZoom();
+  return z <= 5 ? 0.6 : z <= 6 ? 0.8 : 1.2;
+}
+const munNormal = m => m.setStyle({weight: munBorde(), color: '#0a1c2c', opacity: .55});
+
+function munFicha(f){
+  // El mismo color del punto que se acaba de pulsar, no el de la escala
+  // provincial: si la ficha se pintara con otro tono, el lector tendria que
+  // creerse que hablan del mismo sitio.
+  const a = munAnom(f), col = colorMunicipio(a);
+  const pct = f[MUN.mediana] > 0 ? (f[MUN.mm] / f[MUN.mediana]) * 100 : null;
+  const d = document.getElementById('mun-ficha');
+  // La provincia sale de la lista del fichero, no del primer tramo de la ruta:
+  // la ruta es un slug sin acentos ni barras (a-coruna, alava) y escribir
+  // "a coruna" o "araba alava" en una ficha publicada es peor que no ponerla.
+  const provs = munDatos.provincias || [];
+  document.getElementById('mf-prov').textContent =
+    provs[f[MUN.prov]] || 'España';
+  document.getElementById('mf-nom').textContent = f[MUN.nombre];
+  const el = document.getElementById('mf-pct');
+  el.textContent = pct === null ? '—' : nf.format(Math.round(pct)) + ' %';
+  el.style.color = col;
+  const et = document.getElementById('mf-et');
+  et.textContent = munEtiqueta(a) + ' · ' + pctTxt(a) + ' frente a lo normal';
+  et.style.color = col;
+
+  // La barra tiene el 100 % en el centro: 200 % llena la barra entera, 0 % la
+  // deja vacia. Asi el ojo compara contra lo normal y no contra un maximo
+  // arbitrario, que es lo que interesa de un dato de lluvia.
+  const b = document.getElementById('mf-barra');
+  b.style.width = Math.max(2, Math.min(100, (pct || 0) / 2)) + '%';
+  b.style.background = col;
+
+  document.getElementById('mf-mm').textContent = mmTxt(f[MUN.mm]);
+  document.getElementById('mf-med').textContent = mmTxt(f[MUN.mediana]);
+  document.getElementById('mf-puesto').innerHTML = munPuesto(f[MUN.puesto], f[MUN.de]);
+
+  const cta = document.getElementById('mf-cta');
+  if (f[MUN.ruta]){
+    cta.style.display = 'block';
+    cta.href = SITIO + f[MUN.ruta] + '/';
+    cta.textContent = 'Ver la ficha de ' + f[MUN.nombre] + ' →';
+  } else {
+    // Un municipio sin ficha se pinta igual, pero no se le inventa un enlace a
+    // una pagina que no existe.
+    cta.style.display = 'none';
+  }
+  document.getElementById('mf-nota').textContent =
+    'Acumulado del año hidrológico hasta el ' + fechaLarga(munDatos.hasta) +
+    ', comparado con la mediana de ese mismo tramo del año desde ' +
+    (munDatos.desde_anio || '—') + '. Rejilla ERA5-Land.';
+  d.classList.add('visible');
+}
+
+document.getElementById('mf-x').addEventListener('click', () => {
+  document.getElementById('mun-ficha').classList.remove('visible');
+  if (munSel) { munNormal(munSel); munSel = null; }
+});
+
+function munPinta(){
+  if (capaMun) { mapa.removeLayer(capaMun); capaMun = null; }
+  if (!munVisible || !munDatos) return;
+  const r = munRadio(), w = munBorde();
+  // Se pintan de menos a mas extremo, para que el canvas deje ARRIBA los casos
+  // interesantes. En la costa gallega o en la Marina Alta hay municipios cada
+  // pocos kilometros y a zoom bajo los circulos se solapan: sin ordenar, cual
+  // queda visible lo decide el orden alfabetico del fichero, y un municipio al
+  // 45 % de lo normal puede quedar tapado por su vecino, que va normal.
+  const orden = munDatos.municipios
+    .map(f => [Math.abs(munAnom(f) ?? 0), f])
+    .sort((a, b) => a[0] - b[0]);
+
+  const marcas = orden.map(([, f]) => {
+    const m = L.circleMarker([f[MUN.lat], f[MUN.lon]], {
+      // Borde OSCURO sobre relleno encendido: es lo que separa dos puntos que
+      // se solapan. (La version anterior hacia lo contrario, borde claro sobre
+      // relleno apagado, y el resultado era una nube de aros claros.)
+      renderer: lienzo, radius: r, weight: w, color: '#0a1c2c', opacity: .55,
+      fillColor: colorMunicipio(munAnom(f)), fillOpacity: 1,
+    });
+    m.on('click', e => {
+      L.DomEvent.stopPropagation(e);   // que no se abra tambien el popup provincial
+      if (munSel) munNormal(munSel);
+      m.setStyle({weight:3, color:'#ffd166', opacity:1});
+      m.bringToFront();
+      munSel = m;
+      munFicha(f);
+    });
+    return m;
+  });
+  capaMun = L.layerGroup(marcas).addTo(mapa);
+}
+
+mapa.on('zoomend', () => {
+  if (!capaMun) return;
+  const r = munRadio(), w = munBorde();
+  capaMun.eachLayer(l => { l.setRadius(r); if (l !== munSel) l.setStyle({weight:w}); });
+});
+
+document.getElementById('btn-mun').addEventListener('click', function(){
+  munVisible = !munVisible;
+  this.classList.toggle('activo', munVisible);
+  if (!munVisible) document.getElementById('mun-ficha').classList.remove('visible');
+  munPinta(); actualizarLeyenda();
+});
+
+// Se carga aparte y DESPUES del mapa provincial: si este fichero fallara o
+// tardara, el mapa de siempre ya está en pantalla y funcionando.
+fetch(MUNI_URL)
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(d => {
+    munDatos = d;
+    munPinta(); actualizarLeyenda();
+    const n = d.municipios.length;
+    document.getElementById('btn-mun').textContent = 'Municipios (' + nf.format(n) + ')';
+  })
+  .catch(err => {
+    console.warn('Capa de municipios no disponible:', err);
+    document.getElementById('btn-mun').style.display = 'none';
+  });
 
 // ─── CARGA ────────────────────────────────────────────────────────────────────
 Promise.all([
