@@ -1,0 +1,39 @@
+name: Actualizar reloj climático
+
+on:
+  schedule:
+    # Cada mañana a las 6:30 UTC (8:30 Madrid en verano). La fecha límite del
+    # reloj sólo cambia cada trimestre; lo que cambia a diario es el tiempo
+    # restante y la frase citable del bloque SSR.
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Ejecutar script
+        run: python scripts/obtener_reloj_climatico.py
+
+      - name: Guardar cambios
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add docs/reloj_climatico.json
+          git diff --staged --quiet || (git commit -m "Reloj climático actualizado: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
