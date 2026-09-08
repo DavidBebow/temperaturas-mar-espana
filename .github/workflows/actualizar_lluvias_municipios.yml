@@ -1,4 +1,74 @@
 name: Actualizar lluvia diaria por municipio
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+#
+# El script y el fichero base viven en clima-scripts (privado): la asignacion
+# municipio -> estacion es el trabajo, no el resultado. Aqui solo se ejecuta y
+# se commitean las salidas, que si son publicas porque las sirve la web.
+
+on:
+  schedule:
+    # Dos veces al dia, a las 07:00 y 19:00 UTC.
+    #
+    # Dos y no una a proposito. La observacion de AEMET es una ventana movil de
+    # 24 horas, asi que un dia natural se completa entre dos ejecuciones. Con una
+    # sola al dia, si falla la del martes el lunes se queda incompleto PARA
+    # SIEMPRE: esas horas ya no vuelven. Con dos, cada hora se ve dos veces y una
+    # ejecucion perdida no deja hueco. El script ignora las horas repetidas, asi
+    # que la segunda pasada no infla nada.
+    - cron: '0 7 * * *'
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: lluvia-municipios
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ejecutar script
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          # El base viaja con el script, en el privado. El historico y la salida
+          # se quedan aqui, que es quien los sirve por GitHub Pages.
+          CG_BASE: privado/municipios_base.json
+          CG_HIST: historico_estaciones.json
+          CG_SALIDA: docs/lluvias_municipios.json
+        run: python privado/lluvia_municipios_diaria.py
+
+      - name: Publicar cambios
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add historico_estaciones.json docs/lluvias_municipios.json
+          # Sin cambios no se commitea: si AEMET no trae nada nuevo, no tiene
+          # sentido ensuciar el historial con un commit vacio cada doce horas.
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "Lluvia diaria por municipio: $(date -u +%Y-%m-%d\ %H:%M) UTC"
+            git push
+          fi
+name: Actualizar lluvia diaria por municipio
 
 on:
   schedule:
