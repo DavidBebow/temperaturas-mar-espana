@@ -3,143 +3,152 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lluvias en España — Por provincia</title>
+<title>Lluvias en España — Por provincia y municipio</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
+  /* ─────────────────────────────────────────────────────────────────────────
+     El mapa ocupa TODA la ventana y lo demas flota encima, como en el mapa de
+     embalses. La version anterior apilaba cabecera + controles + leyenda + mapa
+     en columna: entre las tres barras se comian 150 px de alto, y dentro de un
+     iframe de 660 px eso dejaba a España en un hueco de medio palmo.
+     ───────────────────────────────────────────────────────────────────────── */
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{
-    background:#06101a;
-    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    color:#dceaf6;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;
-  }
+  html,body{height:100%;overflow:hidden}
+  body{background:#06101a;color:#dceaf6;-webkit-font-smoothing:antialiased;
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  #mapa{position:absolute;inset:0;background:#06101a;z-index:1}
 
-  /* ---------- CABECERA ---------- */
-  #cabecera{
-    position:relative;z-index:500;
-    background:linear-gradient(180deg,#08192a 0%,#061220 100%);
-    padding:13px 20px;display:flex;justify-content:space-between;align-items:center;
-    flex-wrap:wrap;gap:8px;border-bottom:1px solid #12304a;
-  }
-  #cabecera h2{
-    font-size:15px;font-weight:600;letter-spacing:-.01em;color:#eaf5ff;
-    display:flex;align-items:center;gap:9px;
-  }
-  #cabecera h2 .dot{
-    width:9px;height:9px;border-radius:50%;background:#3fa7e8;flex-shrink:0;
-    box-shadow:0 0 0 0 rgba(63,167,232,.6);animation:pulso 2.2s infinite;
-  }
+  /* Cristal comun a los tres paneles flotantes. */
+  .vidrio{background:rgba(8,22,36,.90);border:1px solid #1b3d5c;border-radius:16px;
+    backdrop-filter:blur(14px);box-shadow:0 16px 44px rgba(0,0,0,.55)}
+
+  /* ---------- HUD (izquierda arriba) ---------- */
+  /* La altura se corta ANTES de la leyenda, que vive en la misma columna. Con
+     max-height:100% la lista de provincias se metia por detras del recuadro de
+     la leyenda y la quinta fila quedaba ilegible. */
+  #hud{position:absolute;top:16px;left:16px;z-index:1000;width:274px;
+    max-width:calc(100vw - 32px);max-height:calc(100% - 210px);
+    display:flex;flex-direction:column;padding:15px 17px 6px}
+  .hud-tit{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;
+    letter-spacing:-.01em;color:#eaf5ff}
+  .hud-tit .dot{width:9px;height:9px;border-radius:50%;background:#3fa7e8;flex:none;
+    box-shadow:0 0 0 0 rgba(63,167,232,.6);animation:pulso 2.2s infinite}
   @keyframes pulso{
     0%{box-shadow:0 0 0 0 rgba(63,167,232,.55)}
     70%{box-shadow:0 0 0 9px rgba(63,167,232,0)}
-    100%{box-shadow:0 0 0 0 rgba(63,167,232,0)}
-  }
-  #info-derecha{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
-  #resumen{font-size:12px;color:#6f8ba3}
-  #resumen b{color:#5cbcf0;font-weight:700}
-  #ultima-act{font-size:11px;color:#4f6c85}
+    100%{box-shadow:0 0 0 0 rgba(63,167,232,0)}}
+  .hud-fecha{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#5b7d97;
+    font-weight:600;margin-top:5px}
+  .hud-big{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.04;margin:8px 0 1px}
+  .hud-cap{font-size:12px;color:#7e9bb4;line-height:1.4}
+  .hud-div{height:1px;background:#14314b;margin:13px 0}
+  .chips{display:flex;gap:8px}
+  .chips .c{flex:1;background:rgba(13,36,55,.75);border:1px solid #17395a;border-radius:11px;
+    padding:8px 10px}
+  .chips .c b{display:block;font-size:16px;font-weight:800;letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums}
+  .chips .c span{display:block;margin-top:2px;font-size:10px;color:#5b7d97;line-height:1.3}
+  .hud-k{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+    color:#5cbcf0;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .hud-k button{background:none;border:0;color:#456f8e;cursor:pointer;font:inherit;
+    font-size:14px;line-height:1;padding:0 0 0 6px}
+  .hud-k button:hover{color:#9fbdd6}
+  #panel-lista{overflow-y:auto;margin-top:2px;min-height:0}
+  #hud.plegado #panel-lista{display:none}
+  .pg-card{padding:8px 0;border-bottom:1px solid #102a41;cursor:pointer;display:flex;
+    justify-content:space-between;align-items:baseline;gap:10px}
+  .pg-card:last-child{border-bottom:0}
+  .pg-card:hover .pg-zona{color:#fff;text-decoration:underline}
+  .pg-zona{font-size:13px;font-weight:600;color:#dceaf6;line-height:1.3}
+  .pg-prov{font-size:10.5px;color:#5b7d97;margin-top:1px}
+  .pg-mm{font-size:14px;font-weight:700;white-space:nowrap;letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums}
+  .vacio{padding:10px 0 12px;font-size:12px;color:#5b7d97;line-height:1.5}
 
-  /* ---------- CONTROLES ---------- */
-  #controles{
-    position:relative;z-index:500;background:#081827;border-bottom:1px solid #12304a;
-    padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
-  }
-  .grupo{display:flex;align-items:center;gap:7px}
-  .grupo>.et{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:#4f6c85;
-    margin-right:2px}
-  .pill{
-    background:#0d2437;border:1px solid #1b3d5c;color:#9fbdd6;
-    padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;
-    transition:background .15s,color .15s,border-color .15s;font-family:inherit;
-  }
+  /* ---------- BARRA DE CONTROLES (arriba en el centro) ---------- */
+  /* Centrada en el hueco que queda A LA DERECHA del HUD, no en la ventana: si se
+     centra en la ventana hay que restarle el ancho del panel por los dos lados y
+     la barra se queda sin sitio, parte los grupos en dos filas y deja colgando
+     un separador. */
+  #barra{position:absolute;top:16px;left:306px;right:16px;z-index:1000;
+    display:flex;align-items:center;gap:7px;padding:8px 11px;flex-wrap:wrap;
+    justify-content:center;width:auto;margin:0 auto;max-width:max-content;
+    transition:right .34s cubic-bezier(.32,.72,.29,1)}
+  /* Al abrirse el cajon, la barra se recentra en el hueco que queda. Si no, la
+     ficha le pasa por encima y esconde los dos ultimos botones. */
+  body.con-cajon #barra{right:368px}
+  /* Cada grupo lleva SU separador delante y viaja con el. Sueltos, al partirse la
+     barra en dos filas quedaba un separador colgando al final de la primera. */
+  #barra .g{display:inline-flex;align-items:center;gap:7px}
+  #barra .sep{width:1px;height:19px;background:#1b3d5c;margin:0 4px 0 1px;flex:none}
+  .pill{background:rgba(13,36,55,.8);border:1px solid #1b3d5c;color:#9fbdd6;
+    padding:7px 13px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:600;
+    cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
   .pill:hover{background:#123049;color:#dceaf6}
   .pill.activo{background:#1f6ea8;border-color:#2f8fd0;color:#fff}
 
-  /* ---------- LEYENDA ---------- */
-  #leyenda{
-    position:relative;z-index:500;background:#06121f;border-bottom:1px solid #12304a;
-    padding:9px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-    font-size:11.5px;color:#7e9bb4;
-  }
-  #leyenda strong{color:#a8c4da;font-weight:600;font-size:11.5px}
-  #leyenda-items{display:flex;flex-wrap:wrap;gap:6px 13px;align-items:center}
-  .ley-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-  .ley-dot{width:13px;height:13px;border-radius:4px;display:inline-block;
+  /* ---------- LEYENDA (abajo a la izquierda) ---------- */
+  #leyenda{position:absolute;bottom:16px;left:16px;z-index:1000;padding:11px 14px;
+    max-width:min(340px,calc(100vw - 32px))}
+  .ley-k{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;
+    color:#5b7d97;margin-bottom:7px}
+  /* Dos columnas: en una sola, los siete tramos de litros hacen una leyenda de
+     200 px de alto que se come la mitad de la columna izquierda. */
+  #leyenda-items{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+  .ley-item{display:flex;align-items:center;gap:7px;font-size:11px;color:#8ea9c0;line-height:1.3}
+  .ley-dot{width:13px;height:10px;border-radius:3px;flex:none;
     border:1px solid rgba(255,255,255,.14)}
-  #leyenda .pista{margin-left:auto;font-size:10.5px;color:#45657e}
+  .ley-mun{grid-column:1 / -1;margin-top:5px;padding-top:7px;border-top:1px solid #14314b;
+    align-items:flex-start}
+  .ley-puntos{display:flex;gap:2px;flex:none;padding-top:1px}
+  .ley-punto{width:9px;height:9px;border-radius:50%;border:1px solid rgba(10,28,44,.55)}
 
-  /* ---------- MAPA ---------- */
-  #envoltorio{position:relative;flex:1;min-height:0}
-  #mapa{position:absolute;inset:0;background:#06101a}
+  /* ---------- CAJÓN (derecha) ---------- */
+  /* Una sola ficha para las dos capas. Antes la provincia se contaba en un popup
+     de Leaflet pegado al puntero y el municipio en una tarjeta de la esquina:
+     dos maneras distintas de decir lo mismo en el mismo mapa. */
+  #cajon{position:absolute;top:16px;right:16px;bottom:16px;z-index:1100;width:336px;
+    max-width:calc(100vw - 32px);display:flex;flex-direction:column;overflow:hidden;
+    transform:translateX(calc(100% + 26px));transition:transform .34s cubic-bezier(.32,.72,.29,1)}
+  #cajon.abierto{transform:translateX(0)}
+  .cj-cab{padding:16px 18px 12px;border-bottom:1px solid #14314b;flex:none}
+  .cj-k{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:#7fa8c9;font-weight:600}
+  .cj-cab h2{margin:3px 0 0;font-size:21px;font-weight:700;letter-spacing:-.02em;color:#fff;
+    line-height:1.15;padding-right:26px}
+  .cj-x{position:absolute;top:13px;right:14px;width:27px;height:27px;border-radius:50%;
+    border:1px solid #1b3d5c;background:rgba(13,36,55,.9);color:#7fa8c9;cursor:pointer;
+    font:inherit;font-size:13px;line-height:1}
+  .cj-x:hover{color:#fff;background:#12304a}
+  .cj-body{flex:1;overflow-y:auto;padding:14px 18px 18px}
 
-  /* ---------- PANEL FLOTANTE ---------- */
-  #panel{
-    position:absolute;left:14px;bottom:14px;z-index:600;width:236px;max-width:calc(100% - 28px);
-    background:rgba(9,24,38,.94);border:1px solid #1b3d5c;border-radius:14px;
-    box-shadow:0 8px 28px rgba(0,0,0,.5);overflow:hidden;backdrop-filter:blur(8px);
-  }
-  #panel .pg-cab{
-    padding:11px 14px 9px;border-bottom:1px solid #14314b;font-size:11px;font-weight:700;
-    text-transform:uppercase;letter-spacing:.07em;color:#5cbcf0;
-    display:flex;justify-content:space-between;align-items:baseline;gap:8px;
-  }
-  #panel .pg-cab small{font-size:9.5px;font-weight:600;letter-spacing:.05em;color:#456f8e;
-    text-transform:none}
-  #panel .pg-lista{max-height:214px;overflow-y:auto}
-  .pg-card{
-    padding:9px 14px;border-bottom:1px solid #102a41;cursor:pointer;
-    display:flex;justify-content:space-between;align-items:baseline;gap:10px;
-    transition:background .12s;
-  }
-  .pg-card:last-child{border-bottom:0}
-  .pg-card:hover{background:#102a41}
-  .pg-zona{font-size:13px;font-weight:600;color:#dceaf6;line-height:1.3}
-  .pg-prov{font-size:10.5px;color:#5b7d97;margin-top:1px}
-  .pg-mm{font-size:14.5px;font-weight:700;white-space:nowrap;letter-spacing:-.01em}
-  #panel .vacio{padding:14px;font-size:12px;color:#5b7d97;line-height:1.5}
-  #panel.plegado .pg-lista{display:none}
-  #panel .cerrar{background:none;border:0;color:#456f8e;cursor:pointer;font-size:15px;
-    line-height:1;padding:0 0 0 6px;font-family:inherit}
-  #panel .cerrar:hover{color:#9fbdd6}
-
-  /* ---------- POPUP ---------- */
-  .leaflet-popup-content-wrapper{
-    background:#0a1c2c !important;border:1px solid #1e4468 !important;border-radius:14px !important;
-    box-shadow:0 10px 34px rgba(0,0,0,.6) !important;color:#dceaf6 !important;
-  }
-  .leaflet-popup-content{margin:15px 17px !important;font-family:inherit}
-  .leaflet-popup-tip{background:#0a1c2c !important;border:1px solid #1e4468 !important}
-  .leaflet-popup-close-button{color:#456f8e !important;font-size:20px !important;
-    padding:8px 9px 0 0 !important}
-  .leaflet-popup-close-button:hover{color:#dceaf6 !important}
-  .popup-titulo{font-size:16px;font-weight:700;letter-spacing:-.01em;color:#fff;line-height:1.25}
-  .popup-sub{font-size:11px;color:#5b7d97;margin:2px 0 12px}
-  .popup-valor{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
-  .popup-etq{font-size:11.5px;margin:5px 0 10px;font-weight:600}
-  .popup-barra-wrap{height:6px;background:#0f2942;border-radius:4px;overflow:hidden;margin:0 0 13px}
-  .popup-barra{height:100%;border-radius:4px;transition:width .3s}
-  .popup-dato{display:flex;justify-content:space-between;gap:14px;padding:6px 0;
-    border-bottom:1px solid #10293f;font-size:12px}
-  .popup-dato:last-of-type{border-bottom:0}
-  .popup-dato>span:first-child{color:#6f8ba3}
-  .popup-dato>span:last-child{font-weight:600;text-align:right}
-  .popup-seccion{font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:#456f8e;
-    margin:12px 0 3px;padding-top:9px;border-top:1px solid #14314b}
-  .popup-tres{display:flex;gap:8px;margin:12px 0 0;padding:10px 0 0;
-    border-top:1px solid #14314b;text-align:center}
-  .popup-tres>div{flex:1}
-  .popup-tres b{display:block;font-size:13.5px;font-weight:700;color:#dceaf6;letter-spacing:-.01em}
-  .popup-tres span{display:block;margin-top:2px;font-size:9.5px;text-transform:uppercase;
+  .cj-n{font-size:35px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .cj-et{font-size:12.5px;margin-top:3px;font-weight:600}
+  .cj-barra{height:8px;background:#16293a;border-radius:5px;margin:14px 0 4px;position:relative}
+  .cj-barra i{display:block;height:100%;border-radius:5px}
+  .cj-cien{position:absolute;top:-4px;bottom:-4px;left:50%;width:0;border-left:1px dashed #8fa8bd}
+  .cj-pie{font-size:10.5px;color:#7fa8c9;margin:0 0 12px}
+  .cj-fila{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:7px 0;
+    border-bottom:1px solid #17324a}
+  .cj-fila:last-of-type{border-bottom:0}
+  .cj-fila span{color:#9db8cf}
+  .cj-fila b{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+  .cj-tres{display:flex;gap:8px;margin:13px 0 0;padding:12px 0 0;border-top:1px solid #14314b;
+    text-align:center}
+  .cj-tres>div{flex:1}
+  .cj-tres b{display:block;font-size:13.5px;font-weight:700;color:#dceaf6;letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums}
+  .cj-tres span{display:block;margin-top:2px;font-size:9.5px;text-transform:uppercase;
     letter-spacing:.06em;color:#456f8e}
-  .popup-ficha{
-    display:block;margin:13px 0 0;padding:9px 12px;background:#12507f;border-radius:9px;
-    color:#fff !important;text-decoration:none;font-size:12.5px;font-weight:600;text-align:center;
-  }
-  .popup-ficha:hover{background:#1a6aa6}
-  .popup-nota{font-size:10.5px;color:#456f8e;line-height:1.45;margin:9px 0 0}
+  .cj-frase{margin:13px 0 0;font-size:13.5px;line-height:1.5;color:#cfe2f2}
+  .cj-frase b{color:#fff}
+  .cj-cta{display:block;margin-top:15px;padding:11px 14px;background:#1257a8;color:#fff;
+    text-decoration:none;border-radius:11px;font-size:13.5px;font-weight:600;text-align:center}
+  .cj-cta:hover{background:#1a6cc9}
+  .cj-nota{margin-top:11px;font-size:10.5px;color:#7b93a8;line-height:1.45}
 
+  /* ---------- CONTROLES DE LEAFLET ---------- */
   .leaflet-control-zoom{border:none !important;box-shadow:0 4px 16px rgba(0,0,0,.5) !important;
-    border-radius:12px !important;overflow:hidden}
+    border-radius:12px !important;overflow:hidden;margin-left:16px !important}
   .leaflet-control-zoom a{background:#0a1c2c !important;color:#9fbdd6 !important;
     border-color:#14314b !important;width:34px !important;height:34px !important;
     line-height:34px !important;font-size:18px !important}
@@ -149,115 +158,98 @@
   .leaflet-control-attribution{background:rgba(6,16,26,.85) !important;color:#456f8e !important;
     font-size:10px !important;border-radius:8px 0 0 0 !important;padding:2px 8px !important}
   .leaflet-control-attribution a{color:#6f9fc4 !important}
+  /* Zoom y atribucion abajo a la derecha, y apartandose cuando se abre la ficha.
+     En la esquina de arriba a la izquierda los botones quedaban DEBAJO del HUD,
+     invisibles; y la atribucion, debajo del cajon. */
+  .leaflet-bottom.leaflet-right{transition:right .34s cubic-bezier(.32,.72,.29,1)}
+  body.con-cajon .leaflet-bottom.leaflet-right{right:352px}
+  .leaflet-bottom.leaflet-right .leaflet-control-zoom{margin-bottom:24px !important;
+    margin-right:16px !important}
 
-  @media(max-width:680px){
-    #cabecera{padding:11px 14px}
-    #cabecera h2{font-size:13.5px}
-    #controles{padding:9px 14px;gap:12px}
-    .grupo>.et{display:none}
-    .pill{padding:6px 11px;font-size:12px}
-    #leyenda{padding:8px 14px;font-size:11px}
-    #leyenda .pista{display:none}
-    #panel{left:10px;right:10px;bottom:10px;width:auto}
-    #panel .pg-lista{max-height:132px}
+  /* ---------- PANTALLAS ESTRECHAS ---------- */
+  @media(max-width:900px){
+    #barra{max-width:calc(100vw - 32px)}
   }
-
-/* ─── Capa de municipios y su ficha ─────────────────────────────────────── */
-#mun-ficha{position:absolute;top:12px;right:12px;width:290px;max-width:calc(100% - 24px);
-  background:rgba(10,22,33,.94);backdrop-filter:blur(8px);border:1px solid #1d3d57;
-  border-radius:14px;padding:16px 18px 18px;color:#e8f1f8;z-index:1000;display:none;
-  box-shadow:0 10px 30px rgba(0,0,0,.45);max-height:calc(100% - 24px);overflow:auto}
-#mun-ficha.visible{display:block}
-#leyenda .ley-punto{display:inline-block;width:9px;height:9px;border-radius:50%;
-  border:1px solid rgba(10,28,44,.55);vertical-align:-1px}
-#leyenda .ley-punto + .ley-punto{margin-left:2px}
-#leyenda .ley-mun{opacity:.92;gap:0}
-#leyenda .ley-mun span:last-child{margin-left:6px}
-#mun-ficha .mf-k{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#7fa8c9}
-#mun-ficha h3{margin:2px 0 10px;font-size:20px;font-weight:700;letter-spacing:-.02em;color:#fff}
-#mun-ficha .mf-x{position:absolute;top:12px;right:14px;cursor:pointer;color:#7fa8c9;
-  font-size:16px;line-height:1;padding:4px}
-#mun-ficha .mf-x:hover{color:#fff}
-#mun-ficha .mf-n{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1}
-#mun-ficha .mf-et{font-size:12.5px;margin-top:3px}
-#mun-ficha .mf-barra{height:8px;background:#16293a;border-radius:5px;margin:14px 0 4px;
-  position:relative}
-#mun-ficha .mf-barra i{display:block;height:100%;border-radius:5px}
-#mun-ficha .mf-cien{position:absolute;top:-4px;bottom:-4px;left:50%;width:0;
-  border-left:1px dashed #8fa8bd}
-#mun-ficha .mf-pie{font-size:10.5px;color:#7fa8c9;margin:0 0 12px}
-#mun-ficha .mf-fila{display:flex;justify-content:space-between;gap:12px;font-size:13px;
-  padding:7px 0;border-bottom:1px solid #17324a}
-#mun-ficha .mf-fila:last-of-type{border-bottom:0}
-#mun-ficha .mf-fila span{color:#9db8cf}
-#mun-ficha .mf-fila b{font-weight:600;text-align:right}
-#mun-ficha .mf-frase{margin:12px 0 0;font-size:13.5px;line-height:1.5;color:#cfe2f2}
-#mun-ficha .mf-frase b{color:#fff}
-#mun-ficha .mf-cta{display:block;margin-top:14px;padding:11px 14px;background:#1257a8;
-  color:#fff;text-decoration:none;border-radius:10px;font-size:13.5px;font-weight:600;
-  text-align:center}
-#mun-ficha .mf-cta:hover{background:#1a6cc9}
-#mun-ficha .mf-nota{margin-top:10px;font-size:11px;color:#7b93a8;line-height:1.45}
-@media(max-width:760px){
-  #mun-ficha{top:auto;left:10px;right:10px;bottom:10px;width:auto;max-height:52%}
-}
+  @media(max-width:760px){
+    /* En movil no caben tres paneles: manda el mapa. El HUD se queda arriba con
+       lo imprescindible, la barra baja debajo, la leyenda desaparece y la ficha
+       sube desde abajo como una hoja. */
+    /* El HUD se queda en una franja de cabecera. Con el panel entero (cifra +
+       fichas + lista de cinco) ocupaba medio movil y España caia en el hueco de
+       abajo, cortada por arriba. Las fichas de comparacion se van y la lista
+       arranca plegada: se despliega con el boton si se quiere. */
+    #hud{width:auto;right:16px;padding:11px 14px 4px;max-height:52%}
+    .hud-tit{font-size:14px}
+    .hud-big{font-size:27px;margin:5px 0 0}
+    .hud-cap{font-size:11.5px}
+    #hud .chips,#hud .d-chips{display:none}
+    #hud .hud-div{margin:9px 0}
+    #panel-lista{max-height:150px}
+    #barra{position:absolute;top:auto;bottom:16px;left:16px;right:16px;transform:none;
+      max-width:none;justify-content:flex-start;overflow-x:auto}
+    #leyenda{display:none}
+    #cajon{top:auto;left:16px;right:16px;bottom:16px;width:auto;height:64%;
+      transform:translateY(calc(100% + 26px))}
+    #cajon.abierto{transform:translateY(0)}
+    /* Aqui la hoja tapa la barra entera: se retira mientras hay ficha abierta,
+       en vez de dejarla debajo donde no se puede pulsar. */
+    body.con-cajon #barra{opacity:0;pointer-events:none}
+    /* Los botones de zoom chocarian con la barra de abajo; en un movil se hace
+       zoom con dos dedos. */
+    .leaflet-control-zoom{display:none}
+    body.con-cajon .leaflet-bottom.leaflet-right{right:0}
+  }
 </style>
 </head>
 <body>
 
-<div id="cabecera">
-  <h2><span class="dot"></span> Lluvia en España por provincia</h2>
-  <div id="info-derecha">
-    <span id="resumen">Cargando datos…</span>
-    <span id="ultima-act"></span>
+<div id="mapa"></div>
+
+<div id="hud" class="vidrio">
+  <div class="hud-tit"><span class="dot"></span>Lluvia en España</div>
+  <div class="hud-fecha" id="hud-fecha">Cargando datos…</div>
+  <div class="hud-big" id="hud-big">—</div>
+  <div class="hud-cap" id="hud-cap">&nbsp;</div>
+  <div class="hud-div d-chips"></div>
+  <div class="chips">
+    <div class="c"><b id="chip-a">—</b><span id="chip-a-et">lo normal</span></div>
+    <div class="c"><b id="chip-b">—</b><span id="chip-b-et">por encima de lo normal</span></div>
   </div>
+  <div class="hud-div"></div>
+  <div class="hud-k"><span id="panel-titulo">Dónde más ha llovido</span>
+    <button id="panel-cerrar" aria-label="Plegar">−</button></div>
+  <div id="panel-lista"></div>
 </div>
 
-<div id="controles">
-  <div class="grupo">
-    <span class="et">Periodo</span>
+<div id="barra" class="vidrio">
+  <span class="g">
     <button class="pill activo" data-periodo="ayer">Último día</button>
     <button class="pill" data-periodo="semana">7 días</button>
     <button class="pill" data-periodo="anual">Este año</button>
-  </div>
-  <div class="grupo">
-    <span class="et">Capa</span>
-    <button class="pill activo" id="btn-mun">Municipios</button>
-  </div>
-  <div class="grupo">
-    <span class="et">Ver</span>
+  </span>
+  <span class="g">
+    <i class="sep"></i>
     <button class="pill activo" data-modo="litros">Litros caídos</button>
     <button class="pill" data-modo="anomalia">Frente a lo normal</button>
-  </div>
+  </span>
+  <span class="g">
+    <i class="sep"></i>
+    <button class="pill activo" id="btn-mun">Municipios</button>
+  </span>
 </div>
 
-<div id="leyenda">
-  <strong id="leyenda-titulo">Precipitación</strong>
+<div id="leyenda" class="vidrio">
+  <div class="ley-k" id="leyenda-titulo">Precipitación</div>
   <div id="leyenda-items"></div>
-  <span class="pista">Toca una provincia para ver su detalle</span>
 </div>
 
-<div id="envoltorio">
-  <div id="mapa"></div>
-  <div id="mun-ficha">
-    <div class="mf-x" id="mf-x">&#10005;</div>
-    <div class="mf-k" id="mf-prov">&mdash;</div>
-    <h3 id="mf-nom">&mdash;</h3>
-    <div class="mf-n" id="mf-pct">&mdash;</div>
-    <div class="mf-et" id="mf-et">&mdash;</div>
-    <div class="mf-barra"><i id="mf-barra"></i><span class="mf-cien"></span></div>
-    <div class="mf-pie">La l&iacute;nea marca lo normal para estas alturas del a&ntilde;o</div>
-    <div class="mf-fila"><span>Ha ca&iacute;do</span><b id="mf-mm">&mdash;</b></div>
-    <div class="mf-fila"><span>Lo normal a estas alturas</span><b id="mf-med">&mdash;</b></div>
-    <div class="mf-frase" id="mf-puesto">&mdash;</div>
-    <a class="mf-cta" id="mf-cta" target="_top">Ver la ficha completa &rarr;</a>
-    <div class="mf-nota" id="mf-nota"></div>
+<div id="cajon" class="vidrio">
+  <button class="cj-x" id="cj-x">&#10005;</button>
+  <div class="cj-cab">
+    <div class="cj-k" id="cj-k">&mdash;</div>
+    <h2 id="cj-nom">&mdash;</h2>
   </div>
-  <div id="panel">
-    <div class="pg-cab"><span id="panel-titulo">Dónde más ha llovido</span>
-      <button class="cerrar" id="panel-cerrar" aria-label="Plegar">−</button></div>
-    <div class="pg-lista" id="panel-lista"></div>
-  </div>
+  <div class="cj-body" id="cj-body"></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -325,49 +317,6 @@ function colorAnomalia(p){
   return '#1257a8';
 }
 
-// ─── LEYENDA ──────────────────────────────────────────────────────────────────
-function etiquetasLitros(periodo){
-  const u = UMBRALES[periodo];
-  const t = [`0 mm`, `< ${u[1]} mm`];
-  for (let i = 1; i < u.length - 1; i++) t.push(`${u[i]}–${u[i+1]} mm`);
-  t.push(`> ${u[u.length-1]} mm`);
-  return t.map((label, i) => ({color: AZULES[i], label}));
-}
-const LEY_ANOM = [
-  {color:'#a02615', label:'Muy seco · bajo −40 %'},
-  {color:'#d2571f', label:'Seco · −40 a −15 %'},
-  {color:'#8a7f3a', label:'Normal · ±15 %'},
-  {color:'#2b8ecd', label:'Lluvioso · +15 a +40 %'},
-  {color:'#1257a8', label:'Muy lluvioso · más de +40 %'},
-];
-const TITULOS = {
-  ayer:'Lluvia del último día', semana:'Lluvia de 7 días', anual:'Acumulado del año',
-};
-function actualizarLeyenda(){
-  const items = modoActual === 'anomalia' ? LEY_ANOM : etiquetasLitros(periodoActual);
-  document.getElementById('leyenda-titulo').textContent =
-    modoActual === 'anomalia' ? 'Frente a lo normal de esta época' : TITULOS[periodoActual];
-  let html = items.map(i =>
-    `<span class="ley-item"><span class="ley-dot" style="background:${i.color}"></span>${i.label}</span>`
-  ).join('');
-
-  // Los puntos de municipio SIEMPRE van por anomalia anual, tambien cuando las
-  // provincias estan en litros. Sin esta linea el mapa tendria dos escalas de
-  // color a la vez sin decirlo, y el mismo azul significaria dos cosas: un mapa
-  // asi engaña mas que uno sin colores.
-  if (munVisible && munDatos){
-    // Los cinco tramos, no un punto de muestra: si la capa de municipios tiene
-    // su propia escala de color, hay que enseñarla entera o el lector no sabe
-    // que significa el rojo de un punto.
-    const muestra = [-60, -25, 0, 25, 60]
-      .map(v => `<span class="ley-punto" style="background:${colorMunicipio(v)}"></span>`)
-      .join('');
-    html += `<span class="ley-item ley-mun">${muestra}` +
-            `<span>Municipios: seco → lluvioso, acumulado del año frente a lo normal</span></span>`;
-  }
-  document.getElementById('leyenda-items').innerHTML = html;
-}
-
 // ─── FORMATO ──────────────────────────────────────────────────────────────────
 const nf = new Intl.NumberFormat('es-ES', {maximumFractionDigits:1});
 const mmTxt = v => (v === null || v === undefined) ? '—' : nf.format(v) + ' mm';
@@ -383,48 +332,56 @@ function fechaLarga(iso){
   if (!m) return iso || '—';
   return Number(m[3]) + ' de ' + MESES[Number(m[2]) - 1] + ' de ' + m[1];
 }
+// El fichero nacional trae la fecha como "07/09/2026", no como ISO.
+function fechaDeDatos(txt){
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(String(txt || ''));
+  return m ? fechaLarga(m[3] + '-' + m[2] + '-' + m[1]) : (txt || '—');
+}
 
-// ─── POPUP ────────────────────────────────────────────────────────────────────
-function construirPopup(p){
-  const c = CAMPOS[periodoActual];
-  const mm = p[c.mm], anom = p[c.anom], media = p[c.media];
-  const color = modoActual === 'anomalia' ? colorAnomalia(anom) : colorLitros(mm, periodoActual);
-  const tope = {ayer:40, semana:150, anual:1500}[periodoActual];
-  const barra = modoActual === 'anomalia'
-    ? Math.min(100, Math.abs(anom || 0) * 1.5)
-    : Math.min(100, ((mm || 0) / tope) * 100);
-  const slug = ID_A_SLUG[p.id];
-  const cuando = {ayer:'el último día con dato', semana:'en 7 días', anual:'en lo que va de año'}[periodoActual];
-  // La fila de la media necesita su propia redaccion: "Lo normal el último día
-  // con dato" no se entiende. Lo que se compara es contra lo tipico de la epoca.
-  const normalTxt = {ayer:'Lo normal en un día de esta época',
-                     semana:'Lo normal en una semana de esta época',
-                     anual:'Lo normal a estas alturas del año'}[periodoActual];
+// ─── LEYENDA ──────────────────────────────────────────────────────────────────
+function etiquetasLitros(periodo){
+  const u = UMBRALES[periodo];
+  const t = [`0 mm`, `menos de ${u[1]} mm`];
+  for (let i = 1; i < u.length - 1; i++) t.push(`${u[i]}–${u[i+1]} mm`);
+  t.push(`más de ${u[u.length-1]} mm`);
+  return t.map((label, i) => ({color: AZULES[i], label}));
+}
+const LEY_ANOM = [
+  {color:'#a02615', label:'Muy seco · bajo −40 %'},
+  {color:'#d2571f', label:'Seco · −40 a −15 %'},
+  {color:'#8a7f3a', label:'Normal · ±15 %'},
+  {color:'#2b8ecd', label:'Lluvioso · +15 a +40 %'},
+  {color:'#1257a8', label:'Muy lluvioso · más de +40 %'},
+];
+const TITULOS = {
+  ayer:'Lluvia del último día', semana:'Lluvia de 7 días', anual:'Acumulado del año',
+};
+function actualizarLeyenda(){
+  const items = modoActual === 'anomalia' ? LEY_ANOM : etiquetasLitros(periodoActual);
+  document.getElementById('leyenda-titulo').textContent =
+    (modoActual === 'anomalia' ? 'Provincias · frente a lo normal' : 'Provincias · ' + TITULOS[periodoActual]);
+  let html = items.map(i =>
+    `<span class="ley-item"><span class="ley-dot" style="background:${i.color}"></span>${i.label}</span>`
+  ).join('');
 
-  return `
-    <div style="min-width:250px">
-      <div class="popup-titulo">${p.nombre}</div>
-      <div class="popup-sub">${p.ccaa}</div>
-      <div class="popup-valor" style="color:${color}">${modoActual === 'anomalia' ? pctTxt(anom) : mmTxt(mm)}</div>
-      <div class="popup-etq" style="color:${color}">${p[c.etq] || '—'} · ${cuando}</div>
-      <div class="popup-barra-wrap"><div class="popup-barra" style="width:${barra}%;background:${color}"></div></div>
-
-      <div class="popup-dato"><span>Ha caído</span><span>${mmTxt(mm)}</span></div>
-      <div class="popup-dato"><span>${normalTxt}</span><span>${mmTxt(media)}</span></div>
-      <div class="popup-dato"><span>Diferencia</span><span style="color:${colorAnomalia(anom)}">${pctTxt(anom)}</span></div>
-
-      <div class="popup-tres">
-        <div><b>${mmTxt(p.mm_ayer)}</b><span>último día</span></div>
-        <div><b>${mmTxt(p.mm_semana)}</b><span>7 días</span></div>
-        <div><b>${mmTxt(p.mm_anual)}</b><span>del año</span></div>
-      </div>
-
-      ${slug ? `<a class="popup-ficha" href="${SITIO}${slug}/" target="_top">Ver los municipios de ${p.nombre} →</a>` : ''}
-    </div>`;
+  // Los puntos de municipio SIEMPRE van por anomalia anual, tambien cuando las
+  // provincias estan en litros. Sin esta linea el mapa tendria dos escalas de
+  // color a la vez sin decirlo, y el mismo azul significaria dos cosas: un mapa
+  // asi engaña mas que uno sin colores. Y se enseñan los cinco tramos, no un
+  // punto de muestra: si la capa tiene escala propia, hay que enseñarla entera.
+  if (munVisible && munDatos){
+    const muestra = [-60, -25, 0, 25, 60]
+      .map(v => `<span class="ley-punto" style="background:${colorMunicipio(v)}"></span>`)
+      .join('');
+    html += `<span class="ley-item ley-mun"><span class="ley-puntos">${muestra}</span>` +
+            `<span>Municipios: seco → lluvioso, acumulado del año frente a lo normal</span></span>`;
+  }
+  document.getElementById('leyenda-items').innerHTML = html;
 }
 
 // ─── MAPA ─────────────────────────────────────────────────────────────────────
-const mapa = L.map('mapa', {center:[40.0,-3.5], zoom:5, zoomControl:true});
+const mapa = L.map('mapa', {center:[40.2,-3.4], zoom:6, zoomControl:false});
+L.control.zoom({position:'bottomright'}).addTo(mapa);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
   {attribution:'© Esri · Lluvia: Open-Meteo (ERA5) · Medias: ERA5-Land', maxZoom:12}).addTo(mapa);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
@@ -441,7 +398,123 @@ function estilo(feature){
   return {fillColor:color, fillOpacity:.85, color:'#0c2136', weight:.9, opacity:.8};
 }
 
-// ─── PANEL: las tres que destacan en el periodo elegido ───────────────────────
+// Encuadre inicial: se ajusta a España DESCONTANDO el ancho de los paneles, para
+// que la peninsula no quede debajo del HUD ni del cajon. Con un simple center +
+// zoom fijo, en una pantalla ancha Galicia acababa tapada por el panel izquierdo.
+const ESPANA = L.latLngBounds([[35.6,-9.6],[43.9,4.5]]);
+function encuadrar(){
+  const movil = window.innerWidth <= 760;
+  // En movil los paneles no estan a los lados sino ARRIBA y ABAJO, asi que el
+  // margen que hay que reservar es vertical. Con el reparto de escritorio, la
+  // peninsula se metia entera debajo de la cabecera.
+  const izq = movil ? [18, 150] : [300, 30];
+  const der = movil ? [18, 92]  : [cajonAbierto() ? 356 : 40, 60];
+  mapa.fitBounds(ESPANA, {paddingTopLeft:izq, paddingBottomRight:der, animate:false});
+}
+
+// ─── CAJÓN ────────────────────────────────────────────────────────────────────
+const cajon = document.getElementById('cajon');
+const cajonAbierto = () => cajon.classList.contains('abierto');
+let provSel = null;   // provincia resaltada, si la ficha abierta es provincial
+
+function cajonPinta(k, nombre, cuerpo){
+  document.getElementById('cj-k').textContent = k;
+  document.getElementById('cj-nom').textContent = nombre;
+  document.getElementById('cj-body').innerHTML = cuerpo;
+  document.getElementById('cj-body').scrollTop = 0;
+  cajon.classList.add('abierto');
+  document.body.classList.add('con-cajon');
+}
+function cajonCerrar(){
+  cajon.classList.remove('abierto');
+  document.body.classList.remove('con-cajon');
+  if (munSel) { munNormal(munSel); munSel = null; }
+  if (provSel){ capaGeojson && capaGeojson.resetStyle(provSel); provSel = null; }
+}
+document.getElementById('cj-x').addEventListener('click', cajonCerrar);
+
+// ─── FICHA PROVINCIAL ─────────────────────────────────────────────────────────
+function fichaProvincia(p){
+  const c = CAMPOS[periodoActual];
+  const mm = p[c.mm], anom = p[c.anom], media = p[c.media];
+  const color = modoActual === 'anomalia' ? colorAnomalia(anom) : colorLitros(mm, periodoActual);
+  const tope = {ayer:40, semana:150, anual:1500}[periodoActual];
+  const barra = modoActual === 'anomalia'
+    ? Math.min(100, Math.abs(anom || 0) * 1.5)
+    : Math.min(100, ((mm || 0) / tope) * 100);
+  const slug = ID_A_SLUG[p.id];
+  const cuando = {ayer:'el último día con dato', semana:'en 7 días', anual:'en lo que va de año'}[periodoActual];
+  // La fila de la media necesita su propia redaccion: "Lo normal el último día
+  // con dato" no se entiende. Lo que se compara es contra lo tipico de la epoca.
+  const normalTxt = {ayer:'Lo normal en un día de esta época',
+                     semana:'Lo normal en una semana de esta época',
+                     anual:'Lo normal a estas alturas del año'}[periodoActual];
+
+  return `
+    <div class="cj-n" style="color:${color}">${modoActual === 'anomalia' ? pctTxt(anom) : mmTxt(mm)}</div>
+    <div class="cj-et" style="color:${color}">${p[c.etq] || '—'} · ${cuando}</div>
+    <div class="cj-barra"><i style="width:${barra}%;background:${color}"></i></div>
+    <div class="cj-pie">${modoActual === 'anomalia'
+      ? 'Cuánto se aleja de lo normal (la barra llena son ±67 %)'
+      : 'Sobre ' + tope + ' mm, el techo de la escala en este periodo'}</div>
+    <div class="cj-fila"><span>Ha caído</span><b>${mmTxt(mm)}</b></div>
+    <div class="cj-fila"><span>${normalTxt}</span><b>${mmTxt(media)}</b></div>
+    <div class="cj-fila"><span>Diferencia</span><b style="color:${colorAnomalia(anom)}">${pctTxt(anom)}</b></div>
+    <div class="cj-tres">
+      <div><b>${mmTxt(p.mm_ayer)}</b><span>último día</span></div>
+      <div><b>${mmTxt(p.mm_semana)}</b><span>7 días</span></div>
+      <div><b>${mmTxt(p.mm_anual)}</b><span>del año</span></div>
+    </div>
+    ${slug ? `<a class="cj-cta" href="${SITIO}${slug}/" target="_top">Ver los municipios de ${p.nombre} →</a>` : ''}
+    <div class="cj-nota">Lluvia de Open-Meteo (reanálisis ERA5). Lo normal se calcula con
+      ERA5-Land 1991-2020 para estas mismas fechas.</div>`;
+}
+
+function abrirProvincia(id, encuadra){
+  const p = datosMap[id];
+  if (!p) return;
+  if (munSel) { munNormal(munSel); munSel = null; }
+  if (provSel && capaGeojson) capaGeojson.resetStyle(provSel);
+  provSel = capaPorId[id] || null;
+  if (provSel) provSel.setStyle({fillOpacity:.98, weight:2.2, color:'#ffd166'});
+  if (encuadra && provSel) mapa.fitBounds(provSel.getBounds(), {maxZoom:8, paddingBottomRight:[340,20]});
+  cajonPinta(p.ccaa, p.nombre, fichaProvincia(p));
+}
+
+// ─── HUD: la cifra nacional y la lista de extremos ────────────────────────────
+// La cifra es la MEDIA DE LAS 52 PROVINCIAS, no un total ponderado por superficie
+// ni por poblacion, y el pie de la cifra lo dice. Un "78 mm en España" a secas
+// invitaria a leerlo como si fuera un dato oficial de la AEMET, y no lo es.
+function actualizarHud(){
+  const c = CAMPOS[periodoActual];
+  const lista = Object.values(datosMap).filter(p => p[c.mm] !== null && p[c.mm] !== undefined);
+  if (!lista.length) return;
+  const media  = a => a.reduce((s,v) => s + v, 0) / a.length;
+  const mmMed  = media(lista.map(p => p[c.mm]));
+  const normal = media(lista.map(p => p[c.media] || 0));
+  const conAnom = lista.filter(p => p[c.anom] !== null && p[c.anom] !== undefined);
+  const anomMed = conAnom.length ? media(conAnom.map(p => p[c.anom])) : null;
+  const sobre   = conAnom.filter(p => p[c.anom] > 0).length;
+
+  const big = document.getElementById('hud-big');
+  if (modoActual === 'anomalia'){
+    big.textContent = pctTxt(anomMed);
+    big.style.color = colorAnomalia(anomMed);
+    document.getElementById('hud-cap').textContent =
+      'frente a lo normal, media de las ' + lista.length + ' provincias';
+  } else {
+    big.textContent = mmTxt(mmMed);
+    big.style.color = '#eaf5ff';
+    const cuando = {ayer:'en el último día', semana:'en 7 días', anual:'en lo que va de año'}[periodoActual];
+    document.getElementById('hud-cap').textContent =
+      'de media por provincia ' + cuando;
+  }
+  document.getElementById('chip-a').textContent = mmTxt(normal);
+  document.getElementById('chip-a-et').textContent = 'lo normal en estas fechas';
+  document.getElementById('chip-b').textContent = sobre + ' de ' + conAnom.length;
+  document.getElementById('chip-b-et').textContent = 'por encima de lo normal';
+}
+
 function actualizarPanel(){
   const c = CAMPOS[periodoActual];
   const lista = Object.values(datosMap).filter(p => p[c.mm] !== null && p[c.mm] !== undefined);
@@ -471,22 +544,22 @@ function actualizarPanel(){
         <div class="pg-mm" style="color:${col}">${val}</div></div>`;
   }).join('');
   document.querySelectorAll('.pg-card').forEach(el => {
-    el.addEventListener('click', () => {
-      const capa = capaPorId[el.dataset.id];
-      if (!capa) return;
-      mapa.fitBounds(capa.getBounds(), {maxZoom:7, padding:[40,40]});
-      capa.openPopup();
-    });
+    el.addEventListener('click', () => abrirProvincia(el.dataset.id, true));
   });
 }
 
 function refrescar(){
   if (capaGeojson) capaGeojson.setStyle(estilo);
+  if (provSel) provSel.setStyle({fillOpacity:.98, weight:2.2, color:'#ffd166'});
   actualizarLeyenda();
+  actualizarHud();
   actualizarPanel();
-  Object.entries(capaPorId).forEach(([id, capa]) => {
-    if (datosMap[id]) capa.setPopupContent(construirPopup(datosMap[id]));
-  });
+  // El cajon abierto tiene que seguir al periodo elegido. Antes se quedaba con
+  // las cifras del periodo anterior y no habia forma de saberlo.
+  if (cajonAbierto() && provSel){
+    const id = Object.keys(capaPorId).find(k => capaPorId[k] === provSel);
+    if (id && datosMap[id]) cajonPinta(datosMap[id].ccaa, datosMap[id].nombre, fichaProvincia(datosMap[id]));
+  }
 }
 
 // ─── CONTROLES ────────────────────────────────────────────────────────────────
@@ -499,22 +572,23 @@ document.querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click'
   b.classList.add('activo'); modoActual = b.dataset.modo; refrescar();
 }));
 document.getElementById('panel-cerrar').addEventListener('click', function(){
-  const p = document.getElementById('panel');
-  p.classList.toggle('plegado');
-  this.textContent = p.classList.contains('plegado') ? '+' : '−';
+  const h = document.getElementById('hud');
+  h.classList.toggle('plegado');
+  this.textContent = h.classList.contains('plegado') ? '+' : '−';
 });
-
+// En movil la lista arranca plegada: la cabecera tiene que dejar sitio al mapa.
+if (window.innerWidth <= 760){
+  document.getElementById('hud').classList.add('plegado');
+  document.getElementById('panel-cerrar').textContent = '+';
+}
 
 // ─── CAPA DE MUNICIPIOS ───────────────────────────────────────────────────────
-//
-// Se dibuja en CANVAS y no en SVG. Con 999 puntos la diferencia no se nota, pero
-// el destino son los 8.132 municipios de España y con SVG eso son 8.132 nodos
-// en el DOM: el mapa deja de responder al arrastrarlo. El canvas dibuja pixeles.
 //
 // El fichero llega en arrays posicionales, no en objetos con nombre de campo.
 // Ver la cabecera de mapa_municipios.py: con objetos, el fichero completo pasa
 // del megabyte y medio y hay que bajarlo entero antes de pintar el primer punto.
 const MUN = {ine:0, nombre:1, ruta:2, lat:3, lon:4, mm:5, mediana:6, puesto:7, de:8, prov:9};
+
 // PANEL PROPIO, POR ENCIMA DE LAS PROVINCIAS, Y EN SVG.
 //
 // Dos cosas que se descubrieron probando y que conviene no deshacer:
@@ -550,10 +624,8 @@ const munAnom = f => f[MUN.mediana] > 0 ? (f[MUN.mm] / f[MUN.mediana]) * 100 - 1
 // Mismos cinco tramos que colorAnomalia y mismos tonos, pero encendidos. Los
 // colores de las provincias estan calculados para rellenar un poligono grande
 // sobre un mapa oscuro; ese mismo tono en un punto de cuatro pixeles, dibujado
-// ENCIMA de una provincia que ya es azul, desaparece. Se comprobo mirando la
-// captura: los municipios se veian como manchas grises apenas distinguibles del
-// relleno. Lo que tiene que significar lo mismo en las dos capas es el TRAMO,
-// no el valor exacto del color.
+// ENCIMA de una provincia que ya es azul, desaparece. Lo que tiene que
+// significar lo mismo en las dos capas es el TRAMO, no el valor del color.
 function colorMunicipio(p){
   if (p === null || p === undefined) return '#8fa6b8';
   if (p < -40) return '#ff5233';
@@ -600,65 +672,49 @@ function munBorde(){
 }
 const munNormal = m => m.setStyle({weight: munBorde(), color: '#0a1c2c', opacity: .55});
 
-function munFicha(f){
+function fichaMunicipio(f){
   // El mismo color del punto que se acaba de pulsar, no el de la escala
   // provincial: si la ficha se pintara con otro tono, el lector tendria que
   // creerse que hablan del mismo sitio.
   const a = munAnom(f), col = colorMunicipio(a);
   const pct = f[MUN.mediana] > 0 ? (f[MUN.mm] / f[MUN.mediana]) * 100 : null;
-  const d = document.getElementById('mun-ficha');
+  // La barra tiene el 100 % en el centro: 200 % llena la barra entera, 0 % la
+  // deja vacia. Asi el ojo compara contra lo normal y no contra un maximo
+  // arbitrario, que es lo que interesa de un dato de lluvia.
+  const ancho = Math.max(2, Math.min(100, (pct || 0) / 2));
+
+  return `
+    <div class="cj-n" style="color:${col}">${pct === null ? '—' : nf.format(Math.round(pct)) + ' %'}</div>
+    <div class="cj-et" style="color:${col}">${munEtiqueta(a)} · ${pctTxt(a)} frente a lo normal</div>
+    <div class="cj-barra"><i style="width:${ancho}%;background:${col}"></i><span class="cj-cien"></span></div>
+    <div class="cj-pie">La línea marca lo normal para estas alturas del año</div>
+    <div class="cj-fila"><span>Ha caído</span><b>${mmTxt(f[MUN.mm])}</b></div>
+    <div class="cj-fila"><span>Lo normal a estas alturas</span><b>${mmTxt(f[MUN.mediana])}</b></div>
+    <div class="cj-frase">${munPuesto(f[MUN.puesto], f[MUN.de])}</div>
+    ${f[MUN.ruta]
+      // Un municipio sin ficha se pinta igual, pero no se le inventa un enlace a
+      // una pagina que no existe.
+      ? `<a class="cj-cta" href="${SITIO}${f[MUN.ruta]}/" target="_top">Ver la ficha de ${f[MUN.nombre]} →</a>`
+      : ''}
+    <div class="cj-nota">Acumulado del año hidrológico hasta el ${fechaLarga(munDatos.hasta)},
+      comparado con la mediana de ese mismo tramo del año desde ${munDatos.desde_anio || '—'}.
+      Rejilla ERA5-Land.</div>`;
+}
+
+function abrirMunicipio(f){
+  if (provSel && capaGeojson){ capaGeojson.resetStyle(provSel); provSel = null; }
   // La provincia sale de la lista del fichero, no del primer tramo de la ruta:
   // la ruta es un slug sin acentos ni barras (a-coruna, alava) y escribir
   // "a coruna" o "araba alava" en una ficha publicada es peor que no ponerla.
   const provs = munDatos.provincias || [];
-  document.getElementById('mf-prov').textContent =
-    provs[f[MUN.prov]] || 'España';
-  document.getElementById('mf-nom').textContent = f[MUN.nombre];
-  const el = document.getElementById('mf-pct');
-  el.textContent = pct === null ? '—' : nf.format(Math.round(pct)) + ' %';
-  el.style.color = col;
-  const et = document.getElementById('mf-et');
-  et.textContent = munEtiqueta(a) + ' · ' + pctTxt(a) + ' frente a lo normal';
-  et.style.color = col;
-
-  // La barra tiene el 100 % en el centro: 200 % llena la barra entera, 0 % la
-  // deja vacia. Asi el ojo compara contra lo normal y no contra un maximo
-  // arbitrario, que es lo que interesa de un dato de lluvia.
-  const b = document.getElementById('mf-barra');
-  b.style.width = Math.max(2, Math.min(100, (pct || 0) / 2)) + '%';
-  b.style.background = col;
-
-  document.getElementById('mf-mm').textContent = mmTxt(f[MUN.mm]);
-  document.getElementById('mf-med').textContent = mmTxt(f[MUN.mediana]);
-  document.getElementById('mf-puesto').innerHTML = munPuesto(f[MUN.puesto], f[MUN.de]);
-
-  const cta = document.getElementById('mf-cta');
-  if (f[MUN.ruta]){
-    cta.style.display = 'block';
-    cta.href = SITIO + f[MUN.ruta] + '/';
-    cta.textContent = 'Ver la ficha de ' + f[MUN.nombre] + ' →';
-  } else {
-    // Un municipio sin ficha se pinta igual, pero no se le inventa un enlace a
-    // una pagina que no existe.
-    cta.style.display = 'none';
-  }
-  document.getElementById('mf-nota').textContent =
-    'Acumulado del año hidrológico hasta el ' + fechaLarga(munDatos.hasta) +
-    ', comparado con la mediana de ese mismo tramo del año desde ' +
-    (munDatos.desde_anio || '—') + '. Rejilla ERA5-Land.';
-  d.classList.add('visible');
+  cajonPinta(provs[f[MUN.prov]] || 'España', f[MUN.nombre], fichaMunicipio(f));
 }
-
-document.getElementById('mf-x').addEventListener('click', () => {
-  document.getElementById('mun-ficha').classList.remove('visible');
-  if (munSel) { munNormal(munSel); munSel = null; }
-});
 
 function munPinta(){
   if (capaMun) { mapa.removeLayer(capaMun); capaMun = null; }
   if (!munVisible || !munDatos) return;
   const r = munRadio(), w = munBorde();
-  // Se pintan de menos a mas extremo, para que el canvas deje ARRIBA los casos
+  // Se pintan de menos a mas extremo, para que queden ARRIBA los casos
   // interesantes. En la costa gallega o en la Marina Alta hay municipios cada
   // pocos kilometros y a zoom bajo los circulos se solapan: sin ordenar, cual
   // queda visible lo decide el orden alfabetico del fichero, y un municipio al
@@ -676,12 +732,12 @@ function munPinta(){
       fillColor: colorMunicipio(munAnom(f)), fillOpacity: 1,
     });
     m.on('click', e => {
-      L.DomEvent.stopPropagation(e);   // que no se abra tambien el popup provincial
+      L.DomEvent.stopPropagation(e);   // que no se abra tambien la ficha provincial
       if (munSel) munNormal(munSel);
       m.setStyle({weight:3, color:'#ffd166', opacity:1});
       m.bringToFront();
       munSel = m;
-      munFicha(f);
+      abrirMunicipio(f);
     });
     return m;
   });
@@ -697,7 +753,7 @@ mapa.on('zoomend', () => {
 document.getElementById('btn-mun').addEventListener('click', function(){
   munVisible = !munVisible;
   this.classList.toggle('activo', munVisible);
-  if (!munVisible) document.getElementById('mun-ficha').classList.remove('visible');
+  if (!munVisible && munSel) cajonCerrar();
   munPinta(); actualizarLeyenda();
 });
 
@@ -708,8 +764,8 @@ fetch(MUNI_URL)
   .then(d => {
     munDatos = d;
     munPinta(); actualizarLeyenda();
-    const n = d.municipios.length;
-    document.getElementById('btn-mun').textContent = 'Municipios (' + nf.format(n) + ')';
+    document.getElementById('btn-mun').textContent =
+      'Municipios (' + nf.format(d.municipios.length) + ')';
   })
   .catch(err => {
     console.warn('Capa de municipios no disponible:', err);
@@ -724,34 +780,39 @@ Promise.all([
 .then(([data, geojson]) => {
   (data.provincias || []).forEach(p => { datosMap[p.id] = p; });
 
-  document.getElementById('resumen').innerHTML =
-    `<b>${data.provincias.length}</b> provincias · lluvia de Open-Meteo (ERA5)`;
   // La FECHA DEL DATO, no la de la ejecucion. El archivo llega con retraso
   // variable y antes esta linea decia "ayer" un dia 7 con datos del 5.
-  document.getElementById('ultima-act').textContent = data.fecha_datos
-    ? 'Datos hasta el ' + data.fecha_datos
-    : 'Actualizado: ' + (data.fecha_legible || '—');
+  document.getElementById('hud-fecha').textContent =
+    'España · datos hasta el ' + fechaDeDatos(data.fecha_datos || data.fecha_legible);
 
   capaGeojson = L.geoJSON(geojson, {
     style: estilo,
     onEachFeature: (feature, capa) => {
       const id = NOMBRE_A_ID[feature.properties.name || feature.properties.NAME || ''];
-      const p = id ? datosMap[id] : null;
-      if (!p) return;
+      if (!id || !datosMap[id]) return;
       capaPorId[id] = capa;
-      capa.bindPopup(construirPopup(p), {maxWidth:300, autoPanPadding:[24,24]});
-      capa.on('mouseover', () => capa.setStyle({fillOpacity:.98, weight:1.8, color:'#5cbcf0'}));
-      capa.on('mouseout',  () => capaGeojson.resetStyle(capa));
+      capa.on('click', () => abrirProvincia(id, false));
+      capa.on('mouseover', () => { if (capa !== provSel) capa.setStyle({fillOpacity:.98, weight:1.8, color:'#5cbcf0'}); });
+      capa.on('mouseout',  () => { if (capa !== provSel) capaGeojson.resetStyle(capa); });
     }
   }).addTo(mapa);
 
   refrescar();
+  encuadrar();
 })
 .catch(err => {
   console.error(err);
-  document.getElementById('resumen').textContent = 'No se han podido cargar los datos';
+  document.getElementById('hud-fecha').textContent = 'No se han podido cargar los datos';
   document.getElementById('panel-lista').innerHTML =
     '<div class="vacio">No se han podido cargar los datos. Vuelve a intentarlo en unos minutos.</div>';
+});
+
+// Al cambiar de tamaño (girar el movil, redimensionar la ventana) el encuadre se
+// rehace: los margenes que dejan los paneles dependen del ancho.
+let temporizador = null;
+window.addEventListener('resize', () => {
+  clearTimeout(temporizador);
+  temporizador = setTimeout(encuadrar, 220);
 });
 </script>
 </body>
