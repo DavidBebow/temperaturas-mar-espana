@@ -406,15 +406,31 @@ const ESPANA = L.latLngBounds([[35.6,-9.6],[43.9,4.5]]);
 // El encuadre automatico solo sirve al arrancar y cuando cambia el tamaño.
 let programatico = false, usuarioMovio = false;
 function encuadrar(){
-  const movil = window.innerWidth <= 760;
+  // SE MIDE EL CONTENEDOR, NO LA VENTANA, y si todavia no tiene tamaño no se
+  // toca el mapa. Un iframe con loading="lazy" existe en el DOM antes de tener
+  // altura: encuadrar en ese momento le da a Leaflet un lienzo de cero pixeles,
+  // el zoom sale invalido y el mapa se queda EN BLANCO para siempre, porque ya
+  // no vuelve a haber ningun cambio de tamaño que lo rescate. Es exactamente lo
+  // que paso al publicarlo la primera vez dentro de la pagina.
+  const caja = document.getElementById('mapa');
+  const an = caja.clientWidth, al = caja.clientHeight;
+  if (an < 120 || al < 120) return false;
+
+  const movil = an <= 760;
   // En movil los paneles no estan a los lados sino ARRIBA y ABAJO, asi que el
   // margen que hay que reservar es vertical. Con el reparto de escritorio, la
   // peninsula se metia entera debajo de la cabecera.
-  const izq = movil ? [18, 150] : [300, 30];
-  const der = movil ? [18, 92]  : [cajonAbierto() ? 356 : 40, 60];
+  //
+  // Y los margenes se limitan a un tercio de la caja: si entre los dos superan
+  // el ancho disponible, el hueco es negativo y vuelve a salir un zoom invalido.
+  const tope  = v => Math.min(v, Math.floor(an / 3));
+  const topeV = v => Math.min(v, Math.floor(al / 3));
+  const izq = movil ? [tope(18), topeV(150)] : [tope(300), topeV(30)];
+  const der = movil ? [tope(18), topeV(92)]  : [tope(cajonAbierto() ? 356 : 40), topeV(60)];
   programatico = true;
   mapa.fitBounds(ESPANA, {paddingTopLeft:izq, paddingBottomRight:der, animate:false});
   setTimeout(() => { programatico = false; }, 60);
+  return true;
 }
 mapa.on('dragstart zoomstart', () => { if (!programatico) usuarioMovio = true; });
 
@@ -833,10 +849,15 @@ Promise.all([
 // Se vigila el contenedor con ResizeObserver (mas fiable dentro de un iframe que
 // el resize de la ventana), se le dice a Leaflet que vuelva a medirse y se
 // reencuadra, salvo que el lector ya haya movido el mapa.
-let temporizador = null;
+let temporizador = null, ultimoTam = '';
 function alCambiarTamano(){
   clearTimeout(temporizador);
   temporizador = setTimeout(() => {
+    const caja = document.getElementById('mapa');
+    const tam = caja.clientWidth + 'x' + caja.clientHeight;
+    if (caja.clientWidth < 120 || caja.clientHeight < 120) return;  // aun sin sitio
+    if (tam === ultimoTam) return;   // corta el bucle del ResizeObserver
+    ultimoTam = tam;
     mapa.invalidateSize({animate:false});
     ajustarAlAncho();
     if (!usuarioMovio) encuadrar();
@@ -845,6 +866,21 @@ function alCambiarTamano(){
 window.addEventListener('resize', alCambiarTamano);
 window.addEventListener('load', alCambiarTamano);
 if (window.ResizeObserver) new ResizeObserver(alCambiarTamano).observe(document.getElementById('mapa'));
+// Red de seguridad para el iframe perezoso: durante los primeros segundos se
+// comprueba si el mapa ya tiene sitio y sigue sin encuadrar. Es barato y evita
+// depender de que el navegador dispare un evento de tamaño que quiza no llegue.
+let intentos = 0;
+const reintento = setInterval(() => {
+  if (++intentos > 20) return clearInterval(reintento);
+  const caja = document.getElementById('mapa');
+  if (caja.clientWidth < 120 || caja.clientHeight < 120) return;
+  const tam = caja.clientWidth + 'x' + caja.clientHeight;
+  if (tam === ultimoTam) return clearInterval(reintento);
+  ultimoTam = tam;
+  mapa.invalidateSize({animate:false});
+  ajustarAlAncho();
+  if (!usuarioMovio) encuadrar();
+}, 500);
 </script>
 </body>
 </html>
