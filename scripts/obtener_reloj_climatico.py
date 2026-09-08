@@ -44,7 +44,7 @@ LIFELINES = {
     "women_in_parliaments":          ("Mujeres en los parlamentos del mundo", 8),
     "actnow":                        ("Ahorro estimado hasta 2050 si se actúa ya", 9),
 }
-UNIDAD_ES = {"%": "%", "$T": "billones $", "$B": "miles de millones $", "ha": "ha", "M km²": "M km²"}
+UNIDAD_ES = {"%": "%", "$T": "bill. $", "$B": "mil M$", "ha": "ha", "M km²": "M km²"}
 
 MESES = "enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre".split()
 
