@@ -402,6 +402,9 @@ function estilo(feature){
 // que la peninsula no quede debajo del HUD ni del cajon. Con un simple center +
 // zoom fijo, en una pantalla ancha Galicia acababa tapada por el panel izquierdo.
 const ESPANA = L.latLngBounds([[35.6,-9.6],[43.9,4.5]]);
+// Una vez que el lector mueve el mapa, ya no se le reencuadra por su cuenta.
+// El encuadre automatico solo sirve al arrancar y cuando cambia el tamaño.
+let programatico = false, usuarioMovio = false;
 function encuadrar(){
   const movil = window.innerWidth <= 760;
   // En movil los paneles no estan a los lados sino ARRIBA y ABAJO, asi que el
@@ -409,8 +412,11 @@ function encuadrar(){
   // peninsula se metia entera debajo de la cabecera.
   const izq = movil ? [18, 150] : [300, 30];
   const der = movil ? [18, 92]  : [cajonAbierto() ? 356 : 40, 60];
+  programatico = true;
   mapa.fitBounds(ESPANA, {paddingTopLeft:izq, paddingBottomRight:der, animate:false});
+  setTimeout(() => { programatico = false; }, 60);
 }
+mapa.on('dragstart zoomstart', () => { if (!programatico) usuarioMovio = true; });
 
 // ─── CAJÓN ────────────────────────────────────────────────────────────────────
 const cajon = document.getElementById('cajon');
@@ -577,10 +583,18 @@ document.getElementById('panel-cerrar').addEventListener('click', function(){
   this.textContent = h.classList.contains('plegado') ? '+' : '−';
 });
 // En movil la lista arranca plegada: la cabecera tiene que dejar sitio al mapa.
-if (window.innerWidth <= 760){
-  document.getElementById('hud').classList.add('plegado');
-  document.getElementById('panel-cerrar').textContent = '+';
+// Se recalcula al cruzar el umbral, no en cada resize, para no deshacer lo que
+// el lector haya plegado o desplegado a mano.
+let eraMovil = null;
+function ajustarAlAncho(){
+  const movil = window.innerWidth <= 760;
+  if (movil === eraMovil) return;
+  eraMovil = movil;
+  const h = document.getElementById('hud');
+  h.classList.toggle('plegado', movil);
+  document.getElementById('panel-cerrar').textContent = movil ? '+' : '−';
 }
+ajustarAlAncho();
 
 // ─── CAPA DE MUNICIPIOS ───────────────────────────────────────────────────────
 //
@@ -807,13 +821,30 @@ Promise.all([
     '<div class="vacio">No se han podido cargar los datos. Vuelve a intentarlo en unos minutos.</div>';
 });
 
-// Al cambiar de tamaño (girar el movil, redimensionar la ventana) el encuadre se
-// rehace: los margenes que dejan los paneles dependen del ancho.
+// ─── TAMAÑO ───────────────────────────────────────────────────────────────────
+//
+// ESTO NO ES UN DETALLE: el mapa vive dentro de un iframe con loading="lazy" que
+// nace con la altura del atributo y crece despues, cuando el CSS de la pagina lo
+// estira. Leaflet mide su contenedor UNA VEZ, al crearse, y si en ese momento el
+// iframe todavia no tiene su tamaño definitivo se queda pintando un mapa del
+// tamaño equivocado: la primera version publicada mostraba un cuadrado gris con
+// un trozo de carretera de Cuenca y ni un solo punto.
+//
+// Se vigila el contenedor con ResizeObserver (mas fiable dentro de un iframe que
+// el resize de la ventana), se le dice a Leaflet que vuelva a medirse y se
+// reencuadra, salvo que el lector ya haya movido el mapa.
 let temporizador = null;
-window.addEventListener('resize', () => {
+function alCambiarTamano(){
   clearTimeout(temporizador);
-  temporizador = setTimeout(encuadrar, 220);
-});
+  temporizador = setTimeout(() => {
+    mapa.invalidateSize({animate:false});
+    ajustarAlAncho();
+    if (!usuarioMovio) encuadrar();
+  }, 180);
+}
+window.addEventListener('resize', alCambiarTamano);
+window.addEventListener('load', alCambiarTamano);
+if (window.ResizeObserver) new ResizeObserver(alCambiarTamano).observe(document.getElementById('mapa'));
 </script>
 </body>
 </html>
