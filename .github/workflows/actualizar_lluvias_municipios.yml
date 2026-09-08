@@ -59,7 +59,12 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --autostash
-          git add historico_estaciones.json docs/lluvias_municipios.json
+          git add historico_estaciones.json
+          # docs/lluvias_municipios.json puede no existir todavia: mientras no
+          # haya ningun dia natural cerrado el script guarda historico pero no
+          # publica salida, y un `git add` de un fichero inexistente tumbaria el
+          # paso y con el el commit del historico que si tenemos.
+          [ -f docs/lluvias_municipios.json ] && git add docs/lluvias_municipios.json || true
           # Sin cambios no se commitea: si AEMET no trae nada nuevo, no tiene
           # sentido ensuciar el historial con un commit vacio cada doce horas.
           if git diff --staged --quiet; then
