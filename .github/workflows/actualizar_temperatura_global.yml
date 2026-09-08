@@ -1,0 +1,39 @@
+name: Actualizar temperatura global
+
+on:
+  schedule:
+    # 06:35 UTC: Copernicus publica el día anterior de madrugada.
+    - cron: "35 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temperatura-global
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Descargar la serie diaria ERA5 y regenerar el JSON
+        run: python3 scripts/obtener_temperatura_global.py
+
+      - name: Publicar si ha cambiado
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain docs/temperatura_global.json)" ]; then
+            git add docs/temperatura_global.json
+            git commit -m "Temperatura global: dato de $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "Sin cambios en el dato."
+          fi
