@@ -8,7 +8,12 @@ y genera docs/temperatura_global.json con el dato del último día disponible,
 la media móvil de 365 días, la media del año en curso y su posición en el
 ranking histórico.
 
-Columnas del CSV de origen:
+El fichero de origen empieza con 18 líneas de cabecera que comienzan por «#»
+(descripción, fuente, licencia). Hay que saltarlas antes de leer el CSV: si no,
+csv.DictReader toma la primera línea de comentario como cabecera y no reconoce
+ni una sola fila.
+
+Columnas reales, en la primera línea que no empieza por «#»:
     date, 2t, clim_91-20, ano_91-20, status
     - 2t          temperatura media global absoluta del día, en °C
     - clim_91-20  climatología del mismo día del año en el periodo 1991-2020
@@ -62,8 +67,21 @@ def descargar() -> list[dict]:
     with urllib.request.urlopen(req, timeout=120) as r:
         crudo = r.read().decode("utf-8", errors="replace")
 
+    # Saltar la cabecera de comentarios («#») antes de leer el CSV.
+    utiles = [l for l in crudo.splitlines() if l.strip() and not l.lstrip().startswith("#")]
+    if not utiles:
+        raise RuntimeError("el fichero descargado no tiene ninguna línea de datos")
+
+    lector = csv.DictReader(io.StringIO("\n".join(utiles)))
+    faltan = {"date", "2t", "ano_91-20"} - set(lector.fieldnames or [])
+    if faltan:
+        raise RuntimeError(
+            f"la cabecera del CSV ha cambiado: faltan {sorted(faltan)}; "
+            f"se leyó {lector.fieldnames}"
+        )
+
     filas = []
-    for f in csv.DictReader(io.StringIO(crudo)):
+    for f in lector:
         try:
             filas.append({
                 "fecha": datetime.strptime(f["date"].strip(), "%Y-%m-%d").date(),
