@@ -45,6 +45,21 @@ LIFELINES = {
     "actnow":                        ("Ahorro estimado hasta 2050 si se actúa ya", 9),
 }
 UNIDAD_ES = {"%": "%", "$T": "bill. $", "$B": "mil M$", "ha": "ha", "M km²": "M km²"}
+# La API v2 no trae siempre la clave `unit` (a veces viene como `unit_labels`,
+# a veces no viene): esta tabla es el respaldo por identificador.
+UNIDAD_POR_ID = {
+    "renewables_1": "%", "initiative_30x30": "%", "women_in_parliaments": "%",
+    "loss_damage_g20_debt": "$T", "loss_damage_g7_debt": "$T", "ff_divestment_stand_dot_earth": "$T", "actnow": "$T",
+    "end_subsidies": "$B", "indigenous_land_1": "M km²", "regen_agriculture": "ha",
+}
+
+
+def unidad_de(clave, m):
+    u = m.get("unit")
+    if not u:
+        ul = m.get("unit_labels")
+        u = ul[0] if isinstance(ul, list) and ul else (ul if isinstance(ul, str) else "")
+    return u or UNIDAD_POR_ID.get(clave, "")
 
 MESES = "enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre".split()
 
@@ -113,7 +128,7 @@ def main():
                 continue
             lifelines.append({
                 "id": clave, "orden": orden, "etiqueta": etiqueta,
-                "unidad": m.get("unit", ""), "unidad_es": UNIDAD_ES.get(m.get("unit", ""), m.get("unit", "")),
+                "unidad": unidad_de(clave, m), "unidad_es": UNIDAD_ES.get(unidad_de(clave, m), unidad_de(clave, m)),
                 "initial": m["initial"], "rate": m.get("rate", 0), "timestamp": m["timestamp"],
                 "resolution": m.get("resolution"),
                 "valor_hoy": round(valor_actual(m, ahora), 4),
