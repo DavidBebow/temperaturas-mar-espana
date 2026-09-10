@@ -7,14 +7,25 @@ name: Actualizar lluvia diaria por municipio
 
 on:
   schedule:
-    # Dos veces al dia, a las 07:00 y 19:00 UTC.
+    # TRES veces al dia: 01:00, 07:00 y 19:00 UTC.
     #
-    # Dos y no una a proposito. La observacion de AEMET es una ventana movil de
-    # 24 horas, asi que un dia natural se completa entre dos ejecuciones. Con una
-    # sola al dia, si falla la del martes el lunes se queda incompleto PARA
-    # SIEMPRE: esas horas ya no vuelven. Con dos, cada hora se ve dos veces y una
-    # ejecucion perdida no deja hueco. El script ignora las horas repetidas, asi
-    # que la segunda pasada no infla nada.
+    # Varias y no una a proposito. La observacion de AEMET es una ventana movil
+    # de 24 horas, asi que un dia natural se completa entre varias ejecuciones.
+    # Con una sola al dia, si falla la del martes el lunes se queda incompleto
+    # PARA SIEMPRE: esas horas ya no vuelven. Con varias, cada hora se ve dos
+    # veces y una ejecucion perdida no deja hueco. El script ignora las horas
+    # repetidas, asi que las pasadas de mas no inflan nada.
+    #
+    # LA DE LA 01:00 ES LA QUE CIERRA EL DIA, y se añadio despues de descubrir
+    # que en dos dias no se habia publicado NADA. Con solo 07:00 y 19:00, la
+    # ultima hora del dia local no llegaba nunca: en verano peninsular la hora
+    # local 23 se registra con marca de las 22:00 UTC, tres horas despues de la
+    # pasada de la tarde, y el retraso con el que GitHub lanza las tareas
+    # programadas (esa noche, 21:26 en vez de 19:00) se comia el margen de la
+    # ventana movil. Medido: la hora 23 faltaba en el 100 % de las 833
+    # estaciones. A la 01:00 UTC el dia local ya ha terminado en peninsula y en
+    # Canarias, en verano y en invierno, y la ventana de 24 h todavia lo alcanza.
+    - cron: '0 1 * * *'
     - cron: '0 7 * * *'
     - cron: '0 19 * * *'
   workflow_dispatch:
@@ -55,6 +66,12 @@ jobs:
         run: python privado/lluvia_municipios_diaria.py
 
       - name: Publicar cambios
+        # SIEMPRE, aunque el script haya salido con error. El runner es efimero:
+        # si el paso anterior falla y este se salta, las 10.000 filas horarias
+        # que acaba de descargar se van con el. El script guarda el historico
+        # antes de fallar precisamente para que este paso lo recoja; sin
+        # `always()` ese cuidado no serviria de nada.
+        if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
