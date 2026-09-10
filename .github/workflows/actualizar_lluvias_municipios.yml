@@ -7,13 +7,13 @@ name: Actualizar lluvia diaria por municipio
 
 on:
   schedule:
-    # TRES veces al dia: 01:00, 07:00 y 19:00 UTC.
+    # CINCO pasadas al dia: 01:00, 06:00, 11:00, 15:00 y 19:00 UTC.
     #
     # Varias y no una a proposito. La observacion de AEMET es una ventana movil
     # de 24 horas, asi que un dia natural se completa entre varias ejecuciones.
     # Con una sola al dia, si falla la del martes el lunes se queda incompleto
-    # PARA SIEMPRE: esas horas ya no vuelven. Con varias, cada hora se ve dos
-    # veces y una ejecucion perdida no deja hueco. El script ignora las horas
+    # PARA SIEMPRE: esas horas ya no vuelven. Con cinco, cada hora se ve cuatro o
+    # cinco veces y una pasada perdida no deja hueco. El script ignora las horas
     # repetidas, asi que las pasadas de mas no inflan nada.
     #
     # LA DE LA 01:00 ES LA QUE CIERRA EL DIA, y se añadio despues de descubrir
@@ -25,9 +25,21 @@ on:
     # ventana movil. Medido: la hora 23 faltaba en el 100 % de las 833
     # estaciones. A la 01:00 UTC el dia local ya ha terminado en peninsula y en
     # Canarias, en verano y en invierno, y la ventana de 24 h todavia lo alcanza.
+    #
+    # LAS OTRAS CUATRO SON PARA LA CIFRA DE HOY, que es lo que la gente busca
+    # cuando esta lloviendo. Reparten el dia: en invierno caen a las 07:00,
+    # 12:00, 16:00 y 20:00 hora peninsular; en verano, a las 08:00, 13:00, 17:00
+    # y 21:00. El hueco mas largo son las seis horas de madrugada, que es cuando
+    # nadie mira y ademas lo cubre la pasada que cierra el dia.
+    #
+    # Coste: unos 20 segundos por pasada en un repositorio publico, o sea gratis,
+    # y una sola llamada a AEMET cada vez.
     - cron: '0 1 * * *'
-    - cron: '0 7 * * *'
+    - cron: '0 6 * * *'
+    - cron: '0 11 * * *'
+    - cron: '0 15 * * *'
     - cron: '0 19 * * *'
+
   workflow_dispatch:
 
 concurrency:
