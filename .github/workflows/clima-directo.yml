@@ -38,18 +38,24 @@ jobs:
 
       # El mapa y el gazetteer se generan UNA vez y se quedan commiteados.
       # Van en datos/, fuera de docs/, para que Pages no los sirva.
-      - name: Mapa base y gazetteer (solo si faltan)
+      # Sube VER cuando cambie build_mundo.py y el gazetteer se regenerara solo.
+      - name: Mapa base y gazetteer (solo si faltan o cambia la version)
         run: |
-          if [ ! -s datos/mundo_paths.json ] || [ ! -s datos/gazetteer.json ]; then
-            echo "Generando mapa y gazetteer desde Natural Earth..."
+          VER=2
+          if [ ! -s datos/mundo_paths.json ] || [ ! -s datos/gazetteer.json ] \
+             || [ "$(cat datos/VERSION 2>/dev/null)" != "$VER" ]; then
+            echo "Generando mapa y gazetteer desde Natural Earth (version $VER)..."
             mkdir -p datos && cd datos
             base=https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson
             curl -sSL --retry 3 -o ne110_countries.geojson $base/ne_110m_admin_0_countries.geojson
-            curl -sSL --retry 3 -o ne50_places.geojson    $base/ne_50m_populated_places.geojson
+            curl -sSL --retry 3 -o ne50_places.geojson     $base/ne_50m_populated_places.geojson
+            curl -sSL --retry 3 -o ne10_places.geojson     $base/ne_10m_populated_places_simple.geojson
+            curl -sSL --retry 3 -o ne10_admin1.geojson     $base/ne_10m_admin_1_states_provinces.geojson
             python ../clima-scripts/build_mundo.py
-            rm -f ne110_countries.geojson ne50_places.geojson
+            rm -f ne110_countries.geojson ne50_places.geojson ne10_places.geojson ne10_admin1.geojson
+            echo "$VER" > VERSION
           else
-            echo "Ya estaban. No se regeneran."
+            echo "Ya estaban y la version coincide. No se regeneran."
           fi
 
       - name: Recopilar
