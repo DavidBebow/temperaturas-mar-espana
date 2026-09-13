@@ -1,0 +1,91 @@
+name: Clima en directo
+
+on:
+  schedule:
+    # Cada dos horas. La pagina declara en su cabecera cuando fue la ultima
+    # revision y cuando es la siguiente, asi que este cron y ese texto van juntos:
+    # si cambias uno, cambia el otro en clima_directo_publicar.py (montar -> sig).
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: clima-directo
+  cancel-in-progress: false
+
+jobs:
+  directo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Traer los scripts privados
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: clima-scripts
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dependencias
+        run: pip install --quiet requests feedparser
+
+      # El mapa y el gazetteer se generan UNA vez y se quedan commiteados.
+      # Van en datos/, fuera de docs/, para que Pages no los sirva.
+      - name: Mapa base y gazetteer (solo si faltan)
+        run: |
+          if [ ! -s datos/mundo_paths.json ] || [ ! -s datos/gazetteer.json ]; then
+            echo "Generando mapa y gazetteer desde Natural Earth..."
+            mkdir -p datos && cd datos
+            base=https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson
+            curl -sSL --retry 3 -o ne110_countries.geojson $base/ne_110m_admin_0_countries.geojson
+            curl -sSL --retry 3 -o ne50_places.geojson    $base/ne_50m_populated_places.geojson
+            python ../clima-scripts/build_mundo.py
+            rm -f ne110_countries.geojson ne50_places.geojson
+          else
+            echo "Ya estaban. No se regeneran."
+          fi
+
+      - name: Recopilar
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CD_WINDOW_HOURS: "3"
+          CD_MIN_SCORE: "5"
+          CD_MAX_NUEVOS: "60"
+        run: |
+          python clima-scripts/clima_directo_recopilar.py \
+            --estado estado/clima_directo.json \
+            --gazetteer datos/gazetteer.json
+
+      # Si alguna comprobacion falla, el publicador sale distinto de 0 y el paso
+      # se marca en rojo SIN haber tocado la web. Es lo que queremos.
+      - name: Publicar en WordPress
+        env:
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+        run: |
+          python clima-scripts/clima_directo_publicar.py \
+            --estado estado/clima_directo.json \
+            --paths datos/mundo_paths.json \
+            --page-id 6666
+
+      - name: Guardar estado
+        if: always()
+        run: |
+          git config user.name  "clima-directo-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add datos estado
+          if git diff --staged --quiet; then
+            echo "Sin cambios de estado."
+          else
+            git commit -m "clima en directo: $(date -u +'%d/%m/%Y %H:%M UTC') [skip ci]"
+            git push
+          fi
