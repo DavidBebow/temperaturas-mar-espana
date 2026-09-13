@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-09-13T14:23:58+00:00",
+ "actualizado": "2026-09-13T14:28:51+00:00",
  "fecha_dato": "2026-09-13",
  "fuente": {
   "nombre": "Open-Meteo Flood API · modelo GloFAS v4 (Copernicus EMS / ECMWF)",
@@ -8,12 +8,13 @@
   "atribucion_obligatoria": "Copernicus Emergency Management Service · GloFAS v4, vía Open-Meteo"
  },
  "advertencia": "Caudal MODELIZADO, no medido: GloFAS simula el caudal sobre una rejilla de 5 km a partir de lluvia y suelo, y puede desviarse de los aforos oficiales. Sirve para comparar cada río consigo mismo a lo largo del tiempo, no para dar el caudal exacto de un día.",
- "metodo": "Coordenadas fijadas sobre la celda del cauce principal (máximo de caudal en una ventana de ±0,12° alrededor de la estación de referencia). El percentil compara el valor del día con todos los valores del reanálisis GloFAS desde 1984 en una ventana de ±7 días alrededor de la misma fecha.",
+ "metodo": "Coordenadas fijadas sobre la celda del cauce principal (máximo de caudal en una ventana de ±0,12° alrededor de la estación de referencia). El percentil compara el valor del día con todos los valores del reanálisis GloFAS disponibles (se piden desde 1984; cada ficha indica en 'anios_comparados' los años que realmente tiene esa celda) en una ventana de ±7 días alrededor de la misma fecha.",
  "climatologia": {
-  "periodo": {
+  "periodo_solicitado": {
    "inicio": "1984-01-01",
    "fin": "2025-09-13"
   },
+  "periodo_con_dato": null,
   "generada": "2026-09-13T14:16:40+00:00"
  },
  "destacado": {
