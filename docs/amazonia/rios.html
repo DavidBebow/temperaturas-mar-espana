@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Los ríos de la Amazonía, hoy · calentamientoglobal.es</title>
+<style>
+  .cg-amz{
+    color-scheme: light;
+    --surface:#fcfcfb; --surface-2:#f4f3f0; --line:#e6e4df;
+    --ink:#141412; --ink-2:#57564f; --ink-3:#8a8880;
+    --seco:#b03408; --normal:#6b6b66; --crecido:#0a4fa0;
+    --ember:#cc4416; --gold:#c98a2b;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--surface); color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    max-width:920px; margin:0 auto; padding:22px 18px 30px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])) .cg-amz{
+      color-scheme: dark;
+      --surface:#161615; --surface-2:#21211f; --line:#33322e;
+      --ink:#f7f7f5; --ink-2:#bfbdb4; --ink-3:#8b8980;
+      --seco:#e0552a; --normal:#9a9a93; --crecido:#5aa9e6;
+      --ember:#e0552a;
+    }
+  }
+  html,body{margin:0;padding:0;background:transparent}
+  .cg-amz *{box-sizing:border-box}
+  .cg-amz h1{font-size:1.32rem;line-height:1.25;margin:0 0 4px;letter-spacing:-.015em;font-weight:650}
+  .cg-amz .cg-sub{color:var(--ink-2);font-size:.86rem;margin:0 0 18px;line-height:1.45}
+  .cg-amz .cg-sello{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;color:var(--ink-2);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin-bottom:12px}
+  .cg-amz .cg-punto{width:7px;height:7px;border-radius:50%;background:var(--ember)}
+
+  /* ---- destacado ---- */
+  .cg-amz .cg-hero{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 18px;background:var(--surface-2)}
+  .cg-amz .cg-hero-et{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+  .cg-amz .cg-hero-n{font-size:2.4rem;font-weight:660;letter-spacing:-.03em;line-height:1;margin:0}
+  .cg-amz .cg-hero-n span{font-size:1rem;font-weight:500;color:var(--ink-2);letter-spacing:0}
+  .cg-amz .cg-hero-t{margin:8px 0 0;font-size:.9rem;color:var(--ink-2);line-height:1.5}
+
+  /* ---- filas ---- */
+  .cg-amz .cg-leyenda{display:grid;grid-template-columns:170px 1fr 128px 168px;gap:14px;margin-top:9px}
+  .cg-amz .cg-leyenda .cg-pctxt{grid-column:4;margin:0}
+  .cg-amz .cg-fila{display:grid;grid-template-columns:170px 1fr 128px 168px;gap:14px;align-items:center;
+    padding:13px 2px;border-top:1px solid var(--line)}
+  .cg-amz .cg-fila:last-of-type{border-bottom:1px solid var(--line)}
+  .cg-amz .cg-rio{font-weight:600;font-size:.94rem;line-height:1.2}
+  .cg-amz .cg-est{font-size:.78rem;color:var(--ink-3);margin-top:2px}
+  .cg-amz .cg-caudal{text-align:right;font-variant-numeric:tabular-nums;font-size:1.02rem;font-weight:600}
+  .cg-amz .cg-caudal small{display:block;font-weight:400;font-size:.74rem;color:var(--ink-3);margin-top:2px}
+
+  .cg-amz .cg-track{position:relative;height:8px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line)}
+  .cg-amz .cg-band{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--ink-3);opacity:.45}
+  .cg-amz .cg-marca{position:absolute;top:50%;width:11px;height:11px;border-radius:50%;
+    transform:translate(-50%,-50%);box-shadow:0 0 0 2px var(--surface)}
+  .cg-amz .cg-pctxt{font-size:.72rem;color:var(--ink-3);margin-top:7px;display:flex;justify-content:space-between}
+  .cg-amz .cg-chip{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;line-height:1.25;color:var(--ink-2)}
+  .cg-amz .cg-chip b{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+
+  .cg-amz .cg-spark{display:block;width:100%;height:34px;overflow:visible}
+  .cg-amz .cg-tt{position:fixed;pointer-events:none;z-index:20;background:var(--ink);color:var(--surface);
+    font-size:.74rem;padding:5px 8px;border-radius:7px;opacity:0;transition:opacity .12s;white-space:nowrap}
+
+  .cg-amz details{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+  .cg-amz summary{cursor:pointer;font-size:.82rem;color:var(--ink-2)}
+  .cg-amz table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.8rem}
+  .cg-amz th,.cg-amz td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .cg-amz th:first-child,.cg-amz td:first-child{text-align:left}
+  .cg-amz th{color:var(--ink-3);font-weight:500}
+  .cg-amz .cg-nota{margin-top:16px;font-size:.76rem;color:var(--ink-3);line-height:1.55}
+  .cg-amz .cg-nota a{color:inherit}
+  .cg-amz .cg-carga{padding:30px 0;color:var(--ink-3);font-size:.85rem}
+
+  @media (max-width:720px){
+    .cg-amz .cg-leyenda{display:none}
+    .cg-amz .cg-fila{grid-template-columns:1fr 110px;grid-template-areas:"rio caudal" "spark spark" "pct pct";gap:8px}
+    .cg-amz .cg-c-rio{grid-area:rio}.cg-amz .cg-c-spark{grid-area:spark}
+    .cg-amz .cg-c-caudal{grid-area:caudal}.cg-amz .cg-c-pct{grid-area:pct}
+    .cg-amz .cg-hero-n{font-size:2rem}
+  }
+</style>
+</head>
+<body>
+<div class="cg-amz" id="cg-amz">
+  <div class="cg-carga">Cargando el caudal de los ríos…</div>
+</div>
+<div class="cg-tt" id="cg-tt"></div>
+
+<script>
+(function(){
+  const RAIZ = document.getElementById('cg-amz');
+  const TT   = document.getElementById('cg-tt');
+  const nf0  = new Intl.NumberFormat('es-ES',{maximumFractionDigits:0,useGrouping:'always'});
+  const nf1  = new Intl.NumberFormat('es-ES',{maximumFractionDigits:1});
+
+  const color = p => p==null ? 'var(--normal)' : (p<20 ? 'var(--seco)' : (p>80 ? 'var(--crecido)' : 'var(--normal)'));
+
+  function fechaLarga(iso){
+    const d = new Date(iso+'T12:00:00Z');
+    return d.toLocaleDateString('es-ES',{day:'numeric',month:'long',timeZone:'UTC'});
+  }
+
+  function spark(serie, pct, W){
+    // serie: [{fecha,caudal}] — los últimos valores son previsión
+    const pts = serie.filter(p=>p.caudal!=null);
+    if(pts.length < 3) return '';
+    const vs = pts.map(p=>p.caudal);
+    const min = Math.min(...vs), max = Math.max(...vs), rango = (max-min)||1;
+    const H = 34, M = 5;                    // margen para que el punto final no se corte
+    const ancho = Math.max(60, (W||320) - M);
+    const x = i => M/2 + (i/(pts.length-1))*(ancho-M);
+    const y = v => H - M - ((v-min)/rango)*(H-2*M);
+    const linea = pts.map((p,i)=>`${x(i).toFixed(1)},${y(p.caudal).toFixed(1)}`).join(' ');
+    const area  = `${x(0).toFixed(1)},${H} ` + linea + ` ${x(pts.length-1).toFixed(1)},${H}`;
+    const ult = pts[pts.length-1];
+    const c = color(pct);
+    // sin preserveAspectRatio="none": el viewBox va en píxeles reales, así el
+    // punto final es un círculo y no una elipse estirada
+    return `<svg class="cg-spark" viewBox="0 0 ${ancho} ${H}" width="${ancho}" height="${H}" role="img"
+              aria-label="Caudal de los últimos ${pts.length} días">
+        <polygon points="${area}" fill="${c}" opacity="0.10"></polygon>
+        <polyline points="${linea}" fill="none" stroke="${c}" stroke-width="2"
+                  stroke-linejoin="round" stroke-linecap="round"></polyline>
+        <circle cx="${x(pts.length-1).toFixed(1)}" cy="${y(ult.caudal).toFixed(1)}" r="4" fill="${c}"
+                stroke="var(--surface)" stroke-width="2"></circle>
+      </svg>`;
+  }
+
+  function fila(e){
+    const p = e.percentil;
+    const pos = p==null ? 50 : Math.max(2, Math.min(98, p));
+    return `<div class="cg-fila" data-serie='${JSON.stringify(e.serie.filter(s=>s.caudal!=null)).replace(/'/g,"&#39;")}'>
+      <div class="cg-c-rio">
+        <div class="cg-rio">${e.rio}</div>
+        <div class="cg-est">${e.nombre} · ${e.pais}</div>
+      </div>
+      <div class="cg-c-spark" data-spark="1"></div>
+      <div class="cg-c-caudal cg-caudal">${nf0.format(e.caudal)} m³/s
+        <small>${e.porcentaje_de_la_media!=null ? nf0.format(e.porcentaje_de_la_media)+' % de su media' : 'sin referencia'}</small>
+      </div>
+      <div class="cg-c-pct">
+        <div class="cg-track" title="Percentil ${p!=null?nf1.format(p):'—'} de ${e.anios_comparados} años">
+          <div class="cg-band" style="left:20%"></div>
+          <div class="cg-band" style="left:80%"></div>
+          <div class="cg-marca" style="left:${pos}%;background:${color(p)}"></div>
+        </div>
+        <div class="cg-chip" style="margin-top:7px"><b style="background:${color(p)}"></b>${e.estado_texto}${p!=null?` · p${nf1.format(p)}`:''}</div>
+      </div>
+    </div>`;
+  }
+
+  function tabla(d){
+    const filas = d.estaciones.map(e=>`<tr>
+        <td>${e.rio} · ${e.nombre}</td>
+        <td>${nf0.format(e.caudal)}</td>
+        <td>${e.media_para_la_fecha!=null?nf0.format(e.media_para_la_fecha):'—'}</td>
+        <td>${e.porcentaje_de_la_media!=null?nf0.format(e.porcentaje_de_la_media)+' %':'—'}</td>
+        <td>${e.percentil!=null?nf1.format(e.percentil):'—'}</td>
+        <td>${e.minimo_historico_fecha!=null?nf0.format(e.minimo_historico_fecha):'—'}</td>
+        <td>${e.maximo_historico_fecha!=null?nf0.format(e.maximo_historico_fecha):'—'}</td>
+        <td>${e.anios_comparados||'—'}</td>
+      </tr>`).join('');
+    return `<details><summary>Ver los datos en una tabla</summary>
+      <table><thead><tr>
+        <th>Río y estación</th><th>Caudal (m³/s)</th><th>Media de la fecha</th><th>% de la media</th>
+        <th>Percentil</th><th>Mínimo</th><th>Máximo</th><th>Años</th>
+      </tr></thead><tbody>${filas}</tbody></table></details>`;
+  }
+
+  function pinta(d){
+    const h = d.estaciones.find(e=>e.id==='obidos') || d.estaciones[0];
+    const bajos = d.estaciones.filter(e=>e.percentil!=null && e.percentil<20).length;
+    RAIZ.innerHTML = `
+      <div class="cg-sello"><span class="cg-punto"></span>Dato del ${fechaLarga(d.fecha_dato)}</div>
+      <h1>Los ríos de la Amazonía, hoy</h1>
+      <p class="cg-sub">Nueve ríos de cinco países, comparados no con un número redondo sino
+        <strong>consigo mismos en la misma fecha</strong> de los últimos ${h.anios_comparados} años.</p>
+
+      <div class="cg-hero">
+        <p class="cg-hero-et">${h.rio} en ${h.nombre} · la estación que mide el 80 % de la cuenca</p>
+        <p class="cg-hero-n">${nf0.format(h.caudal)} <span>m³/s</span></p>
+        <p class="cg-hero-t">Es el <strong>${nf0.format(h.porcentaje_de_la_media)} %</strong> de lo normal
+          para un ${fechaLarga(d.fecha_dato)}${h.percentil!=null?` — percentil ${nf1.format(h.percentil)}`:''}.
+          ${bajos>0?`Hoy hay <strong>${bajos} de ${d.estaciones.length}</strong> ríos por debajo de lo normal para la fecha.`:''}</p>
+      </div>
+
+      ${d.estaciones.map(fila).join('')}
+
+      <div class="cg-leyenda">
+        <div class="cg-pctxt"><span>← seco</span><span>normal</span><span>crecido →</span></div>
+      </div>
+
+      ${tabla(d)}
+
+      <p class="cg-nota">${d.advertencia}<br>
+        Fuente: ${d.fuente.atribucion_obligatoria}. Actualizado dos veces al día ·
+        última pasada ${new Date(d.actualizado).toLocaleString('es-ES',{dateStyle:'short',timeStyle:'short'})}.</p>`;
+
+    // las sparklines se dibujan ya con el ancho real de su columna
+    RAIZ.querySelectorAll('.cg-fila').forEach((f,i)=>{
+      const hueco = f.querySelector('[data-spark]');
+      const serie = JSON.parse(f.dataset.serie);
+      if(hueco) hueco.innerHTML = spark(d.estaciones[i].serie, d.estaciones[i].percentil, hueco.clientWidth);
+    });
+
+    // crosshair sobre las sparklines
+    RAIZ.querySelectorAll('.cg-fila').forEach(f=>{
+      const svg = f.querySelector('svg'); if(!svg) return;
+      const serie = JSON.parse(f.dataset.serie);
+      svg.addEventListener('mousemove', ev=>{
+        const r = svg.getBoundingClientRect();
+        const i = Math.round(((ev.clientX-r.left)/r.width)*(serie.length-1));
+        const p = serie[Math.max(0,Math.min(serie.length-1,i))];
+        if(!p) return;
+        TT.textContent = `${fechaLarga(p.fecha)}: ${nf0.format(p.caudal)} m³/s`;
+        TT.style.left = (ev.clientX+12)+'px';
+        TT.style.top  = (ev.clientY-32)+'px';
+        TT.style.opacity = 1;
+      });
+      svg.addEventListener('mouseleave', ()=>{ TT.style.opacity = 0; });
+    });
+
+    if(window.parent!==window){
+      const alto = document.documentElement.scrollHeight;
+      window.parent.postMessage({cgAmzAlto:alto, id:'rios'}, '*');
+    }
+  }
+
+  fetch('caudales.json?v='+Date.now())
+    .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(pinta)
+    .catch(err=>{
+      RAIZ.innerHTML = '<div class="cg-carga">No se ha podido cargar el dato de caudales ('+err.message+'). Vuelve a intentarlo en unos minutos.</div>';
+    });
+})();
+</script>
+</body>
+</html>

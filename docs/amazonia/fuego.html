@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Los incendios de la Amazonía, hoy · calentamientoglobal.es</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  .cg-amz{
+    color-scheme: light;
+    --surface:#fcfcfb; --surface-2:#f4f3f0; --line:#e6e4df;
+    --ink:#141412; --ink-2:#57564f; --ink-3:#8a8880;
+    --ember:#cc4416; --gold:#c98a2b;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--surface); color:var(--ink); -webkit-font-smoothing:antialiased;
+    max-width:920px; margin:0 auto; padding:22px 18px 30px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])) .cg-amz{
+      color-scheme: dark;
+      --surface:#161615; --surface-2:#21211f; --line:#33322e;
+      --ink:#f7f7f5; --ink-2:#bfbdb4; --ink-3:#8b8980; --ember:#e0552a;
+    }
+  }
+  html,body{margin:0;padding:0;background:transparent}
+  .cg-amz *{box-sizing:border-box}
+  .cg-amz h1{font-size:1.32rem;line-height:1.25;margin:0 0 4px;letter-spacing:-.015em;font-weight:650}
+  .cg-amz h2{font-size:.95rem;margin:26px 0 10px;font-weight:600}
+  .cg-amz .cg-sub{color:var(--ink-2);font-size:.86rem;margin:0 0 16px;line-height:1.45}
+  .cg-amz .cg-sello{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;color:var(--ink-2);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin-bottom:12px}
+  .cg-amz .cg-punto{width:7px;height:7px;border-radius:50%;background:var(--ember)}
+
+  .cg-amz .cg-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 20px}
+  .cg-amz .cg-tile{border:1px solid var(--line);border-radius:12px;padding:13px 14px;background:var(--surface-2)}
+  .cg-amz .cg-tile p{margin:0}
+  .cg-amz .cg-t-et{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+  .cg-amz .cg-t-n{font-size:1.7rem;font-weight:650;letter-spacing:-.025em;line-height:1;font-variant-numeric:tabular-nums}
+  .cg-amz .cg-t-p{font-size:.75rem;color:var(--ink-2);margin-top:5px;line-height:1.4}
+
+  .cg-amz #cg-mapa{height:380px;border-radius:12px;border:1px solid var(--line);overflow:hidden;background:#101010}
+  .cg-amz .leaflet-container{background:#101010;font:inherit}
+  .cg-amz .leaflet-popup-content-wrapper,.cg-amz .leaflet-popup-tip{background:#1c1c1a;color:#f7f7f5;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+  .cg-amz .leaflet-popup-content{margin:9px 12px;font-size:.78rem;line-height:1.45}
+  .cg-amz .leaflet-control-attribution{background:rgba(20,20,18,.75)!important;color:#9a9890!important}
+  .cg-amz .leaflet-control-attribution a{color:#bfbdb4!important}
+
+  .cg-amz .cg-barras{display:flex;align-items:flex-end;gap:2px;height:110px;margin-top:6px}
+  .cg-amz .cg-barra{flex:1;background:var(--ember);border-radius:3px 3px 0 0;min-height:2px;opacity:.88;cursor:pointer}
+  .cg-amz .cg-barra:hover{opacity:1}
+  .cg-amz .cg-eje{display:flex;justify-content:space-between;font-size:.72rem;color:var(--ink-3);margin-top:6px}
+
+  .cg-amz .cg-pais{display:grid;grid-template-columns:120px 1fr 62px;gap:10px;align-items:center;
+    padding:7px 0;border-top:1px solid var(--line);font-size:.84rem}
+  .cg-amz .cg-pais:last-child{border-bottom:1px solid var(--line)}
+  .cg-amz .cg-pb{height:9px;border-radius:0 4px 4px 0;background:var(--ember)}
+  .cg-amz .cg-pn{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+
+  .cg-amz .cg-tt{position:fixed;pointer-events:none;z-index:1200;background:var(--ink);color:var(--surface);
+    font-size:.74rem;padding:5px 8px;border-radius:7px;opacity:0;transition:opacity .12s;white-space:nowrap}
+  .cg-amz details{margin-top:20px;border-top:1px solid var(--line);padding-top:12px}
+  .cg-amz summary{cursor:pointer;font-size:.82rem;color:var(--ink-2)}
+  .cg-amz table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.8rem}
+  .cg-amz th,.cg-amz td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .cg-amz th:first-child,.cg-amz td:first-child{text-align:left}
+  .cg-amz th{color:var(--ink-3);font-weight:500}
+  .cg-amz .cg-nota{margin-top:16px;font-size:.76rem;color:var(--ink-3);line-height:1.55}
+  .cg-amz .cg-carga{padding:30px 0;color:var(--ink-3);font-size:.85rem}
+  @media (max-width:640px){
+    .cg-amz .cg-tiles{grid-template-columns:1fr;gap:8px}
+    .cg-amz #cg-mapa{height:320px}
+    .cg-amz .cg-pais{grid-template-columns:96px 1fr 56px}
+  }
+</style>
+</head>
+<body>
+<div class="cg-amz" id="cg-amz"><div class="cg-carga">Cargando los focos de fuego…</div></div>
+<div class="cg-tt" id="cg-tt"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  const RAIZ=document.getElementById('cg-amz'), TT=document.getElementById('cg-tt');
+  const nf0=new Intl.NumberFormat('es-ES',{maximumFractionDigits:0,useGrouping:'always'});
+  const nf1=new Intl.NumberFormat('es-ES',{maximumFractionDigits:1});
+  const PAIS={'Brasil':'Brasil','Peru':'Perú','Bolivia':'Bolivia','Colombia':'Colombia','Ecuador':'Ecuador',
+              'Venezuela':'Venezuela','Guyana':'Guyana','Suriname':'Surinam','French Guiana':'Guayana Francesa',
+              'Guiana Francesa':'Guayana Francesa'};
+  const capitaliza=s=>s.toLowerCase().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+  const fechaLarga=iso=>new Date(iso+'T12:00:00Z').toLocaleDateString('es-ES',{day:'numeric',month:'long',timeZone:'UTC'});
+  const fechaCorta=iso=>new Date(iso+'T12:00:00Z').toLocaleDateString('es-ES',{day:'numeric',month:'short',timeZone:'UTC'});
+
+  function pinta(d){
+    const hoy=d.hoy, ayer=d.dia_anterior, serie=d.serie_30_dias;
+    const maxS=Math.max(...serie.map(s=>s.todos_satelites))||1;
+    const pico=serie.reduce((a,b)=>b.todos_satelites>a.todos_satelites?b:a,serie[0]);
+    const paises=Object.entries(hoy.por_pais);
+    const maxP=paises.length?paises[0][1]:1;
+    const estados=Object.entries(hoy.estados_brasil).slice(0,5);
+
+    RAIZ.innerHTML=`
+      <div class="cg-sello"><span class="cg-punto"></span>${hoy.parcial?'Día en curso':'Día cerrado'} · ${fechaLarga(hoy.fecha)}</div>
+      <h1>Los incendios de la Amazonía, hoy</h1>
+      <p class="cg-sub">Focos térmicos detectados por satélite en el bioma amazónico de nueve países.
+        Un foco no es un incendio: es un píxel caliente. Sirve para ver <strong>dónde y cuánto</strong> arde,
+        no cuántos fuegos hay.</p>
+
+      <div class="cg-tiles">
+        <div class="cg-tile">
+          <p class="cg-t-et">Focos ${hoy.parcial?'en lo que va de día':'del día'}</p>
+          <p class="cg-t-n">${nf0.format(hoy.todos_satelites)}</p>
+          <p class="cg-t-p">${ayer?`Ayer, día completo: ${nf0.format(ayer.todos_satelites)} focos`:'Sin día anterior archivado'}</p>
+        </div>
+        <div class="cg-tile">
+          <p class="cg-t-et">Acumulado del mes</p>
+          <p class="cg-t-n">${nf0.format(d.acumulado_mes.todos_satelites)}</p>
+          <p class="cg-t-p">${d.acumulado_mes.dias_contados} días contados${
+            d.comparacion_historica?` · ${d.comparacion_historica.diferencia_pct>0?'+':''}${nf0.format(d.comparacion_historica.diferencia_pct)} % frente a la media ${d.comparacion_historica.periodo_referencia}`:''}</p>
+        </div>
+        <div class="cg-tile">
+          <p class="cg-t-et">Serie comparable</p>
+          <p class="cg-t-n">${d.media_7d_referencia!=null?nf0.format(d.media_7d_referencia):'—'}</p>
+          <p class="cg-t-p">Media de los últimos 7 días con el satélite de referencia (${d.satelite_referencia}), el único que se puede comparar con años anteriores</p>
+        </div>
+      </div>
+
+      <h2>Dónde está ardiendo${d.puntos_mapa_fecha?` · ${fechaLarga(d.puntos_mapa_fecha)}`:''}</h2>
+      <div id="cg-mapa"></div>
+      <p class="cg-nota" style="margin-top:8px">${nf0.format(d.puntos_mapa.length)} focos en el mapa.
+        El tamaño del punto es la potencia radiativa (FRP): cuanto mayor, más energía libera el fuego.</p>
+
+      <h2>Focos por día · últimos ${serie.length} días</h2>
+      <div class="cg-barras" id="cg-barras">
+        ${serie.map(s=>`<div class="cg-barra" data-f="${s.fecha}" data-t="${s.todos_satelites}" data-r="${s.satelite_referencia}"
+            style="height:${Math.max(2,(s.todos_satelites/maxS)*100)}%"></div>`).join('')}
+      </div>
+      <div class="cg-eje">
+        <span>${fechaCorta(serie[0].fecha)}</span>
+        <span>máximo: ${nf0.format(pico.todos_satelites)} el ${fechaCorta(pico.fecha)}</span>
+        <span>${fechaCorta(serie[serie.length-1].fecha)}</span>
+      </div>
+
+      <h2>Reparto por país${hoy.parcial?' (día en curso)':''}</h2>
+      ${paises.map(([p,n])=>`<div class="cg-pais">
+          <span>${PAIS[p]||p}</span>
+          <span class="cg-pb" style="width:calc(${(n/maxP)*100}% + 2px)"></span>
+          <span class="cg-pn">${nf0.format(n)}</span>
+        </div>`).join('')}
+      ${estados.length?`<p class="cg-nota">En Brasil: ${estados.map(([e,n])=>`${capitaliza(e)} ${nf0.format(n)}`).join(' · ')}.</p>`:''}
+
+      <details><summary>Ver los datos en una tabla</summary>
+        <table><thead><tr><th>Día</th><th>Todos los satélites</th><th>Satélite de referencia</th></tr></thead>
+        <tbody>${serie.slice().reverse().map(s=>`<tr><td>${fechaCorta(s.fecha)}</td>
+          <td>${nf0.format(s.todos_satelites)}</td><td>${nf0.format(s.satelite_referencia)}</td></tr>`).join('')}
+        </tbody></table>
+      </details>
+
+      <p class="cg-nota">${d.advertencia}<br>
+        Amazonía = bioma Amazônia en Brasil (campo oficial del INPE) y departamentos amazónicos completos en
+        Perú, Bolivia, Colombia, Ecuador, Venezuela y las Guayanas; los territorios de transición se cuentan aparte.<br>
+        Fuente: ${d.fuente.atribucion_obligatoria}. Última pasada
+        ${new Date(d.actualizado).toLocaleString('es-ES',{dateStyle:'short',timeStyle:'short'})}.</p>`;
+
+    // ---- mapa ----
+    const mapa=L.map('cg-mapa',{scrollWheelZoom:false,attributionControl:true}).setView([-5.5,-60.5],4);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      {maxZoom:12,attribution:'Focos: INPE · Teselas: Esri'}).addTo(mapa);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+      {maxZoom:12}).addTo(mapa);
+    const ember=getComputedStyle(RAIZ).getPropertyValue('--ember').trim()||'#cc4416';
+    const capa=L.layerGroup().addTo(mapa);
+    d.puntos_mapa.forEach(([la,lo,frp])=>{
+      const r=frp>=100?5.5:frp>=30?4:frp>=10?3:2.2;
+      L.circleMarker([la,lo],{radius:r,color:ember,weight:0,fillColor:ember,fillOpacity:.72})
+       .bindPopup(`<b>${nf1.format(frp)} MW</b><br>${nf1.format(la)}, ${nf1.format(lo)}`)
+       .addTo(capa);
+    });
+
+    // ---- hover de las barras ----
+    document.querySelectorAll('.cg-barra').forEach(b=>{
+      b.addEventListener('mousemove',ev=>{
+        TT.innerHTML=`${fechaLarga(b.dataset.f)}<br>${nf0.format(+b.dataset.t)} focos · ${nf0.format(+b.dataset.r)} del satélite de referencia`;
+        TT.style.left=(ev.clientX+12)+'px'; TT.style.top=(ev.clientY-40)+'px'; TT.style.opacity=1;
+      });
+      b.addEventListener('mouseleave',()=>{TT.style.opacity=0;});
+    });
+
+    if(window.parent!==window){
+      window.parent.postMessage({cgAmzAlto:document.documentElement.scrollHeight,id:'fuego'},'*');
+    }
+  }
+
+  fetch('fuego.json?v='+Date.now())
+    .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(pinta)
+    .catch(err=>{ RAIZ.innerHTML='<div class="cg-carga">No se han podido cargar los focos ('+err.message+'). Vuelve a intentarlo en unos minutos.</div>'; });
+})();
+</script>
+</body>
+</html>
