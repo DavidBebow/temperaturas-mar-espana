@@ -167,7 +167,7 @@ def resumir_dia(f: date, texto: str) -> dict:
     frp_suma = 0.0
     frp_n = 0
     sin_lluvia: list[float] = []
-    puntos: list[list] = []
+    vistos: dict[tuple[float, float], float] = {}
 
     for fila in lector:
         clase = clasifica(fila.get("pais", ""), fila.get("estado", ""), fila.get("bioma", ""))
@@ -186,16 +186,18 @@ def resumir_dia(f: date, texto: str) -> dict:
         if (fila.get("satelite") or "").strip() == SATELITE_REFERENCIA:
             ref_total += 1
             ref_por_pais[pais] += 1
-            # el mapa se dibuja con el satélite de referencia: menos puntos,
-            # sin solapamiento entre satélites y comparable con el pasado
-            try:
-                puntos.append([
-                    round(float(fila["lat"]), 3),
-                    round(float(fila["lon"]), 3),
-                    round(float(fila.get("frp") or 0), 1),
-                ])
-            except (TypeError, ValueError):
-                pass
+
+        # El mapa lleva TODOS los satélites, agrupando por celda de ~100 m: si
+        # se dibujara solo el de referencia, a media mañana el mapa saldría
+        # vacío, porque AQUA pasa por la tarde.
+        try:
+            clave_pt = (round(float(fila["lat"]), 3), round(float(fila["lon"]), 3))
+            frp_pt = round(float(fila.get("frp") or 0), 1)
+            anterior = vistos.get(clave_pt)
+            if anterior is None or frp_pt > anterior:
+                vistos[clave_pt] = frp_pt
+        except (TypeError, ValueError, KeyError):
+            pass
 
         try:
             v = float(fila.get("frp") or 0)
@@ -204,10 +206,16 @@ def resumir_dia(f: date, texto: str) -> dict:
                 frp_n += 1
         except ValueError:
             pass
-        try:
-            sin_lluvia.append(float(fila.get("numero_dias_sem_chuva") or 0))
-        except ValueError:
-            pass
+        # el campo viene vacío en muchos satélites: vacío no es "cero días sin
+        # lluvia", es "no lo sé", y contarlo como cero hunde la media
+        bruto = (fila.get("numero_dias_sem_chuva") or "").strip()
+        if bruto not in ("", "-", "nan"):
+            try:
+                sin_lluvia.append(float(bruto))
+            except ValueError:
+                pass
+
+    puntos = [[la, lo, frp] for (la, lo), frp in vistos.items()]
 
     return {
         "fecha": f.isoformat(),
@@ -221,7 +229,7 @@ def resumir_dia(f: date, texto: str) -> dict:
         "dias_sin_lluvia_medio": (
             round(sum(sin_lluvia) / len(sin_lluvia), 1) if sin_lluvia else None
         ),
-        "puntos_referencia": puntos,
+        "puntos_mapa": puntos,
     }
 
 
@@ -312,10 +320,12 @@ def construir(dias: int) -> dict:
         resumen = resumir_dia(f, texto)
         resumen["definitivo"] = d >= 1
         # el histórico no guarda los puntos del mapa: solo el recuento
-        puntos = resumen.pop("puntos_referencia")
+        puntos = resumen.pop("puntos_mapa")
         hist["dias"][clave] = resumen
-        if f == hoy or (f == hoy - timedelta(days=1) and not hist.get("_puntos_hoy")):
-            hist["_puntos_hoy"] = {"fecha": clave, "puntos": puntos}
+        # se queda con los puntos del día más reciente que traiga alguno
+        anterior = hist.get("_puntos_mapa") or {}
+        if puntos and clave >= anterior.get("fecha", ""):
+            hist["_puntos_mapa"] = {"fecha": clave, "puntos": puntos}
         nuevos += 1
         log(f"  {clave}: {resumen['todos_satelites']} focos "
             f"({resumen['satelite_referencia']} del satélite de referencia)")
@@ -333,7 +343,8 @@ def construir(dias: int) -> dict:
 
     ref_fecha = date.fromisoformat(ultimo)
     acum = acumulado_mes(hist, ref_fecha)
-    puntos = hist.get("_puntos_hoy", {}).get("puntos", [])
+    bloque_puntos = hist.get("_puntos_mapa", {})
+    puntos = bloque_puntos.get("puntos", [])
 
     serie_30 = [
         {"fecha": k,
@@ -374,6 +385,11 @@ def construir(dias: int) -> dict:
         "serie_30_dias": serie_30,
         "dias_archivados": len(fechas),
         "puntos_mapa": puntos,
+        "puntos_mapa_fecha": bloque_puntos.get("fecha"),
+        "puntos_mapa_nota": (
+            "Todos los satélites, agrupados por celda de ~100 m. Para comparar "
+            "con el pasado, usar los recuentos del satélite de referencia."
+        ),
         "fallos": fallos,
         "nuevos_dias_leidos": nuevos,
     }

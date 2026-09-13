@@ -246,7 +246,7 @@ def construir_climatologia() -> dict:
     inicio = date(ANIO_INICIO_CLIMA, 1, 1)
     salida = {
         "generada": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "periodo": {"inicio": inicio.isoformat(), "fin": fin.isoformat()},
+        "periodo_solicitado": {"inicio": inicio.isoformat(), "fin": fin.isoformat()},
         "metodo": (
             "Para cada estación y cada día del año se agrupan todos los valores "
             f"del reanálisis GloFAS en una ventana de ±{VENTANA_DIAS} días alrededor "
@@ -273,9 +273,11 @@ def construir_climatologia() -> dict:
         valores = datos["daily"]["river_discharge"]
 
         por_dia: dict[str, list[float]] = {}
+        con_dato: list[str] = []
         for t, v in zip(tiempos, valores):
             if v is None:
                 continue
+            con_dato.append(t)
             f = date.fromisoformat(t)
             por_dia.setdefault(clave_dia(f), []).append(float(v))
 
@@ -292,6 +294,11 @@ def construir_climatologia() -> dict:
         salida["estaciones"][est["id"]] = {
             "lat": est["lat"],
             "lon": est["lon"],
+            # Ojo: el reanálisis no siempre llega hasta 1984 en todas las
+            # celdas. Aquí se guarda el periodo que REALMENTE trae dato.
+            "periodo_con_dato": (
+                {"inicio": min(con_dato), "fin": max(con_dato)} if con_dato else None
+            ),
             "por_dia": resumen,
             "valores_por_dia": {k: [round(v, 2) for v in sorted(vs)] for k, vs in por_dia.items()},
         }
@@ -445,6 +452,7 @@ def construir() -> dict:
         )
 
     destacada = next((e for e in estaciones if e["id"] == "obidos"), estaciones[0])
+    destacada_id = destacada["id"]
 
     return {
         "actualizado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -455,11 +463,18 @@ def construir() -> dict:
             "Coordenadas fijadas sobre la celda del cauce principal (máximo de caudal "
             "en una ventana de ±0,12° alrededor de la estación de referencia). El "
             "percentil compara el valor del día con todos los valores del reanálisis "
-            f"GloFAS desde {ANIO_INICIO_CLIMA} en una ventana de ±{VENTANA_DIAS} días "
-            "alrededor de la misma fecha."
+            f"GloFAS disponibles (se piden desde {ANIO_INICIO_CLIMA}; cada ficha indica "
+            "en 'anios_comparados' los años que realmente tiene esa celda) en una "
+            f"ventana de ±{VENTANA_DIAS} días alrededor de la misma fecha."
         ),
         "climatologia": (
-            {"periodo": clima["periodo"], "generada": clima["generada"]} if clima else None
+            {
+                "periodo_solicitado": clima.get("periodo_solicitado") or clima.get("periodo"),
+                "periodo_con_dato": (
+                    clima["estaciones"].get(destacada_id, {}).get("periodo_con_dato")
+                ),
+                "generada": clima["generada"],
+            } if clima else None
         ),
         "destacado": {
             "estacion": destacada["nombre"],
