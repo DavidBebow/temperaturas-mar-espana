@@ -1,0 +1,92 @@
+name: Amazonía — caudales y fuego
+
+# Fase 1 del observatorio amazónico: caudal modelizado de nueve ríos (GloFAS)
+# y focos de fuego del INPE. Dos pasadas al día; la de la tarde sirve sobre
+# todo para completar el fichero de focos del día en curso.
+#
+# Los ficheros que escribe, todos dentro de docs/ (que es lo que sirve GitHub
+# Pages — ojo con esto, ya hubo un indicador sirviendo un dato congelado 44
+# días por escribir en la raíz):
+#   docs/amazonia/caudales.json
+#   docs/amazonia/caudales_climatologia.json   (se regenera cada 30 días)
+#   docs/amazonia/fuego.json
+#   docs/amazonia/fuego_historico.json         (archivo propio, crece cada día)
+
+on:
+  schedule:
+    - cron: '20 7 * * *'
+    - cron: '20 17 * * *'
+  workflow_dispatch:
+    inputs:
+      dias_fuego:
+        description: 'Días de focos a revisar hacia atrás (el INPE guarda ~120)'
+        required: false
+        default: '3'
+      forzar_climatologia:
+        description: 'Recalcular la climatología de caudales (1984→)'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: amazonia
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install --quiet requests
+
+      - name: Caudales de los ríos amazónicos
+        run: |
+          if [ "${{ inputs.forzar_climatologia }}" = "true" ]; then
+            python scripts/obtener_amazonia_caudales.py --forzar-climatologia
+          else
+            python scripts/obtener_amazonia_caudales.py
+          fi
+
+      - name: Focos de fuego
+        run: python scripts/obtener_amazonia_fuego.py --dias ${{ inputs.dias_fuego || 3 }}
+
+      - name: Comprobar que los ficheros se han escrito hoy
+        run: |
+          for f in docs/amazonia/caudales.json docs/amazonia/fuego.json; do
+            if [ ! -f "$f" ]; then echo "FALTA $f"; exit 1; fi
+            python - "$f" <<'PY'
+          import json, sys
+          from datetime import datetime, timezone, timedelta
+          ruta = sys.argv[1]
+          d = json.load(open(ruta, encoding='utf-8'))
+          t = datetime.fromisoformat(d['actualizado'].replace('Z', '+00:00'))
+          edad = datetime.now(timezone.utc) - t
+          if edad > timedelta(hours=2):
+              print(f'{ruta}: el sello de actualización tiene {edad}, algo no ha corrido')
+              sys.exit(1)
+          print(f'{ruta}: fresco ({t.isoformat()})')
+          PY
+          done
+
+      - name: Publicar
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add docs/amazonia
+          if git diff --staged --quiet; then
+            echo 'Sin cambios que publicar'
+          else
+            git commit -m "Amazonía: caudales y focos $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
