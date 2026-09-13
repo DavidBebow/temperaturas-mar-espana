@@ -96,6 +96,7 @@
     const paises=Object.entries(hoy.por_pais);
     const maxP=paises.length?paises[0][1]:1;
     const estados=Object.entries(hoy.estados_brasil).slice(0,5);
+    const comp=d.comparacion_historica;
 
     RAIZ.innerHTML=`
       <div class="cg-sello"><span class="cg-punto"></span>${hoy.parcial?'Día en curso':'Día cerrado'} · ${fechaLarga(hoy.fecha)}</div>
@@ -114,7 +115,7 @@
           <p class="cg-t-et">Acumulado del mes</p>
           <p class="cg-t-n">${nf0.format(d.acumulado_mes.todos_satelites)}</p>
           <p class="cg-t-p">${d.acumulado_mes.dias_contados} días contados${
-            d.comparacion_historica?` · ${d.comparacion_historica.diferencia_pct>0?'+':''}${nf0.format(d.comparacion_historica.diferencia_pct)} % frente a la media ${d.comparacion_historica.periodo_referencia}`:''}</p>
+            comp?` · <strong>${comp.diferencia_pct>0?'+':''}${nf0.format(comp.diferencia_pct)} %</strong> frente a los mismos días de ${comp.periodo_referencia}`:''}</p>
         </div>
         <div class="cg-tile">
           <p class="cg-t-et">Serie comparable</p>
@@ -122,6 +123,13 @@
           <p class="cg-t-p">Media de los últimos 7 días con el satélite de referencia (${d.satelite_referencia}), el único que se puede comparar con años anteriores</p>
         </div>
       </div>
+
+      ${comp?`<p class="cg-nota" style="margin:-8px 0 0">Comparación: ${nf0.format(comp.observado)} focos del satélite de
+        referencia en los ${comp.dias_comparados} días ya cerrados de este mes, frente a ${nf0.format(comp.esperado)}
+        en esos mismos días del calendario entre ${comp.periodo_referencia}. ${comp.rango_historico_del_mes?`Ese mes ha
+        oscilado entre ${nf0.format(comp.rango_historico_del_mes.minimo)} y ${nf0.format(comp.rango_historico_del_mes.maximo)}
+        focos según el año, así que la media sola engaña.`:''} El satélite de referencia lleva desde 2002 en órbita:
+        parte de una caída tan grande puede ser del sensor y no del fuego.</p>`:''}
 
       <h2>Dónde está ardiendo${d.puntos_mapa_fecha?` · ${fechaLarga(d.puntos_mapa_fecha)}`:''}</h2>
       <div id="cg-mapa"></div>
