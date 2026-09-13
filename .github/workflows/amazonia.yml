@@ -86,7 +86,20 @@ jobs:
           git add docs/amazonia
           if git diff --staged --quiet; then
             echo 'Sin cambios que publicar'
-          else
-            git commit -m "Amazonía: caudales y focos $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git push
+            exit 0
           fi
+          git commit -m "Amazonía: caudales y focos $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # Este repo recibe pushes de otros workflows mientras este corre (la
+          # primera ejecución tarda ~9 minutos), así que el push se reintenta
+          # rebasando encima de lo que haya llegado.
+          for intento in 1 2 3 4 5; do
+            if git push; then
+              echo "publicado a la $intento"
+              exit 0
+            fi
+            echo "push rechazado, reintento $intento"
+            git pull --rebase --autostash origin main || exit 1
+            sleep $((intento * 5))
+          done
+          echo 'no se pudo publicar tras 5 intentos'
+          exit 1
