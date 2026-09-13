@@ -55,7 +55,7 @@ jobs:
       - name: Recopilar
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          CD_WINDOW_HOURS: "3"
+          CD_WINDOW_HOURS: "12"
           CD_MIN_SCORE: "5"
           CD_MAX_NUEVOS: "60"
         run: |
