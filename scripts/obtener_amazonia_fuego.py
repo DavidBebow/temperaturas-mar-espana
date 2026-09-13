@@ -277,23 +277,54 @@ def acumulado_mes(hist: dict, ref: date) -> dict:
             "dias_contados": dias}
 
 
-def comparacion_historica(mes: int, acumulado_ref: int, dias_contados: int) -> dict | None:
-    """Compara el acumulado del mes con la media histórica, si existe el fichero."""
+def comparacion_historica(hist: dict, ref: date) -> dict | None:
+    """Compara los días ya cerrados de este mes con los MISMOS días del periodo
+    histórico, no con una media mensual repartida a partes iguales: en agosto y
+    septiembre el fuego crece dentro del propio mes, y repartir la media por
+    igual entre los días exagera el principio y suaviza el final."""
     if not CLIMATOLOGIA.exists():
         return None
     try:
         clima = json.loads(CLIMATOLOGIA.read_text(encoding="utf-8"))
-        bloque = clima["meses"][str(mes)]
+        por_dia = clima["por_dia_del_anio"]
     except Exception:  # noqa: BLE001
         return None
-    media_diaria = bloque["media_diaria"]
-    esperado = round(media_diaria * dias_contados)
+
+    observado = 0
+    esperado = 0.0
+    dias = 0
+    for k, v in hist["dias"].items():
+        f = date.fromisoformat(k)
+        if f.year != ref.year or f.month != ref.month:
+            continue
+        if not v.get("definitivo", False):
+            continue          # el día en curso va a medias: no se compara
+        clave = f"{f.month:02d}-{f.day:02d}"
+        if clave not in por_dia:
+            continue
+        observado += v["satelite_referencia"]
+        esperado += por_dia[clave]
+        dias += 1
+
+    if dias == 0 or esperado <= 0:
+        return None
+
+    bloque_mes = clima.get("meses", {}).get(str(ref.month), {})
     return {
         "periodo_referencia": clima.get("periodo"),
-        "media_diaria_historica": media_diaria,
-        "esperado_a_estas_alturas": esperado,
-        "diferencia_pct": (
-            round(100.0 * (acumulado_ref - esperado) / esperado, 1) if esperado else None
+        "dias_comparados": dias,
+        "observado": observado,
+        "esperado": round(esperado),
+        "diferencia_pct": round(100.0 * (observado - esperado) / esperado, 1),
+        "rango_historico_del_mes": (
+            {"minimo": bloque_mes.get("minimo"), "maximo": bloque_mes.get("maximo"),
+             "media": bloque_mes.get("media")} if bloque_mes else None
+        ),
+        "nota": (
+            "Solo días cerrados y solo con el satélite de referencia, contra los "
+            "mismos días del calendario en "
+            f"{clima.get('periodo')}. La media histórica incluye años extremos, "
+            "así que conviene mirar también el rango."
         ),
     }
 
@@ -380,8 +411,7 @@ def construir(dias: int) -> dict:
         ),
         "media_7d_referencia": media_movil(hist, ref_fecha),
         "acumulado_mes": acum,
-        "comparacion_historica": comparacion_historica(
-            ref_fecha.month, acum["satelite_referencia"], acum["dias_contados"]),
+        "comparacion_historica": comparacion_historica(hist, ref_fecha),
         "serie_30_dias": serie_30,
         "dias_archivados": len(fechas),
         "puntos_mapa": puntos,
