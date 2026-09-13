@@ -1,0 +1,75 @@
+name: Amazonía — climatología de fuego (2003→)
+
+# Backfill: descarga los anuarios del satélite de referencia del INPE y calcula
+# la media histórica de focos por mes y por día del año, con la misma definición
+# de Amazonía que la pasada diaria. Es lo que convierte «4.023 focos hoy» en
+# «un X % más que la media de las dos últimas décadas para esta fecha».
+#
+# NO va en la pasada diaria: son 23 ficheros comprimidos y tarda decenas de
+# minutos. Se lanza a mano, y basta una vez al año, cuando el INPE cierra el
+# año anterior.
+
+on:
+  workflow_dispatch:
+    inputs:
+      desde:
+        description: 'Primer año (el INPE publica desde 2003)'
+        required: false
+        default: '2003'
+      hasta:
+        description: 'Último año (vacío = el año pasado)'
+        required: false
+        default: ''
+
+concurrency:
+  group: amazonia-climatologia
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  climatologia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install --quiet requests
+
+      - name: Calcular la climatología de focos
+        run: |
+          HASTA="${{ inputs.hasta }}"
+          if [ -z "$HASTA" ]; then
+            python scripts/amazonia_fuego_climatologia.py --desde "${{ inputs.desde }}"
+          else
+            python scripts/amazonia_fuego_climatologia.py --desde "${{ inputs.desde }}" --hasta "$HASTA"
+          fi
+
+      - name: Publicar
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add docs/amazonia/fuego_climatologia.json
+          if git diff --staged --quiet; then
+            echo 'Sin cambios que publicar'
+            exit 0
+          fi
+          git commit -m "Amazonía: climatología de focos $(date -u +'%Y-%m-%d')"
+          for intento in 1 2 3 4 5; do
+            if git push; then
+              echo "publicado a la $intento"
+              exit 0
+            fi
+            echo "push rechazado, reintento $intento"
+            git pull --rebase --autostash origin main || exit 1
+            sleep $((intento * 5))
+          done
+          echo 'no se pudo publicar tras 5 intentos'
+          exit 1
