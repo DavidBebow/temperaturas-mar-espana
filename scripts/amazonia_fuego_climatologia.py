@@ -76,7 +76,10 @@ def procesar_anio(anio: int) -> tuple[dict[int, int], dict[str, int], dict[str, 
                     if clasifica(fila.get("pais", ""), fila.get("estado", ""),
                                  fila.get("bioma", "")) != "amazonia":
                         continue
-                    fecha_txt = (fila.get("data_hora_gmt") or "")[:10]
+                    # los anuarios del satélite de referencia traen otro esquema
+                    # que los ficheros diarios: la fecha se llama 'data_pas' y no
+                    # hay columna 'satelite' (ya vienen filtrados)
+                    fecha_txt = (fila.get("data_hora_gmt") or fila.get("data_pas") or "")[:10]
                     try:
                         f = date.fromisoformat(fecha_txt)
                     except ValueError:
@@ -84,7 +87,15 @@ def procesar_anio(anio: int) -> tuple[dict[int, int], dict[str, int], dict[str, 
                     por_mes[f.month] += 1
                     por_dia[f"{f.month:02d}-{f.day:02d}"] += 1
                     por_pais[(fila.get("pais") or "").strip()] += 1
-    log(f"  {anio}: {sum(por_mes.values()):,} focos amazónicos")
+    total = sum(por_mes.values())
+    if total == 0:
+        # esto ya pasó una vez: el anuario usa 'data_pas' donde el fichero diario
+        # usa 'data_hora_gmt', y el script publicó una climatología de ceros sin
+        # quejarse. Un año sin un solo foco amazónico es un fallo, no un dato.
+        raise RuntimeError(
+            f"{anio}: 0 focos amazónicos — revisar si ha cambiado el esquema del fichero"
+        )
+    log(f"  {anio}: {total:,} focos amazónicos")
     return dict(por_mes), dict(por_dia), dict(por_pais)
 
 
