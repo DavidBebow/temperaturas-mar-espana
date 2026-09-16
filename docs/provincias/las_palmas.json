@@ -3,8 +3,8 @@
  "provincia": "Las Palmas",
  "ccaa": "Canarias",
  "capital": "Las Palmas de Gran Canaria",
- "generado": "2026-09-16T14:07+02:00",
- "fecha_legible": "16/09/2026 a las 14:07",
+ "generado": "2026-09-16T20:27+02:00",
+ "fecha_legible": "16/09/2026 a las 20:27",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,13 +23,13 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 27.9,
-   "tmax_hoy": 34.0,
-   "tmin_hoy": 27.2,
-   "dias_consecutivos": 3,
+   "tmax_hoy": 29.4,
+   "tmin_hoy": 23.9,
+   "dias_consecutivos": 4,
    "noche_tropical": true,
-   "icc": 88,
-   "nivel": "Canícula extrema",
-   "color": "#CC2200"
+   "icc": 68,
+   "nivel": "Canícula intensa",
+   "color": "#FF8822"
   },
   "firma_climatica": {
    "nombre": "Las Palmas de Gran Canaria",
@@ -56,11 +56,11 @@
    {
     "id": "las_palmas",
     "nombre": "Las Palmas",
-    "temperatura_actual": 24.4,
-    "anomalia": -0.6,
-    "etiqueta_anomalia": "Ligeramente frío",
-    "dias_consecutivos": 100,
-    "signo_consecutivo": "negativa"
+    "temperatura_actual": null,
+    "anomalia": null,
+    "etiqueta_anomalia": "Sin datos",
+    "dias_consecutivos": null,
+    "signo_consecutivo": null
    },
    {
     "id": "fuerteventura",
@@ -74,11 +74,11 @@
    {
     "id": "lanzarote",
     "nombre": "Lanzarote",
-    "temperatura_actual": null,
-    "anomalia": null,
-    "etiqueta_anomalia": "Sin datos",
-    "dias_consecutivos": null,
-    "signo_consecutivo": null
+    "temperatura_actual": 24.0,
+    "anomalia": 0.0,
+    "etiqueta_anomalia": "Normal",
+    "dias_consecutivos": 1,
+    "signo_consecutivo": "normal"
    }
   ],
   "nivel_mar": [
@@ -115,25 +115,36 @@
    "dias_consecutivos": 0,
    "dias_anio_actual": 1
   },
+  "lluvias": {
+   "mm_ayer": 0.0,
+   "mm_semana": 5.2,
+   "mm_anual": 506.5,
+   "media_anual_mm": 248.4,
+   "media_hasta_hoy_mm": 154.7,
+   "anomalia_semana_pct": 62.5,
+   "anomalia_anual_pct": 227.4,
+   "etiqueta_semana": "Muy lluvioso",
+   "etiqueta_anual": "Muy lluvioso"
+  },
   "noches_tropicales": [
    {
     "id": "las_palmas",
     "nombre": "Las Palmas",
     "t_min_anoche": null,
-    "nt_mes": 12,
-    "nt_anyo": 80,
+    "nt_mes": 13,
+    "nt_anyo": 81,
     "etiqueta": "Sin datos"
    }
   ],
   "calidad_aire": [
    {
     "nombre": "Las Palmas",
-    "etiqueta": "Muy mala",
-    "aqi_europeo": 75,
-    "pm25": 51.8,
-    "contaminante_dominante": "PM10",
+    "etiqueta": "Moderada",
+    "aqi_europeo": 41,
+    "pm25": 16.0,
+    "contaminante_dominante": "PM2.5",
     "supera_oms": true,
-    "sahariano": true
+    "sahariano": false
    }
   ],
   "dias32": {
@@ -145,10 +156,10 @@
    {
     "id": "gran_canaria",
     "nombre": "Gran Canaria",
-    "temp": 24.97,
+    "temp": 25.03,
     "fecha": "2026-09-16",
     "max_anio": {
-     "valor": 24.97,
+     "valor": 25.03,
      "fecha": "2026-09-16"
     },
     "record_max": {
@@ -163,26 +174,6 @@
   ]
  },
  "destacados": [
-  {
-   "tipo": "canicula_alta",
-   "icono": "☀️",
-   "nivel": "alto",
-   "texto": "Canícula intensa en Las Palmas: índice de calor 88/100, máxima de 34.0 °C y 3 días seguidos de calor · 3.º día consecutivo",
-   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
-   "prioridad": 86,
-   "racha_dias": 3,
-   "nuevo": false
-  },
-  {
-   "tipo": "aire",
-   "icono": "💨",
-   "nivel": "alto",
-   "texto": "Calidad del aire muy mala en Las Palmas (contaminante dominante: PM10) · 2.º día consecutivo",
-   "url": "https://calentamientoglobal.es/calidad-del-aire/",
-   "prioridad": 76,
-   "racha_dias": 2,
-   "nuevo": false
-  },
   {
    "tipo": "firma",
    "icono": "🔬",
@@ -212,7 +203,27 @@
    "prioridad": 62,
    "racha_dias": 49,
    "nuevo": false
+  },
+  {
+   "tipo": "lluvia_abundante",
+   "icono": "🌧️",
+   "nivel": "medio",
+   "texto": "Año inusualmente lluvioso en Las Palmas: 506.5 mm, un 227% más de lo normal",
+   "url": "https://calentamientoglobal.es/lluvias-en-espana/",
+   "prioridad": 60,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
+   "tipo": "canicula",
+   "icono": "☀️",
+   "nivel": "medio",
+   "texto": "Calor canicular en Las Palmas: índice 68/100, máxima de 29.4 °C",
+   "url": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
+   "prioridad": 58,
+   "racha_dias": 1,
+   "nuevo": true
   }
  ],
- "texto_seo": "Situación climática en Las Palmas a 16/09/2026: Canícula intensa en Las Palmas: índice de calor 88/100, máxima de 34.0 °C y 3 días seguidos de calor. Calidad del aire muy mala en Las Palmas (contaminante dominante: PM10). Una máxima de 29.2 °C se daba en Las Palmas de Gran Canaria una vez cada 10 años en el clima de 1951-1980; en el de ahora, una vez cada 2 años. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Las Palmas a 16/09/2026: Una máxima de 29.2 °C se daba en Las Palmas de Gran Canaria una vez cada 10 años en el clima de 1951-1980; en el de ahora, una vez cada 2 años. Nivel del mar muy elevado en Fuerteventura: +17.8 cm sobre la media 1993-2012. Las Palmas ya suma 9 días por encima de 32 °C este año (media 1991-2020: 0; media 1961-1990: 0). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
