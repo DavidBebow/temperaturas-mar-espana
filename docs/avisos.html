@@ -94,7 +94,7 @@
     <span><i style="background:var(--sin)"></i>Sin avisos</span>
   </div>
 </div>
-<div class="pie">Avisos oficiales de <strong>AEMET</strong> vía <strong>MeteoAlarm</strong> (EUMETNET) · Actualización horaria ·
+<div class="pie">Avisos oficiales de <strong>AEMET</strong> vía <strong>MeteoAlarm</strong> (EUMETNET) · Actualización horaria · Los avisos finalizados se retiran automáticamente ·
   <a href="https://calentamientoglobal.es/observatorio-climatico/" target="_top">Observatorio Climático de calentamientoglobal.es</a></div>
 
 <script>
@@ -125,9 +125,41 @@
            String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   };
 
-  let datos, capa, filtro = 'todos', seleccion = '';
+  let datos, capa, filtro = 'todos', seleccion = '', todosLosAvisos = [];
   const porCom = {};      // slug -> [avisos] (según filtro)
   const nombreCom = {};   // slug -> nombre bonito del geojson
+
+  // Zonas de aviso que el recopilador no consigue asignar a provincia ("Otras zonas").
+  // Respaldo en el cliente para que sí se pinten en su comunidad.
+  const ZONAS_HUERFANAS = [
+    [/almeriense|almanzora|tabernas|poniente y almer/i, 'Almería', 'Andalucía']
+  ];
+  const corregirZona = a => {
+    if (a.provincia && a.provincia !== 'Otras zonas' && a.comunidad !== 'Otras zonas') return a;
+    for (const [re, prov, com] of ZONAS_HUERFANAS)
+      if (re.test(a.zona || '')) return Object.assign({}, a, {provincia: prov, comunidad: com});
+    return a;
+  };
+
+  // Vigencia comprobada en el navegador: se ocultan los avisos ya finalizados y los que
+  // empiezan después de hoy. Así la página es veraz aunque el JSON lleve horas sin refrescarse.
+  function vigentesAhora(){
+    const ahora = Date.now();
+    const finHoy = new Date(); finHoy.setHours(23, 59, 59, 999);
+    return todosLosAvisos
+      .map(corregirZona)
+      .filter(a => new Date(a.fin).getTime() > ahora && new Date(a.inicio).getTime() <= finHoy.getTime())
+      .map(a => Object.assign({}, a, {activo_ya: new Date(a.inicio).getTime() <= ahora}));
+  }
+  function refrescarVigencia(){
+    datos.avisos = vigentesAhora();
+    const gen = new Date(datos.generado);
+    const fmt = d => d.toLocaleString('es-ES', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'});
+    const fmtH = d => d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+    $('actualizado').textContent = 'Datos oficiales AEMET · actualizado ' + fmt(gen) +
+      ' · vigencia comprobada a las ' + fmtH(new Date());
+    $('vacio').hidden = datos.avisos.length > 0;
+  }
 
   function avisosFiltrados(){ return datos.avisos.filter(a => filtro==='todos' || a.nivel===filtro); }
   function recalcular(){
@@ -216,11 +248,9 @@
       try { const r = await fetch(u); if (r.ok) { geo = await r.json(); break; } } catch(e){}
     }
     if (!geo) throw new Error('geojson');
+    todosLosAvisos = datos.avisos || [];
+    refrescarVigencia();
     recalcular();
-
-    $('actualizado').textContent = 'Datos oficiales AEMET · actualizado ' +
-      new Date(datos.generado).toLocaleString('es-ES', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'});
-    if (!datos.avisos.length) $('vacio').hidden = false;
 
     const mapa = L.map('mapa', {zoomControl:true, attributionControl:false, scrollWheelZoom:false});
     L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}', {maxZoom:10, attribution:'&copy; Instituto Geográfico Nacional de España'}).addTo(mapa);
@@ -244,6 +274,17 @@
     pintarControles();
     $('selCom').onchange = e => e.target.value ? abrirPanel(e.target.value) : cerrarPanel();
     $('panelCerrar').onclick = cerrarPanel;
+
+    // Cada 5 min: retira los avisos que hayan expirado mientras la página sigue abierta
+    // y, si hay JSON nuevo publicado, lo carga sin recargar la página.
+    setInterval(async () => {
+      try {
+        const r = await fetch('avisos.json?t=' + Date.now(), {cache:'no-store'});
+        if (r.ok) { const nuevo = await r.json(); if (nuevo && nuevo.avisos) { datos.generado = nuevo.generado; todosLosAvisos = nuevo.avisos; } }
+      } catch(e){}
+      refrescarVigencia(); recalcular(); pintarControles();
+      capa.setStyle(estilo); if (seleccion) abrirPanel(seleccion);
+    }, 5 * 60 * 1000);
   }catch(e){
     $('actualizado').textContent = 'No se han podido cargar los avisos. Inténtalo en unos minutos.';
   }
