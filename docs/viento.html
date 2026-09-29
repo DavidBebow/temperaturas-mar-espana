@@ -31,9 +31,12 @@
   @media(max-width:560px){.headline{flex-direction:column;text-align:center;gap:8px}}
 
   .mapbox{position:relative;margin-top:18px}
-  #map{height:580px;border-radius:20px;border:1px solid #1f2630;background:#0e1319;z-index:0;overflow:hidden}
+  #map{height:580px;border-radius:20px;border:1px solid #1f2630;background:#0b1016;z-index:0;overflow:hidden}
   @media(max-width:620px){#map{height:470px}}
   .leaflet-container{font:inherit}
+  .caplbl{background:transparent;border:0;box-shadow:none;color:#e8eef4;font-size:11px;font-weight:600;padding:0 0 0 4px;text-shadow:0 1px 2px #000,0 0 4px #000}
+  .caplbl::before{display:none}
+  #map:not(.z7) .caplbl{display:none}
   #map .leaflet-control-attribution{background:rgba(14,19,25,.72);color:#aab4bf}
   #map .leaflet-control-attribution a{color:#9cc8ff}
   .leaflet-popup-content{margin:12px 14px;font-size:13.5px;line-height:1.45}
@@ -221,12 +224,18 @@ const map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:4,maxZo
   maxBounds:[[22,-28],[50,14]]}).setView(mobile?[39.6,-3.6]:[39.8,-3.4], mobile?5:6);
 map.attributionControl.setPrefix(false);
 L.control.zoom({position:"bottomleft"}).addTo(map);
+map.createPane("land"); map.getPane("land").style.zIndex=300; map.getPane("land").style.pointerEvents="none";
 map.createPane("wind"); map.getPane("wind").style.zIndex=350; map.getPane("wind").style.pointerEvents="none";
 map.createPane("labels"); map.getPane("labels").style.zIndex=390; map.getPane("labels").style.pointerEvents="none";
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",{subdomains:"abcd",
-  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a> · Viento: NOAA GFS'}).addTo(map);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png",{subdomains:"abcd",pane:"labels",opacity:.8}).addTo(map);
-
+map.attributionControl.addAttribution('Mapa: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> · <a href="https://www.ign.es/" target="_blank" rel="noopener">IGN</a> · Viento: NOAA GFS');
+/* Base propia (sin teselas externas): tierra, fronteras, provincias y capitales */
+fetch("viento_mapa.json").then(r=>r.json()).then(b=>{
+  const land={type:"MultiPolygon",coordinates:b.land};
+  L.geoJSON(land,{pane:"land",interactive:false,style:{stroke:false,fill:true,fillColor:"#1c2733",fillOpacity:1}}).addTo(map);
+  L.geoJSON(land,{pane:"labels",interactive:false,style:{color:"#e6edf3",weight:1.1,opacity:.75,fill:false}}).addTo(map);
+  L.geoJSON({type:"MultiLineString",coordinates:b.borders},{pane:"labels",interactive:false,style:{color:"#dfe7ef",weight:1,opacity:.4,dashArray:"3 3"}}).addTo(map);
+  L.geoJSON({type:"MultiLineString",coordinates:b.provs},{pane:"labels",interactive:false,style:{color:"#dfe7ef",weight:.6,opacity:.22}}).addTo(map);
+}).catch(()=>{});
 const pane=map.getPane("wind");
 const raster=document.createElement("canvas"), parts=document.createElement("canvas");
 [raster,parts].forEach(c=>{c.style.position="absolute";c.style.left="0";c.style.top="0";pane.appendChild(c);});
@@ -301,6 +310,7 @@ map.on("moveend zoomend resize",()=>{ build(); parts.style.opacity=1; raster.sty
 document.addEventListener("visibilitychange",()=>{ visible=!document.hidden; });
 if("IntersectionObserver" in window){ new IntersectionObserver(es=>{ visible=es[0].isIntersecting && !document.hidden; }).observe(document.getElementById("map")); }
 
+const zc=()=>document.getElementById("map").classList.toggle("z7",map.getZoom()>=7); map.on("zoomend",zc); zc();
 document.querySelectorAll(".jump button").forEach(b=>b.addEventListener("click",()=>{
   if(b.dataset.go==="can") map.flyTo([28.35,-15.9], mobile?7:8,{duration:.8});
   else map.flyTo(mobile?[39.6,-3.6]:[39.8,-3.4], mobile?5:6,{duration:.8});
@@ -397,6 +407,8 @@ fetch(DATA_URL+"?v="+Math.floor(Date.now()/600000)).then(r=>{ if(!r.ok) throw ne
   document.getElementById("mapmsg").style.display="none";
   document.getElementById("timetag").style.display="block";
   renderRank();
+  D.capitales.forEach(c=>L.circleMarker([c.lat,c.lon],{radius:2.2,color:"#fff",weight:0,fillColor:"#fff",fillOpacity:.85,interactive:false})
+    .bindTooltip(c.nombre,{permanent:true,direction:"right",className:"caplbl",offset:[2,0]}).addTo(map));
   setStep(nowIndex());
   startAnim();
   postHeight();
