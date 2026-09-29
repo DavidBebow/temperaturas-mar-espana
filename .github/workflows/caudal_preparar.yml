@@ -31,7 +31,9 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar dependencias
-        run: pip install numpy netCDF4 requests shapely cdsapi
+        run: |
+          pip install numpy netCDF4 requests shapely cdsapi
+          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
 
       - name: Preparar (${{ inputs.fase }})
         env:
