@@ -1,0 +1,55 @@
+name: Caudal · preparar red y climatología (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      fase:
+        description: "red | probar | clima | todo"
+        required: true
+        default: "red"
+
+permissions:
+  contents: write
+
+jobs:
+  preparar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Checkout público
+        uses: actions/checkout@v4
+
+      - name: Checkout privado
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install numpy netCDF4 requests shapely cdsapi
+
+      - name: Preparar (${{ inputs.fase }})
+        env:
+          OUTPUT_DIR: ${{ github.workspace }}/docs/caudal
+          DATA_DIR: ${{ github.workspace }}/datos_caudal
+          EWDS_TOKEN: ${{ secrets.EWDS_TOKEN }}
+        run: python privado/caudal_preparar.py "${{ inputs.fase }}"
+
+      - name: Publicar
+        run: |
+          rm -rf privado
+          git config user.name  "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add -A docs/caudal datos_caudal
+          if git diff --staged --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "Caudal: preparación (${{ inputs.fase }})"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin main && git push && exit 0
+            sleep $((i*7))
+          done
+          exit 1
