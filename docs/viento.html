@@ -6,12 +6,15 @@
 <title>Viento en España en directo · Mapa animado y rachas por provincia (72 h)</title>
 <meta name="description" content="Mapa animado del viento en España con la previsión de las próximas 72 horas: velocidad, dirección y rachas máximas previstas en las 52 capitales de provincia. Se actualiza cuatro veces al día.">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script>if(/[?&]embed=1/.test(location.search))document.documentElement.classList.add("embed");</script>
 <style>
   :root{--ink:#1a1410;--soft:#6f675f;--line:#ece7df;--bg2:#faf7f2;--card:#fff;
     --accent:#1d6fb8;--accent2:#124c80;--warm:#e0531f;}
   *{box-sizing:border-box}
   html,body{margin:0;background:#fff;color:var(--ink);
-    font:15px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+    font:15px/1.6 Roboto,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
   .wrap{max-width:1040px;margin:0 auto;padding:32px 16px 40px}
   .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;text-align:center}
   h1{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.1;text-align:center;margin:10px 0 8px}
@@ -30,7 +33,7 @@
   .headline .txt b{color:var(--ink)}
   @media(max-width:560px){.headline{flex-direction:column;text-align:center;gap:8px}}
 
-  .mapbox{position:relative;margin-top:18px}
+  .mapbox{position:relative;margin-top:18px;max-width:1200px}
   #map{height:580px;border-radius:20px;border:1px solid #1f2630;background:#0b1016;z-index:0;overflow:hidden}
   @media(max-width:620px){#map{height:470px}}
   .leaflet-container{font:inherit}
@@ -95,6 +98,14 @@
   .note{max-width:860px;margin:34px auto 0;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 20px;font-size:14px;color:#40372f}
   .note p{margin:0 0 8px}.note p:last-child{margin:0}
   .note b{color:var(--ink)} .note a{color:var(--accent2)}
+  /* Modo incrustado en calentamientoglobal.es (?embed=1): sin cabecera propia, alineado a la izquierda */
+  .embed .eyebrow,.embed h1,.embed .sub,.embed .note,.embed .src{display:none}
+  .embed .wrap{max-width:none;padding:0 0 8px}
+  .embed .live{justify-content:flex-start;margin:0 0 12px}
+  .embed .headline{margin:0;max-width:900px}
+  .embed .controls,.embed .rank,.embed .detail{margin-left:0;margin-right:0}
+  .embed h2.sec,.embed .sec-sub{text-align:left;margin-left:0}
+  .embed h2.sec{margin-top:36px}
   .src{font-size:12px;color:var(--soft);text-align:center;margin-top:30px;border-top:1px solid var(--line);padding-top:16px}
   .src a{color:var(--accent2)}
 </style>
@@ -421,7 +432,7 @@ fetch(DATA_URL+"?v="+Math.floor(Date.now()/600000)).then(r=>{ if(!r.ok) throw ne
 });
 
 /* altura para el iframe de WordPress */
-function postHeight(){ try{ parent.postMessage({cgHeight:document.documentElement.scrollHeight, cgTool:"viento"},"*"); }catch(e){} }
+function postHeight(){ try{ const h=Math.ceil(document.querySelector(".wrap").getBoundingClientRect().height); parent.postMessage({cgHeight:h, cgTool:"viento"},"*"); }catch(e){} }
 window.addEventListener("resize",postHeight);
 new ResizeObserver(postHeight).observe(document.body);
 })();
