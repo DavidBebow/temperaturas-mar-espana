@@ -305,6 +305,9 @@ function bandAt(p,d){ // percentiles interpolados para una fecha
   return p.pct[b0].map((v,k)=>v*(1-f)+p.pct[b1][k]*f); }
 function pctOf(q,band){ // percentil de un caudal dentro de la banda [5,10,25,50,75,90,95]
   const Qs=[5,10,25,50,75,90,95]; if(q==null) return null;
+  const tol=(1+q)/1500, ig=band.map(v=>Math.abs(v-q)<=tol), n=ig.filter(Boolean).length;
+  if(n>=2||(ig[0]&&q<=tol)){ const lk=ig.indexOf(true), hk=ig.lastIndexOf(true), Qp=[0,5,10,25,50,75,90], Qn=[10,25,50,75,90,95,100];
+    const Lo=lk===0?(q<=tol?0:2.5):(Qp[lk]+Qs[lk])/2, Up=(Qs[hk]+Qn[hk])/2; return (Lo+Up)/2; }
   if(q<=band[0]) return band[0]>0?Math.max(0,5*q/band[0]):0; if(q>=band[6]) return 95+Math.min(5,5*(q-band[6])/Math.max(band[6]*.5,1e-6));
   for(let k=0;k<6;k++) if(q<=band[k+1]){ const f=(q-band[k])/Math.max(band[k+1]-band[k],1e-9); return Qs[k]+f*(Qs[k+1]-Qs[k]); } return null; }
 const PUNTO={};
