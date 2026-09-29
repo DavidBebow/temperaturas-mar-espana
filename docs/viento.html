@@ -86,6 +86,9 @@
 
   .rank{max-width:860px;margin:0 auto}
   .rk{display:flex;align-items:center;gap:10px;padding:6px 4px;cursor:pointer;border-radius:8px}
+  .rank:not(.open) .rk.more{display:none}
+  .morebtn{display:block;margin:12px 0 0 36px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font:700 13px/1 inherit;color:var(--ink);cursor:pointer}
+  .morebtn:hover{border-color:var(--accent)}
   .rk:hover,.rk.sel{background:var(--bg2)}
   .rk .pos{width:22px;color:var(--soft);font-size:12px;text-align:right;flex:none}
   .rk .nm{width:170px;font-size:13.5px;font-weight:700;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -368,10 +371,14 @@ document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
 /* ---------- ranking y ficha ---------- */
 function renderRank(){
   const caps=D.capitales.slice().sort((a,b)=>b.racha_max-a.racha_max), max=Math.max(100,caps[0].racha_max);
-  document.getElementById("rank").innerHTML=caps.map((c,i)=>`<div class="rk" data-i="${D.capitales.indexOf(c)}" role="button" tabindex="0">
+  const LIM=12;
+  document.getElementById("rank").innerHTML=caps.map((c,i)=>`<div class="rk${i>=LIM?" more":""}" data-i="${D.capitales.indexOf(c)}" role="button" tabindex="0">
     <span class="pos">${i+1}</span><span class="nm" title="${c.nombre}">${c.provincia}</span>
     <span class="bar"><i style="width:${(c.racha_max/max*100).toFixed(1)}%;background:${css(c.racha_max)}"></i></span>
-    <span class="val">${c.racha_max} km/h</span><span class="when">${fmtShort(D.pasos[c.paso_max].t)}</span></div>`).join("");
+    <span class="val">${c.racha_max} km/h</span><span class="when">${fmtShort(D.pasos[c.paso_max].t)}</span></div>`).join("")
+    + `<button type="button" class="morebtn">Ver las ${caps.length} capitales</button>`;
+  const rk=document.getElementById("rank"), mb=rk.querySelector(".morebtn");
+  mb.addEventListener("click",()=>{ const o=rk.classList.toggle("open"); mb.textContent=o?"Ver solo las 12 primeras":`Ver las ${caps.length} capitales`; });
   document.querySelectorAll(".rk").forEach(el=>{
     const go=()=>{ showDetail(+el.dataset.i,true); };
     el.addEventListener("click",go); el.addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
