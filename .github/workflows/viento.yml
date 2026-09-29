@@ -1,0 +1,55 @@
+name: Actualizar viento en directo
+
+on:
+  schedule:
+    # Cuatro veces al día, cuando ya está publicado cada ciclo del GFS (00/06/12/18 UTC + ~4 h)
+    - cron: "20 4,10,16,22 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: viento
+  cancel-in-progress: false
+
+jobs:
+  viento:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # Núcleo desde el repo privado (mismo patrón que avisos / boyas / deshielo / días>32)
+      - name: Descargar scripts privados
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: scripts
+
+      - name: Aislar scripts del control de versiones
+        run: rm -rf scripts/.git
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install numpy eccodes
+
+      - name: Generar viento.json
+        run: python scripts/viento_generar.py
+
+      - name: Publicar cambios
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/viento.json
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "Viento en directo $(date -u +'%F %H:%M')"
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main && git push && exit 0
+            sleep 10
+          done
+          exit 1
