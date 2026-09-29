@@ -45,7 +45,8 @@ jobs:
           rm -rf privado
           git config user.name  "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git add -A docs/caudal datos_caudal
+          git add -A docs/caudal
+          if [ -d datos_caudal ]; then git add -A datos_caudal; fi
           if git diff --staged --quiet; then echo "Sin cambios"; exit 0; fi
           git commit -m "Caudal: preparación (${{ inputs.fase }})"
           for i in 1 2 3 4 5; do
