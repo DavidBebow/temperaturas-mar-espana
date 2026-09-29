@@ -219,11 +219,13 @@ function sample(sd, lat, lon){ // bilineal en la malla del JSON → [u,v,g] m/s 
 
 /* ---------- mapa ---------- */
 const mobile = window.matchMedia("(max-width:620px)").matches;
-const map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:4,maxZoom:10,worldCopyJump:false,
+const map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:5,maxZoom:10,worldCopyJump:false,scrollWheelZoom:false,
   dragging:!(L.Browser.mobile), tap:false,
   maxBounds:[[22,-28],[50,14]]}).setView(mobile?[39.6,-3.6]:[39.8,-3.4], mobile?5:6);
 map.attributionControl.setPrefix(false);
 L.control.zoom({position:"bottomleft"}).addTo(map);
+/* la rueda del ratón solo hace zoom tras hacer clic en el mapa (no secuestra el scroll de la página) */
+map.on("click focus",()=>map.scrollWheelZoom.enable()); map.on("mouseout blur",()=>map.scrollWheelZoom.disable());
 map.createPane("land"); map.getPane("land").style.zIndex=300; map.getPane("land").style.pointerEvents="none";
 map.createPane("wind"); map.getPane("wind").style.zIndex=350; map.getPane("wind").style.pointerEvents="none";
 map.createPane("labels"); map.getPane("labels").style.zIndex=390; map.getPane("labels").style.pointerEvents="none";
