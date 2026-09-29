@@ -1,219 +1,526 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Caudal de los ríos de España — mapa en tiempo real</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caudal de los ríos de España hoy · Mapa en directo</title>
+<meta name="description" content="Mapa del caudal de los ríos de España respecto a lo normal para la época: toda la red fluvial coloreada, previsión a 30 días, resumen por cuenca y aforos medidos de las confederaciones.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script>if(/[?&]embed=1/.test(location.search))document.documentElement.classList.add("embed");</script>
 <style>
-  :root{
-    --ink:#14202b; --muted:#6b7887; --line:#e9eef3; --card:#ffffff;
-    --accent:#1f6fe5; --brand:#1f6fe5;
-    --live:#1faa5a;
-    --shadow:0 2px 6px rgba(20,32,43,.06),0 14px 40px rgba(20,32,43,.13);
-    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
-  }
+  :root{--ink:#14202b;--soft:#5b6b78;--mut:#8a96a0;--line:#e3e8ec;--bg2:#f6f8f9;--card:#fff;--acc:#1f6fe5;
+    --c0:#9c2b1f;--c1:#e07b39;--c2:#aab0b3;--c3:#3d8bd4;--c4:#1f4e8c;--cn:#d7dbde}
   *{box-sizing:border-box}
-  body{margin:0;background:transparent;color:var(--ink);-webkit-font-smoothing:antialiased}
-  .widget{max-width:1160px;margin:0 auto;padding:8px}
-
-  .maparea{position:relative;height:min(80vh,720px);border-radius:22px;overflow:hidden;
-    box-shadow:var(--shadow);background:#eef2f5}
-  #map{position:absolute;inset:0}
-  .leaflet-container{background:#eef2f5;font:inherit}
-
-  .ov-title{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:600;
-    text-align:center;pointer-events:none;text-shadow:0 1px 8px rgba(255,255,255,.9)}
-  .ov-title b{font-size:clamp(15px,2vw,20px);font-weight:800;letter-spacing:-.01em}
-  .ov-title b em{color:var(--brand);font-style:normal}
-  .ov-title span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
-
-  .ov{position:absolute;z-index:600;background:var(--card);border-radius:16px;
-    box-shadow:var(--shadow);padding:16px 18px;width:250px}
-  .ov-live{top:16px;left:16px}
-  .ov-foco{top:64px;right:16px}
-  .tag{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:7px;margin-bottom:8px}
-  .tag.live{color:var(--live)}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--live);box-shadow:0 0 0 4px rgba(31,170,90,.15)}
-  .tag.foco{color:var(--accent)}
-  .big{font-size:34px;font-weight:850;line-height:1;letter-spacing:-.02em}
-  .big small{font-size:14px;font-weight:600;color:var(--muted)}
-  .sub{font-size:12.5px;color:var(--muted);margin:6px 0 0;line-height:1.4}
-  .hr{border-top:1px solid var(--line);margin:13px 0}
-  .kv{display:flex;gap:10px;font-size:12.5px;margin:9px 0}
-  .kv b{font-weight:800;white-space:nowrap}
-  .kv span{color:var(--muted);line-height:1.35}
-  .foco-big{font-size:30px;font-weight:850;color:var(--accent);letter-spacing:-.02em;margin:2px 0}
-  .foco-big small{font-size:13px;font-weight:700}
-  .foco-note{font-size:12px;color:var(--muted);font-style:italic;margin-top:9px;line-height:1.45}
-
-  .rio-pill{background:#64748b;color:#fff;font-weight:800;font-size:12px;line-height:1;
-    padding:5px 9px;border-radius:100px;white-space:nowrap;box-shadow:0 1px 4px rgba(20,32,43,.35);
-    border:1.5px solid #fff;transform:translate(-50%,-50%)}
-
-  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:14px 6px 4px;font-size:12.5px;color:var(--muted)}
-  .legend .t{font-weight:800;color:var(--ink)}
-  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-
-  .panel-ficha{border-radius:16px}
-  .leaflet-popup-content{margin:14px 16px}
-  .pf-est{font-size:16px;font-weight:800;margin:0}
-  .pf-rio{font-size:12px;color:var(--muted);margin:1px 0 10px}
-  .pf-big{font-size:26px;font-weight:850;line-height:1}
-  .pf-chip{display:inline-block;margin-top:7px;padding:4px 10px;border-radius:100px;font-size:12px;font-weight:800}
-  .pf-rows{margin-top:11px;font-size:12.5px}
-  .pf-rows div{display:flex;justify-content:space-between;gap:14px;padding:5px 0;border-top:1px solid var(--line)}
-  .pf-rows div span:first-child{color:var(--muted)}
-  .pf-rows div span:last-child{font-weight:700}
-  .pf-ct{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800;margin:12px 0 5px}
-  svg .bar{fill:#3b82f6;opacity:.5}
-  svg .bar.now{fill:var(--accent);opacity:1}
-  svg text{fill:var(--muted);font-size:8px}
-
-  @media(max-width:820px){
-    .maparea{height:auto;border-radius:16px}
-    #map{position:static;height:58vh;min-height:340px}
-    .ov,.ov-title{position:static;transform:none;width:auto;text-align:left;box-shadow:none;
-      border-top:1px solid var(--line);border-radius:0;padding:16px 4px;text-shadow:none}
-    .ov-title{padding-top:14px}
-    .maparea>.ov,.maparea>.ov-title{background:transparent}
-  }
+  html,body{margin:0;background:#fff;color:var(--ink);font:15px/1.55 Roboto,-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1200px;margin:0 auto;padding:28px 16px 40px}
+  .eyebrow{text-align:center;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin:0 0 8px}
+  h1{text-align:center;font-size:38px;line-height:1.12;font-weight:900;letter-spacing:-.02em;margin:0 0 10px}
+  .sub{text-align:center;color:var(--soft);font-size:17px;max-width:720px;margin:0 auto 14px}
+  @media(max-width:620px){h1{font-size:28px}.sub{font-size:15.5px}}
+  .live{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1a5c9e;margin:0 0 14px;text-align:center}
+  .dot{width:8px;height:8px;border-radius:50%;background:#22a05a;box-shadow:0 0 0 0 rgba(34,160,90,.5);animation:pulse 2s infinite;flex:none}
+  .dot.old{background:#d08a1a;animation:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,160,90,.5)}70%{box-shadow:0 0 0 7px rgba(34,160,90,0)}100%{box-shadow:0 0 0 0 rgba(34,160,90,0)}}
+  .headline{max-width:880px;margin:0 auto 14px;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:16px 20px;display:flex;gap:18px;align-items:center}
+  .headline .big{font-size:44px;font-weight:900;letter-spacing:-.03em;line-height:1;white-space:nowrap}
+  .headline .big small{font-size:17px;font-weight:700;color:var(--soft)}
+  .headline .txt{font-size:15.5px;color:#26343f}
+  @media(max-width:620px){.headline{flex-direction:column;align-items:flex-start;gap:8px}.headline .big{font-size:36px}}
+  /* barra de clases (sirve de leyenda) */
+  .classbar{max-width:880px;margin:0 auto 18px}
+  .cb-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;background:#fff}
+  .cb-bar span{display:block;height:100%}
+  .cb-leg{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;margin-top:8px;font-size:12.5px;color:var(--soft)}
+  .cb-leg i{display:inline-block;width:18px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .cb-leg b{color:var(--ink);font-weight:700;margin-left:3px}
+  /* mapa */
+  .mapbox{position:relative;max-width:1200px;margin:0 auto}
+  #map{height:620px;border-radius:20px;border:1px solid var(--line);background:#e9eff4;z-index:0;overflow:hidden}
+  @media(max-width:620px){#map{height:480px}}
+  .leaflet-container{font:inherit;background:#e9eff4}
+  .tag{position:absolute;left:12px;top:12px;z-index:500;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:12px;padding:8px 12px;pointer-events:none;box-shadow:0 4px 14px rgba(20,32,43,.08)}
+  .tag .k{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
+  .tag .v{font-size:14px;font-weight:700}
+  .tag .v.fc{color:#7a4bc2}
+  .tools{position:absolute;right:12px;top:12px;z-index:500;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+  .tools button{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:rgba(255,255,255,.95);color:var(--ink);padding:7px 11px;border-radius:10px;cursor:pointer}
+  .tools button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .search{position:absolute;left:12px;bottom:12px;z-index:500;width:min(320px,70%)}
+  .search input{width:100%;font:inherit;font-size:14px;padding:9px 12px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.97);box-shadow:0 4px 14px rgba(20,32,43,.08)}
+  .hint{position:absolute;z-index:600;pointer-events:none;background:#14202b;color:#fff;border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.35;max-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.2);display:none}
+  .hint b{font-size:13.5px}
+  .hint .pc{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .leaflet-control-attribution{font-size:10.5px;background:rgba(255,255,255,.85)!important}
+  .leaflet-bottom.leaflet-right{max-width:60%}
+  /* controles de tiempo */
+  .ctrl{max-width:880px;margin:14px auto 0;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+  .row{display:flex;align-items:center;gap:12px}
+  .play{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:var(--ink);color:#fff;font-size:15px;cursor:pointer}
+  input[type=range]{flex:1;accent-color:var(--acc)}
+  .now{flex:none;font:inherit;font-size:13px;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 11px;cursor:pointer}
+  .scale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mut);margin:6px 54px 0 52px}
+  .scale .f{color:#7a4bc2;font-weight:600}
+  /* secciones */
+  h2.sec{text-align:center;font-size:24px;font-weight:800;letter-spacing:-.01em;margin:40px 0 6px}
+  .secsub{text-align:center;color:var(--soft);max-width:700px;margin:0 auto 18px;font-size:14.5px}
+  /* ficha */
+  .ficha{max-width:1000px;margin:22px auto 0;border:1px solid var(--line);border-radius:20px;padding:18px 20px;background:#fff;box-shadow:0 10px 28px rgba(20,32,43,.06)}
+  .f-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+  .f-name{font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .f-meta{font-size:13px;color:var(--soft)}
+  .pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;border-radius:999px;padding:6px 12px;color:#fff}
+  .f-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0 6px}
+  .kpi{background:var(--bg2);border-radius:14px;padding:12px 14px}
+  .kpi .k{font-size:11.5px;color:var(--soft)}
+  .kpi .v{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+  .kpi .u{font-size:12px;color:var(--mut)}
+  @media(max-width:720px){.f-kpis{grid-template-columns:repeat(2,1fr)}}
+  .chart{position:relative;margin-top:10px}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible}
+  .ctip{position:absolute;pointer-events:none;background:#14202b;color:#fff;border-radius:9px;padding:7px 9px;font-size:12px;line-height:1.35;white-space:nowrap;display:none;z-index:5}
+  .legend2{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--soft);margin-top:6px}
+  .legend2 i{display:inline-block;width:18px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .f-two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
+  @media(max-width:760px){.f-two{grid-template-columns:1fr}}
+  .f-two h4{margin:0 0 4px;font-size:14px}
+  .f-two p{margin:0 0 6px;font-size:12.5px;color:var(--soft)}
+  .f-note{font-size:12.5px;color:var(--soft);margin-top:10px}
+  /* cuencas */
+  .basins{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .basin{border:1px solid var(--line);border-radius:16px;padding:13px 14px;background:#fff;cursor:pointer;transition:transform .15s,box-shadow .15s;text-align:left;font:inherit;color:inherit}
+  .basin:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(20,32,43,.08)}
+  .basin .n{font-weight:800;font-size:15px}
+  .basin .s{font-size:12.5px;color:var(--soft);margin:2px 0 8px}
+  .basin .bar{display:flex;height:9px;border-radius:5px;overflow:hidden;gap:2px}
+  .basin .bar span{height:100%}
+  .basin .big{font-size:20px;font-weight:900;letter-spacing:-.02em}
+  /* rankings */
+  .lists{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.lists{grid-template-columns:1fr}}
+  .list{border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+  .list h3{margin:0 0 2px;font-size:16px}
+  .list .ls{font-size:12.5px;color:var(--soft);margin:0 0 8px}
+  .li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);cursor:pointer;font-size:14px}
+  .li:hover .ln{text-decoration:underline}
+  .li .ln{font-weight:600}
+  .li .lc{font-size:12px;color:var(--mut)}
+  .li .lv{font-weight:700;font-variant-numeric:tabular-nums}
+  .li .lp{font-size:12px;font-weight:700;border-radius:999px;padding:3px 8px;color:#fff;min-width:56px;text-align:center}
+  .empty{font-size:13.5px;color:var(--soft);padding:10px 0}
+  /* aforos */
+  .af-src{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 0 12px}
+  .af-src span{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--soft)}
+  .af-src span b{color:var(--ink)}
+  .af-src span.ko{opacity:.55}
+  .tbl{width:100%;border-collapse:collapse;font-size:14px}
+  .tbl th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);text-align:left;padding:8px 8px;border-bottom:1px solid var(--ink)}
+  .tbl td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .tbl td.r,.tbl th.r{text-align:right;font-variant-numeric:tabular-nums}
+  .tbl tr{cursor:pointer}
+  .tbl tr:hover td{background:var(--bg2)}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .more{display:block;margin:12px auto 0;font:inherit;font-size:13.5px;font-weight:700;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer}
+  .note{max-width:880px;margin:30px auto 0;font-size:13px;color:var(--soft);border-top:1px solid var(--line);padding-top:14px}
+  .note a{color:var(--acc)}
+  .embed .eyebrow,.embed h1,.embed .sub,.embed .note{display:none}
+  .embed .wrap{padding:0 0 8px;max-width:none}
+  @media(max-width:620px){.tbl th:nth-child(4),.tbl td:nth-child(4),.tbl th:nth-child(6),.tbl td:nth-child(6){display:none}.search{width:55%}}
+  .aftag{font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 6px;background:#eef2f5;color:#40505c;white-space:nowrap}
 </style>
 </head>
 <body>
-<div class="widget">
-  <div class="maparea">
-    <div id="map"></div>
-    <div class="ov-title"><b>Planeta Vivo · <em>Caudal de los ríos</em></b><span>Caudal modelizado (GloFAS · Copernicus) · dato de hoy y media histórica</span></div>
+<div class="wrap">
+  <div class="eyebrow">Observatorio climático · Agua</div>
+  <h1>El caudal de los ríos de España, hoy</h1>
+  <p class="sub">Toda la red fluvial comparada con lo normal para esta época del año, la previsión para los próximos 30 días y el caudal medido en las estaciones de aforo.</p>
+  <div class="live"><span class="dot" id="liveDot"></span><span id="liveTxt">Cargando datos…</span></div>
 
-    <div class="ov ov-live">
-      <div class="tag live"><span class="dot"></span> En directo · ahora</div>
-      <div class="big" id="l-n">—</div>
-      <p class="sub" id="l-sub">puntos de río monitorizados en toda España</p>
-      <div class="hr"></div>
-      <div class="kv"><b id="l-max">—</b><span id="l-maxl">río con más caudal</span></div>
-      <div class="kv"><b id="l-dry">—</b><span id="l-dryl">estación con mayor déficit</span></div>
-      <div class="kv"><b id="l-anom">—</b><span>en sequía (caudal &lt; mitad de su media)</span></div>
-      <div class="kv"><b id="l-upd">—</b><span>última actualización · 1 vez al día</span></div>
-    </div>
+  <div class="headline" id="headline" style="display:none">
+    <div class="big" id="hlBig">–</div>
+    <div class="txt" id="hlTxt"></div>
+  </div>
+  <div class="classbar"><div class="cb-bar" id="cbBar"></div><div class="cb-leg" id="cbLeg"></div></div>
 
-    <div class="ov ov-foco">
-      <div class="tag foco">Foco · el dato</div>
-      <div style="font-weight:800;font-size:14px" id="f-title">—</div>
-      <div class="foco-big" id="f-big">—</div>
-      <p class="sub" id="f-body">—</p>
-      <p class="foco-note">Toca cualquier estación del mapa para ver su ficha: caudal, anomalía, media anual y régimen mensual.</p>
+  <div class="mapbox">
+    <div id="map" role="img" aria-label="Mapa de los ríos de España coloreados según su caudal respecto a lo normal"></div>
+    <div class="tag"><div class="k" id="tagK">Estado del río</div><div class="v" id="tagV">–</div></div>
+    <div class="tools">
+      <button type="button" data-go="pen">Península</button>
+      <button type="button" id="btnAf" class="on" title="Mostrar u ocultar las estaciones de aforo con caudal medido">Aforos medidos</button>
     </div>
+    <div class="search"><input id="q" list="qlist" placeholder="Busca un río o una localidad…" autocomplete="off"><datalist id="qlist"></datalist></div>
+    <div class="hint" id="hint"></div>
   </div>
 
-  <div class="legend">
-    <span class="t">Caudal vs. media histórica:</span>
-    <span><i style="background:#1d4ed8"></i>Muy por encima</span>
-    <span><i style="background:#3b82f6"></i>Por encima</span>
-    <span><i style="background:#0f9d8f"></i>En la media</span>
-    <span><i style="background:#e0902e"></i>Por debajo</span>
-    <span><i style="background:#c0392b"></i>Sequía</span>
+  <div class="ctrl">
+    <div class="row">
+      <button class="play" id="play" aria-label="Reproducir la evolución">▶</button>
+      <input type="range" id="slider" min="0" max="0" value="0" aria-label="Día del mapa">
+      <button class="now" id="btnNow">Hoy</button>
+    </div>
+    <div class="scale"><span id="scA">–</span><span>hoy</span><span class="f" id="scB">previsión →</span></div>
+  </div>
+
+  <div class="ficha" id="ficha" style="display:none"></div>
+
+  <h2 class="sec">Las cuencas, una a una</h2>
+  <p class="secsub">Qué parte de la red de cada demarcación hidrográfica va por debajo, en lo normal o por encima de lo habitual para la fecha. Pulsa una para verla en el mapa.</p>
+  <div class="basins" id="basins"></div>
+
+  <h2 class="sec">Los extremos de hoy</h2>
+  <p class="secsub">Los puntos de la red con el caudal más bajo y más alto respecto a lo que es normal en esta época, y las crecidas que prevé el modelo.</p>
+  <div class="lists">
+    <div class="list"><h3>Más secos respecto a lo normal</h3><p class="ls">Percentil más bajo de su serie para la fecha</p><div id="lsDry"></div></div>
+    <div class="list"><h3>Más caudal de lo normal</h3><p class="ls">Percentil más alto de su serie para la fecha</p><div id="lsWet"></div></div>
+  </div>
+  <div class="list" style="margin-top:16px"><h3>Crecidas previstas en los próximos 10 días</h3><p class="ls">Puntos donde el modelo prevé superar el caudal que solo se alcanza el 3 % de los días de esa época</p><div id="lsFlood"></div></div>
+
+  <h2 class="sec">Caudal medido en las estaciones de aforo</h2>
+  <p class="secsub">Lecturas de las redes automáticas (SAIH) de las confederaciones y agencias del agua que publican sus datos en abierto. Son medidas reales y provisionales, no modelo.</p>
+  <div class="af-src" id="afSrc"></div>
+  <div class="scroll"><table class="tbl" id="afTbl"></table></div>
+  <button class="more" id="afMore" style="display:none">Ver todas las estaciones</button>
+
+  <div class="note">
+    <p><b>Cómo se calcula.</b> El caudal de toda la red sale del sistema europeo de alerta de inundaciones <a href="https://global-flood.emergency.copernicus.eu/" target="_blank" rel="noopener">GloFAS</a> (Copernicus, ECMWF), un modelo hidrológico con celdas de unos 5 km que simula cada día el agua que lleva cada tramo de río. Cada valor se compara con lo que ese mismo tramo llevó en la misma época del año (±15 días) durante <span id="nAnios">casi tres décadas</span>: el <b>percentil</b> dice qué parte de esos días tuvo menos agua. Por debajo del 10 es un caudal muy bajo para la fecha; por encima del 90, muy alto. Los días futuros son la previsión de control de GloFAS. Es un caudal simulado: en ríos muy regulados por embalses puede alejarse del real, por eso se muestran aparte los aforos medidos.</p>
+    <p><b>Fuentes.</b> GloFAS v4 (Copernicus Emergency Management Service, licencia CEMS-FLOODS). Aforos: <span id="afList">Gobierno de Navarra, Agència Catalana de l'Aigua y confederaciones hidrográficas</span>. Mapa base: Natural Earth y provincias del IGN.</p>
   </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const MESES={ene:"Ene",feb:"Feb",mar:"Mar",abr:"Abr",may:"May",jun:"Jun",jul:"Jul",ago:"Ago",sep:"Sep",oct:"Oct",nov:"Nov",dic:"Dic"};
-const KEYS=Object.keys(MESES), mesActual=KEYS[new Date().getMonth()];
-const nf=v=>(v===null||v===undefined)?"—":Number(v).toLocaleString("es-ES",{maximumFractionDigits:v<10?1:0});
-const fmt=(v,u)=>(v===null||v===undefined)?"—":(nf(v)+(u?(" "+u):""));
+(function(){
+"use strict";
+const CL=[{n:"Muy bajo",d:"menos del percentil 10",c:"#9c2b1f"},{n:"Bajo",d:"percentil 10–25",c:"#e07b39"},
+  {n:"Normal",d:"percentil 25–75",c:"#aab0b3"},{n:"Alto",d:"percentil 75–90",c:"#3d8bd4"},{n:"Muy alto",d:"más del percentil 90",c:"#1f4e8c"}];
+const NOC="#d7dbde";
+const cls=p=>p==null||p>100?-1:p<10?0:p<25?1:p<=75?2:p<=90?3:4;
+const fmtN=(v,d)=>v==null||!isFinite(v)?"–":(v<10&&d==null?v.toLocaleString("es-ES",{maximumFractionDigits:1}):v.toLocaleString("es-ES",{maximumFractionDigits:d==null?0:d}));
+const fmtQ=v=>v==null||!isFinite(v)?"–":v<1?v.toLocaleString("es-ES",{maximumFractionDigits:2}):v<100?v.toLocaleString("es-ES",{maximumFractionDigits:1}):Math.round(v).toLocaleString("es-ES");
+const MES=["ene","feb","mar","abr","may","jun","jul","ago","sept","oct","nov","dic"];
+const fmtD=(d,y)=>d.getUTCDate()+" "+MES[d.getUTCMonth()]+(y?" "+d.getUTCFullYear():"");
+const addD=(d,n)=>new Date(d.getTime()+n*864e5);
+const pctTxt=p=>p==null?"–":p<1?"<1":p>99?">99":Math.round(p);
 
-function colorAnom(a){
-  if(a===null||a===undefined) return "#64748b";
-  if(a>=25) return "#1d4ed8";
-  if(a>0)   return "#3b82f6";
-  if(a>-15) return "#0f9d8f";
-  if(a>-40) return "#e0902e";
-  return "#c0392b";
+let R=null,P=null,H=null,A=null;          // red, puntos, hoy, aforos
+let day=0, T0=null, TODAY=0, NDAY=0, PCT=null, sel=null;
+const mobile=window.matchMedia("(max-width:620px)").matches;
+
+/* ---------- mapa base ---------- */
+const DATA=L.latLngBounds([[35.6,-10.2],[44.2,4.6]]), PEN=L.latLngBounds([[35.9,-9.4],[43.9,3.4]]);
+const map=L.map("map",{zoomControl:false,minZoom:4,maxZoom:11,zoomSnap:0.25,scrollWheelZoom:false,
+  dragging:!(L.Browser.mobile),tap:false,maxBounds:DATA.pad(.1),maxBoundsViscosity:.8,attributionControl:true});
+map.attributionControl.setPrefix(false);
+map.attributionControl.addAttribution('Caudal: <a href="https://global-flood.emergency.copernicus.eu/" target="_blank" rel="noopener">GloFAS · Copernicus</a> · Mapa: Natural Earth · IGN');
+L.control.zoom({position:"bottomright"}).addTo(map);
+let userMoved=false;
+function home(anim){ const z=Math.min(Math.max(map.getBoundsZoom(PEN,false,L.point(8,8)),4.5),7.5);
+  if(anim) map.flyTo(PEN.getCenter(),z,{duration:.7}); else map.setView(PEN.getCenter(),z,{animate:false}); }
+home(false);
+map.on("resize",()=>{ if(!userMoved) home(false); });
+["mousedown","touchstart","wheel"].forEach(e=>document.getElementById("map").addEventListener(e,()=>{userMoved=true},{passive:true}));
+map.on("click focus",()=>map.scrollWheelZoom.enable()); map.on("mouseout blur",()=>map.scrollWheelZoom.disable());
+map.createPane("land"); map.getPane("land").style.zIndex=300; map.getPane("land").style.pointerEvents="none";
+map.createPane("lines"); map.getPane("lines").style.zIndex=320; map.getPane("lines").style.pointerEvents="none";
+fetch("../viento_mapa.json").then(r=>r.json()).then(b=>{
+  const land={type:"MultiPolygon",coordinates:b.land};
+  L.geoJSON(land,{pane:"land",interactive:false,style:{stroke:false,fill:true,fillColor:"#f6f4ef",fillOpacity:1}}).addTo(map);
+  L.geoJSON({type:"MultiLineString",coordinates:b.provs},{pane:"lines",interactive:false,style:{color:"#b9b2a4",weight:.6,opacity:.55}}).addTo(map);
+  L.geoJSON({type:"MultiLineString",coordinates:b.borders},{pane:"lines",interactive:false,style:{color:"#8f877a",weight:1,opacity:.6,dashArray:"4 3"}}).addTo(map);
+  L.geoJSON(land,{pane:"lines",interactive:false,style:{color:"#a9b9c6",weight:1,opacity:.9,fill:false}}).addTo(map);
+}).catch(()=>{});
+
+/* capa de ríos en canvas */
+const RiverLayer=L.Layer.extend({
+  onAdd(m){ this._m=m; const c=this._c=L.DomUtil.create("canvas","rivers"); c.style.position="absolute"; c.style.pointerEvents="none";
+    m.createPane("rivers"); m.getPane("rivers").style.zIndex=380; m.getPane("rivers").appendChild(c);
+    m.on("moveend zoomend resize viewreset",this._draw,this); m.on("zoomanim",this._anim,this); this._draw(); },
+  onRemove(m){ L.DomUtil.remove(this._c); m.off("moveend zoomend resize viewreset",this._draw,this); },
+  _anim(e){ const s=this._m.getZoomScale(e.zoom), o=this._m._latLngBoundsToNewLayerBounds(this._m.getBounds(),e.zoom,e.center).min; L.DomUtil.setTransform(this._c,o,s); },
+  _draw(){ drawRivers(this._c,this._m); }
+});
+let rl=null, XY=null, main=null;
+function prep(){ // coordenadas de cada celda y afluente principal
+  const c=R.celdas, g=R.rejilla, n=c.iy.length;
+  XY=new Float64Array(n*2); main=new Int32Array(n).fill(-1); const best=new Float64Array(n).fill(-1);
+  for(let i=0;i<n;i++){ XY[2*i]=g.lat0+c.iy[i]*g.dlat; XY[2*i+1]=g.lon0+c.ix[i]*g.dlon; }
+  for(let i=0;i<n;i++){ const d=c.down[i]; if(d>=0&&c.ua[i]>best[d]){best[d]=c.ua[i];main[d]=i;} }
+  // etiquetas: cada río con nombre, en un punto de su tramo español
+  const st={}; for(let i=0;i<n;i++){ const k=c.eje[i]; if(!R.ejes[k]||!c.es[i]) continue; (st[k]=st[k]||[]).push(i); }
+  R.etiquetas=Object.keys(st).map(k=>{ const a=st[k].sort((x,y)=>c.ua[y]-c.ua[x]); const j=a[Math.floor(a.length*.45)];
+    return {n:R.ejes[k],ua:c.ua[a[0]],lat:XY[2*j],lon:XY[2*j+1]}; }).filter(e=>e.ua>=500).sort((a,b)=>b.ua-a.ua);
 }
-
-const map=L.map("map",{zoomControl:true,scrollWheelZoom:false}).setView([40,-3.4],6);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
-  attribution:'© OpenStreetMap · © CARTO · Caudal: GloFAS / Copernicus vía Open-Meteo (modelizado)',
-  maxZoom:18
-}).addTo(map);
-map.on("focus",()=>map.scrollWheelZoom.enable());
-map.on("blur",()=>map.scrollWheelZoom.disable());
-
-function pill(p){
-  const c=colorAnom(p.anomalia_pct);
-  return L.divIcon({className:"",html:`<div class="rio-pill" style="background:${c}">${fmt(p.caudal_m3s)}</div>`,iconSize:null});
-}
-
-function regimenSVG(reg){
-  if(!reg) return "";
-  const vals=KEYS.map(k=>reg[k]).filter(v=>v!=null);
-  if(!vals.length) return "<div style='color:var(--muted);font-size:12px'>Sin serie mensual en el Anuario.</div>";
-  const max=Math.max(...vals),W=270,H=76,bw=W/12;let b="";
-  KEYS.forEach((k,i)=>{const v=reg[k];if(v==null)return;const h=(v/max)*(H-16),x=i*bw+2,y=H-16-h;
-    b+=`<rect class="bar ${k===mesActual?'now':''}" x="${x}" y="${y}" width="${bw-4}" height="${h}" rx="2"><title>${MESES[k]}: ${v} m³/s</title></rect>`;
-    b+=`<text x="${x+(bw-4)/2}" y="${H-5}" text-anchor="middle">${MESES[k][0]}</text>`;});
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${b}</svg>`;
-}
-
-function fichaHTML(p){
-  const c=colorAnom(p.anomalia_pct), arrow=p.anomalia_pct==null?"":(p.anomalia_pct>=0?"↑":"↓");
-  const chip=p.anomalia_pct==null?"":`<div class="pf-chip" style="background:${c}1a;color:${c}">${arrow} ${p.anomalia_pct>0?"+":""}${p.anomalia_pct}% vs su media</div>`;
-  const tend={sube:"↑ subiendo",baja:"↓ bajando",estable:"→ estable"}[p.tendencia]||"—";
-  return `<div style="min-width:230px">
-    <p class="pf-est">${p.estacion}</p>
-    <div class="pf-rio">Río ${p.rio||"—"}${p.cuenca?" · cuenca del "+p.cuenca:""}</div>
-    <div class="pf-big" style="color:${c}">${fmt(p.caudal_m3s)} <small style="font-size:13px;color:var(--muted);font-weight:600">m³/s</small></div>
-    ${chip}
-    <div class="pf-rows">
-      <div><span>Caudal medio anual</span><span>${fmt(p.caudal_medio_anual,"m³/s")}</span></div>
-      <div><span>Hace un año (misma fecha)</span><span>${fmt(p.caudal_anio_pasado,"m³/s")}</span></div>
-      <div><span>Tendencia (última semana)</span><span>${tend}</span></div>
-      <div><span>Desemboca en</span><span>${p.desemboca||"—"}</span></div>
-      <div><span>Última lectura</span><span>${p.fecha?new Date(p.fecha).toLocaleString("es-ES"):"—"}</span></div>
-    </div>
-    <div class="pf-ct">Régimen medio mensual (m³/s)</div>
-    ${regimenSVG(p.regimen_mensual)}</div>`;
-}
-
-function resumen(feats,meta){
-  const props=feats.map(f=>f.properties);
-  document.getElementById("l-n").textContent=props.length;
-  const conCaudal=props.filter(p=>p.caudal_m3s!=null);
-  const max=conCaudal.slice().sort((a,b)=>b.caudal_m3s-a.caudal_m3s)[0];
-  const conAnom=props.filter(p=>p.anomalia_pct!=null);
-  const dry=conAnom.slice().sort((a,b)=>a.anomalia_pct-b.anomalia_pct)[0];
-  const nDry=conAnom.filter(p=>p.anomalia_pct<=-50).length;
-  if(max){document.getElementById("l-max").textContent=fmt(max.caudal_m3s,"m³/s");
-    document.getElementById("l-maxl").textContent=`${max.rio} · ${max.estacion} (el más caudaloso)`;}
-  if(dry){document.getElementById("l-dry").textContent=(dry.anomalia_pct>0?"+":"")+dry.anomalia_pct+"%";
-    document.getElementById("l-dryl").textContent=`${dry.rio} · ${dry.estacion} (mayor déficit)`;}
-  document.getElementById("l-anom").textContent=nDry+(nDry===1?" estación":" estaciones");
-  if(meta&&meta.actualizado){const d=new Date(meta.actualizado);
-    document.getElementById("l-upd").textContent=isNaN(d)?"—":d.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit"});}
-  if(dry){
-    document.getElementById("f-title").textContent = dry.anomalia_pct<0 ? "El caudal cae bajo lo normal" : "Ríos por encima de su media";
-    document.getElementById("f-big").innerHTML = (dry.anomalia_pct>0?"+":"")+dry.anomalia_pct+" <small>%</small>";
-    const pct = dry.caudal_medio_anual ? Math.round(dry.caudal_m3s/dry.caudal_medio_anual*100) : null;
-    document.getElementById("f-body").innerHTML =
-      `es la anomalía del <b>${dry.rio} en ${dry.estacion}</b>`+(pct!=null?`, que circula al <b>${pct}%</b> de su caudal medio.`:".");
+function colorOf(i){ if(!PCT) return NOC; const v=PCT[i*NDAY+day]; if(v===255) return NOC; const k=cls(v); return k<0?NOC:CL[k].c; }
+function drawRivers(cv,m){
+  if(!R||!XY) return;
+  const sz=m.getSize(), dpr=Math.min(window.devicePixelRatio||1,2), tl=m.containerPointToLayerPoint([0,0]);
+  L.DomUtil.setPosition(cv,tl); cv.width=sz.x*dpr; cv.height=sz.y*dpr; cv.style.width=sz.x+"px"; cv.style.height=sz.y+"px";
+  const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.lineCap="round"; ctx.lineJoin="round";
+  const c=R.celdas, n=c.iy.length, z=m.getZoom(), b=m.getBounds().pad(.05);
+  const pt=new Float32Array(n*2), vis=new Uint8Array(n);
+  for(let i=0;i<n;i++){ const la=XY[2*i],lo=XY[2*i+1]; if(la<b.getSouth()-.2||la>b.getNorth()+.2||lo<b.getWest()-.2||lo>b.getEast()+.2) continue;
+    const p=m.latLngToContainerPoint([la,lo]); pt[2*i]=p.x; pt[2*i+1]=p.y; vis[i]=1; }
+  const minUA=z<5.5?600:z<6.5?300:0;
+  const k=Math.pow(1.35,z-6);
+  // del menor al mayor, para que los troncos queden encima
+  for(let i=n-1;i>=0;i--){
+    if(!vis[i]||c.ua[i]<minUA) continue;
+    const d=c.down[i], u=main[i];
+    const w=Math.max(.7,(0.55+1.25*Math.log10(c.ua[i]/100))*k);
+    ctx.strokeStyle=colorOf(i); ctx.globalAlpha=c.es[i]?1:.55; ctx.lineWidth=w;
+    const x=pt[2*i],y=pt[2*i+1];
+    const sx=u>=0&&vis[u]?(pt[2*u]+x)/2:x, sy=u>=0&&vis[u]?(pt[2*u+1]+y)/2:y;
+    let ex=x,ey=y;
+    if(d>=0&&vis[d]){ ex=(x+pt[2*d])/2; ey=(y+pt[2*d+1])/2; }
+    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.quadraticCurveTo(x,y,ex,ey);
+    if(d>=0&&vis[d]&&main[d]!==i) ctx.lineTo(pt[2*d],pt[2*d+1]);  // afluente: llega hasta el río principal
+    ctx.stroke();
   }
+  ctx.globalAlpha=1;
+  // puntos destacados y aforos
+  if(P){ const r=z>=7?3.2:z>=6?2.4:0; if(r){ for(const p of R.puntos){ if(z<6.5&&p.ua<4000) continue; const q=m.latLngToContainerPoint([p.lat,p.lon]);
+      ctx.beginPath(); ctx.arc(q.x,q.y,r,0,7); ctx.fillStyle="#fff"; ctx.fill(); ctx.lineWidth=1.3; ctx.strokeStyle="#14202b"; ctx.stroke(); } } }
+  if(A&&showAf){ for(const s of A.estaciones){ if(s.lat==null) continue; const q=m.latLngToContainerPoint([s.lat,s.lon]); const h=z>=7?4.5:3.5;
+      ctx.fillStyle="#14202b"; ctx.fillRect(q.x-h,q.y-h,2*h,2*h); ctx.fillStyle="#ffd84d"; ctx.fillRect(q.x-h+1.4,q.y-h+1.4,2*h-2.8,2*h-2.8); } }
+  // nombres de los ríos principales
+  if(R.etiquetas){ ctx.font=(z>=7?"600 12px":"600 11px")+" Roboto,Arial,sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    const boxes=[]; const lim=z<5.5?20000:z<6.5?6000:z<7.5?1500:500;
+    for(const e of R.etiquetas){ if(e.ua<lim) continue; const q=m.latLngToContainerPoint([e.lat,e.lon]); if(q.x<0||q.y<0||q.x>sz.x||q.y>sz.y) continue;
+      const w=ctx.measureText(e.n).width+8, bx=[q.x-w/2,q.y-8,q.x+w/2,q.y+8];
+      if(boxes.some(o=>!(bx[2]<o[0]||bx[0]>o[2]||bx[3]<o[1]||bx[1]>o[3]))) continue; boxes.push(bx);
+      ctx.lineWidth=3.5; ctx.strokeStyle="rgba(246,244,239,.95)"; ctx.strokeText(e.n,q.x,q.y-9); ctx.fillStyle="#244a6b"; ctx.fillText(e.n,q.x,q.y-9); } }
+}
+let showAf=true;
+document.getElementById("btnAf").onclick=e=>{showAf=!showAf; e.currentTarget.classList.toggle("on",showAf); rl&&rl._draw();};
+document.querySelector('[data-go="pen"]').onclick=()=>{userMoved=false;home(true);};
+
+/* ---------- utilidades de datos ---------- */
+function b64u8(s){ const bin=atob(s), a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) a[i]=bin.charCodeAt(i); return a; }
+function dayDate(i){ return addD(T0,i); }
+function doyBin(d){ const s=Date.UTC(d.getUTCFullYear(),0,1), doy=Math.min(365,Math.floor((d-s)/864e5)+1); return (doy-3)/5; }
+function bandAt(p,d){ // percentiles interpolados para una fecha
+  const x=doyBin(d), nb=p.pct.length; let b0=Math.floor(x), f=x-b0; b0=((b0%nb)+nb)%nb; const b1=(b0+1)%nb;
+  return p.pct[b0].map((v,k)=>v*(1-f)+p.pct[b1][k]*f); }
+function pctOf(q,band){ // percentil de un caudal dentro de la banda [5,10,25,50,75,90,95]
+  const Qs=[5,10,25,50,75,90,95]; if(q==null) return null;
+  if(q<=band[0]) return band[0]>0?Math.max(0,5*q/band[0]):0; if(q>=band[6]) return 95+Math.min(5,5*(q-band[6])/Math.max(band[6]*.5,1e-6));
+  for(let k=0;k<6;k++) if(q<=band[k+1]){ const f=(q-band[k])/Math.max(band[k+1]-band[k],1e-9); return Qs[k]+f*(Qs[k+1]-Qs[k]); } return null; }
+const PUNTO={};
+
+/* ---------- carga ---------- */
+Promise.all([fetch("red.json?v="+Math.floor(Date.now()/864e5)).then(r=>r.json()),Promise.resolve(null),
+  fetch("hoy.json?v="+Math.floor(Date.now()/9e5)).then(r=>r.ok?r.json():null).catch(()=>null),
+  fetch("aforos.json?v="+Math.floor(Date.now()/9e5)).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([r,p,h,a])=>{
+  R=r; P=R.clima?{clima:R.clima}:null; H=h; A=a;
+  prep();
+  if(H){ T0=new Date(H.t0+"T00:00:00Z"); NDAY=H.n; TODAY=H.hoy; PCT=b64u8(H.pct); day=TODAY; }
+  rl=new RiverLayer(); rl.addTo(map);
+  setupSlider(); setupSearch(); renderSummary(); renderBasins(); renderLists(); renderAforos();
+  const first=(H&&H.resumen&&H.resumen.destacado!=null)?H.resumen.destacado:(R.puntos.length?R.puntos[0].id:null);
+  if(first!=null) openPoint(first,false);
+  if(P&&P.clima) document.getElementById("nAnios").textContent=(P.clima.anio1-P.clima.anio0+1)+" años ("+P.clima.anio0+"–"+P.clima.anio1+")";
+  postHeight();
+}).catch(e=>{ document.getElementById("liveTxt").textContent="No se han podido cargar los datos"; console.error(e); });
+
+/* ---------- tiempo ---------- */
+const slider=document.getElementById("slider"); let timer=null;
+function setupSlider(){
+  if(!H){ document.querySelector(".ctrl").style.display="none"; document.getElementById("liveTxt").textContent="Datos del modelo no disponibles ahora mismo"+(A?" · aforos medidos al día":""); document.getElementById("liveDot").classList.add("old"); return; }
+  slider.max=NDAY-1; slider.value=day;
+  document.getElementById("scA").textContent=fmtD(dayDate(0));
+  document.getElementById("scB").textContent=fmtD(dayDate(NDAY-1))+" · previsión";
+  const g=new Date(H.generado); const hrs=(Date.now()-g)/36e5;
+  document.getElementById("liveTxt").textContent="Modelo GloFAS del "+fmtD(dayDate(TODAY),true)+" · actualizado "+g.toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"})+
+    (A&&A.generado?" · aforos "+new Date(A.generado).toLocaleString("es-ES",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"}):"");
+  if(hrs>36) document.getElementById("liveDot").classList.add("old");
+  setDay(day);
+}
+function setDay(i){ day=Math.max(0,Math.min(NDAY-1,i)); slider.value=day; const d=dayDate(day), fc=day>TODAY;
+  document.getElementById("tagK").textContent=fc?"Previsión para":day===TODAY?"Estado de los ríos · hoy":"Estado de los ríos";
+  const v=document.getElementById("tagV"); v.textContent=fmtD(d,true); v.classList.toggle("fc",fc);
+  rl&&rl._draw(); renderBar(); if(sel!=null) markChart(); }
+slider.oninput=()=>{ stop(); setDay(+slider.value); };
+document.getElementById("btnNow").onclick=()=>{ stop(); setDay(TODAY); };
+function stop(){ if(timer){clearInterval(timer);timer=null;document.getElementById("play").textContent="▶";} }
+document.getElementById("play").onclick=()=>{ if(timer){stop();return;} if(day>=NDAY-1) setDay(0);
+  document.getElementById("play").textContent="❚❚"; timer=setInterval(()=>{ if(day>=NDAY-1){stop();return;} setDay(day+1); },260); };
+
+/* ---------- resumen ---------- */
+function shares(filter){ const c=R.celdas, n=c.iy.length, cnt=[0,0,0,0,0]; let w=0;
+  for(let i=0;i<n;i++){ if(!c.es[i]||(filter&&!filter(i))) continue; const v=PCT[i*NDAY+day]; if(v===255) continue; const k=cls(v); if(k<0) continue;
+    const wt=Math.sqrt(c.ua[i]); cnt[k]+=wt; w+=wt; }
+  return w?cnt.map(x=>x/w*100):null; }
+function renderBar(){ if(!PCT) return; const s=shares(); if(!s) return;
+  document.getElementById("cbBar").innerHTML=s.map((v,k)=>v>0.2?`<span style="width:${v}%;background:${CL[k].c}" title="${CL[k].n}: ${Math.round(v)} %"></span>`:"").join("");
+  document.getElementById("cbLeg").innerHTML=CL.map((c,k)=>`<span><i style="background:${c.c}"></i>${c.n}<b>${Math.round(s[k])} %</b></span>`).join("")+
+    `<span><i style="background:${NOC}"></i>Tramo fuera de España</span>`; }
+function renderSummary(){
+  if(!H||!H.resumen){ return; }
+  const r=H.resumen, s=shares(), below=s?s[0]+s[1]:0, above=s?s[3]+s[4]:0, hl=document.getElementById("headline");
+  const cu=Object.fromEntries(R.cuencas.map(c=>[c.id,c.nombre]));
+  let big, txt;
+  if(below>=above){ big=Math.round(below)+"<small> %</small>"; txt=`de la red fluvial de España lleva <b>menos agua de lo normal</b> para estas fechas`+(s[0]>5?`, y un ${Math.round(s[0])} % está en niveles muy bajos`:"")+`.`; }
+  else { big=Math.round(above)+"<small> %</small>"; txt=`de la red fluvial de España lleva <b>más agua de lo normal</b> para estas fechas`+(s[4]>5?`, y un ${Math.round(s[4])} % va muy crecido`:"")+`.`; }
+  if(r.cuenca_seca) txt+=` La cuenca más seca respecto a lo habitual es la del <b>${cu[r.cuenca_seca]||r.cuenca_seca}</b>`+(r.cuenca_humeda?`; la que más agua lleva, la del <b>${cu[r.cuenca_humeda]||r.cuenca_humeda}</b>.`:".");
+  if(r.crecidas&&r.crecidas.length) txt+=` El modelo prevé <b>${r.crecidas.length} ${r.crecidas.length===1?"punto":"puntos"} con crecida</b> en los próximos 10 días.`;
+  document.getElementById("hlBig").innerHTML=big; document.getElementById("hlTxt").innerHTML=txt; hl.style.display="flex";
+}
+function renderBasins(){
+  if(!PCT) return; const c=R.celdas, el=document.getElementById("basins"); const rows=[];
+  R.cuencas.forEach((cu,k)=>{ if(cu.id==="otras") return; let n=0; for(let i=0;i<c.iy.length;i++) if(c.es[i]&&c.cuenca[i]===k) n++; if(n<8) return;
+    const s=shares(i=>c.cuenca[i]===k); if(!s) return; rows.push({cu,k,s,below:s[0]+s[1],above:s[3]+s[4]}); });
+  rows.sort((a,b)=>(b.below-b.above)-(a.below-a.above));
+  el.innerHTML=rows.map(r=>{ const st=r.below>=r.above?`<span style="color:${CL[r.below>60?0:1].c}">${Math.round(r.below)} %</span> por debajo`:`<span style="color:${CL[r.above>60?4:3].c}">${Math.round(r.above)} %</span> por encima`;
+    return `<button class="basin" data-k="${r.k}"><div class="n">${r.cu.nombre}</div><div class="s"><span class="big">${st}</span> de lo normal</div>
+      <div class="bar">${r.s.map((v,k)=>v>0.3?`<span style="width:${v}%;background:${CL[k].c}"></span>`:"").join("")}</div></button>`; }).join("");
+  el.querySelectorAll(".basin").forEach(b=>b.onclick=()=>{ const k=+b.dataset.k, ll=[]; for(let i=0;i<c.iy.length;i++) if(c.es[i]&&c.cuenca[i]===k) ll.push([XY[2*i],XY[2*i+1]]);
+    if(ll.length){ userMoved=true; map.flyToBounds(L.latLngBounds(ll).pad(.08),{duration:.7}); document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"}); } });
+}
+function pill(p){ const k=cls(p); return `<span class="lp" style="background:${k<0?NOC:CL[k].c}">P${pctTxt(p)}</span>`; }
+function renderLists(){
+  if(!H||!H.resumen) return; const r=H.resumen, pn=Object.fromEntries(R.puntos.map(p=>[p.id,p])), cu=Object.fromEntries(R.cuencas.map(c=>[c.id,c.nombre]));
+  const row=(x,v)=>{ const p=pn[x.id]; if(!p) return ""; return `<div class="li" data-id="${x.id}"><div><div class="ln">${p.nombre}</div><div class="lc">${cu[p.cuenca]||""}</div></div><div class="lv">${fmtQ(x.q)} m³/s</div>${v}</div>`; };
+  document.getElementById("lsDry").innerHTML=(r.secos||[]).map(x=>row(x,pill(x.p))).join("")||'<div class="empty">Sin datos.</div>';
+  document.getElementById("lsWet").innerHTML=(r.humedos||[]).map(x=>row(x,pill(x.p))).join("")||'<div class="empty">Sin datos.</div>';
+  document.getElementById("lsFlood").innerHTML=(r.crecidas||[]).map(x=>row(x,`<span class="lp" style="background:${CL[4].c}">${fmtD(new Date(x.f+"T00:00:00Z"))}</span>`)).join("")||'<div class="empty">El modelo no prevé crecidas destacadas en los próximos 10 días.</div>';
+  document.querySelectorAll(".li[data-id]").forEach(e=>e.onclick=()=>openPoint(+e.dataset.id,true));
 }
 
-Promise.all([
-  fetch("estaciones.geojson").then(r=>r.json()),
-  fetch("meta.json").then(r=>r.json()).catch(()=>({}))
-]).then(([gj,meta])=>{
-  const layer=L.geoJSON(gj,{
-    pointToLayer:(f,ll)=>L.marker(ll,{icon:pill(f.properties)}),
-    onEachFeature:(f,l)=>{
-      l.bindTooltip(`${f.properties.estacion}`,{direction:"top",offset:[0,-6]});
-      l.bindPopup(fichaHTML(f.properties),{className:"panel-ficha",maxWidth:290});
-    }
-  }).addTo(map);
-  if(gj.features.length) map.fitBounds(layer.getBounds().pad(0.12));
-  resumen(gj.features,meta);
-}).catch(()=>{document.getElementById("l-sub").textContent="No se pudieron cargar los datos.";});
+/* ---------- ficha de un punto ---------- */
+async function ficha(id){ if(PUNTO[id]) return PUNTO[id]; try{ const r=await fetch("p/"+id+".json"); if(!r.ok) return null; return PUNTO[id]=await r.json(); }catch(e){ return null; } }
+async function openPoint(id,scroll){
+  const p=R.puntos.find(x=>x.id===id); if(!p) return; sel=id; await ficha(id); if(sel!==id) return;
+  const f=document.getElementById("ficha"), cl=PUNTO[id], q=H&&H.puntos?H.puntos[id]:null;
+  const cu=(R.cuencas.find(c=>c.id===p.cuenca)||{}).nombre||"";
+  const qHoy=q?q[TODAY]:null, band=cl?bandAt(cl,dayDate(TODAY)):null, pv=PCT?PCT[p.c*NDAY+TODAY]:255, ph=pv===255?(band?pctOf(qHoy,band):null):pv, k=cls(ph);
+  const vsMed=band&&qHoy!=null&&band[3]>0?(qHoy/band[3]-1)*100:null;
+  const d7=q&&q[TODAY-7]!=null&&qHoy!=null?(qHoy/q[TODAY-7]-1)*100:null;
+  let html=`<div class="f-top"><div><div class="f-name">${p.nombre}</div><div class="f-meta">Cuenca: ${cu} · ${fmtN(p.ua)} km² de cuenca vertiente aguas arriba</div></div>`+
+    (k>=0?`<span class="pill" style="background:${CL[k].c}">${CL[k].n} para la fecha · percentil ${pctTxt(ph)}</span>`:"")+`</div>`;
+  html+=`<div class="f-kpis"><div class="kpi"><div class="k">Caudal hoy (modelo)</div><div class="v">${fmtQ(qHoy)}</div><div class="u">m³/s</div></div>`+
+    `<div class="kpi"><div class="k">Normal para esta fecha</div><div class="v">${fmtQ(band?band[3]:null)}</div><div class="u">m³/s · mediana ${P?P.clima.anio0+"–"+P.clima.anio1:""}</div></div>`+
+    `<div class="kpi"><div class="k">Respecto a lo normal</div><div class="v">${vsMed==null?"–":(vsMed>0?"+":"")+fmtN(vsMed)+" %"}</div><div class="u">frente a la mediana</div></div>`+
+    `<div class="kpi"><div class="k">Últimos 7 días</div><div class="v">${d7==null?"–":(d7>0?"▲ +":"▼ ")+fmtN(Math.abs(d7))+" %"}</div><div class="u">${d7==null?"":d7>0?"sube":"baja"}</div></div></div>`;
+  html+=`<div class="chart" id="chMain"></div><div class="legend2"><span><i style="background:rgba(61,139,212,.13)"></i>Lo habitual (percentil 10–90)</span><span><i style="background:rgba(61,139,212,.28)"></i>Percentil 25–75</span><span><i style="background:none;border-top:2px dashed #7d8a94;height:0;width:18px;border-radius:0"></i>Mediana</span><span><i style="background:#14202b;height:2px"></i>Caudal</span><span><i style="background:#7a4bc2;height:2px"></i>Previsión</span></div>`;
+  if(cl){ html+=`<div class="f-two"><div><h4>Régimen del río: caudal medio de cada mes</h4><p>Media ${P.clima.anio0}–${P.clima.anio1}. En oscuro, el mes actual.</p><div class="chart" id="chMes"></div></div>`+
+      `<div><h4>Caudal medio de cada año</h4><p>Los años secos y húmedos del río desde ${P.clima.anio0}. Media: ${fmtQ(cl.media)} m³/s.</p><div class="chart" id="chAnio"></div></div></div>`+
+      `<p class="f-note">Mínimo de la serie: ${fmtQ(cl.min[0])} m³/s (${fmtD(new Date(cl.min[1]+"T00:00:00Z"),true)}) · Máximo: ${fmtQ(cl.max[0])} m³/s (${fmtD(new Date(cl.max[1]+"T00:00:00Z"),true)}). Caudal simulado por el modelo GloFAS en la celda de 5 km del río, no una medición.</p>`; }
+  f.innerHTML=html; f.style.display="block";
+  drawMain(p,cl,q); if(cl){ drawMes(cl); drawAnio(cl); }
+  if(scroll){ userMoved=true; map.flyTo([p.lat,p.lon],Math.max(map.getZoom(),7.5),{duration:.7}); f.scrollIntoView({behavior:"smooth",block:"start"}); }
+  postHeight();
+}
+function svgEl(w,h){ return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img">`; }
+let chartCtx=null;
+function drawMain(p,cl,q){
+  const el=document.getElementById("chMain"); if(!q){ el.innerHTML='<div class="empty">Sin serie diaria para este punto.</div>'; return; }
+  const W=el.clientWidth||900, Hh=mobile?220:260, m={l:46,r:12,t:12,b:26}, iw=W-m.l-m.r, ih=Hh-m.t-m.b;
+  const bands=[]; for(let i=0;i<NDAY;i++) bands.push(cl?bandAt(cl,dayDate(i)):null);
+  let ymax=0; for(let i=0;i<NDAY;i++){ if(q[i]!=null) ymax=Math.max(ymax,q[i]); if(bands[i]) ymax=Math.max(ymax,bands[i][5]); }
+  ymax=ymax*1.08||1; const X=i=>m.l+i/(NDAY-1)*iw, Y=v=>m.t+ih-(v/ymax)*ih;
+  const area=(a,b)=>{ let s="M"; for(let i=0;i<NDAY;i++) s+=X(i).toFixed(1)+","+Y(bands[i][a]).toFixed(1)+" L"; for(let i=NDAY-1;i>=0;i--) s+=X(i).toFixed(1)+","+Y(bands[i][b]).toFixed(1)+(i?" L":" Z"); return s; };
+  let s=svgEl(W,Hh);
+  const ticks=[0,.25,.5,.75,1].map(f=>f*ymax);
+  for(const t of ticks) s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="#eef1f3"/><text x="${m.l-6}" y="${Y(t)+4}" text-anchor="end" font-size="11" fill="#8a96a0">${fmtQ(t)}</text>`;
+  s+=`<rect x="${X(TODAY)}" y="${m.t}" width="${X(NDAY-1)-X(TODAY)}" height="${ih}" fill="#f6f2fc"/>`;
+  if(cl){ s+=`<path d="${area(1,5)}" fill="rgba(61,139,212,.13)"/><path d="${area(2,4)}" fill="rgba(61,139,212,.28)"/>`;
+    s+=`<path d="M${bands.map((b,i)=>X(i).toFixed(1)+","+Y(b[3]).toFixed(1)).join(" L")}" fill="none" stroke="#7d8a94" stroke-width="1.5" stroke-dasharray="4 3"/>`; }
+  const seg=(a,b,col)=>{ let d="",on=false; for(let i=a;i<=b;i++){ if(q[i]==null){on=false;continue;} d+=(on?" L":" M")+X(i).toFixed(1)+","+Y(q[i]).toFixed(1); on=true; } return `<path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`; };
+  s+=seg(0,TODAY,"#14202b")+seg(TODAY,NDAY-1,"#7a4bc2");
+  const paso=Math.ceil(NDAY/Math.max(3,Math.floor(iw/95))); for(let i=0;i<NDAY;i+=paso){ if(Math.abs(X(i)-X(TODAY))<42) continue; s+=`<text x="${X(i)}" y="${Hh-6}" text-anchor="middle" font-size="11" fill="#8a96a0">${fmtD(dayDate(i))}</text>`; }
+  s+=`<text x="${X(TODAY)}" y="${Hh-6}" text-anchor="middle" font-size="11" font-weight="700" fill="#14202b">hoy</text>`;
+  s+=`<line id="chCur" x1="0" x2="0" y1="${m.t}" y2="${m.t+ih}" stroke="#14202b" stroke-width="1" opacity=".35"/><circle id="chDot" r="4.5" fill="#fff" stroke="#14202b" stroke-width="2" style="display:none"/>`;
+  s+=`<rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent" id="chHit"/></svg><div class="ctip" id="chTip"></div>`;
+  el.innerHTML=s; chartCtx={X,Y,q,bands,m,iw,el,W};
+  const hit=el.querySelector("#chHit"), tip=el.querySelector("#chTip");
+  const show=ev=>{ const r=el.getBoundingClientRect(), sx=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left, x=sx*(W/r.width);
+    const i=Math.max(0,Math.min(NDAY-1,Math.round((x-m.l)/iw*(NDAY-1)))); cursor(i,true);
+    const b=bands[i], pp=b&&q[i]!=null?pctOf(q[i],b):null;
+    tip.innerHTML=`<b>${fmtD(dayDate(i),true)}</b>${i>TODAY?" · previsión":""}<br>Caudal: ${fmtQ(q[i])} m³/s`+(b?`<br>Normal: ${fmtQ(b[3])} m³/s (P25–75: ${fmtQ(b[2])}–${fmtQ(b[4])})<br>Percentil ${pctTxt(pp)}`:"");
+    tip.style.display="block"; const tw=tip.offsetWidth; tip.style.left=Math.min(Math.max(sx+12,0),r.width-tw)+"px"; tip.style.top="8px"; };
+  hit.addEventListener("mousemove",show); hit.addEventListener("touchstart",show,{passive:true}); hit.addEventListener("touchmove",show,{passive:true});
+  hit.addEventListener("mouseleave",()=>{tip.style.display="none"; markChart();});
+  markChart();
+}
+function cursor(i){ if(!chartCtx) return; const {X,Y,q,el}=chartCtx; const l=el.querySelector("#chCur"), d=el.querySelector("#chDot"); if(!l) return;
+  l.setAttribute("x1",X(i)); l.setAttribute("x2",X(i)); if(q[i]!=null){ d.style.display=""; d.setAttribute("cx",X(i)); d.setAttribute("cy",Y(q[i])); } else d.style.display="none"; }
+function markChart(){ cursor(day); }
+function bars(el,vals,hl,labels,fmt){ const W=el.clientWidth||440, Hh=150, m={l:36,r:6,t:8,b:20}, iw=W-m.l-m.r, ih=Hh-m.t-m.b, n=vals.length, mx=Math.max(...vals.filter(v=>v!=null),1e-6)*1.1;
+  const bw=iw/n; let s=svgEl(W,Hh);
+  [0,.5,1].forEach(f=>{ const y=m.t+ih-f*ih; s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="#eef1f3"/><text x="${m.l-5}" y="${y+4}" text-anchor="end" font-size="10.5" fill="#8a96a0">${fmtQ(f*mx)}</text>`; });
+  vals.forEach((v,i)=>{ if(v==null) return; const h=v/mx*ih, x=m.l+i*bw+Math.min(2,bw*.15);
+    s+=`<rect x="${x}" y="${m.t+ih-h}" width="${Math.max(1,bw-2*Math.min(2,bw*.15))}" height="${h}" rx="${Math.min(3,bw/4)}" fill="${i===hl?"#1f4e8c":"#9cc2e6"}"><title>${labels[i]}: ${fmt(v)}</title></rect>`;
+    if(n<=12||i%5===0||i===n-1) s+=`<text x="${m.l+i*bw+bw/2}" y="${Hh-5}" text-anchor="middle" font-size="10.5" fill="#8a96a0">${n>12?String(labels[i]).slice(2):labels[i]}</text>`; });
+  el.innerHTML=s+"</svg>"; }
+function drawMes(cl){ bars(document.getElementById("chMes"),cl.mensual,dayDate(TODAY).getUTCMonth(),MES,v=>fmtQ(v)+" m³/s"); }
+function drawAnio(cl){ const y0=P.clima.anio0, lab=cl.anual.map((v,i)=>y0+i); bars(document.getElementById("chAnio"),cl.anual,-1,lab,v=>fmtQ(v)+" m³/s"); }
+
+/* ---------- interacción con el mapa ---------- */
+const hint=document.getElementById("hint");
+function nearest(e,px){ // punto destacado, aforo o celda más cercana
+  const cp=e.containerPoint; let best=null, bd=px*px;
+  for(const p of R.puntos){ const q=map.latLngToContainerPoint([p.lat,p.lon]), d=(q.x-cp.x)**2+(q.y-cp.y)**2; if(d<bd){bd=d;best={t:"p",o:p};} }
+  if(A&&showAf) for(const s of A.estaciones){ if(s.lat==null) continue; const q=map.latLngToContainerPoint([s.lat,s.lon]), d=(q.x-cp.x)**2+(q.y-cp.y)**2; if(d<bd*.8){bd=d;best={t:"a",o:s};} }
+  if(best) return best;
+  const c=R.celdas; bd=(px*.8)**2; for(let i=0;i<c.iy.length;i++){ if(c.ua[i]<150) continue; const q=map.latLngToContainerPoint([XY[2*i],XY[2*i+1]]), d=(q.x-cp.x)**2+(q.y-cp.y)**2; if(d<bd){bd=d;best={t:"c",o:i};} }
+  return best; }
+function hintHtml(h){ const cu=Object.fromEntries(R.cuencas.map(c=>[c.id,c.nombre]));
+  if(h.t==="p"){ const p=h.o, q=H&&H.puntos?H.puntos[p.id]:null, v=PCT?PCT[p.c*NDAY+day]:255, pp=v===255?null:v, k=cls(pp);
+    return `<b>${p.nombre}</b><br>${q?fmtQ(q[day])+" m³/s · ":""}${k>=0?`<span class="pc" style="background:${CL[k].c}"></span>${CL[k].n} (P${pctTxt(pp)})`:""}<br><span style="opacity:.7">Pulsa para ver la ficha</span>`; }
+  if(h.t==="a"){ const s=h.o; return `<b>${s.nombre}</b><br>Aforo medido · ${s.fuente_n||s.fuente}<br>${fmtQ(s.q)} m³/s · ${s.t?new Date(s.t).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"}):""}`; }
+  const i=h.o, c=R.celdas, v=PCT?PCT[i*NDAY+day]:255, k=v===255?-1:cls(v), nm=R.ejes[c.eje[i]]||"Río sin nombre en el mapa";
+  return `<b>${nm}</b><br>${k>=0?`<span class="pc" style="background:${CL[k].c}"></span>${CL[k].n} para la fecha (P${pctTxt(v)})`:"Sin dato"}<br><span style="opacity:.7">${cu[R.cuencas[c.cuenca[i]].id]||""} · ${fmtN(c.ua[i])} km² de cuenca</span>`; }
+let hovT=0;
+map.on("mousemove",e=>{ if(!R||L.Browser.mobile) return; const now=performance.now(); if(now-hovT<40) return; hovT=now;
+  const h=nearest(e,10); if(!h){ hint.style.display="none"; document.getElementById("map").style.cursor=""; return; }
+  hint.innerHTML=hintHtml(h); hint.style.display="block"; const r=document.getElementById("map").getBoundingClientRect(), w=hint.offsetWidth;
+  hint.style.left=Math.min(e.containerPoint.x+14,r.width-w-6)+"px"; hint.style.top=Math.max(6,e.containerPoint.y-hint.offsetHeight-10)+"px";
+  document.getElementById("map").style.cursor=h.t==="c"?"":"pointer"; });
+map.on("mouseout",()=>hint.style.display="none");
+map.on("click",e=>{ if(!R) return; const h=nearest(e,mobile?16:11); if(!h){hint.style.display="none";return;}
+  if(h.t==="p"){ hint.style.display="none"; openPoint(h.o.id,false); document.getElementById("ficha").scrollIntoView({behavior:"smooth",block:"nearest"}); }
+  else if(h.t==="a"){ openAforo(h.o); }
+  else { // tramo sin punto: el punto destacado más cercano aguas abajo
+    let j=h.o, pasos=0; const byC=Object.fromEntries(R.puntos.map(p=>[p.c,p.id]));
+    while(j>=0&&pasos<400){ if(byC[j]!=null){ openPoint(byC[j],false); break; } j=R.celdas.down[j]; pasos++; }
+    hint.innerHTML=hintHtml(h); hint.style.display="block"; hint.style.left=Math.min(e.containerPoint.x+12,document.getElementById("map").clientWidth-hint.offsetWidth-6)+"px"; hint.style.top=Math.max(6,e.containerPoint.y-hint.offsetHeight-10)+"px"; } });
+
+/* ---------- buscador ---------- */
+function setupSearch(){ const dl=document.getElementById("qlist"); const names=R.puntos.map(p=>p.nombre).sort((a,b)=>a.localeCompare(b,"es"));
+  dl.innerHTML=names.map(n=>`<option value="${n}">`).join("");
+  const inp=document.getElementById("q"); inp.addEventListener("change",()=>{ const v=inp.value.trim().toLowerCase(); if(!v) return;
+    let p=R.puntos.find(x=>x.nombre.toLowerCase()===v)||R.puntos.find(x=>x.nombre.toLowerCase().includes(v))||R.puntos.find(x=>x.lugar.toLowerCase().includes(v));
+    if(p){ openPoint(p.id,true); inp.blur(); } }); }
+
+/* ---------- aforos medidos ---------- */
+let afAll=false;
+function renderAforos(){
+  const src=document.getElementById("afSrc"), tb=document.getElementById("afTbl");
+  if(!A){ src.innerHTML='<span>Aforos no disponibles ahora mismo</span>'; return; }
+  src.innerHTML=A.fuentes.map(f=>`<span class="${f.ok?"":"ko"}"><b>${f.nombre}</b> · ${f.ok?f.n+" estaciones":"sin datos hoy"}</span>`).join("");
+  document.getElementById("afList").textContent=A.fuentes.map(f=>f.nombre).join(", ");
+  const est=A.estaciones.filter(s=>s.q!=null).sort((a,b)=>(b.q||0)-(a.q||0));
+  const show=afAll?est:est.slice(0,15);
+  tb.innerHTML=`<thead><tr><th>Estación</th><th>Río</th><th class="r">Caudal</th><th class="r">24 h</th><th>Lectura</th><th>Fuente</th></tr></thead><tbody>`+
+    show.map((s,i)=>{ const tr=s.v24==null?"":(s.v24>0?"▲ +":"▼ ")+fmtN(Math.abs(s.v24))+" %";
+      return `<tr data-i="${A.estaciones.indexOf(s)}"><td>${s.nombre}</td><td>${s.rio||"–"}</td><td class="r"><b>${fmtQ(s.q)}</b> m³/s</td><td class="r">${tr}</td><td>${s.t?new Date(s.t).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"}):"–"}</td><td><span class="aftag">${s.fuente_n||s.fuente}</span></td></tr>`; }).join("")+"</tbody>";
+  const more=document.getElementById("afMore"); more.style.display=est.length>15?"block":"none"; more.textContent=afAll?"Ver menos":"Ver las "+est.length+" estaciones";
+  more.onclick=()=>{afAll=!afAll; renderAforos(); postHeight();};
+  tb.querySelectorAll("tr[data-i]").forEach(tr=>tr.onclick=()=>{ const s=A.estaciones[+tr.dataset.i]; if(s.lat!=null){ userMoved=true; map.flyTo([s.lat,s.lon],9,{duration:.7}); document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"}); openAforo(s);} });
+}
+function openAforo(s){ const pt=map.latLngToContainerPoint([s.lat,s.lon]);
+  let spark=""; if(s.serie&&s.serie.length>2){ const vs=s.serie.map(x=>x[1]), mx=Math.max(...vs)||1, mn=Math.min(...vs), W=220, Hh=46;
+    spark=`<svg width="${W}" height="${Hh}" style="display:block;margin-top:6px"><path d="M${vs.map((v,i)=>(i/(vs.length-1)*W).toFixed(1)+","+(Hh-4-(v-mn)/Math.max(mx-mn,1e-6)*(Hh-8)).toFixed(1)).join(" L")}" fill="none" stroke="#ffd84d" stroke-width="2"/></svg><span style="opacity:.7">Últimos ${s.dias||7} días · mín ${fmtQ(mn)} · máx ${fmtQ(mx)}</span>`; }
+  hint.innerHTML=`<b>${s.nombre}</b><br>${s.rio?s.rio+" · ":""}${s.fuente_n||s.fuente}<br><b style="font-size:16px">${fmtQ(s.q)} m³/s</b> ${s.t?"· "+new Date(s.t).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"}):""}${spark}`;
+  hint.style.display="block"; setTimeout(()=>{ const q=map.latLngToContainerPoint([s.lat,s.lon]); hint.style.left=Math.min(Math.max(6,q.x+12),document.getElementById("map").clientWidth-hint.offsetWidth-6)+"px"; hint.style.top=Math.max(6,q.y-hint.offsetHeight-12)+"px"; },750); }
+
+/* ---------- alto del iframe ---------- */
+function postHeight(){ try{ const h=Math.ceil(document.querySelector(".wrap").getBoundingClientRect().height); parent.postMessage({cgHeight:h,cgTool:"caudal"},"*"); }catch(e){} }
+window.addEventListener("resize",()=>{ postHeight(); if(sel!=null&&H){ const p=R.puntos.find(x=>x.id===sel); drawMain(p,PUNTO[sel],H.puntos[sel]); if(PUNTO[sel]){drawMes(PUNTO[sel]);drawAnio(PUNTO[sel]);} } });
+if("ResizeObserver" in window) new ResizeObserver(postHeight).observe(document.querySelector(".wrap"));
+})();
 </script>
 </body>
 </html>
