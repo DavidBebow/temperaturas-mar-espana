@@ -46,7 +46,12 @@ jobs:
           git add docs/caudal/estaciones.geojson docs/caudal/meta.json
           if git diff --staged --quiet; then
             echo "Sin cambios"
-          else
-            git commit -m "Caudales actualizados: $(date -u +'%d/%m/%Y %H:%M')"
-            git push
+            exit 0
           fi
+          git commit -m "Caudales actualizados: $(date -u +'%d/%m/%Y %H:%M')"
+          # otros workflows publican en main a la vez: integrar sus cambios y reintentar
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash origin main && git push && exit 0
+            sleep $((i*7))
+          done
+          exit 1
