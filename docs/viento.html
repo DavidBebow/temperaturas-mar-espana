@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viento en España en directo · Mapa animado y rachas por provincia (72 h)</title>
+<meta name="description" content="Mapa animado del viento en España con la previsión de las próximas 72 horas: velocidad, dirección y rachas máximas previstas en las 52 capitales de provincia. Se actualiza cuatro veces al día.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{--ink:#1a1410;--soft:#6f675f;--line:#ece7df;--bg2:#faf7f2;--card:#fff;
+    --accent:#1d6fb8;--accent2:#124c80;--warm:#e0531f;}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#fff;color:var(--ink);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:32px 16px 40px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;text-align:center}
+  h1{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.1;text-align:center;margin:10px 0 8px}
+  @media(max-width:560px){h1{font-size:29px}}
+  .sub{font-size:16.5px;color:var(--soft);text-align:center;max-width:680px;margin:0 auto 6px}
+  .live{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;letter-spacing:.12em;
+    color:var(--accent);margin:12px 0 0;font-weight:700;text-transform:uppercase;text-align:center;flex-wrap:wrap}
+  .dot{width:8px;height:8px;border-radius:50%;background:#2fbf6b;animation:p 2s infinite;flex:none}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(47,191,107,.5)}70%{box-shadow:0 0 0 8px rgba(47,191,107,0)}100%{box-shadow:0 0 0 0 rgba(47,191,107,0)}}
+
+  .headline{max-width:820px;margin:22px auto 0;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:16px 20px;
+    display:flex;gap:16px;align-items:center}
+  .headline .big{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1;white-space:nowrap}
+  .headline .big small{font-size:15px;font-weight:700;color:var(--soft);margin-left:3px}
+  .headline .txt{font-size:15px;color:#40372f}
+  .headline .txt b{color:var(--ink)}
+  @media(max-width:560px){.headline{flex-direction:column;text-align:center;gap:8px}}
+
+  .mapbox{position:relative;margin-top:18px}
+  #map{height:580px;border-radius:20px;border:1px solid #1f2630;background:#0e1319;z-index:0;overflow:hidden}
+  @media(max-width:620px){#map{height:470px}}
+  .leaflet-container{font:inherit}
+  #map .leaflet-control-attribution{background:rgba(14,19,25,.72);color:#aab4bf}
+  #map .leaflet-control-attribution a{color:#9cc8ff}
+  .leaflet-popup-content{margin:12px 14px;font-size:13.5px;line-height:1.45}
+  .pp b{font-size:20px;letter-spacing:-.01em}
+  .pp .k{color:var(--soft);font-size:12px}
+  .timetag{position:absolute;left:14px;top:12px;z-index:500;background:rgba(14,19,25,.78);color:#fff;border-radius:12px;
+    padding:7px 12px;font-size:13px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px)}
+  .timetag span{display:block;font-size:10.5px;font-weight:600;opacity:.7;letter-spacing:.06em;text-transform:uppercase}
+  .jump{position:absolute;right:12px;top:12px;z-index:500;display:flex;gap:6px}
+  .jump button{border:0;background:rgba(14,19,25,.78);color:#fff;border-radius:10px;padding:7px 11px;font:700 12px/1 inherit;cursor:pointer}
+  .jump button:hover{background:rgba(29,111,184,.9)}
+  .mapmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#cfd6de;z-index:600;font-size:14px;pointer-events:none;text-align:center;padding:20px}
+
+  .hint{display:none;font-size:12px;color:var(--soft);text-align:center;margin:8px 0 0}
+  @media(max-width:620px){.hint{display:block}}
+  .controls{max-width:860px;margin:14px auto 0;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+  .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .play{width:42px;height:42px;border-radius:50%;border:0;background:var(--ink);color:#fff;font-size:15px;cursor:pointer;flex:none}
+  .row input[type=range]{flex:1;min-width:160px;accent-color:var(--accent)}
+  .now{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink)}
+  .chips{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--soft);cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .legend{margin:12px auto 0;max-width:560px}
+  .legend .bar{height:10px;border-radius:6px}
+  .legend .ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--soft);margin-top:3px}
+  .legend .lt{font-size:11px;color:var(--soft);text-align:center;margin-top:1px}
+
+  h2.sec{font-size:23px;font-weight:800;letter-spacing:-.01em;margin:44px 0 4px;text-align:center}
+  .sec-sub{font-size:14.5px;color:var(--soft);text-align:center;margin:0 auto 18px;max-width:640px}
+
+  .detail{max-width:860px;margin:0 auto 20px;border:1px solid var(--line);border-radius:20px;padding:18px 20px;box-shadow:0 14px 40px rgba(20,40,60,.06);display:none}
+  .detail h3{margin:0;font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .detail .cap{font-size:13px;color:var(--soft);margin-top:2px}
+  .dcards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 6px}
+  @media(max-width:620px){.dcards{grid-template-columns:1fr}}
+  .dc{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:11px;text-align:center}
+  .dc .k{font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+  .dc .v{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+  .dc .u{font-size:12px;color:var(--soft)}
+  #chart{width:100%;height:220px;display:block;margin-top:8px}
+  .chartleg{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--soft)}
+  .chartleg span{display:inline-flex;align-items:center;gap:6px}.chartleg i{width:18px;height:3px;border-radius:2px;display:inline-block}
+
+  .rank{max-width:860px;margin:0 auto}
+  .rk{display:flex;align-items:center;gap:10px;padding:6px 4px;cursor:pointer;border-radius:8px}
+  .rk:hover,.rk.sel{background:var(--bg2)}
+  .rk .pos{width:22px;color:var(--soft);font-size:12px;text-align:right;flex:none}
+  .rk .nm{width:170px;font-size:13.5px;font-weight:700;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rk .bar{flex:1;height:15px;background:var(--bg2);border-radius:8px;overflow:hidden}
+  .rk .bar i{display:block;height:100%;border-radius:8px}
+  .rk .val{width:64px;text-align:right;font-size:13px;font-weight:800;flex:none}
+  .rk .when{width:112px;text-align:right;font-size:12px;color:var(--soft);flex:none}
+  @media(max-width:560px){.rk .nm{width:108px}.rk .when{display:none}}
+
+  .note{max-width:860px;margin:34px auto 0;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 20px;font-size:14px;color:#40372f}
+  .note p{margin:0 0 8px}.note p:last-child{margin:0}
+  .note b{color:var(--ink)} .note a{color:var(--accent2)}
+  .src{font-size:12px;color:var(--soft);text-align:center;margin-top:30px;border-top:1px solid var(--line);padding-top:16px}
+  .src a{color:var(--accent2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Observatorio climático · Viento</div>
+  <h1>Viento en España, ahora y en las próximas 72 horas</h1>
+  <p class="sub">Cada línea es una partícula arrastrada por el viento previsto a 10 metros del suelo. El color marca la velocidad. Mueve el deslizador para ver cómo evoluciona en los próximos tres días.</p>
+  <div class="live"><span class="dot"></span><span id="liveTxt">Cargando la última previsión…</span></div>
+
+  <div class="headline" id="headline" style="display:none">
+    <div class="big" id="hlBig">–</div>
+    <div class="txt" id="hlTxt"></div>
+  </div>
+
+  <div class="mapbox">
+    <div id="map"></div>
+    <div class="timetag" id="timetag" style="display:none"><span>Previsión para</span><em id="timetagTxt" style="font-style:normal"></em></div>
+    <div class="jump"><button type="button" data-go="pen">Península</button><button type="button" data-go="can">Canarias</button></div>
+    <div class="mapmsg" id="mapmsg">Cargando el campo de viento…</div>
+  </div>
+
+  <p class="hint">Pellizca el mapa para acercarte y toca cualquier punto para ver su viento.</p>
+
+  <div class="controls">
+    <div class="row">
+      <button class="play" id="play" type="button" aria-label="Reproducir">▶</button>
+      <input type="range" id="slider" min="0" max="0" value="0" step="1" aria-label="Hora de la previsión">
+      <button class="now" id="nowBtn" type="button">Ahora</button>
+    </div>
+    <div class="chips" role="group" aria-label="Qué colorea el mapa">
+      <button class="chip" type="button" data-mode="v" aria-pressed="true">Viento medio</button>
+      <button class="chip" type="button" data-mode="g" aria-pressed="false">Rachas</button>
+    </div>
+    <div class="legend">
+      <div class="bar" id="legbar"></div>
+      <div class="ticks" id="legticks"></div>
+      <div class="lt" id="legtitle">Viento medio a 10 m, en km/h</div>
+    </div>
+  </div>
+
+  <h2 class="sec" id="rankTitle">Rachas máximas previstas por capital de provincia</h2>
+  <p class="sec-sub">La racha más fuerte que prevé el modelo en cada capital durante las próximas 72 horas. Toca una para ver su evolución hora a hora.</p>
+
+  <div class="detail" id="detail">
+    <h3 id="dName">–</h3>
+    <div class="cap" id="dCap"></div>
+    <div class="dcards">
+      <div class="dc"><div class="k">Viento en la hora elegida</div><div class="v" id="dNow">–</div><div class="u" id="dNowDir"></div></div>
+      <div class="dc"><div class="k">Racha máxima prevista</div><div class="v" id="dMax">–</div><div class="u" id="dMaxWhen"></div></div>
+      <div class="dc"><div class="k">Horas con rachas ≥ 50 km/h</div><div class="v" id="dHours">–</div><div class="u">en las próximas 72 h</div></div>
+    </div>
+    <canvas id="chart"></canvas>
+    <div class="chartleg"><span><i style="background:var(--accent)"></i>Viento medio</span><span><i style="background:var(--warm)"></i>Rachas</span></div>
+  </div>
+
+  <div class="rank" id="rank"></div>
+
+  <div class="note">
+    <p><b>Viento medio y rachas no son lo mismo.</b> El viento medio es la velocidad sostenida; la racha es el golpe más fuerte, de pocos segundos. Las rachas son las que tumban árboles, avivan incendios y obligan a cerrar puertos y carreteras.</p>
+    <p><b>Es una previsión de modelo, no una medición.</b> Los datos salen del modelo global GFS de la NOAA, con una malla de unos 25 km, que suaviza los efectos del relieve: en cumbres, valles encajados y el Estrecho, el viento real puede ser bastante más fuerte. Para decisiones de seguridad, consulta los <a href="https://calentamientoglobal.es/avisos-meteorologicos-activos/" target="_top">avisos meteorológicos activos</a> de AEMET.</p>
+    <p><b>Por qué importa en un clima que se calienta.</b> El viento es el que convierte un conato en un gran incendio y el que empuja la calima y el aire del Sáhara. Seguirlo junto al calor y la sequía ayuda a entender los episodios extremos.</p>
+  </div>
+
+  <div class="src">Viento: <a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast" target="_blank" rel="noopener">NOAA Global Forecast System (GFS)</a>, dominio público · Actualización automática cuatro veces al día · Mapa © OpenStreetMap, © CARTO · <a href="https://calentamientoglobal.es/" target="_top">calentamientoglobal.es</a></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+"use strict";
+const DATA_URL = "viento.json";
+const TZ = "Europe/Madrid";
+
+/* ---------- escala de color (km/h) ---------- */
+const STOPS = [[0,[48,72,150]],[10,[52,112,190]],[20,[46,160,170]],[30,[76,184,104]],[40,[170,205,60]],
+  [50,[240,196,52]],[60,[242,142,44]],[75,[226,84,32]],[90,[196,32,72]],[110,[142,28,138]],[140,[90,20,110]]];
+function color(k){
+  if(!(k>=0)) return null;
+  for(let i=1;i<STOPS.length;i++){ if(k<=STOPS[i][0]){ const a=STOPS[i-1],b=STOPS[i],t=(k-a[0])/(b[0]-a[0]);
+    return [a[1][0]+(b[1][0]-a[1][0])*t|0,a[1][1]+(b[1][1]-a[1][1])*t|0,a[1][2]+(b[1][2]-a[1][2])*t|0]; } }
+  return STOPS[STOPS.length-1][1];
+}
+const css = k => { const c=color(k); return `rgb(${c[0]},${c[1]},${c[2]})`; };
+(function legend(){
+  const max=140, g=STOPS.map(s=>`rgb(${s[1].join(",")}) ${(s[0]/max*100).toFixed(1)}%`).join(",");
+  document.getElementById("legbar").style.background=`linear-gradient(90deg,${g})`;
+  document.getElementById("legticks").innerHTML=[0,20,40,60,80,100,120,"140+"].map(v=>`<span>${v}</span>`).join("");
+})();
+
+/* ---------- utilidades ---------- */
+const DIRS=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSO","SO","OSO","O","ONO","NO","NNO"];
+const DIRN={N:"norte",NE:"noreste",E:"este",SE:"sureste",S:"sur",SO:"suroeste",O:"oeste",NO:"noroeste"};
+const dirTxt = d => { const s=DIRS[Math.round(d/22.5)%16]; const n=DIRN[DIRS[Math.round(d/45)%8*2]]; return {s, n}; };
+const fmtT = (iso, opts) => new Date(iso).toLocaleString("es-ES", Object.assign({timeZone:TZ}, opts));
+const fmtStep = iso => { const s=fmtT(iso,{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); return s.charAt(0).toUpperCase()+s.slice(1); };
+const fmtShort = iso => { const s=fmtT(iso,{weekday:"short",hour:"2-digit",minute:"2-digit"}); return s.charAt(0).toUpperCase()+s.slice(1); };
+function decode(b64, signed){
+  const bin=atob(b64), n=bin.length, out=new Float32Array(n);
+  for(let i=0;i<n;i++){ let v=bin.charCodeAt(i); if(signed && v>127) v-=256; out[i]=v; }
+  return out;
+}
+
+/* ---------- estado ---------- */
+let D=null, G=null, step=0, mode="v", playing=false, playTimer=null, selected=null, marker=null;
+const cache={};
+
+function stepData(i){
+  if(cache[i]) return cache[i];
+  const p=D.pasos[i], e=D.malla.escala, u=decode(p.u,true), v=decode(p.v,true), g=decode(p.g,false);
+  for(let k=0;k<u.length;k++){ u[k]*=e; v[k]*=e; g[k]*=e; }
+  return cache[i]={u,v,g};
+}
+function sample(sd, lat, lon){ // bilineal en la malla del JSON → [u,v,g] m/s o null
+  const y=(G.lat0-lat)/-G.dlat, x=(lon-G.lon0)/G.dlon;
+  if(y<0||x<0||y>G.nlat-1||x>G.nlon-1) return null;
+  const j=Math.min(y|0,G.nlat-2), i=Math.min(x|0,G.nlon-2), fy=y-j, fx=x-i, n=G.nlon;
+  const a=j*n+i, b=a+1, c=a+n, d=c+1, w1=(1-fx)*(1-fy), w2=fx*(1-fy), w3=(1-fx)*fy, w4=fx*fy;
+  return [sd.u[a]*w1+sd.u[b]*w2+sd.u[c]*w3+sd.u[d]*w4, sd.v[a]*w1+sd.v[b]*w2+sd.v[c]*w3+sd.v[d]*w4, sd.g[a]*w1+sd.g[b]*w2+sd.g[c]*w3+sd.g[d]*w4];
+}
+
+/* ---------- mapa ---------- */
+const mobile = window.matchMedia("(max-width:620px)").matches;
+const map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:4,maxZoom:10,worldCopyJump:false,
+  dragging:!(L.Browser.mobile), tap:false,
+  maxBounds:[[22,-28],[50,14]]}).setView(mobile?[39.6,-3.6]:[39.8,-3.4], mobile?5:6);
+map.attributionControl.setPrefix(false);
+L.control.zoom({position:"bottomleft"}).addTo(map);
+map.createPane("wind"); map.getPane("wind").style.zIndex=350; map.getPane("wind").style.pointerEvents="none";
+map.createPane("labels"); map.getPane("labels").style.zIndex=390; map.getPane("labels").style.pointerEvents="none";
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",{subdomains:"abcd",
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a> · Viento: NOAA GFS'}).addTo(map);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png",{subdomains:"abcd",pane:"labels",opacity:.8}).addTo(map);
+
+const pane=map.getPane("wind");
+const raster=document.createElement("canvas"), parts=document.createElement("canvas");
+[raster,parts].forEach(c=>{c.style.position="absolute";c.style.left="0";c.style.top="0";pane.appendChild(c);});
+const rctx=raster.getContext("2d"), pctx=parts.getContext("2d");
+const small=document.createElement("canvas"), sctx=small.getContext("2d");
+const DPR=Math.min(window.devicePixelRatio||1,2), CELL=3, SPEED=mobile?0.16:0.14;
+let W=0,H=0,cols=0,rows=0,field=null,visible=true,animOn=false,px,py,age,maxAge,N=0;
+
+function build(){ // campo en pantalla: velocidad en px/fotograma por celda + raster de color
+  if(!D) return;
+  const s=map.getSize(); W=s.x; H=s.y;
+  const tl=map.containerPointToLayerPoint([0,0]);
+  L.DomUtil.setPosition(raster,tl); L.DomUtil.setPosition(parts,tl);
+  raster.width=W; raster.height=H; raster.style.width=W+"px"; raster.style.height=H+"px";
+  parts.width=W*DPR; parts.height=H*DPR; parts.style.width=W+"px"; parts.style.height=H+"px";
+  pctx.setTransform(DPR,0,0,DPR,0,0);
+  cols=Math.ceil(W/CELL)+1; rows=Math.ceil(H/CELL)+1;
+  field=new Float32Array(cols*rows*2);
+  small.width=cols; small.height=rows;
+  const img=sctx.createImageData(cols,rows), px8=img.data, sd=stepData(step);
+  const lons=new Float64Array(cols), lats=new Float64Array(rows);
+  for(let c=0;c<cols;c++) lons[c]=map.containerPointToLatLng([c*CELL,0]).lng;
+  for(let r=0;r<rows;r++) lats[r]=map.containerPointToLatLng([0,r*CELL]).lat;
+  for(let r=0;r<rows;r++){
+    const inv=1/Math.cos(lats[r]*Math.PI/180);
+    for(let c=0;c<cols;c++){
+      const k=r*cols+c, s=sample(sd,lats[r],lons[c]);
+      if(!s){ field[2*k]=NaN; field[2*k+1]=NaN; px8[4*k+3]=0; continue; }
+      field[2*k]=s[0]*SPEED*inv; field[2*k+1]=-s[1]*SPEED*inv;
+      const kmh=(mode==="g"?s[2]:Math.hypot(s[0],s[1]))*3.6, col=color(kmh);
+      px8[4*k]=col[0]; px8[4*k+1]=col[1]; px8[4*k+2]=col[2]; px8[4*k+3]=140;
+    }
+  }
+  sctx.putImageData(img,0,0);
+  rctx.clearRect(0,0,W,H); rctx.imageSmoothingEnabled=true;
+  rctx.drawImage(small,0,0,cols,rows,0,0,cols*CELL,rows*CELL);
+  initParticles();
+}
+function initParticles(){
+  const n=Math.round(W*H/(mobile?260:190));
+  if(n!==N){ N=n; px=new Float32Array(N); py=new Float32Array(N); age=new Float32Array(N); maxAge=new Float32Array(N);
+    for(let i=0;i<N;i++){ respawn(i); age[i]=Math.random()*maxAge[i]; } }
+  pctx.clearRect(0,0,W,H);
+}
+function respawn(i){
+  for(let t=0;t<6;t++){ const x=Math.random()*W, y=Math.random()*H, k=((y/CELL)|0)*cols+((x/CELL)|0);
+    if(field && field[2*k]===field[2*k]){ px[i]=x; py[i]=y; break; } px[i]=x; py[i]=y; }
+  age[i]=0; maxAge[i]=40+Math.random()*60;
+}
+let last=0;
+function frame(ts){
+  if(!animOn) return;
+  requestAnimationFrame(frame);
+  if(ts-last<30) return; last=ts;
+  if(!field||!visible) return;
+  pctx.globalCompositeOperation="destination-in"; pctx.fillStyle="rgba(0,0,0,0.9)"; pctx.fillRect(0,0,W,H);
+  pctx.globalCompositeOperation="source-over"; pctx.lineWidth=mobile?1:1.05; pctx.strokeStyle="rgba(255,255,255,0.82)";
+  pctx.beginPath();
+  for(let i=0;i<N;i++){
+    if(age[i]++>maxAge[i]){ respawn(i); continue; }
+    const x=px[i], y=py[i];
+    if(x<0||y<0||x>=W||y>=H){ respawn(i); continue; }
+    const k=((y/CELL)|0)*cols+((x/CELL)|0), dx=field[2*k], dy=field[2*k+1];
+    if(dx!==dx){ respawn(i); continue; }
+    const nx=x+dx, ny=y+dy; pctx.moveTo(x,y); pctx.lineTo(nx,ny); px[i]=nx; py[i]=ny;
+  }
+  pctx.stroke();
+}
+function startAnim(){ if(!animOn){ animOn=true; requestAnimationFrame(frame);} }
+map.on("movestart zoomstart",()=>{ parts.style.opacity=0; raster.style.opacity=0; });
+map.on("moveend zoomend resize",()=>{ build(); parts.style.opacity=1; raster.style.opacity=1; });
+document.addEventListener("visibilitychange",()=>{ visible=!document.hidden; });
+if("IntersectionObserver" in window){ new IntersectionObserver(es=>{ visible=es[0].isIntersecting && !document.hidden; }).observe(document.getElementById("map")); }
+
+document.querySelectorAll(".jump button").forEach(b=>b.addEventListener("click",()=>{
+  if(b.dataset.go==="can") map.flyTo([28.35,-15.9], mobile?7:8,{duration:.8});
+  else map.flyTo(mobile?[39.6,-3.6]:[39.8,-3.4], mobile?5:6,{duration:.8});
+}));
+
+map.on("click",e=>{
+  if(!D) return;
+  const s=sample(stepData(step),e.latlng.lat,e.latlng.lng); if(!s) return;
+  const v=Math.hypot(s[0],s[1])*3.6, g=Math.max(s[2]*3.6,v), d=(Math.atan2(-s[0],-s[1])*180/Math.PI+360)%360, t=dirTxt(d);
+  L.popup().setLatLng(e.latlng).setContent(`<div class="pp"><b>${Math.round(v)} km/h</b> <span class="k">viento medio</span><br>
+    Sopla del ${t.n} (${t.s})<br>Rachas de hasta <b style="font-size:15px">${Math.round(g)} km/h</b><br>
+    <span class="k">${fmtStep(D.pasos[step].t)} · previsión GFS</span></div>`).openOn(map);
+});
+
+/* ---------- controles ---------- */
+const slider=document.getElementById("slider"), playBtn=document.getElementById("play");
+function setStep(i, fromUser){
+  step=Math.max(0,Math.min(D.pasos.length-1,i)); slider.value=step;
+  document.getElementById("timetagTxt").textContent=fmtStep(D.pasos[step].t);
+  build(); if(selected!==null) showDetail(selected,false);
+  if(fromUser && map._popup) map.closePopup();
+}
+function nowIndex(){
+  const now=Date.now(); let best=0;
+  D.pasos.forEach((p,i)=>{ if(new Date(p.t).getTime()<=now+90*60000) best=i; });
+  return best;
+}
+slider.addEventListener("input",()=>{ stop(); setStep(+slider.value,true); });
+document.getElementById("nowBtn").addEventListener("click",()=>{ stop(); setStep(nowIndex(),true); });
+function stop(){ playing=false; clearInterval(playTimer); playBtn.textContent="▶"; playBtn.setAttribute("aria-label","Reproducir"); }
+playBtn.addEventListener("click",()=>{
+  if(playing){ stop(); return; }
+  playing=true; playBtn.textContent="❚❚"; playBtn.setAttribute("aria-label","Pausar");
+  playTimer=setInterval(()=>setStep(step+1>=D.pasos.length?0:step+1),1100);
+});
+document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
+  mode=c.dataset.mode; document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===c?"true":"false"));
+  document.getElementById("legtitle").textContent= mode==="g" ? "Rachas máximas, en km/h" : "Viento medio a 10 m, en km/h";
+  build();
+}));
+
+/* ---------- ranking y ficha ---------- */
+function renderRank(){
+  const caps=D.capitales.slice().sort((a,b)=>b.racha_max-a.racha_max), max=Math.max(100,caps[0].racha_max);
+  document.getElementById("rank").innerHTML=caps.map((c,i)=>`<div class="rk" data-i="${D.capitales.indexOf(c)}" role="button" tabindex="0">
+    <span class="pos">${i+1}</span><span class="nm" title="${c.nombre}">${c.provincia}</span>
+    <span class="bar"><i style="width:${(c.racha_max/max*100).toFixed(1)}%;background:${css(c.racha_max)}"></i></span>
+    <span class="val">${c.racha_max} km/h</span><span class="when">${fmtShort(D.pasos[c.paso_max].t)}</span></div>`).join("");
+  document.querySelectorAll(".rk").forEach(el=>{
+    const go=()=>{ showDetail(+el.dataset.i,true); };
+    el.addEventListener("click",go); el.addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
+  });
+}
+function showDetail(i, scroll){
+  selected=i; const c=D.capitales[i], s=c.serie[step], t=dirTxt(s[1]);
+  document.querySelectorAll(".rk").forEach(el=>el.classList.toggle("sel",+el.dataset.i===i));
+  const box=document.getElementById("detail"); box.style.display="block";
+  document.getElementById("dName").textContent=c.provincia;
+  document.getElementById("dCap").textContent= c.nombre===c.provincia ? "Capital de provincia · previsión GFS" : `${c.nombre} · previsión GFS`;
+  document.getElementById("dNow").textContent=s[0]+" km/h";
+  document.getElementById("dNowDir").textContent=`del ${t.n} (${t.s}) · rachas ${s[2]} km/h`;
+  document.getElementById("dMax").textContent=c.racha_max+" km/h";
+  document.getElementById("dMaxWhen").textContent=fmtStep(D.pasos[c.paso_max].t);
+  document.getElementById("dHours").textContent=Math.min(72,c.serie.filter(x=>x[2]>=50).length*3)+" h";
+  drawChart(c);
+  if(marker) map.removeLayer(marker);
+  marker=L.circleMarker([c.lat,c.lon],{radius:7,color:"#fff",weight:2,fillColor:css(c.racha_max),fillOpacity:1}).addTo(map);
+  if(scroll){ map.flyTo([c.lat,c.lon], Math.max(map.getZoom(),7),{duration:.8}); box.scrollIntoView({behavior:"smooth",block:"nearest"}); }
+}
+function drawChart(c){
+  const cv=document.getElementById("chart"), w=cv.clientWidth, h=cv.clientHeight, ctx=cv.getContext("2d");
+  cv.width=w*DPR; cv.height=h*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,w,h);
+  const n=c.serie.length, top=Math.max(60,Math.ceil(Math.max(...c.serie.map(x=>x[2]))/20)*20);
+  const L0=34,R0=8,T0=10,B0=24, X=i=>L0+(w-L0-R0)*i/(n-1), Y=v=>T0+(h-T0-B0)*(1-v/top);
+  ctx.font="11px -apple-system,Segoe UI,Roboto,sans-serif"; ctx.fillStyle="#8a8078"; ctx.strokeStyle="#eee6dc"; ctx.lineWidth=1;
+  for(let v=0;v<=top;v+=20){ ctx.beginPath(); ctx.moveTo(L0,Y(v)); ctx.lineTo(w-R0,Y(v)); ctx.stroke(); ctx.fillText(v,4,Y(v)+4); }
+  let lastDay="";
+  D.pasos.forEach((p,i)=>{ const day=fmtT(p.t,{weekday:"short"}), hr=+fmtT(p.t,{hour:"2-digit",hourCycle:"h23"});
+    if(day!==lastDay && (hr<3||i===0)){ ctx.fillText(day,X(i)-8,h-6); lastDay=day; } });
+  ctx.strokeStyle="rgba(26,20,16,.35)"; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(X(step),T0); ctx.lineTo(X(step),h-B0); ctx.stroke(); ctx.setLineDash([]);
+  const line=(k,col,wd)=>{ ctx.strokeStyle=col; ctx.lineWidth=wd; ctx.beginPath(); c.serie.forEach((x,i)=>i?ctx.lineTo(X(i),Y(x[k])):ctx.moveTo(X(i),Y(x[k]))); ctx.stroke(); };
+  line(2,"#e0531f",2); line(0,"#1d6fb8",2.4);
+}
+
+/* ---------- carga ---------- */
+fetch(DATA_URL+"?v="+Math.floor(Date.now()/600000)).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); }).then(d=>{
+  D=d; G=d.malla;
+  slider.max=d.pasos.length-1;
+  document.getElementById("liveTxt").textContent=`Modelo GFS de las ${d.ciclo.slice(11,13)} UTC · actualizado el ${fmtT(d.generado,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} (hora peninsular)`;
+  const r=d.resumen; document.getElementById("headline").style.display="flex";
+  document.getElementById("hlBig").innerHTML=`${r.top_racha}<small>km/h</small>`;
+  document.getElementById("hlTxt").innerHTML=`Es la <b>racha más fuerte prevista</b> en una capital de provincia en las próximas 72 horas: <b>${r.top_nombre}</b>${r.top_nombre===r.top_provincia?"":" ("+r.top_provincia+")"}, ${fmtStep(r.top_t).toLowerCase()}. `+
+    (r.n_capitales_70 ? `<b>${r.n_capitales_70}</b> ${r.n_capitales_70===1?"capital supera":"capitales superan"} los 70 km/h en algún momento.` : `Ninguna capital supera los 70 km/h: son días de viento moderado.`);
+  document.getElementById("mapmsg").style.display="none";
+  document.getElementById("timetag").style.display="block";
+  renderRank();
+  setStep(nowIndex());
+  startAnim();
+  postHeight();
+}).catch(err=>{
+  document.getElementById("mapmsg").textContent="No se ha podido cargar la previsión de viento. Vuelve a intentarlo en unos minutos.";
+  document.getElementById("liveTxt").textContent="Sin datos ahora mismo";
+  console.error(err);
+});
+
+/* altura para el iframe de WordPress */
+function postHeight(){ try{ parent.postMessage({cgHeight:document.documentElement.scrollHeight, cgTool:"viento"},"*"); }catch(e){} }
+window.addEventListener("resize",postHeight);
+new ResizeObserver(postHeight).observe(document.body);
+})();
+</script>
+</body>
+</html>
