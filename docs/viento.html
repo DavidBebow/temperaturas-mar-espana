@@ -230,9 +230,21 @@ function sample(sd, lat, lon){ // bilineal en la malla del JSON → [u,v,g] m/s 
 
 /* ---------- mapa ---------- */
 const mobile = window.matchMedia("(max-width:620px)").matches;
-const map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:5,maxZoom:10,worldCopyJump:false,scrollWheelZoom:false,
-  dragging:!(L.Browser.mobile), tap:false,
-  maxBounds:[[22,-28],[50,14]]}).setView(mobile?[39.6,-3.6]:[39.8,-3.4], mobile?5:6);
+/* El mapa nunca enseña nada fuera de la zona con datos: el zoom mínimo se calcula con el tamaño real
+   del mapa (dentro de un iframe el tamaño inicial puede no ser el definitivo) */
+const DATA=L.latLngBounds([[26,-20],[46,9]]), PEN=L.latLngBounds([[35.8,-9.6],[43.9,4.4]]);
+const map=L.map("map",{zoomControl:false,attributionControl:true,minZoom:4,maxZoom:10,zoomSnap:0.25,worldCopyJump:false,scrollWheelZoom:false,
+  dragging:!(L.Browser.mobile), tap:false, maxBounds:DATA, maxBoundsViscosity:1});
+let userMoved=false;
+function home(anim){
+  const zmin=map.getBoundsZoom(DATA,true);
+  const z=Math.max(zmin, Math.min(map.getBoundsZoom(PEN,false,L.point(10,10)), 7));
+  if(anim){ map.flyTo(PEN.getCenter(), z, {duration:.8}); map.once("moveend",()=>map.setMinZoom(zmin)); }
+  else { map.setView(PEN.getCenter(), z, {animate:false}); map.setMinZoom(zmin); }
+}
+home(false);
+map.on("resize",()=>{ if(!userMoved) home(false); else map.setMinZoom(map.getBoundsZoom(DATA,true)); });
+["mousedown","touchstart","wheel"].forEach(ev=>document.getElementById("map").addEventListener(ev,()=>{ userMoved=true; },{passive:true}));
 map.attributionControl.setPrefix(false);
 L.control.zoom({position:"bottomleft"}).addTo(map);
 /* la rueda del ratón solo hace zoom tras hacer clic en el mapa (no secuestra el scroll de la página) */
@@ -325,8 +337,8 @@ if("IntersectionObserver" in window){ new IntersectionObserver(es=>{ visible=es[
 
 const zc=()=>document.getElementById("map").classList.toggle("z7",map.getZoom()>=7); map.on("zoomend",zc); zc();
 document.querySelectorAll(".jump button").forEach(b=>b.addEventListener("click",()=>{
-  if(b.dataset.go==="can") map.flyTo([28.35,-15.9], mobile?7:8,{duration:.8});
-  else map.flyTo(mobile?[39.6,-3.6]:[39.8,-3.4], mobile?5:6,{duration:.8});
+  if(b.dataset.go==="can"){ userMoved=true; map.flyTo([28.35,-15.9], mobile?7:8,{duration:.8}); }
+  else { userMoved=false; home(true); }
 }));
 
 map.on("click",e=>{
