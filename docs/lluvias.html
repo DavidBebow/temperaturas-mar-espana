@@ -146,6 +146,23 @@
   .cj-cta:hover{background:#1a6cc9}
   .cj-nota{margin-top:11px;font-size:10.5px;color:#7b93a8;line-height:1.45}
 
+  /* ---------- ETIQUETA AL PASAR EL PUNTERO ---------- */
+  /* Nombre del municipio o de la provincia bajo el puntero, con lo ultimo medido.
+     Mismo cristal que los paneles para que no parezca un globo del navegador. */
+  .leaflet-tooltip.tip-cg{background:rgba(8,22,36,.96);color:#dceaf6;border:1px solid #2a5577;
+    border-radius:10px;padding:7px 10px;font:12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    box-shadow:0 8px 22px rgba(0,0,0,.5);white-space:nowrap}
+  .leaflet-tooltip.tip-cg b{color:#fff;font-size:13px}
+  .leaflet-tooltip.tip-cg .tt-p{color:#7fa8c9;font-size:11px}
+  .leaflet-tooltip.tip-cg .tt-l{display:block;margin-top:3px;color:#cfe2f2}
+  .leaflet-tooltip.tip-cg .tt-s{display:block;margin-top:3px;color:#6f93b0;font-size:10.5px}
+  .leaflet-tooltip-top.tip-cg:before{border-top-color:#2a5577}
+  .pill.off{opacity:.35;cursor:not-allowed}
+  .pill.off:hover{background:rgba(13,36,55,.8);color:#9fbdd6}
+  .cj-sub{margin:16px 0 2px;padding-top:12px;border-top:1px solid #14314b;font-size:10px;
+    font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5cbcf0}
+  .cj-tres.cuatro b{font-size:12.5px}
+
   /* ---------- CONTROLES DE LEAFLET ---------- */
   .leaflet-control-zoom{border:none !important;box-shadow:0 4px 16px rgba(0,0,0,.5) !important;
     border-radius:12px !important;overflow:hidden;margin-left:16px !important}
@@ -186,7 +203,8 @@
     #hud .hud-div{margin:9px 0}
     #panel-lista{max-height:150px}
     #barra{position:absolute;top:auto;bottom:16px;left:16px;right:16px;transform:none;
-      max-width:none;justify-content:flex-start;overflow-x:auto}
+      max-width:none;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
+    #barra .g{flex:none}
     #leyenda{display:none}
     #cajon{top:auto;left:16px;right:16px;bottom:16px;width:auto;height:64%;
       transform:translateY(calc(100% + 26px))}
@@ -223,6 +241,7 @@
 
 <div id="barra" class="vidrio">
   <span class="g">
+    <button class="pill" data-periodo="hoy" hidden>Hoy</button>
     <button class="pill activo" data-periodo="ayer">Último día</button>
     <button class="pill" data-periodo="semana">7 días</button>
     <button class="pill" data-periodo="anual">Este año</button>
@@ -259,6 +278,12 @@ const JSON_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/lluvia
 const GEOJSON_URL = 'https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-provinces.geojson';
 const SITIO       = 'https://calentamientoglobal.es/lluvias-en-espana/';
 const MUNI_URL    = 'https://davidbebow.github.io/temperaturas-mar-espana/municipios_mapa.json';
+// LO ULTIMO MEDIDO: pluviometros de AEMET, cinco o mas pasadas al dia. Es la
+// fuente de "Hoy", "Ultimo dia" y "7 dias". Open-Meteo sigue dando el acumulado
+// del año: para los ultimos dias su "archivo" devuelve modelo (incluso el dia en
+// curso, que aun no ha pasado), y el 28-9-2026 daba 34 mm en A Coruña donde el
+// pluviometro midio 3,8. Si este fichero falla, el mapa vuelve a Open-Meteo.
+const AEMET_URL   = 'https://davidbebow.github.io/temperaturas-mar-espana/lluvias_municipios.json';
 
 const NOMBRE_A_ID = {
   'A Coruña':'acoruna','Alacant/Alicante':'alicante','Albacete':'albacete','Almería':'almeria',
@@ -293,13 +318,14 @@ const ID_A_SLUG = {"almeria":"almeria","cadiz":"cadiz","cordoba":"cordoba","gran
 "melilla":"melilla"};
 
 const CAMPOS = {
+  hoy:    {mm:'mm_hoy',    anom:null,                  etq:null,              media:null},
   ayer:   {mm:'mm_ayer',   anom:'anomalia_ayer_pct',   etq:'etiqueta_ayer',   media:'media_diaria_mm'},
   semana: {mm:'mm_semana', anom:'anomalia_semana_pct', etq:'etiqueta_semana', media:'media_semana_mm'},
   anual:  {mm:'mm_anual',  anom:'anomalia_anual_pct',  etq:'etiqueta_anual',  media:'media_hasta_hoy_mm'},
 };
 
 // ─── ESCALAS ──────────────────────────────────────────────────────────────────
-const UMBRALES = {ayer:[0,1,3,8,15,30], semana:[0,5,15,30,60,120], anual:[0,100,250,500,800,1200]};
+const UMBRALES = {hoy:[0,1,3,8,15,30], ayer:[0,1,3,8,15,30], semana:[0,5,15,30,60,120], anual:[0,100,250,500,800,1200]};
 const AZULES   = ['#0a1a26','#12405f','#176a95','#1f97c9','#37bde8','#6ad8f7','#a8ecff'];
 
 function colorLitros(mm, periodo){
@@ -354,12 +380,13 @@ const LEY_ANOM = [
   {color:'#1257a8', label:'Muy lluvioso · más de +40 %'},
 ];
 const TITULOS = {
-  ayer:'Lluvia del último día', semana:'Lluvia de 7 días', anual:'Acumulado del año',
+  hoy:'Lluvia de hoy', ayer:'Lluvia del último día', semana:'Lluvia de 7 días', anual:'Acumulado del año',
 };
 function actualizarLeyenda(){
   const items = modoActual === 'anomalia' ? LEY_ANOM : etiquetasLitros(periodoActual);
   document.getElementById('leyenda-titulo').textContent =
-    (modoActual === 'anomalia' ? 'Provincias · frente a lo normal' : 'Provincias · ' + TITULOS[periodoActual]);
+    (modoActual === 'anomalia' ? 'Provincias · frente a lo normal' : 'Provincias · ' + TITULOS[periodoActual]) +
+    (periodoActual !== 'anual' && aemet ? ' · AEMET' : '');
   let html = items.map(i =>
     `<span class="ley-item"><span class="ley-dot" style="background:${i.color}"></span>${i.label}</span>`
   ).join('');
@@ -379,11 +406,68 @@ function actualizarLeyenda(){
   document.getElementById('leyenda-items').innerHTML = html;
 }
 
+// ─── LO ULTIMO MEDIDO (AEMET) ──────────────────────────────────────────────────
+let aemet = null, aemetProv = {};
+const SLUG_A_ID = Object.fromEntries(Object.entries(ID_A_SLUG).map(([k, v]) => [v, k]));
+function cargarAemet(d){
+  if (!d || !d.provincias) return;
+  aemet = d;
+  Object.values(d.provincias).forEach(a => { const id = SLUG_A_ID[a.slug]; if (id) aemetProv[id] = a; });
+}
+const hayHoy = () => !!(aemet && aemet.hoy_fecha);
+function horaHoy(){
+  if (!hayHoy()) return null;
+  const hs = Object.values(aemetProv).map(a => a.hoy_h).filter(h => h !== undefined && h !== null);
+  return hs.length ? Math.max(...hs) : null;
+}
+function horaGenerado(){
+  if (!aemet || !aemet.generado) return '';
+  const g = new Date(aemet.generado);
+  return isNaN(g) ? '' : g.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', timeZone:'Europe/Madrid'});
+}
+function fechaCorta(iso){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  return m ? Number(m[3]) + ' ' + MESES[Number(m[2]) - 1].slice(0, 3) : '';
+}
+const anomDe = (mm, media) => (mm === null || mm === undefined || !(media > 0)) ? null : Math.round((mm / media * 100 - 100) * 10) / 10;
+const etiquetaDe = a => a === null ? '—' : a < -40 ? 'Muy seco' : a < -15 ? 'Seco' : a < 15 ? 'Normal' : a < 40 ? 'Lluvioso' : 'Muy lluvioso';
+
+// Lo que vale una provincia en el periodo: {mm, anom, media, etq, fuente}.
+function valor(p, periodo){
+  const a = aemetProv[p.id];
+  if (periodo === 'hoy'){
+    const mm = (a && hayHoy() && a.hoy !== undefined) ? a.hoy : null;
+    return {mm, anom:null, media:null, etq:null, fuente:'aemet'};
+  }
+  if ((periodo === 'ayer' || periodo === 'semana') && a && a[periodo === 'ayer' ? 'dia' : 'sem'] !== undefined){
+    const mm = periodo === 'ayer' ? a.dia : a.sem;
+    const media = periodo === 'ayer' ? p.media_diaria_mm : p.media_semana_mm;
+    const anom = anomDe(mm, media);
+    return {mm, anom, media, etq:etiquetaDe(anom), fuente:'aemet'};
+  }
+  const c = CAMPOS[periodo];
+  return {mm:p[c.mm], anom:p[c.anom], media:p[c.media], etq:p[c.etq], fuente:'era5'};
+}
+function periodoTxt(periodo){
+  if (periodo === 'hoy') return 'hoy, hasta las ' + horaHoy() + ' h';
+  if (periodo === 'ayer') return aemet ? 'el ' + fechaCorta(aemet.fecha) : 'el último día con dato';
+  if (periodo === 'semana') return 'en 7 días';
+  return 'en lo que va de año';
+}
+function fechaHud(){
+  const act = horaGenerado() ? ' · actualizado a las ' + horaGenerado() : '';
+  if (periodoActual === 'hoy') return 'Hoy, ' + fechaLarga(aemet.hoy_fecha) + ', hasta las ' + horaHoy() + ' h' + act;
+  if (periodoActual === 'ayer' && aemet) return fechaLarga(aemet.fecha) + ' · día completo · pluviómetros AEMET' + act;
+  if (periodoActual === 'semana' && aemet) return '7 días hasta el ' + fechaLarga(aemet.fecha) + ' · pluviómetros AEMET';
+  return 'Año ' + String(fechaAnual).slice(-4) + ' · reanálisis hasta el ' + fechaDeDatos(fechaAnual);
+}
+let fechaAnual = '';
+
 // ─── MAPA ─────────────────────────────────────────────────────────────────────
 const mapa = L.map('mapa', {center:[40.2,-3.4], zoom:6, zoomControl:false});
 L.control.zoom({position:'bottomright'}).addTo(mapa);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-  {attribution:'© Esri · Lluvia: Open-Meteo (ERA5) · Medias: ERA5-Land', maxZoom:12}).addTo(mapa);
+  {attribution:'© Esri · Lluvia: AEMET (pluviómetros) y Open-Meteo (ERA5) · Medias: ERA5-Land', maxZoom:12}).addTo(mapa);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
   {maxZoom:12, opacity:0.45}).addTo(mapa);
 
@@ -393,8 +477,8 @@ let periodoActual = 'ayer', modoActual = 'litros';
 function estilo(feature){
   const p = datosMap[NOMBRE_A_ID[feature.properties.name || feature.properties.NAME || '']];
   if (!p) return {fillColor:'#16293a', fillOpacity:.3, color:'#12304a', weight:.8, opacity:.5};
-  const c = CAMPOS[periodoActual];
-  const color = modoActual === 'anomalia' ? colorAnomalia(p[c.anom]) : colorLitros(p[c.mm], periodoActual);
+  const v = valor(p, periodoActual);
+  const color = modoActual === 'anomalia' ? colorAnomalia(v.anom) : colorLitros(v.mm, periodoActual);
   return {fillColor:color, fillOpacity:.85, color:'#0c2136', weight:.9, opacity:.8};
 }
 
@@ -457,39 +541,48 @@ document.getElementById('cj-x').addEventListener('click', cajonCerrar);
 
 // ─── FICHA PROVINCIAL ─────────────────────────────────────────────────────────
 function fichaProvincia(p){
-  const c = CAMPOS[periodoActual];
-  const mm = p[c.mm], anom = p[c.anom], media = p[c.media];
+  const v = valor(p, periodoActual);
+  const mm = v.mm, anom = v.anom, media = v.media;
   const color = modoActual === 'anomalia' ? colorAnomalia(anom) : colorLitros(mm, periodoActual);
-  const tope = {ayer:40, semana:150, anual:1500}[periodoActual];
+  const tope = {hoy:40, ayer:40, semana:150, anual:1500}[periodoActual];
   const barra = modoActual === 'anomalia'
     ? Math.min(100, Math.abs(anom || 0) * 1.5)
     : Math.min(100, ((mm || 0) / tope) * 100);
   const slug = ID_A_SLUG[p.id];
-  const cuando = {ayer:'el último día con dato', semana:'en 7 días', anual:'en lo que va de año'}[periodoActual];
+  const a = aemetProv[p.id];
   // La fila de la media necesita su propia redaccion: "Lo normal el último día
   // con dato" no se entiende. Lo que se compara es contra lo tipico de la epoca.
   const normalTxt = {ayer:'Lo normal en un día de esta época',
                      semana:'Lo normal en una semana de esta época',
                      anual:'Lo normal a estas alturas del año'}[periodoActual];
-
+  const tres = [];
+  if (hayHoy() && a && a.hoy !== undefined) tres.push([mmTxt(a.hoy), 'hoy · ' + a.hoy_h + ' h']);
+  tres.push([mmTxt(valor(p, 'ayer').mm), aemet ? fechaCorta(aemet.fecha) : 'último día']);
+  tres.push([mmTxt(valor(p, 'semana').mm), '7 días']);
+  tres.push([mmTxt(p.mm_anual), 'del año']);
+  const nota = periodoActual === 'anual'
+    ? 'Acumulado del año: reanálisis ERA5 (Open-Meteo). Lo normal, ERA5-Land 1991-2020 para estas mismas fechas.'
+    : (v.fuente === 'aemet'
+        ? 'Media de ' + (a && a.est ? a.est + ' pluviómetros' : 'los pluviómetros') + ' de AEMET en la provincia, observación horaria' +
+          (horaGenerado() ? ', actualizada a las ' + horaGenerado() : '') + '. Lo normal, ERA5-Land 1991-2020.'
+        : 'Lluvia de Open-Meteo (reanálisis ERA5). Lo normal se calcula con ERA5-Land 1991-2020 para estas mismas fechas.');
+  const maxTxt = (a && a.max && a.max.mm > 0 && periodoActual !== 'anual')
+    ? `<div class="cj-fila"><span>Donde más llovió el ${fechaCorta(aemet.fecha)}</span><b>${a.max.ruta
+        ? `<a href="${SITIO}${a.max.ruta}/" target="_top" style="color:#9fd4ff">${a.max.nombre}</a>` : a.max.nombre} · ${mmTxt(a.max.mm)}</b></div>` : '';
   return `
     <div class="cj-n" style="color:${color}">${modoActual === 'anomalia' ? pctTxt(anom) : mmTxt(mm)}</div>
-    <div class="cj-et" style="color:${color}">${p[c.etq] || '—'} · ${cuando}</div>
+    <div class="cj-et" style="color:${color}">${v.etq ? v.etq + ' · ' : ''}${periodoTxt(periodoActual)}</div>
     <div class="cj-barra"><i style="width:${barra}%;background:${color}"></i></div>
     <div class="cj-pie">${modoActual === 'anomalia'
       ? 'Cuánto se aleja de lo normal (la barra llena son ±67 %)'
       : 'Sobre ' + tope + ' mm, el techo de la escala en este periodo'}</div>
     <div class="cj-fila"><span>Ha caído</span><b>${mmTxt(mm)}</b></div>
-    <div class="cj-fila"><span>${normalTxt}</span><b>${mmTxt(media)}</b></div>
-    <div class="cj-fila"><span>Diferencia</span><b style="color:${colorAnomalia(anom)}">${pctTxt(anom)}</b></div>
-    <div class="cj-tres">
-      <div><b>${mmTxt(p.mm_ayer)}</b><span>último día</span></div>
-      <div><b>${mmTxt(p.mm_semana)}</b><span>7 días</span></div>
-      <div><b>${mmTxt(p.mm_anual)}</b><span>del año</span></div>
-    </div>
+    ${media !== null && media !== undefined ? `<div class="cj-fila"><span>${normalTxt}</span><b>${mmTxt(media)}</b></div>
+    <div class="cj-fila"><span>Diferencia</span><b style="color:${colorAnomalia(anom)}">${pctTxt(anom)}</b></div>` : ''}
+    ${maxTxt}
+    <div class="cj-tres${tres.length > 3 ? ' cuatro' : ''}">${tres.map(([b, s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('')}</div>
     ${slug ? `<a class="cj-cta" href="${SITIO}${slug}/" target="_top">Ver los municipios de ${p.nombre} →</a>` : ''}
-    <div class="cj-nota">Lluvia de Open-Meteo (reanálisis ERA5). Lo normal se calcula con
-      ERA5-Land 1991-2020 para estas mismas fechas.</div>`;
+    <div class="cj-nota">${nota}</div>`;
 }
 
 function abrirProvincia(id, encuadra){
@@ -508,59 +601,73 @@ function abrirProvincia(id, encuadra){
 // ni por poblacion, y el pie de la cifra lo dice. Un "78 mm en España" a secas
 // invitaria a leerlo como si fuera un dato oficial de la AEMET, y no lo es.
 function actualizarHud(){
-  const c = CAMPOS[periodoActual];
-  const lista = Object.values(datosMap).filter(p => p[c.mm] !== null && p[c.mm] !== undefined);
-  if (!lista.length) return;
+  const vals = Object.values(datosMap).map(p => [p, valor(p, periodoActual)]).filter(([, v]) => v.mm !== null && v.mm !== undefined);
+  if (!vals.length) return;
   const media  = a => a.reduce((s,v) => s + v, 0) / a.length;
-  const mmMed  = media(lista.map(p => p[c.mm]));
-  const normal = media(lista.map(p => p[c.media] || 0));
-  const conAnom = lista.filter(p => p[c.anom] !== null && p[c.anom] !== undefined);
-  const anomMed = conAnom.length ? media(conAnom.map(p => p[c.anom])) : null;
-  const sobre   = conAnom.filter(p => p[c.anom] > 0).length;
+  const mmMed  = media(vals.map(([, v]) => v.mm));
+  const conAnom = vals.filter(([, v]) => v.anom !== null && v.anom !== undefined);
+  // La cifra nacional es lluvia total frente a normal total, no la media de los
+  // porcentajes: en un dia seco, una provincia con 2 mm sobre una normal de 0,1
+  // da +1.900 % y arrastraria la media de las 52 sin decir nada.
+  const sumaMm = conAnom.reduce((s, [, v]) => s + v.mm, 0), sumaNormal = conAnom.reduce((s, [, v]) => s + (v.media || 0), 0);
+  const anomMed = conAnom.length && sumaNormal > 0 ? Math.round((sumaMm / sumaNormal * 100 - 100) * 10) / 10 : null;
+  const sobre   = conAnom.filter(([, v]) => v.anom > 0).length;
+  document.getElementById('hud-fecha').textContent = fechaHud();
 
   const big = document.getElementById('hud-big');
-  if (modoActual === 'anomalia'){
+  if (modoActual === 'anomalia' && periodoActual !== 'hoy'){
     big.textContent = pctTxt(anomMed);
     big.style.color = colorAnomalia(anomMed);
     document.getElementById('hud-cap').textContent =
-      'frente a lo normal, media de las ' + lista.length + ' provincias';
+      'frente a lo normal, en el conjunto de las ' + vals.length + ' provincias';
   } else {
     big.textContent = mmTxt(mmMed);
     big.style.color = '#eaf5ff';
-    const cuando = {ayer:'en el último día', semana:'en 7 días', anual:'en lo que va de año'}[periodoActual];
-    document.getElementById('hud-cap').textContent =
-      'de media por provincia ' + cuando;
+    document.getElementById('hud-cap').textContent = 'de media por provincia ' + periodoTxt(periodoActual);
   }
-  document.getElementById('chip-a').textContent = mmTxt(normal);
-  document.getElementById('chip-a-et').textContent = 'lo normal en estas fechas';
-  document.getElementById('chip-b').textContent = sobre + ' de ' + conAnom.length;
-  document.getElementById('chip-b-et').textContent = 'por encima de lo normal';
+  if (periodoActual === 'hoy'){
+    // Sin normal para un dia a medias: las fichas cuentan cuantas provincias
+    // llevan lluvia y donde ha caido mas, que es lo que se busca cuando llueve.
+    const conLluvia = vals.filter(([, v]) => v.mm >= 1).length;
+    const mun = aemet && aemet.municipios ? Object.values(aemet.municipios).filter(m => m.hoy !== undefined) : [];
+    const cima = mun.length ? mun.reduce((x, y) => (y.hoy > x.hoy ? y : x)) : null;
+    document.getElementById('chip-a').textContent = conLluvia + ' de ' + vals.length;
+    document.getElementById('chip-a-et').textContent = 'provincias con 1 mm o más';
+    document.getElementById('chip-b').textContent = cima && cima.hoy > 0 ? mmTxt(cima.hoy) : '0 mm';
+    document.getElementById('chip-b-et').textContent = cima && cima.hoy > 0 ? 'lo máximo: ' + cima.n : 'en ningún municipio';
+  } else {
+    const normal = media(vals.map(([, v]) => v.media || 0));
+    document.getElementById('chip-a').textContent = mmTxt(normal);
+    document.getElementById('chip-a-et').textContent = 'lo normal en estas fechas';
+    document.getElementById('chip-b').textContent = sobre + ' de ' + conAnom.length;
+    document.getElementById('chip-b-et').textContent = 'por encima de lo normal';
+  }
 }
 
 function actualizarPanel(){
-  const c = CAMPOS[periodoActual];
-  const lista = Object.values(datosMap).filter(p => p[c.mm] !== null && p[c.mm] !== undefined);
-  const seco = modoActual === 'anomalia';
+  const V = {}; Object.values(datosMap).forEach(p => { V[p.id] = valor(p, periodoActual); });
+  const lista = Object.values(datosMap).filter(p => V[p.id].mm !== null && V[p.id].mm !== undefined);
+  const seco = modoActual === 'anomalia' && periodoActual !== 'hoy';
   // En modo anomalia interesa el extremo, no el maximo: la provincia mas lejos
   // de lo normal, para arriba o para abajo.
   const orden = seco
-    ? lista.slice().sort((a,b) => Math.abs(b[c.anom]||0) - Math.abs(a[c.anom]||0))
-    : lista.slice().sort((a,b) => b[c.mm] - a[c.mm]);
+    ? lista.slice().sort((a,b) => Math.abs(V[b.id].anom||0) - Math.abs(V[a.id].anom||0))
+    : lista.slice().sort((a,b) => V[b.id].mm - V[a.id].mm);
   const top = orden.slice(0, 5);
   document.getElementById('panel-titulo').textContent =
-    seco ? 'Lo más lejos de lo normal' : 'Dónde más ha llovido';
+    seco ? 'Lo más lejos de lo normal' : (periodoActual === 'hoy' ? 'Dónde más está lloviendo hoy' : 'Dónde más ha llovido');
 
   // Si en todo el pais no ha caido nada, decirlo. Una lista de cinco ceros
   // parece un fallo de carga, y no lo es: hay dias asi.
-  if (!seco && top.every(p => (p[c.mm] || 0) === 0)){
+  if (!seco && top.every(p => (V[p.id].mm || 0) === 0)){
     document.getElementById('panel-lista').innerHTML =
       '<div class="vacio">No ha llovido en ninguna provincia en este periodo. ' +
       'Pasa: en verano puede estar toda España a cero durante semanas.</div>';
     return;
   }
   document.getElementById('panel-lista').innerHTML = top.map(p => {
-    const val = seco ? pctTxt(p[c.anom]) : mmTxt(p[c.mm]);
-    const col = seco ? colorAnomalia(p[c.anom]) : colorLitros(p[c.mm], periodoActual);
+    const val = seco ? pctTxt(V[p.id].anom) : mmTxt(V[p.id].mm);
+    const col = seco ? colorAnomalia(V[p.id].anom) : colorLitros(V[p.id].mm, periodoActual);
     return `<div class="pg-card" data-id="${p.id}">
         <div><div class="pg-zona">${p.nombre}</div><div class="pg-prov">${p.ccaa}</div></div>
         <div class="pg-mm" style="color:${col}">${val}</div></div>`;
@@ -585,11 +692,22 @@ function refrescar(){
 }
 
 // ─── CONTROLES ────────────────────────────────────────────────────────────────
-document.querySelectorAll('[data-periodo]').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('[data-periodo]').forEach(x => x.classList.remove('activo'));
-  b.classList.add('activo'); periodoActual = b.dataset.periodo; refrescar();
-}));
+function elegirPeriodo(per){
+  periodoActual = per;
+  document.querySelectorAll('[data-periodo]').forEach(x => x.classList.toggle('activo', x.dataset.periodo === per));
+  // Un dia a medias no tiene "normal" con la que compararse: con Hoy se ven litros.
+  const bAnom = document.querySelector('[data-modo="anomalia"]');
+  bAnom.classList.toggle('off', per === 'hoy');
+  bAnom.title = per === 'hoy' ? 'Para hoy solo hay litros: el día aún no ha terminado' : '';
+  if (per === 'hoy' && modoActual === 'anomalia'){
+    modoActual = 'litros';
+    document.querySelectorAll('[data-modo]').forEach(x => x.classList.toggle('activo', x.dataset.modo === 'litros'));
+  }
+  refrescar();
+}
+document.querySelectorAll('[data-periodo]').forEach(b => b.addEventListener('click', () => elegirPeriodo(b.dataset.periodo)));
 document.querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', () => {
+  if (b.classList.contains('off')) return;
   document.querySelectorAll('[data-modo]').forEach(x => x.classList.remove('activo'));
   b.classList.add('activo'); modoActual = b.dataset.modo; refrescar();
 }));
@@ -702,6 +820,36 @@ function munBorde(){
 }
 const munNormal = m => m.setStyle({weight: munBorde(), color: '#0a1c2c', opacity: .55});
 
+// Lo ultimo que ha medido el pluviometro de AEMET asignado al municipio.
+function munAemet(f){ return aemet && aemet.municipios ? aemet.municipios[f[MUN.ine]] : null; }
+function munMedido(f){
+  const m = munAemet(f);
+  if (!m) return '';
+  const filas = [];
+  if (hayHoy() && m.hoy !== undefined) filas.push(['Hoy, hasta las ' + m.hoy_h + ' h', mmTxt(m.hoy)]);
+  if (m.dia !== undefined) filas.push([fechaLarga(aemet.fecha).replace(/ de \d{4}$/, '') + (m.dia_h && m.dia_h < 24 ? ' (' + m.dia_h + ' h de 24)' : ''), mmTxt(m.dia)]);
+  if (m.sem !== undefined) filas.push(['Últimos 7 días', mmTxt(m.sem)]);
+  if (m.racha !== undefined) filas.push(['Días seguidos sin llover', m.racha === 0 ? 'llovió el último día' : String(m.racha)]);
+  return `<div class="cj-sub">Lo último medido · pluviómetro AEMET</div>` +
+    filas.map(([k, v]) => `<div class="cj-fila"><span>${k}</span><b>${v}</b></div>`).join('') +
+    `<div class="cj-nota">Observación horaria de AEMET${horaGenerado() ? ', actualizada a las ' + horaGenerado() : ''}. Es un dato medido, no la rejilla.</div>`;
+}
+function munTip(f){
+  const provs = (munDatos && munDatos.provincias) || [];
+  const m = munAemet(f);
+  let l = '';
+  if (m){
+    const partes = [];
+    if (hayHoy() && m.hoy !== undefined) partes.push('hoy ' + mmTxt(m.hoy));
+    if (m.dia !== undefined) partes.push(fechaCorta(aemet.fecha) + ' ' + mmTxt(m.dia));
+    if (m.sem !== undefined) partes.push('7 días ' + mmTxt(m.sem));
+    l = `<span class="tt-l">${partes.join(' · ')}</span>`;
+  }
+  const a = munAnom(f);
+  return `<b>${f[MUN.nombre]}</b> <span class="tt-p">${provs[f[MUN.prov]] || ''}</span>${l}` +
+    `<span class="tt-s">Año: ${a === null ? '—' : munEtiqueta(a).toLowerCase() + ' (' + pctTxt(a) + ')'} · pulsa para ver la ficha</span>`;
+}
+
 function fichaMunicipio(f){
   // El mismo color del punto que se acaba de pulsar, no el de la escala
   // provincial: si la ficha se pintara con otro tono, el lector tendria que
@@ -721,6 +869,7 @@ function fichaMunicipio(f){
     <div class="cj-fila"><span>Ha caído</span><b>${mmTxt(f[MUN.mm])}</b></div>
     <div class="cj-fila"><span>Lo normal a estas alturas</span><b>${mmTxt(f[MUN.mediana])}</b></div>
     <div class="cj-frase">${munPuesto(f[MUN.puesto], f[MUN.de])}</div>
+    ${munMedido(f)}
     ${f[MUN.ruta]
       // Un municipio sin ficha se pinta igual, pero no se le inventa un enlace a
       // una pagina que no existe.
@@ -761,6 +910,11 @@ function munPinta(){
       renderer: lienzo, radius: r, weight: w, color: '#0a1c2c', opacity: .55,
       fillColor: colorMunicipio(munAnom(f)), fillOpacity: 1,
     });
+    // Nombre al pasar el puntero. La etiqueta se monta al abrirse, no al pintar:
+    // asi lleva lo ultimo medido aunque ese fichero llegue despues que los puntos.
+    m.bindTooltip(() => munTip(f), {direction:'top', offset:[0, -r], className:'tip-cg', opacity:1});
+    m.on('mouseover', () => { if (m !== munSel){ m.setStyle({weight:2, color:'#ffd166', opacity:1}); m.bringToFront(); } });
+    m.on('mouseout',  () => { if (m !== munSel) munNormal(m); });
     m.on('click', e => {
       L.DomEvent.stopPropagation(e);   // que no se abra tambien la ficha provincial
       if (munSel) munNormal(munSel);
@@ -806,9 +960,23 @@ fetch(MUNI_URL)
 Promise.all([
   fetch(JSON_URL + '?t=' + Date.now()).then(r => r.json()),
   fetch(GEOJSON_URL).then(r => r.json()),
+  // Cache de cinco minutos: el fichero cambia cinco o mas veces al dia.
+  fetch(AEMET_URL + '?t=' + Math.floor(Date.now() / 3e5)).then(r => r.ok ? r.json() : null).catch(() => null),
 ])
-.then(([data, geojson]) => {
+.then(([data, geojson, datosAemet]) => {
   (data.provincias || []).forEach(p => { datosMap[p.id] = p; });
+  fechaAnual = data.fecha_datos || data.fecha_legible || '';
+  cargarAemet(datosAemet);
+  if (hayHoy()){
+    document.querySelector('[data-periodo="hoy"]').hidden = false;
+    document.querySelector('[data-periodo="hoy"]').textContent = 'Hoy · ' + horaHoy() + ' h';
+    // Si esta lloviendo en alguna provincia, se abre en Hoy: es lo que se viene a mirar.
+    if (Object.values(aemetProv).some(a => (a.hoy || 0) >= 1)) periodoActual = 'hoy';
+  }
+  if (!aemet){
+    // Sin pluviometros el mapa sigue funcionando con el reanalisis, como antes.
+    document.querySelector('[data-periodo="hoy"]').hidden = true;
+  }
 
   // La FECHA DEL DATO, no la de la ejecucion. El archivo llega con retraso
   // variable y antes esta linea decia "ayer" un dia 7 con datos del 5.
@@ -822,12 +990,17 @@ Promise.all([
       if (!id || !datosMap[id]) return;
       capaPorId[id] = capa;
       capa.on('click', () => abrirProvincia(id, false));
+      capa.bindTooltip(() => {
+        const p = datosMap[id], v = valor(p, periodoActual);
+        const cifra = modoActual === 'anomalia' && periodoActual !== 'hoy' ? pctTxt(v.anom) : mmTxt(v.mm);
+        return `<b>${p.nombre}</b> <span class="tt-p">${p.ccaa}</span><span class="tt-l">${cifra} ${periodoTxt(periodoActual)}</span>`;
+      }, {sticky:true, direction:'top', offset:[0, -10], className:'tip-cg', opacity:1});
       capa.on('mouseover', () => { if (capa !== provSel) capa.setStyle({fillOpacity:.98, weight:1.8, color:'#5cbcf0'}); });
       capa.on('mouseout',  () => { if (capa !== provSel) capaGeojson.resetStyle(capa); });
     }
   }).addTo(mapa);
 
-  refrescar();
+  elegirPeriodo(periodoActual);
   encuadrar();
 })
 .catch(err => {
