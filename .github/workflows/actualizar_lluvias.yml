@@ -2,8 +2,9 @@ name: Actualizar lluvias
 
 on:
   schedule:
-    # Todos los días a las 07:00 UTC (09:00 en España)
-    - cron: '0 7 * * *'
+    # Todos los días a las 06:19 UTC (08:19 en España). Minuto raro a proposito:
+    # a las 07:00 en punto GitHub la lanzaba con cinco y seis horas de retraso.
+    - cron: '19 6 * * *'
   workflow_dispatch:
 
 env:
@@ -34,4 +35,11 @@ jobs:
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
           git add docs/lluvias_nacional.json
-          git diff --staged --quiet || (git commit -m "Lluvias actualizadas: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
+          git diff --staged --quiet && exit 0
+          git commit -m "Lluvias actualizadas: $(date +'%d/%m/%Y %H:%M')"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash -X theirs origin main && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep $((i*7))
+          done
+          exit 1
