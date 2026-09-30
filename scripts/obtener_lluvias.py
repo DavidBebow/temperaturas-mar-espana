@@ -273,7 +273,10 @@ def procesar_lluvias():
     # de suponer un retraso fijo de 2 dias. El retraso varia, y con el fijo el
     # JSON decia "fecha_datos 05/09" mientras el mapa rotulaba esa columna como
     # "ayer" un dia 7: dos dias de diferencia sin avisar a nadie.
-    tope = hoy
+    # Y nunca el dia en curso: el archivo de Open-Meteo devuelve para HOY un valor
+    # de modelo (el 30-9-2026 a las 07:40 ya traia 1,8 mm para A Coruña), que se
+    # colaba en el acumulado y en "el ultimo dia" como si fuera observado.
+    tope = hoy - timedelta(days=1)
 
     print("Open-Meteo (archivo) · %d provincias" % len(PROVINCIAS))
 
