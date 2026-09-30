@@ -43,6 +43,19 @@ jobs:
           GLOFAS_VARIANTE: "0"
         run: python privado/caudal_diario.py
 
+      - name: Resumen de servidor en WordPress
+        # El bloque que lee Google en /caudal-rios-espana-mapa/ se rehace con el
+        # dato del dia. Va antes de publicar porque ese paso borra privado/.
+        continue-on-error: true
+        env:
+          CG_DOCS: ${{ github.workspace }}/docs
+          WP_URL: https://calentamientoglobal.es
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
+        run: |
+          pip install -q requests
+          python privado/publicar_resumenes_wp.py --solo caudal
+
       - name: Publicar
         run: |
           rm -rf privado
