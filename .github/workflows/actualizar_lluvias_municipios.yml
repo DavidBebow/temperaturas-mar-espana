@@ -34,11 +34,20 @@ on:
     #
     # Coste: unos 20 segundos por pasada en un repositorio publico, o sea gratis,
     # y una sola llamada a AEMET cada vez.
-    - cron: '0 1 * * *'
-    - cron: '0 6 * * *'
-    - cron: '0 11 * * *'
-    - cron: '0 15 * * *'
-    - cron: '0 19 * * *'
+    #
+    # 30-9-2026: OCHO pasadas y en minutos raros. GitHub retrasa las tareas de las
+    # horas en punto, que es cuando las lanza todo el mundo: la de las 19:00 salio
+    # a las 22:47 y la de las 15:00 a las 16:40. Fuera de la hora en punto el
+    # retraso baja a minutos, y con ocho pasadas la cifra de hoy nunca tiene mas
+    # de tres horas. La de la 01:07 sigue siendo la que cierra el dia.
+    - cron: '7 1 * * *'
+    - cron: '37 5 * * *'
+    - cron: '7 8 * * *'
+    - cron: '37 10 * * *'
+    - cron: '7 13 * * *'
+    - cron: '37 15 * * *'
+    - cron: '7 18 * * *'
+    - cron: '7 21 * * *'
 
   workflow_dispatch:
 
@@ -100,5 +109,26 @@ jobs:
             echo "Sin cambios."
           else
             git commit -m "Lluvia diaria por municipio: $(date -u +%Y-%m-%d\ %H:%M) UTC"
-            git push
+            # Otros flujos publican en el mismo repo: si alguien ha empujado
+            # entre medias, se rebasa y se reintenta en vez de fallar.
+            for i in 1 2 3 4 5; do
+              git push && break
+              git pull --rebase --autostash -X theirs origin main || { git rebase --abort; true; }
+              sleep $((i*5))
+            done
           fi
+
+      - name: Publicar lo ultimo medido en la pagina de lluvias
+        # El bloque de servidor de /lluvias-en-espana/ (lo que lee Google) se
+        # rehace en cada pasada con la cifra de hoy. Solo esa pagina: las otras
+        # 59 las sigue publicando publicar_resumenes.yml. Si WordPress falla, la
+        # pasada no se da por fallida: los datos ya estan publicados en GitHub.
+        continue-on-error: true
+        env:
+          CG_DOCS: ${{ github.workspace }}/docs
+          WP_URL: https://calentamientoglobal.es
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
+        run: |
+          pip install -q requests
+          python privado/publicar_resumenes_wp.py --solo lluvias
