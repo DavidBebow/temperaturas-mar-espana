@@ -163,6 +163,17 @@
   .pill.off:hover{background:rgba(13,36,55,.8);color:#9fbdd6}
   .cj-sub{margin:16px 0 2px;padding-top:12px;border-top:1px solid #14314b;font-size:10px;
     font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5cbcf0}
+  /* La cifra de hoy, lo primero y lo mas grande (1-10-2026): la gente pulsa un
+     punto para saber cuanto acaba de llover, no como va el año. */
+  .cj-ahora{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5cbcf0;margin:0 0 6px}
+  .cj-n.cj-hoy{font-size:44px}
+  .cj-n.cj-seco{color:#8fa6b8}
+  .cj-n.cj-mojado{color:#6ec6ff}
+  .cj-aviso{margin:11px 0 0;padding:9px 11px;border-left:3px solid #c98a2b;background:rgba(201,138,43,.12);
+    border-radius:0 8px 8px 0;font-size:12px;line-height:1.45;color:#e8d9bf}
+  .cj-aviso.cj-cerca{border-left-color:#5cbcf0;background:rgba(92,188,240,.12);color:#cfe2f2}
+  .cj-aviso b{color:#fff}
+  .cj-anio .cj-n{font-size:26px}
   .cj-tres.cuatro b{font-size:12.5px}
 
   /* ---------- CONTROLES DE LEAFLET ---------- */
@@ -825,16 +836,49 @@ const munNormal = m => m.setStyle({weight: munBorde(), color: '#0a1c2c', opacity
 // Lo ultimo que ha medido el pluviometro de AEMET asignado al municipio.
 function munAemet(f){ return aemet && aemet.municipios ? aemet.municipios[f[MUN.ine]] : null; }
 function munMedido(f){
+  // LO ULTIMO MEDIDO VA LO PRIMERO Y LO MAS GRANDE. Quien pulsa un punto en una
+  // tarde de tormenta quiere saber cuanto acaba de llover; "como va el año" es
+  // valioso, pero va despues y mas pequeño.
+  //
+  // Desde el 1-10-2026 el fichero trae ademas el nombre del pluviometro (est),
+  // la estacion de reserva si la asignada se ha callado (hoy_est, hoy_km,
+  // est_h), la hora hasta la que va la red (corte_red) y lo maximo medido en
+  // el entorno (cerca). Todo eso se cuenta aqui, porque un "0,2 mm" de un
+  // pluviometro mudo desde hace tres horas no es un dato, es un silencio.
   const m = munAemet(f);
-  if (!m) return '';
+  if (!m) return `<div class="cj-ahora">Lo último medido</div>
+    <div class="cj-n cj-seco">—</div>
+    <div class="cj-et" style="color:#8fa6b8">Sin pluviómetro de AEMET al día para este municipio</div>`;
+  let h = '';
+  const avisos = [];
+  const conHoy = hayHoy() && m.hoy !== undefined;
+  if (conHoy){
+    const mojado = m.hoy > 0;
+    let et = 'en lo que va de hoy, hasta las ' + m.hoy_h + ':00';
+    if (m.hoy_est) et += ' · pluviómetro de ' + m.hoy_est + ', a ' + m.hoy_km + ' km';
+    h += `<div class="cj-ahora">Lo último medido</div>
+      <div class="cj-n cj-hoy ${mojado ? 'cj-mojado' : 'cj-seco'}">${mmTxt(m.hoy)}</div>
+      <div class="cj-et" style="color:${mojado ? '#6ec6ff' : '#8fa6b8'}">${et}</div>`;
+    if (m.hoy_est){
+      avisos.push(`<div class="cj-aviso">El pluviómetro de ${m.est || 'este municipio'} ${m.est_h ? 'no envía datos desde las ' + m.est_h + ':00' : 'no ha enviado ningún dato hoy'}. La cifra es la del de <b>${m.hoy_est}</b>, a ${m.hoy_km} km, que sí está al día.</div>`);
+    } else if (aemet.corte_red && m.hoy_h <= aemet.corte_red - 2){
+      avisos.push(`<div class="cj-aviso">El pluviómetro${m.est ? ' de ' + m.est : ''} va con retraso: su último dato es de las ${m.hoy_h}:00 y la red de AEMET ya va por las ${aemet.corte_red}:00. Puede haber llovido después.</div>`);
+    }
+    if (m.cerca && m.cerca.mm !== undefined){
+      avisos.push(`<div class="cj-aviso cj-cerca">A ${m.cerca.km} km, el pluviómetro de ${m.cerca.est} lleva <b>${mmTxt(m.cerca.mm)}</b> hoy (hasta las ${m.cerca.h}:00). Con tormentas, la lluvia cambia mucho de un pueblo a otro.</div>`);
+    }
+  } else if (m.dia !== undefined){
+    h += `<div class="cj-ahora">Lo último medido</div>
+      <div class="cj-n cj-hoy ${m.dia > 0 ? 'cj-mojado' : 'cj-seco'}">${mmTxt(m.dia)}</div>
+      <div class="cj-et" style="color:${m.dia > 0 ? '#6ec6ff' : '#8fa6b8'}">${fechaLarga(aemet.fecha)}, el último día completo</div>`;
+  }
   const filas = [];
-  if (hayHoy() && m.hoy !== undefined) filas.push(['Hoy, hasta las ' + m.hoy_h + ' h', mmTxt(m.hoy)]);
-  if (m.dia !== undefined) filas.push([fechaLarga(aemet.fecha).replace(/ de \d{4}$/, '') + (m.dia_h && m.dia_h < 24 ? ' (' + m.dia_h + ' h de 24)' : ''), mmTxt(m.dia)]);
-  if (m.sem !== undefined) filas.push(['Últimos 7 días', mmTxt(m.sem)]);
+  if (conHoy && m.dia !== undefined) filas.push([fechaLarga(aemet.fecha).replace(/ de \d{4}$/, '') + (m.dia_h && m.dia_h < 24 ? ' (' + m.dia_h + ' h de 24)' : '') + (m.dia_est ? ' · ' + m.dia_est + ', ' + m.dia_km + ' km' : ''), mmTxt(m.dia)]);
+  if (m.sem !== undefined) filas.push(['Últimos 7 días' + (m.sem_dias && m.sem_dias < 7 ? ' (' + m.sem_dias + ' con dato)' : ''), mmTxt(m.sem)]);
   if (m.racha !== undefined) filas.push(['Días seguidos sin llover', m.racha === 0 ? 'llovió el último día' : String(m.racha)]);
-  return `<div class="cj-sub">Lo último medido · pluviómetro AEMET</div>` +
-    filas.map(([k, v]) => `<div class="cj-fila"><span>${k}</span><b>${v}</b></div>`).join('') +
-    `<div class="cj-nota">Observación horaria de AEMET${horaGenerado() ? ', actualizada a las ' + horaGenerado() : ''}. Es un dato medido, no la rejilla.</div>`;
+  return h + avisos.join('') +
+    (filas.length ? `<div style="margin-top:10px">` + filas.map(([k, v]) => `<div class="cj-fila"><span>${k}</span><b>${v}</b></div>`).join('') + `</div>` : '') +
+    `<div class="cj-nota">Pluviómetro de AEMET${m.est ? ' en ' + m.est : ''} (observación horaria)${horaGenerado() ? ', actualizado a las ' + horaGenerado() : ''}. Se mide cada hora. Es un dato medido, no la rejilla.</div>`;
 }
 function munTip(f){
   const provs = (munDatos && munDatos.provincias) || [];
@@ -864,22 +908,25 @@ function fichaMunicipio(f){
   const ancho = Math.max(2, Math.min(100, (pct || 0) / 2));
 
   return `
-    <div class="cj-n" style="color:${col}">${pct === null ? '—' : nf.format(Math.round(pct)) + ' %'}</div>
-    <div class="cj-et" style="color:${col}">${munEtiqueta(a)} · ${pctTxt(a)} frente a lo normal</div>
-    <div class="cj-barra"><i style="width:${ancho}%;background:${col}"></i><span class="cj-cien"></span></div>
-    <div class="cj-pie">La línea marca lo normal para estas alturas del año</div>
-    <div class="cj-fila"><span>Ha caído</span><b>${mmTxt(f[MUN.mm])}</b></div>
-    <div class="cj-fila"><span>Lo normal a estas alturas</span><b>${mmTxt(f[MUN.mediana])}</b></div>
-    <div class="cj-frase">${munPuesto(f[MUN.puesto], f[MUN.de])}</div>
     ${munMedido(f)}
     ${f[MUN.ruta]
       // Un municipio sin ficha se pinta igual, pero no se le inventa un enlace a
       // una pagina que no existe.
       ? `<a class="cj-cta" href="${SITIO}${f[MUN.ruta]}/" target="_top">Ver la ficha de ${f[MUN.nombre]} →</a>`
       : ''}
-    <div class="cj-nota">Acumulado del año hidrológico hasta el ${fechaLarga(munDatos.hasta)},
-      comparado con la mediana de ese mismo tramo del año desde ${munDatos.desde_anio || '—'}.
-      Rejilla ERA5-Land.</div>`;
+    <div class="cj-anio">
+      <div class="cj-sub">Cómo va el año hidrológico</div>
+      <div class="cj-n" style="color:${col}">${pct === null ? '—' : nf.format(Math.round(pct)) + ' %'}</div>
+      <div class="cj-et" style="color:${col}">${munEtiqueta(a)} · ${pctTxt(a)} frente a lo normal</div>
+      <div class="cj-barra"><i style="width:${ancho}%;background:${col}"></i><span class="cj-cien"></span></div>
+      <div class="cj-pie">La línea marca lo normal para estas alturas del año</div>
+      <div class="cj-fila"><span>Ha caído</span><b>${mmTxt(f[MUN.mm])}</b></div>
+      <div class="cj-fila"><span>Lo normal a estas alturas</span><b>${mmTxt(f[MUN.mediana])}</b></div>
+      <div class="cj-frase">${munPuesto(f[MUN.puesto], f[MUN.de])}</div>
+      <div class="cj-nota">Acumulado del año hidrológico hasta el ${fechaLarga(munDatos.hasta)},
+        comparado con la mediana de ese mismo tramo del año desde ${munDatos.desde_anio || '—'}.
+        Rejilla ERA5-Land.</div>
+    </div>`;
 }
 
 function abrirMunicipio(f){
