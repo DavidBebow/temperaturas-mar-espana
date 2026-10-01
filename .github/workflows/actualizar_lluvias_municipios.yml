@@ -7,6 +7,122 @@ name: Actualizar lluvia diaria por municipio
 
 on:
   schedule:
+    # UNA PASADA CADA HORA, al minuto 23.
+    #
+    # 1-10-2026: la tormenta del Levante lo dejo claro. Con ocho pasadas al dia
+    # la cifra de "hoy" iba de una a cinco horas por detras de la lluvia, y la
+    # gente entra a mirar la pagina JUSTO cuando esta lloviendo. Esa tarde la
+    # ultima foto era de las 20:00, la tormenta descargo entre las 18 y las 22 y
+    # la siguiente pasada no tocaba hasta las 23:07 locales.
+    #
+    # Ademas GitHub no es puntual: ese dia las pasadas salieron con 40 minutos y
+    # hasta dos horas de retraso, y una se salto entera. Con una por hora, una
+    # pasada perdida o retrasada cuesta una hora, no cuatro.
+    #
+    # Las pasadas de mas no cuestan nada: el script lleva una mascara de horas
+    # ya contadas por estacion y dia, asi que repetir horas no infla la lluvia,
+    # y cada pasada son unos 20 segundos en un repositorio publico (gratis) y
+    # una sola llamada a AEMET. Fuera de la hora en punto, que es cuando GitHub
+    # lanza todo lo del mundo y se atasca.
+    #
+    # Y sigue siendo una ventana movil de 24 h de AEMET: un dia natural se
+    # completa entre varias pasadas. Con 24 al dia cada hora se ve muchas veces
+    # y la que cierra el dia (la primera de madrugada en UTC) ya no depende de
+    # que una sola pasada salga a su hora.
+    - cron: '23 * * * *'
+
+  workflow_dispatch:
+
+concurrency:
+  group: lluvia-municipios
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ejecutar script
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          # El base viaja con el script, en el privado. El historico y la salida
+          # se quedan aqui, que es quien los sirve por GitHub Pages.
+          CG_BASE: privado/municipios_base.json
+          CG_HIST: historico_estaciones.json
+          CG_SALIDA: docs/lluvias_municipios.json
+        run: python privado/lluvia_municipios_diaria.py
+
+      - name: Publicar cambios
+        # SIEMPRE, aunque el script haya salido con error. El runner es efimero:
+        # si el paso anterior falla y este se salta, las 10.000 filas horarias
+        # que acaba de descargar se van con el. El script guarda el historico
+        # antes de fallar precisamente para que este paso lo recoja; sin
+        # `always()` ese cuidado no serviria de nada.
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add historico_estaciones.json
+          # docs/lluvias_municipios.json puede no existir todavia: mientras no
+          # haya ningun dia natural cerrado el script guarda historico pero no
+          # publica salida, y un `git add` de un fichero inexistente tumbaria el
+          # paso y con el el commit del historico que si tenemos.
+          [ -f docs/lluvias_municipios.json ] && git add docs/lluvias_municipios.json || true
+          # Sin cambios no se commitea: si AEMET no trae nada nuevo, no tiene
+          # sentido ensuciar el historial con un commit vacio cada doce horas.
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "Lluvia diaria por municipio: $(date -u +%Y-%m-%d\ %H:%M) UTC"
+            # Otros flujos publican en el mismo repo: si alguien ha empujado
+            # entre medias, se rebasa y se reintenta en vez de fallar.
+            for i in 1 2 3 4 5; do
+              git push && break
+              git pull --rebase --autostash -X theirs origin main || { git rebase --abort; true; }
+              sleep $((i*5))
+            done
+          fi
+
+      - name: Publicar lo ultimo medido en la pagina de lluvias
+        # El bloque de servidor de /lluvias-en-espana/ (lo que lee Google) se
+        # rehace en cada pasada con la cifra de hoy. Solo esa pagina: las otras
+        # 59 las sigue publicando publicar_resumenes.yml. Si WordPress falla, la
+        # pasada no se da por fallida: los datos ya estan publicados en GitHub.
+        continue-on-error: true
+        env:
+          CG_DOCS: ${{ github.workspace }}/docs
+          WP_URL: https://calentamientoglobal.es
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
+        run: |
+          pip install -q requests
+          python privado/publicar_resumenes_wp.py --solo lluvias
+name: Actualizar lluvia diaria por municipio
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+#
+# El script y el fichero base viven en clima-scripts (privado): la asignacion
+# municipio -> estacion es el trabajo, no el resultado. Aqui solo se ejecuta y
+# se commitean las salidas, que si son publicas porque las sirve la web.
+
+on:
+  schedule:
     # CINCO pasadas al dia: 01:00, 06:00, 11:00, 15:00 y 19:00 UTC.
     #
     # Varias y no una a proposito. La observacion de AEMET es una ventana movil
