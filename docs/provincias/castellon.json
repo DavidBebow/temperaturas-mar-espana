@@ -3,8 +3,8 @@
  "provincia": "Castellón",
  "ccaa": "Comunitat Valenciana",
  "capital": "Castellón de la Plana",
- "generado": "2026-10-01T15:56+02:00",
- "fecha_legible": "01/10/2026 a las 15:56",
+ "generado": "2026-10-01T21:51+02:00",
+ "fecha_legible": "01/10/2026 a las 21:51",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,11 +23,11 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 30.9,
-   "tmax_hoy": 27.3,
-   "tmin_hoy": 21.3,
+   "tmax_hoy": 26.8,
+   "tmin_hoy": 21.1,
    "dias_consecutivos": 0,
    "noche_tropical": true,
-   "icc": 11,
+   "icc": 9,
    "nivel": "Calor suave",
    "color": "#0066CC"
   },
@@ -46,10 +46,10 @@
    "racha_sin_precedente": 0
   },
   "avisos": {
-   "total": 19,
-   "rojos": 3,
-   "naranjas": 10,
-   "amarillos": 6,
+   "total": 28,
+   "rojos": 4,
+   "naranjas": 8,
+   "amarillos": 16,
    "items": [
     {
      "zona": "Interior norte de Castellón",
@@ -58,7 +58,16 @@
      "icono": "🌧️",
      "inicio": "2026-10-01T18:00+02:00",
      "fin": "2026-10-02T01:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
+    },
+    {
+     "zona": "Interior sur de Castellón",
+     "nivel": "rojo",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-10-01T16:00+02:00",
+     "fin": "2026-10-02T01:59+02:00",
+     "activo_ya": true
     },
     {
      "zona": "Litoral norte de Castellón",
@@ -67,7 +76,7 @@
      "icono": "🌧️",
      "inicio": "2026-10-01T18:00+02:00",
      "fin": "2026-10-02T11:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Litoral sur de Castellón",
@@ -76,15 +85,6 @@
      "icono": "🌧️",
      "inicio": "2026-10-01T18:00+02:00",
      "fin": "2026-10-02T11:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Interior norte de Castellón",
-     "nivel": "naranja",
-     "tipo": "Lluvias",
-     "icono": "🌧️",
-     "inicio": "2026-10-01T14:00+02:00",
-     "fin": "2026-10-01T17:59+02:00",
      "activo_ya": true
     },
     {
@@ -117,6 +117,15 @@
     {
      "zona": "Interior sur de Castellón",
      "nivel": "naranja",
+     "tipo": "Tormentas",
+     "icono": "⛈️",
+     "inicio": "2026-10-01T14:00+02:00",
+     "fin": "2026-10-02T11:59+02:00",
+     "activo_ya": true
+    },
+    {
+     "zona": "Interior sur de Castellón",
+     "nivel": "naranja",
      "tipo": "Lluvias",
      "icono": "🌧️",
      "inicio": "2026-10-01T14:00+02:00",
@@ -126,20 +135,11 @@
     {
      "zona": "Interior sur de Castellón",
      "nivel": "naranja",
-     "tipo": "Tormentas",
-     "icono": "⛈️",
-     "inicio": "2026-10-01T14:00+02:00",
-     "fin": "2026-10-02T11:59+02:00",
-     "activo_ya": true
-    },
-    {
-     "zona": "Litoral norte de Castellón",
-     "nivel": "naranja",
      "tipo": "Lluvias",
      "icono": "🌧️",
-     "inicio": "2026-10-01T14:00+02:00",
-     "fin": "2026-10-01T17:59+02:00",
-     "activo_ya": true
+     "inicio": "2026-10-02T02:00+02:00",
+     "fin": "2026-10-02T11:59+02:00",
+     "activo_ya": false
     },
     {
      "zona": "Litoral norte de Castellón",
@@ -153,19 +153,19 @@
     {
      "zona": "Litoral sur de Castellón",
      "nivel": "naranja",
-     "tipo": "Lluvias",
-     "icono": "🌧️",
+     "tipo": "Tormentas",
+     "icono": "⛈️",
      "inicio": "2026-10-01T14:00+02:00",
-     "fin": "2026-10-01T17:59+02:00",
+     "fin": "2026-10-02T11:59+02:00",
      "activo_ya": true
     }
    ]
   },
   "incendios_ccaa": {
    "nombre": "Comunidad Valenciana",
-   "focos_activos": 0,
-   "tiene_fuego": false,
-   "etiqueta": "Sin detecciones recientes",
+   "focos_activos": 1,
+   "tiene_fuego": true,
+   "etiqueta": "Actividad baja",
    "dias_consecutivos": 0,
    "dias_anio_actual": 14
   },
@@ -185,7 +185,7 @@
     "id": "castellon",
     "nombre": "Castellón",
     "t_min_anoche": null,
-    "nt_mes": 11,
+    "nt_mes": 0,
     "nt_anyo": 90,
     "etiqueta": "Sin datos"
    }
@@ -194,9 +194,9 @@
    {
     "nombre": "Castellón",
     "etiqueta": "Buena",
-    "aqi_europeo": 35,
-    "pm25": 10.9,
-    "contaminante_dominante": "NO₂",
+    "aqi_europeo": 29,
+    "pm25": 6.9,
+    "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
    }
@@ -216,7 +216,7 @@
    "tipo": "aviso_rojo",
    "icono": "🔴",
    "nivel": "alto",
-   "texto": "AVISO ROJO de AEMET en Castellón por Lluvias (3 zona(s))",
+   "texto": "AVISO ROJO de AEMET en Castellón por Lluvias (4 zona(s))",
    "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
    "prioridad": 98,
    "racha_dias": 1,
@@ -231,7 +231,17 @@
    "prioridad": 62,
    "racha_dias": 31,
    "nuevo": false
+  },
+  {
+   "tipo": "incendios",
+   "icono": "🔥",
+   "nivel": "medio",
+   "texto": "1 foco(s) de calor activos detectados por satélite en Comunidad Valenciana (últimas 48 h) · 29.º día consecutivo",
+   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
+   "prioridad": 56,
+   "racha_dias": 29,
+   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Castellón a 01/10/2026: AVISO ROJO de AEMET en Castellón por Lluvias (3 zona(s)). Castellón ya suma 15 días por encima de 32 °C este año (media 1991-2020: 2; media 1961-1990: 1). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Castellón a 01/10/2026: AVISO ROJO de AEMET en Castellón por Lluvias (4 zona(s)). Castellón ya suma 15 días por encima de 32 °C este año (media 1991-2020: 2; media 1961-1990: 1). 1 foco(s) de calor activos detectados por satélite en Comunidad Valenciana (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }

@@ -3,8 +3,8 @@
  "provincia": "Valencia",
  "ccaa": "Comunitat Valenciana",
  "capital": "Valencia",
- "generado": "2026-10-01T15:56+02:00",
- "fecha_legible": "01/10/2026 a las 15:56",
+ "generado": "2026-10-01T21:51+02:00",
+ "fecha_legible": "01/10/2026 a las 21:51",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,8 +23,8 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 33.3,
-   "tmax_hoy": 26.8,
-   "tmin_hoy": 21.6,
+   "tmax_hoy": 27.5,
+   "tmin_hoy": 21.4,
    "dias_consecutivos": 0,
    "noche_tropical": true,
    "icc": 10,
@@ -46,10 +46,10 @@
    "racha_sin_precedente": 0
   },
   "avisos": {
-   "total": 19,
+   "total": 23,
    "rojos": 2,
-   "naranjas": 9,
-   "amarillos": 8,
+   "naranjas": 7,
+   "amarillos": 14,
    "items": [
     {
      "zona": "Litoral norte de Valencia",
@@ -58,7 +58,7 @@
      "icono": "🌧️",
      "inicio": "2026-10-01T18:00+02:00",
      "fin": "2026-10-02T01:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Litoral sur de Valencia",
@@ -67,7 +67,7 @@
      "icono": "🌧️",
      "inicio": "2026-10-01T18:00+02:00",
      "fin": "2026-10-02T01:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Interior norte de Valencia",
@@ -106,24 +106,6 @@
      "activo_ya": false
     },
     {
-     "zona": "Litoral norte de Valencia",
-     "nivel": "naranja",
-     "tipo": "Lluvias",
-     "icono": "🌧️",
-     "inicio": "2026-10-01T14:00+02:00",
-     "fin": "2026-10-01T17:59+02:00",
-     "activo_ya": true
-    },
-    {
-     "zona": "Litoral sur de Valencia",
-     "nivel": "naranja",
-     "tipo": "Lluvias",
-     "icono": "🌧️",
-     "inicio": "2026-10-01T14:00+02:00",
-     "fin": "2026-10-01T17:59+02:00",
-     "activo_ya": true
-    },
-    {
      "zona": "Litoral sur de Valencia",
      "nivel": "naranja",
      "tipo": "Lluvias",
@@ -153,11 +135,29 @@
     {
      "zona": "Interior norte de Valencia",
      "nivel": "amarillo",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-10-02T12:00+02:00",
+     "fin": "2026-10-02T23:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Interior norte de Valencia",
+     "nivel": "amarillo",
      "tipo": "Tormentas",
      "icono": "⛈️",
-     "inicio": "2026-10-01T14:00+02:00",
-     "fin": "2026-10-01T23:59+02:00",
+     "inicio": "2026-10-01T19:00+02:00",
+     "fin": "2026-10-02T02:59+02:00",
      "activo_ya": true
+    },
+    {
+     "zona": "Interior norte de Valencia",
+     "nivel": "amarillo",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-10-02T00:00+02:00",
+     "fin": "2026-10-02T02:59+02:00",
+     "activo_ya": false
     }
    ]
   },
@@ -165,11 +165,11 @@
    {
     "id": "valencia",
     "nombre": "Valencia",
-    "temperatura_actual": null,
-    "anomalia": null,
-    "etiqueta_anomalia": "Sin datos",
-    "dias_consecutivos": null,
-    "signo_consecutivo": null
+    "temperatura_actual": 25.4,
+    "anomalia": 2.9,
+    "etiqueta_anomalia": "Muy por encima de la media",
+    "dias_consecutivos": 1,
+    "signo_consecutivo": "positiva"
    }
   ],
   "nivel_mar": [
@@ -192,9 +192,9 @@
   ],
   "incendios_ccaa": {
    "nombre": "Comunidad Valenciana",
-   "focos_activos": 0,
-   "tiene_fuego": false,
-   "etiqueta": "Sin detecciones recientes",
+   "focos_activos": 1,
+   "tiene_fuego": true,
+   "etiqueta": "Actividad baja",
    "dias_consecutivos": 0,
    "dias_anio_actual": 14
   },
@@ -223,10 +223,10 @@
    {
     "nombre": "Valencia",
     "etiqueta": "Buena",
-    "aqi_europeo": 40,
-    "pm25": 11.4,
-    "contaminante_dominante": "NO₂",
-    "supera_oms": true,
+    "aqi_europeo": 30,
+    "pm25": 7.4,
+    "contaminante_dominante": "O₃",
+    "supera_oms": false,
     "sahariano": false
    }
   ],
@@ -253,7 +253,7 @@
    {
     "id": "valencia",
     "nombre": "Valencia",
-    "temp": 25.24,
+    "temp": 25.28,
     "fecha": "2026-10-01",
     "max_anio": {
      "valor": 29.09,
@@ -282,6 +282,16 @@
    "nuevo": true
   },
   {
+   "tipo": "mar_anomalia_valencia",
+   "icono": "🌡️",
+   "nivel": "medio",
+   "texto": "El mar en Valencia está a 25.4 °C, +2.9 °C sobre la media histórica",
+   "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
+   "prioridad": 70,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
    "tipo": "nivel_mar_valencia",
    "icono": "🌊",
    "nivel": "medio",
@@ -300,7 +310,17 @@
    "prioridad": 62,
    "racha_dias": 31,
    "nuevo": false
+  },
+  {
+   "tipo": "incendios",
+   "icono": "🔥",
+   "nivel": "medio",
+   "texto": "1 foco(s) de calor activos detectados por satélite en Comunidad Valenciana (últimas 48 h) · 25.º día consecutivo",
+   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
+   "prioridad": 56,
+   "racha_dias": 25,
+   "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Valencia a 01/10/2026: AVISO ROJO de AEMET en Valencia por Lluvias (2 zona(s)). Nivel del mar muy elevado en Valencia: +13.1 cm sobre la media 1993-2012. Valencia ya suma 22 días por encima de 32 °C este año (media 1991-2020: 18; media 1961-1990: 12). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Valencia a 01/10/2026: AVISO ROJO de AEMET en Valencia por Lluvias (2 zona(s)). El mar en Valencia está a 25.4 °C, +2.9 °C sobre la media histórica. Nivel del mar muy elevado en Valencia: +13.1 cm sobre la media 1993-2012. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
