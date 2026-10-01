@@ -2,7 +2,7 @@ name: Actualizar avisos meteorológicos
 
 on:
   schedule:
-    - cron: "20 * * * *"   # cada hora, al minuto 20
+    - cron: "20,50 * * * *"   # cada 30 minutos (minutos 20 y 50)
   workflow_dispatch:
 
 permissions:
