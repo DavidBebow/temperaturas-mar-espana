@@ -666,35 +666,64 @@ function actualizarHud(){
 }
 
 function actualizarPanel(){
-  const V = {}; Object.values(datosMap).forEach(p => { V[p.id] = valor(p, periodoActual); });
-  const lista = Object.values(datosMap).filter(p => V[p.id].mm !== null && V[p.id].mm !== undefined);
-  const seco = modoActual === 'anomalia' && periodoActual !== 'hoy';
-  // En modo anomalia interesa el extremo, no el maximo: la provincia mas lejos
-  // de lo normal, para arriba o para abajo.
-  const orden = seco
-    ? lista.slice().sort((a,b) => Math.abs(V[b.id].anom||0) - Math.abs(V[a.id].anom||0))
-    : lista.slice().sort((a,b) => V[b.id].mm - V[a.id].mm);
-  const top = orden.slice(0, 5);
-  document.getElementById('panel-titulo').textContent =
-    seco ? 'Lo más lejos de lo normal' : (periodoActual === 'hoy' ? 'Dónde más está lloviendo hoy' : 'Dónde más ha llovido');
-
+  // LA LISTA ES DE MUNICIPIOS, NO DE PROVINCIAS (2-10-2026). Con la media
+  // provincial, Benicassim con 33 mm y Benicarlo con 86 no aparecian: la lista
+  // decia "Castellon 59,8" y debajo Huesca con 6,7. "Donde mas esta lloviendo"
+  // es una pregunta sobre sitios, y los sitios son los puntos del mapa. Las
+  // provincias se quedan como pie de cada fila y en las fichas de arriba.
+  //
+  // Y una fila por pluviometro, no por municipio: Alzira, Sueca y Algemesi
+  // beben del mismo (Polinya de Xuquer) y saldrian tres veces con 62,2 mm.
+  // Se queda el primero de cada estacion y se nombra el pluviometro solo
+  // cuando es uno de reserva (el suyo se ha callado).
+  const titulo = periodoActual === 'hoy' ? 'Dónde más está lloviendo hoy' : 'Dónde más ha llovido';
+  document.getElementById('panel-titulo').textContent = titulo;
+  const provs = (munDatos && munDatos.provincias) || [];
+  const filas = [];
+  if (munDatos && aemet){
+    const vistos = new Set();
+    munDatos.municipios
+      .map(f => [munValor(f), f])
+      .filter(([v]) => v !== null && v !== undefined)
+      .sort((a, b) => b[0] - a[0])
+      .forEach(([v, f]) => {
+        if (filas.length >= 5) return;
+        const m = munAemet(f);
+        const reserva = periodoActual === 'hoy' ? m.hoy_est : m.dia_est;   // solo si no es el suyo
+        const clave = reserva || m.est || f[MUN.ine];
+        if (vistos.has(clave)) return;
+        vistos.add(clave);
+        // El nombre de AEMET viene a veces con coletillas entre parentesis
+        // ("Torreblanca Ayuntamiento (c.agraria Local)"); fuera.
+        filas.push({f, v, est: reserva ? reserva.replace(/\s*\(.*?\)\s*/g, '').trim() : null});
+      });
+  }
   // Si en todo el pais no ha caido nada, decirlo. Una lista de cinco ceros
   // parece un fallo de carga, y no lo es: hay dias asi.
-  if (!seco && top.every(p => (V[p.id].mm || 0) === 0)){
+  if (!filas.length || filas.every(x => (x.v || 0) === 0)){
     document.getElementById('panel-lista').innerHTML =
-      '<div class="vacio">No ha llovido en ninguna provincia en este periodo. ' +
+      '<div class="vacio">No ha llovido en ningún municipio en este periodo. ' +
       'Pasa: en verano puede estar toda España a cero durante semanas.</div>';
     return;
   }
-  document.getElementById('panel-lista').innerHTML = top.map(p => {
-    const val = seco ? pctTxt(V[p.id].anom) : mmTxt(V[p.id].mm);
-    const col = seco ? colorAnomalia(V[p.id].anom) : colorLitros(V[p.id].mm, periodoActual);
-    return `<div class="pg-card" data-id="${p.id}">
-        <div><div class="pg-zona">${p.nombre}</div><div class="pg-prov">${p.ccaa}</div></div>
-        <div class="pg-mm" style="color:${col}">${val}</div></div>`;
+  document.getElementById('panel-lista').innerHTML = filas.map(({f, v, est}) => {
+    const col = colorPunto(v, periodoActual);
+    const pie = (provs[f[MUN.prov]] || '') + (est ? ' · pluviómetro de ' + est : '');
+    return `<div class="pg-card" data-ine="${f[MUN.ine]}">
+        <div><div class="pg-zona">${f[MUN.nombre]}</div><div class="pg-prov">${pie}</div></div>
+        <div class="pg-mm" style="color:${col === PUNTOS[0] ? '#8fa6b8' : col}">${mmTxt(v)}</div></div>`;
   }).join('');
   document.querySelectorAll('.pg-card').forEach(el => {
-    el.addEventListener('click', () => abrirProvincia(el.dataset.id, true));
+    el.addEventListener('click', () => {
+      const f = munDatos.municipios.find(x => x[MUN.ine] === el.dataset.ine);
+      if (!f) return;
+      // Se acerca al punto y se abre su ficha, con el punto resaltado como si
+      // se hubiera pulsado en el mapa.
+      munSelIne = f[MUN.ine];
+      mapa.setView([f[MUN.lat], f[MUN.lon]], Math.max(mapa.getZoom(), 8));
+      munPinta();
+      abrirMunicipio(f);
+    });
   });
 }
 
@@ -1014,7 +1043,9 @@ fetch(MUNI_URL)
   .then(r => r.ok ? r.json() : Promise.reject(r.status))
   .then(d => {
     munDatos = d;
-    munPinta(); actualizarLeyenda();
+    // La lista de "donde mas llueve" es de municipios: si este fichero llega
+    // despues que el de AEMET, hay que rehacerla.
+    munPinta(); actualizarLeyenda(); if (aemet) actualizarPanel();
     document.getElementById('btn-mun').textContent =
       'Municipios (' + nf.format(d.municipios.length) + ')';
   })
