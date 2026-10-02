@@ -1,0 +1,107 @@
+name: Archivo de las capitales - primera bajada en paralelo
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+#
+# Solo para la primera bajada 1940-2025 de las 52 capitales: Open-Meteo limita
+# por hora y por IP, asi que se reparte en varias maquinas a la vez. Cada una
+# guarda sus capitales; al final, una pasada sin bajar nada rehace el resumen.
+# Lo que no de tiempo, lo completa el diario «Actualizar archivo de las capitales».
+
+on:
+  workflow_dispatch:
+    inputs:
+      grupos:
+        description: 'Grupos de codigos separados por ; (cada grupo, una maquina)'
+        required: true
+        default: '08,09,10,11,12,13,14;15,16,17,18,19,20,21;22,23,24,25,26,27,28;29,30,31,32,33,34,35;36,37,38,39,40,41,42;43,44,45,46,47,48,49;50,51,52'
+
+jobs:
+  preparar:
+    runs-on: ubuntu-latest
+    outputs:
+      grupos: ${{ steps.g.outputs.grupos }}
+    steps:
+      - id: g
+        run: |
+          echo "grupos=$(python3 -c "import json,sys; print(json.dumps([g.strip() for g in sys.argv[1].split(';') if g.strip()]))" '${{ github.event.inputs.grupos }}')" >> "$GITHUB_OUTPUT"
+
+  bajar:
+    needs: preparar
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        grupo: ${{ fromJson(needs.preparar.outputs.grupos) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Bajar el grupo
+        env:
+          CG_SOLO: ${{ matrix.grupo }}
+          CG_MINUTOS: '48'
+        run: python privado/archivo_capitales.py
+      - name: Publicar sus capitales
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add archivo/era5
+          for f in docs/archivo/[0-9][0-9].json; do [ -e "$f" ] && git add "$f"; done
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "Archivo de las capitales: ${{ matrix.grupo }}"
+            for i in 1 2 3 4 5 6 7 8; do
+              git pull --rebase -X theirs origin main && git push && break
+              sleep $((i*9))
+            done
+          fi
+
+  resumen:
+    needs: bajar
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    concurrency:
+      group: archivo-capitales
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Rehacer el resumen sin bajar series
+        env:
+          CG_SIN_BAJAR: '1'
+          CG_MINUTOS: '15'
+        run: python privado/archivo_capitales.py
+      - name: Publicar
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add archivo docs/archivo
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "Archivo de las capitales: resumen"
+            for i in 1 2 3 4 5; do
+              git pull --rebase -X theirs origin main && git push && break
+              sleep $((i*7))
+            done
+          fi
