@@ -31,6 +31,28 @@ on:
     # que una sola pasada salga a su hora.
     - cron: '23 * * * *'
 
+  # EL CRON DE GITHUB NO BASTA. Madrugada del 2-10-2026, con la tormenta del
+  # Levante aun encima: la pasada de la 01:23 salio a las 02:54 y las de las
+  # 02:23, 03:23, 04:23 y 05:23 no salieron NUNCA. Cuatro horas con Benicarlo
+  # a 59,6 mm en la web cuando el pluviometro ya iba por 86,6. No es cosa de
+  # este flujo: esa misma noche el de avisos (cron a los minutos 20 y 50) salio
+  # UNA vez por schedule en cinco horas. GitHub recorta los schedule de un repo
+  # con treinta flujos y no avisa.
+  #
+  # Lo que SI sale puntual es el workflow_dispatch: el de avisos lo dispara algo
+  # externo a las :00 y :30 clavadas (36 de 36 en las ultimas 18 h). Asi que este
+  # flujo se engancha a ese: cada vez que termina "Actualizar avisos
+  # meteorologicos", sale este. Dos pasadas por hora, a los :01 y :31, con el
+  # dato de AEMET como mucho media hora mas viejo de lo que podria. El cron de
+  # arriba se queda como red por si el disparo externo se cae.
+  #
+  # Cuesta: 48 pasadas x ~25 s = 20 min de runner al dia, gratis en publico.
+  # Un dia que se cambie lo que dispara el de avisos, hay que acordarse de que
+  # este cuelga de el (o apuntar el disparo externo tambien aqui y quitar esto).
+  workflow_run:
+    workflows: ["Actualizar avisos meteorológicos"]
+    types: [completed]
+
   workflow_dispatch:
 
 concurrency:
