@@ -6,9 +6,10 @@ name: Actualizar prediccion por municipio
 # cg-lluvia-municipal lee EN SERVIDOR para pintar el bloque "El tiempo en X".
 # El script vive en clima-scripts (privado), como el resto.
 #
-# PROTOTIPO (2-10-2026): solo Alzira, por CG_INES. Para extenderlo a las 999 basta
-# con BORRAR la linea CG_INES del paso "Ejecutar script". Con las 999 son ~2.000
-# llamadas a AEMET (dos por municipio) a ~46 por minuto: unos 45 minutos.
+# Las 999 fichas desde el 2-10-2026 (el prototipo fue solo Alzira). Son ~2.000
+# llamadas a AEMET (dos por municipio) a ~46 por minuto: unos 45 minutos. Para
+# limitar una pasada de prueba a unos pocos municipios, añadir en el paso
+# "Ejecutar script" la variable CG_INES con sus INE separados por comas.
 
 on:
   schedule:
@@ -52,8 +53,6 @@ jobs:
           CG_MAPA: docs/municipios_mapa.json
           CG_NORMALES: normales_temperatura.json
           CG_SALIDA: docs/prediccion
-          # PROTOTIPO: solo Alzira. Borrar esta linea = las 999.
-          CG_INES: '46017'
         run: python privado/prediccion_municipios.py
 
       - name: Publicar cambios
