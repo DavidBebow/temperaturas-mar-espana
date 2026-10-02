@@ -1,0 +1,63 @@
+name: Calcular normales de temperatura (una vez)
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+#
+# SOLO A MANO (Actions -> este flujo -> Run workflow). Descarga los diarios de
+# AEMET de 1991-2020 de todas las estaciones, en trozos de 15 dias (~730 trozos,
+# 1-2 horas), y escribe normales_temperatura.json en la raiz: la maxima y la
+# minima normales de cada dia del año para cada municipio con ficha, con su
+# estacion. Lo lee prediccion_municipios.py. No hace falta repetirlo salvo que
+# cambie la lista de municipios.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: normales-temperatura
+  cancel-in-progress: false
+
+jobs:
+  calcular:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Calcular normales
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          CG_BASE: privado/municipios_base.json
+          CG_MAPA: docs/municipios_mapa.json
+          CG_SALIDA: normales_temperatura.json
+        run: python privado/normales_temperatura.py
+
+      - name: Publicar
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add normales_temperatura.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "Normales de temperatura 1991-2020 por municipio (estaciones AEMET)"
+            for i in 1 2 3 4 5; do
+              git push && break
+              git pull --rebase --autostash -X theirs origin main || { git rebase --abort; true; }
+              sleep $((i*5))
+            done
+          fi
