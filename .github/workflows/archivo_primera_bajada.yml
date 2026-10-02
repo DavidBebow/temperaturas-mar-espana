@@ -60,10 +60,14 @@ jobs:
             echo "Sin cambios."
           else
             git commit -m "Archivo de las capitales: ${{ matrix.grupo }}"
+            git checkout -- docs/archivo
+            ok=0
             for i in 1 2 3 4 5 6 7 8; do
-              git pull --rebase -X theirs origin main && git push && break
+              git pull --rebase -X theirs origin main && git push && { ok=1; break; }
+              git rebase --abort 2>/dev/null || true
               sleep $((i*9))
             done
+            [ "$ok" = 1 ] || { echo "No se pudo publicar"; exit 1; }
           fi
 
   resumen:
