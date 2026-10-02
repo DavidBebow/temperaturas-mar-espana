@@ -1,0 +1,77 @@
+name: Actualizar prediccion por municipio
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+#
+# Trae la prediccion de AEMET (diaria a 7 dias y horaria) de cada municipio con
+# ficha y la deja en docs/prediccion/<cod>.json, uno por provincia, que el plugin
+# cg-lluvia-municipal lee EN SERVIDOR para pintar el bloque "El tiempo en X".
+# El script vive en clima-scripts (privado), como el resto.
+#
+# PROTOTIPO (2-10-2026): solo Alzira, por CG_INES. Para extenderlo a las 999 basta
+# con BORRAR la linea CG_INES del paso "Ejecutar script". Con las 999 son ~2.000
+# llamadas a AEMET (dos por municipio) a ~46 por minuto: unos 45 minutos.
+
+on:
+  schedule:
+    # Cuatro pasadas al dia, a las 06:47, 12:47, 17:47 y 22:47 peninsulares de
+    # verano (una hora menos en invierno). Fuera de la hora en punto, que es
+    # cuando GitHub lanza todo lo del mundo y se atasca. Con las 999 cada pasada
+    # dura ~45 min, asi que no caben muchas mas sin pisarse con la clave de AEMET
+    # que comparte el recolector de lluvia.
+    - cron: '47 4,10,15,20 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: prediccion-municipios
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ejecutar script
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          CG_MAPA: docs/municipios_mapa.json
+          CG_NORMALES: normales_temperatura.json
+          CG_SALIDA: docs/prediccion
+          # PROTOTIPO: solo Alzira. Borrar esta linea = las 999.
+          CG_INES: '46017'
+        run: python privado/prediccion_municipios.py
+
+      - name: Publicar cambios
+        # SIEMPRE, como en el de lluvias: si el script falla a mitad, lo que ya
+        # haya escrito (provincias completas y estado.json) se publica igual.
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          [ -d docs/prediccion ] && git add docs/prediccion || true
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "Prediccion por municipio: $(date -u +%Y-%m-%d\ %H:%M) UTC"
+            for i in 1 2 3 4 5; do
+              git push && break
+              git pull --rebase --autostash -X theirs origin main || { git rebase --abort; true; }
+              sleep $((i*5))
+            done
+          fi
