@@ -1,0 +1,66 @@
+name: Actualizar archivo de las capitales
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+#
+# Serie diaria 1940->ayer (maxima, minima, lluvia) de las 52 capitales, del
+# reanalisis ERA5 / ERA5-Land via Open-Meteo Archive, y lo que sale de ella para
+# las paginas de El tiempo: docs/archivo/<cod>.json y docs/archivo/resumen.json.
+# La primera vez baja 1940-2025 de cada capital (archivo/era5/<cod>/); si no le da
+# tiempo, sigue en la siguiente pasada. El script vive en clima-scripts.
+
+on:
+  schedule:
+    - cron: '41 7,15 * * *'
+  workflow_dispatch:
+    inputs:
+      solo:
+        description: 'Codigos de provincia separados por comas (vacio = las 52)'
+        required: false
+        default: ''
+
+concurrency:
+  group: archivo-capitales
+  cancel-in-progress: false
+
+jobs:
+  archivo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Poner al dia el archivo
+        env:
+          CG_SOLO: ${{ github.event.inputs.solo }}
+          CG_MINUTOS: '45'
+        run: python privado/archivo_capitales.py
+
+      - name: Publicar cambios
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add archivo docs/archivo
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "Archivo de las capitales (ERA5)"
+            for i in 1 2 3 4 5; do
+              git pull --rebase --autostash -X theirs origin main && git push && break
+              sleep $((i*7))
+            done
+          fi
