@@ -257,12 +257,6 @@
     <button class="pill" data-periodo="hoy" hidden>Hoy</button>
     <button class="pill activo" data-periodo="ayer">Último día</button>
     <button class="pill" data-periodo="semana">7 días</button>
-    <button class="pill" data-periodo="anual">Este año</button>
-  </span>
-  <span class="g">
-    <i class="sep"></i>
-    <button class="pill activo" data-modo="litros">Litros caídos</button>
-    <button class="pill" data-modo="anomalia">Frente a lo normal</button>
   </span>
   <span class="g">
     <i class="sep"></i>
@@ -347,6 +341,17 @@ function colorLitros(mm, periodo){
   for (let i = u.length - 1; i >= 0; i--) if (mm >= u[i]) return AZULES[i + 1];
   return AZULES[0];
 }
+// Los puntos van ENCIMA de un fondo que ya es rojo, ocre o azul segun la
+// provincia, asi que su escala no puede ser la de las provincias: un punto azul
+// oscuro sobre una provincia azul oscura desaparece. De gris apagado (0 mm) a
+// blanco (los mayores aguaceros), pasando por cian: se lee sobre cualquier fondo.
+const PUNTOS = ['#2b3d4d','#5f8fb0','#4fb0e8','#39c6ff','#7fe0ff','#c2f1ff','#ffffff'];
+function colorPunto(mm, periodo){
+  if (mm === null || mm === undefined) return '#3a4a58';
+  const u = UMBRALES[periodo] || UMBRALES.ayer;
+  for (let i = u.length - 1; i >= 0; i--) if (mm >= u[i]) return PUNTOS[i + 1];
+  return PUNTOS[0];
+}
 function colorAnomalia(p){
   if (p === null || p === undefined) return '#16293a';
   if (p < -40) return '#a02615';
@@ -395,26 +400,24 @@ const LEY_ANOM = [
 const TITULOS = {
   hoy:'Lluvia de hoy', ayer:'Lluvia del último día', semana:'Lluvia de 7 días', anual:'Acumulado del año',
 };
+// DOS CAPAS, DOS ESCALAS DE TIEMPO (2-10-2026). El fondo de la provincia es una
+// superficie grande y quieta: cuenta lo lento, como va el año hidrologico
+// frente a lo normal. El punto es lo que se pulsa y lo que se mira cuando
+// llueve: cuenta lo rapido, los litros del periodo elegido (hoy, el ultimo dia,
+// 7 dias). Antes era al reves y en "Hoy" salia España azul con puntos amarillos
+// que no significaban lluvia de hoy. Cada capa lleva su escala fija y la
+// leyenda enseña las dos, con su etiqueta: no hay dos azules que signifiquen
+// cosas distintas sin decirlo.
 function actualizarLeyenda(){
-  const items = modoActual === 'anomalia' ? LEY_ANOM : etiquetasLitros(periodoActual);
-  document.getElementById('leyenda-titulo').textContent =
-    (modoActual === 'anomalia' ? 'Provincias · frente a lo normal' : 'Provincias · ' + TITULOS[periodoActual]) +
-    (periodoActual !== 'anual' && aemet ? ' · AEMET' : '');
-  let html = items.map(i =>
+  document.getElementById('leyenda-titulo').textContent = 'Provincias · año hidrológico frente a lo normal · ERA5';
+  let html = LEY_ANOM.map(i =>
     `<span class="ley-item"><span class="ley-dot" style="background:${i.color}"></span>${i.label}</span>`
   ).join('');
-
-  // Los puntos de municipio SIEMPRE van por anomalia anual, tambien cuando las
-  // provincias estan en litros. Sin esta linea el mapa tendria dos escalas de
-  // color a la vez sin decirlo, y el mismo azul significaria dos cosas: un mapa
-  // asi engaña mas que uno sin colores. Y se enseñan los cinco tramos, no un
-  // punto de muestra: si la capa tiene escala propia, hay que enseñarla entera.
   if (munVisible && munDatos){
-    const muestra = [-60, -25, 0, 25, 60]
-      .map(v => `<span class="ley-punto" style="background:${colorMunicipio(v)}"></span>`)
-      .join('');
+    const et = etiquetasLitros(periodoActual);
+    const muestra = et.map((e, i) => `<span class="ley-punto" style="background:${PUNTOS[i]}"></span>`).join('');
     html += `<span class="ley-item ley-mun"><span class="ley-puntos">${muestra}</span>` +
-            `<span>Municipios: seco → lluvioso, acumulado del año frente a lo normal</span></span>`;
+            `<span>Municipios: ${TITULOS[periodoActual].toLowerCase()} medida por AEMET · de ${et[0].label} a ${et[et.length - 1].label}</span></span>`;
   }
   document.getElementById('leyenda-items').innerHTML = html;
 }
@@ -490,8 +493,9 @@ let periodoActual = 'ayer', modoActual = 'litros';
 function estilo(feature){
   const p = datosMap[NOMBRE_A_ID[feature.properties.name || feature.properties.NAME || '']];
   if (!p) return {fillColor:'#16293a', fillOpacity:.3, color:'#12304a', weight:.8, opacity:.5};
-  const v = valor(p, periodoActual);
-  const color = modoActual === 'anomalia' ? colorAnomalia(v.anom) : colorLitros(v.mm, periodoActual);
+  // Siempre el año hidrologico frente a lo normal, elija lo que elija el
+  // lector arriba: los botones mueven los puntos, no el fondo.
+  const color = colorAnomalia(valor(p, 'anual').anom);
   return {fillColor:color, fillOpacity:.85, color:'#0c2136', weight:.9, opacity:.8};
 }
 
@@ -548,6 +552,7 @@ function cajonCerrar(){
   cajon.classList.remove('abierto');
   document.body.classList.remove('con-cajon');
   if (munSel) { munNormal(munSel); munSel = null; }
+  munSelIne = null;
   if (provSel){ capaGeojson && capaGeojson.resetStyle(provSel); provSel = null; }
 }
 document.getElementById('cj-x').addEventListener('click', cajonCerrar);
@@ -579,6 +584,8 @@ function fichaProvincia(p){
         ? 'Media de ' + (a && a.est ? a.est + ' pluviómetros' : 'los pluviómetros') + ' de AEMET en la provincia, observación horaria' +
           (horaGenerado() ? ', actualizada a las ' + horaGenerado() : '') + '. Lo normal, ERA5-Land 1991-2020.'
         : 'Lluvia de Open-Meteo (reanálisis ERA5). Lo normal se calcula con ERA5-Land 1991-2020 para estas mismas fechas.');
+  const anual = valor(p, 'anual');
+  const anualTxt = `<div class="cj-fila"><span>Año hidrológico frente a lo normal</span><b style="color:${colorAnomalia(anual.anom)}">${pctTxt(anual.anom)}${anual.etq ? ' · ' + anual.etq.toLowerCase() : ''}</b></div>`;
   const maxTxt = (a && a.max && a.max.mm > 0 && periodoActual !== 'anual')
     ? `<div class="cj-fila"><span>Donde más llovió el ${fechaCorta(aemet.fecha)}</span><b>${a.max.ruta
         ? `<a href="${SITIO}${a.max.ruta}/" target="_top" style="color:#9fd4ff">${a.max.nombre}</a>` : a.max.nombre} · ${mmTxt(a.max.mm)}</b></div>` : '';
@@ -593,6 +600,7 @@ function fichaProvincia(p){
     ${media !== null && media !== undefined ? `<div class="cj-fila"><span>${normalTxt}</span><b>${mmTxt(media)}</b></div>
     <div class="cj-fila"><span>Diferencia</span><b style="color:${colorAnomalia(anom)}">${pctTxt(anom)}</b></div>` : ''}
     ${maxTxt}
+    ${anualTxt}
     <div class="cj-tres${tres.length > 3 ? ' cuatro' : ''}">${tres.map(([b, s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('')}</div>
     ${slug ? `<a class="cj-cta" href="${SITIO}${slug}/" target="_top">Ver los municipios de ${p.nombre} →</a>` : ''}
     <div class="cj-nota">${nota}</div>`;
@@ -702,20 +710,14 @@ function refrescar(){
     const id = Object.keys(capaPorId).find(k => capaPorId[k] === provSel);
     if (id && datosMap[id]) cajonPinta(datosMap[id].ccaa, datosMap[id].nombre, fichaProvincia(datosMap[id]));
   }
+  // Los puntos cambian de color con el periodo: se repintan.
+  if (munDatos) munPinta();
 }
 
 // ─── CONTROLES ────────────────────────────────────────────────────────────────
 function elegirPeriodo(per){
   periodoActual = per;
   document.querySelectorAll('[data-periodo]').forEach(x => x.classList.toggle('activo', x.dataset.periodo === per));
-  // Un dia a medias no tiene "normal" con la que compararse: con Hoy se ven litros.
-  const bAnom = document.querySelector('[data-modo="anomalia"]');
-  bAnom.classList.toggle('off', per === 'hoy');
-  bAnom.title = per === 'hoy' ? 'Para hoy solo hay litros: el día aún no ha terminado' : '';
-  if (per === 'hoy' && modoActual === 'anomalia'){
-    modoActual = 'litros';
-    document.querySelectorAll('[data-modo]').forEach(x => x.classList.toggle('activo', x.dataset.modo === 'litros'));
-  }
   refrescar();
 }
 document.querySelectorAll('[data-periodo]').forEach(b => b.addEventListener('click', () => elegirPeriodo(b.dataset.periodo)));
@@ -774,7 +776,7 @@ const MUN = {ine:0, nombre:1, ruta:2, lat:3, lon:4, mm:5, mediana:6, puesto:7, d
 mapa.createPane('municipios');
 mapa.getPane('municipios').style.zIndex = 450;   // entre overlayPane (400) y shadowPane (500)
 const lienzo = L.svg({padding:.3, pane:'municipios'});
-let capaMun = null, munVisible = true, munDatos = null, munSel = null;
+let capaMun = null, munVisible = true, munDatos = null, munSel = null, munSelIne = null;
 
 // El porcentaje se convierte a la MISMA escala de anomalia que usan las
 // provincias (−40/−15/+15/+40), para que un color signifique lo mismo en las dos
@@ -835,6 +837,15 @@ const munNormal = m => m.setStyle({weight: munBorde(), color: '#0a1c2c', opacity
 
 // Lo ultimo que ha medido el pluviometro de AEMET asignado al municipio.
 function munAemet(f){ return aemet && aemet.municipios ? aemet.municipios[f[MUN.ine]] : null; }
+// Los litros del periodo elegido para este municipio, o null si no hay dato.
+function munValor(f){
+  const m = munAemet(f);
+  if (!m) return null;
+  if (periodoActual === 'hoy') return (hayHoy() && m.hoy !== undefined) ? m.hoy : null;
+  if (periodoActual === 'ayer') return m.dia !== undefined ? m.dia : null;
+  if (periodoActual === 'semana') return m.sem !== undefined ? m.sem : null;
+  return null;
+}
 function munMedido(f){
   // LO ULTIMO MEDIDO VA LO PRIMERO Y LO MAS GRANDE. Quien pulsa un punto en una
   // tarde de tormenta quiere saber cuanto acaba de llover; "como va el año" es
@@ -942,23 +953,30 @@ function munPinta(){
   if (capaMun) { mapa.removeLayer(capaMun); capaMun = null; }
   if (!munVisible || !munDatos) return;
   const r = munRadio(), w = munBorde();
-  // Se pintan de menos a mas extremo, para que queden ARRIBA los casos
+  // Se pintan de menos a mas lluvia, para que queden ARRIBA los casos
   // interesantes. En la costa gallega o en la Marina Alta hay municipios cada
   // pocos kilometros y a zoom bajo los circulos se solapan: sin ordenar, cual
-  // queda visible lo decide el orden alfabetico del fichero, y un municipio al
-  // 45 % de lo normal puede quedar tapado por su vecino, que va normal.
+  // queda visible lo decide el orden alfabetico del fichero, y el pueblo con
+  // 40 mm puede quedar tapado por su vecino seco.
   const orden = munDatos.municipios
-    .map(f => [Math.abs(munAnom(f) ?? 0), f])
+    .map(f => [munValor(f) ?? -1, f])
     .sort((a, b) => a[0] - b[0]);
 
   const marcas = orden.map(([, f]) => {
+    const v = munValor(f);
     const m = L.circleMarker([f[MUN.lat], f[MUN.lon]], {
       // Borde OSCURO sobre relleno encendido: es lo que separa dos puntos que
       // se solapan. (La version anterior hacia lo contrario, borde claro sobre
       // relleno apagado, y el resultado era una nube de aros claros.)
+      // Los puntos a 0 mm van un poco apagados: estan, pero no compiten con
+      // los que tienen lluvia.
       renderer: lienzo, radius: r, weight: w, color: '#0a1c2c', opacity: .55,
-      fillColor: colorMunicipio(munAnom(f)), fillOpacity: 1,
+      fillColor: colorPunto(v, periodoActual), fillOpacity: (v ?? 0) > 0 ? 1 : .7,
     });
+    if (munSelIne && f[MUN.ine] === munSelIne){
+      m.setStyle({weight:3, color:'#ffd166', opacity:1});
+      munSel = m;
+    }
     // Nombre al pasar el puntero. La etiqueta se monta al abrirse, no al pintar:
     // asi lleva lo ultimo medido aunque ese fichero llegue despues que los puntos.
     m.bindTooltip(() => munTip(f), {direction:'top', offset:[0, -r], className:'tip-cg', opacity:1});
@@ -969,7 +987,7 @@ function munPinta(){
       if (munSel) munNormal(munSel);
       m.setStyle({weight:3, color:'#ffd166', opacity:1});
       m.bringToFront();
-      munSel = m;
+      munSel = m; munSelIne = f[MUN.ine];
       abrirMunicipio(f);
     });
     return m;
@@ -1041,8 +1059,9 @@ Promise.all([
       capa.on('click', () => abrirProvincia(id, false));
       capa.bindTooltip(() => {
         const p = datosMap[id], v = valor(p, periodoActual);
-        const cifra = modoActual === 'anomalia' && periodoActual !== 'hoy' ? pctTxt(v.anom) : mmTxt(v.mm);
-        return `<b>${p.nombre}</b> <span class="tt-p">${p.ccaa}</span><span class="tt-l">${cifra} ${periodoTxt(periodoActual)}</span>`;
+        const an = valor(p, 'anual');
+        return `<b>${p.nombre}</b> <span class="tt-p">${p.ccaa}</span><span class="tt-l">${mmTxt(v.mm)} ${periodoTxt(periodoActual)}</span>` +
+          `<span class="tt-s">Año hidrológico: ${an.etq ? an.etq.toLowerCase() : '—'} (${pctTxt(an.anom)} frente a lo normal)</span>`;
       }, {sticky:true, direction:'top', offset:[0, -10], className:'tip-cg', opacity:1});
       capa.on('mouseover', () => { if (capa !== provSel) capa.setStyle({fillOpacity:.98, weight:1.8, color:'#5cbcf0'}); });
       capa.on('mouseout',  () => { if (capa !== provSel) capaGeojson.resetStyle(capa); });
