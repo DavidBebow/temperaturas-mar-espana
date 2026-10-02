@@ -1,0 +1,50 @@
+name: Generar mapas El tiempo
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+#
+# Geometria ya proyectada para los mapas del hub /el-tiempo/ y de sus provincias:
+# docs/mapas/espana.json y docs/mapas/<cod>.json. Sale de es-atlas (IGN) con
+# mapas_tiempo.mjs (clima-scripts, privado). Solo a mano: los limites no cambian.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Generar
+        run: |
+          mkdir -p /tmp/mapas && cp privado/mapas_tiempo.mjs /tmp/mapas/ && cd /tmp/mapas
+          npm init -y >/dev/null
+          npm i --silent es-atlas topojson-client topojson-simplify d3-geo d3-composite-projections
+          node mapas_tiempo.mjs "$GITHUB_WORKSPACE/docs/mapas"
+
+      - name: Publicar cambios
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add docs/mapas
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "Mapas de El tiempo (IGN, es-atlas)"
+            for i in 1 2 3 4 5; do
+              git push && break
+              git pull --rebase --autostash -X theirs origin main || { git rebase --abort; true; }
+              sleep $((i*5))
+            done
+          fi
