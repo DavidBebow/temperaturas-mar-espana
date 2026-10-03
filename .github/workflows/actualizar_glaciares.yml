@@ -1,0 +1,41 @@
+name: Actualizar glaciares (WGMS)
+
+on:
+  schedule:
+    - cron: "17 6 3 * *"   # día 3 de cada mes, 06:17 UTC (el WGMS publica versión nueva ~1 vez al año)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  glaciares:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descargar scripts privados
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: scripts
+
+      - name: Aislar scripts del control de versiones
+        run: rm -rf scripts/.git
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generar docs/glaciares/indice.json y series.json
+        run: python scripts/glaciares_generar.py
+
+      - name: Publicar cambios
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/glaciares/indice.json docs/glaciares/series.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Glaciares WGMS $(date -u +'%F %H:%M')"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
