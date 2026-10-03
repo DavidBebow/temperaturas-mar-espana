@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de glaciares: evolución de cada glaciar (WGMS)</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--tx:#1d1d1f;--tx2:#6e6e73;--tx3:#aeaeb2;--ac:#0c4a6e;--ac2:#0284c7;--ice:#e0f2fe;--bd:#e5e5ea;--bg:#ffffff;--soft:#f5f7fa;--loss:#b91c1c;--gain:#0369a1}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--tx);-webkit-font-smoothing:antialiased}
+.gw{display:flex;height:100%;min-height:560px;border:1px solid var(--bd);border-radius:18px;overflow:hidden;background:var(--bg)}
+.gw-map{flex:1;position:relative;min-width:0}
+#map{position:absolute;inset:0;background:#e9eef2}
+.gw-panel{width:370px;flex-shrink:0;border-left:1px solid var(--bd);display:flex;flex-direction:column;background:var(--bg)}
+.gw-search{padding:14px 16px 10px;border-bottom:1px solid var(--bd);position:relative}
+.gw-search input{width:100%;font:inherit;font-size:14px;padding:10px 12px 10px 34px;border:1px solid var(--bd);border-radius:10px;background:var(--soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236e6e73' stroke-width='2'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='m11 11 4 4'/%3E%3C/svg%3E") 11px center no-repeat;outline:none}
+.gw-search input:focus{border-color:var(--ac2);background-color:#fff}
+.gw-sug{position:absolute;left:16px;right:16px;top:54px;background:#fff;border:1px solid var(--bd);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.08);max-height:260px;overflow:auto;z-index:1000;display:none}
+.gw-sug button{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:13px;padding:8px 12px;cursor:pointer;color:var(--tx)}
+.gw-sug button:hover,.gw-sug button.on{background:var(--ice)}
+.gw-sug small{color:var(--tx2)}
+.gw-filt{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.gw-filt button{font:inherit;font-size:12px;border:1px solid var(--bd);background:#fff;color:var(--tx2);padding:5px 10px;border-radius:999px;cursor:pointer}
+.gw-filt button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.gw-body{flex:1;overflow:auto;padding:16px}
+.gw-h{font-size:20px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+.gw-sub{font-size:13px;color:var(--tx2);margin-top:4px}
+.gw-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.gw-k{background:var(--soft);border-radius:12px;padding:10px 12px}
+.gw-k b{display:block;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.gw-k span{font-size:11px;color:var(--tx2);line-height:1.3;display:block;margin-top:2px}
+.gw-k.neg b{color:var(--loss)}.gw-k.pos b{color:var(--gain)}
+.gw-txt{font-size:13.5px;line-height:1.55;color:#333;margin:6px 0 12px}
+.gw-ct{font-size:12px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 6px}
+.gw-cv{position:relative;height:170px}
+.gw-src{font-size:11px;color:var(--tx3);margin-top:14px;line-height:1.4}
+.gw-src a{color:var(--tx2)}
+.gw-feat{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.gw-feat button{font:inherit;font-size:12.5px;border:1px solid var(--bd);background:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;color:var(--ac)}
+.gw-feat button:hover{background:var(--ice)}
+.gw-back{font:inherit;font-size:12px;border:0;background:none;color:var(--ac2);cursor:pointer;padding:0;margin-bottom:10px}
+.gw-leg{position:absolute;left:10px;bottom:22px;z-index:500;background:rgba(255,255,255,.94);border:1px solid var(--bd);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--tx2);line-height:1.5;max-width:230px}
+.gw-leg b{color:var(--tx);font-weight:600;display:block;margin-bottom:3px}
+.gw-sc{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:3px 0 1px}
+.gw-sc i{flex:1}
+.gw-scl{display:flex;justify-content:space-between;font-size:10px}
+.gw-ring{display:inline-block;width:9px;height:9px;border-radius:50%;border:2px solid #b45309;vertical-align:-1px;margin-right:4px}
+.gw-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:600;font-size:13px;color:var(--tx2);background:rgba(255,255,255,.7)}
+.leaflet-container{font-family:inherit}
+.leaflet-tooltip.gw-tt{font-family:inherit;font-size:12px;border-radius:8px;border:1px solid var(--bd);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+@media (max-width:760px){
+ .gw{flex-direction:column;height:auto;min-height:0;border-radius:14px}
+ .gw-map{height:380px;flex:none}
+ .gw-panel{width:100%;border-left:0;border-top:1px solid var(--bd)}
+ .gw-body{overflow:visible}
+ .gw-leg{bottom:18px;max-width:170px;padding:6px 8px;font-size:10px}
+}
+</style>
+</head>
+<body>
+<div class="gw">
+  <div class="gw-map"><div id="map"></div>
+    <div class="gw-leg"><b>Balance de masa (últimos 10 años)</b>
+      <div class="gw-sc"><i style="background:#7f1d1d"></i><i style="background:#dc2626"></i><i style="background:#f97316"></i><i style="background:#facc15"></i><i style="background:#38bdf8"></i></div>
+      <div class="gw-scl"><span>−1 m</span><span>−0,5</span><span>0</span><span>+</span></div>
+      <div style="margin-top:4px"><span class="gw-ring"></span>Solo medidas del frente</div><div><span class="gw-ring" style="background:#a1a1aa;border-color:#a1a1aa"></span>Serie terminada antes de 2010</div>
+    </div>
+    <div class="gw-load" id="load">Cargando 1.500 glaciares…</div>
+  </div>
+  <aside class="gw-panel">
+    <div class="gw-search">
+      <input id="q" type="search" placeholder="Busca un glaciar (Aneto, Ródano, Upsala…)" autocomplete="off" aria-label="Buscar glaciar">
+      <div class="gw-sug" id="sug"></div>
+      <div class="gw-filt" id="filt">
+        <button data-f="all" class="on">Todos</button>
+        <button data-f="mb">Con balance de masa</button>
+        <button data-f="fv">Con medidas del frente</button>
+      </div>
+    </div>
+    <div class="gw-body" id="body"></div>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function(){
+const BASE='https://davidbebow.github.io/temperaturas-mar-espana/glaciares/';
+const IDX_URL=BASE+'indice.json', SER_URL=BASE+'series.json';
+const REG={1:'Alaska',2:'Oeste de Canadá y EE. UU.',3:'Ártico canadiense (norte)',4:'Ártico canadiense (sur)',5:'Groenlandia (glaciares periféricos)',6:'Islandia',7:'Svalbard y Jan Mayen',8:'Escandinavia',9:'Ártico ruso',10:'Asia septentrional',11:'Europa central (Alpes y Pirineos)',12:'Cáucaso y Oriente Próximo',13:'Asia central',14:'Asia meridional occidental',15:'Asia meridional oriental',16:'Latitudes bajas (Andes tropicales, África, Indonesia)',17:'Andes del sur y Patagonia',18:'Nueva Zelanda',19:'Antártida y subantártico'};
+const FEAT=[['MALADETA','ES'],['ANETO','ES'],['RHONE','CH'],['GROSSER ALETSCH','CH'],['MER DE GLACE','FR'],['HINTEREIS F.','AT'],['PASTERZE','AT'],['ENGABREEN','NO'],['ATHABASCA','CA'],['GULKANA','US'],['QUELCCAYA','PE'],['ZONGO','BO'],['ANTIZANA15ALPHA','EC'],['UPSALA','AR'],['GANGOTRI','IN'],['CHHOTA SHIGRI','IN'],['FRANZ JOSEF / KA ROIMATA O HINE HUKATERE','NZ'],['LEWIS','KE']];
+const NES={'RHONE':'Ródano','GROSSER ALETSCH':'Gran Aletsch','MER DE GLACE':'Mer de Glace','HINTEREIS F.':'Hintereisferner','ANTIZANA15ALPHA':'Antisana 15α','FRANZ JOSEF / KA ROIMATA O HINE HUKATERE':'Franz Josef','FOX / TE MOEKA O TUAWE':'Fox','MALADETA':'Maladeta','ANETO':'Aneto','LEWIS':'Lewis (Monte Kenia)'};
+const nf1=new Intl.NumberFormat('es-ES',{maximumFractionDigits:1,minimumFractionDigits:1});
+const nf2=new Intl.NumberFormat('es-ES',{maximumFractionDigits:2,minimumFractionDigits:2});
+const nf0={format:v=>Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.')};
+let DN=null; try{DN=new Intl.DisplayNames(['es'],{type:'region'});}catch(e){}
+const country=c=>{try{return (DN&&DN.of(c))||c}catch(e){return c}};
+const tc0=s=>s.toLowerCase().replace(/(^|[\s\-\(\/])([a-zà-ÿ])/g,(m,a,b)=>a+b.toUpperCase()).replace(/\bNo\.\s?/g,'n.º ');
+const tc=s=>NES[s]||tc0(s);
+const norm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const fmtS=(v,f)=>(v<0?'−':v>0?'+':'')+f.format(Math.abs(v));
+// alias en español para la búsqueda
+const ALIAS={'rodano':'RHONE','aletsch':'GROSSER ALETSCH','gran aletsch':'GROSSER ALETSCH','mar de hielo':'MER DE GLACE','hintereisferner':'HINTEREIS F.','antisana':'ANTIZANA15ALPHA','franz josef':'FRANZ JOSEF / KA ROIMATA O HINE HUKATERE','kenia':'LEWIS','pirineo':'MALADETA'};
+
+const map=L.map('map',{center:[30,10],zoom:2,minZoom:2,maxZoom:12,worldCopyJump:true,preferCanvas:true,zoomControl:true});
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Teselas &copy; Esri &mdash; Esri, HERE, Garmin, OpenStreetMap',maxZoom:16}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,pane:'overlayPane'}).addTo(map);
+
+function colMB(v){ if(v<=-1000)return '#7f1d1d'; if(v<=-500)return '#dc2626'; if(v<=-200)return '#f97316'; if(v<0)return '#facc15'; return '#38bdf8'; }
+
+let VER='', G=[], SER=null, serP=null, layer=L.layerGroup().addTo(map), markers={}, sel=null, filt='all', charts=[];
+const body=document.getElementById('body');
+
+function getSeries(){ if(!serP) serP=fetch(SER_URL).then(r=>r.json()).then(j=>SER=j); return serP; }
+
+function mk(g){
+  const hasMB=g.mb10!=null, old=hasMB&&g.mb1<2010;
+  const o=hasMB?{radius:old?4.5:5.5,fillColor:old?'#a1a1aa':colMB(g.mb10),color:'#ffffff',weight:1,fillOpacity:old?.8:.95}
+               :{radius:4.5,fillColor:'#ffffff',fillOpacity:.6,color:g.fv<0?'#b45309':'#0369a1',weight:2};
+  const m=L.circleMarker([g.lat,g.lon],o);
+  m.bindTooltip(tc(g.n)+' · '+country(g.c),{className:'gw-tt',direction:'top',offset:[0,-4]});
+  m.on('click',()=>select(g.id,true));
+  return m;
+}
+function draw(){
+  layer.clearLayers(); markers={};
+  // primero los de solo frente, encima los de balance de masa
+  const list=G.filter(g=>filt==='all'||(filt==='mb'&&g.mb10!=null)||(filt==='fv'&&g.fv!=null));
+  const rk=g=>g.mb10==null?0:(g.mb1<2010?1:2); list.sort((a,b)=>rk(a)-rk(b));
+  list.forEach(g=>{const m=mk(g); markers[g.id]=m; m.addTo(layer);});
+  if(sel&&markers[sel]) hi(sel);
+}
+let hiM=null;
+function hi(id){ if(hiM){map.removeLayer(hiM);hiM=null;} const g=G.find(x=>x.id===id); if(!g)return; hiM=L.circleMarker([g.lat,g.lon],{radius:11,color:'#0c4a6e',weight:2.5,fill:false,interactive:false}).addTo(map); }
+
+function killCharts(){ charts.forEach(c=>c.destroy()); charts=[]; }
+
+function intro(){
+  killCharts(); sel=null; if(hiM){map.removeLayer(hiM);hiM=null;}
+  const mb=G.filter(g=>g.mb10!=null&&g.mb1>=2010), neg=mb.filter(g=>g.mb10<0).length;
+  const fv=G.filter(g=>g.fv!=null), ret=fv.filter(g=>g.fv<0).length;
+  const feats=FEAT.map(([n,c])=>G.find(g=>g.n===n&&g.c===c)).filter(Boolean);
+  body.innerHTML='<div class="gw-h">Haz clic en un glaciar</div>'+
+   '<p class="gw-sub">y verás cómo ha evolucionado desde que empezó a medirse.</p>'+
+   '<div class="gw-kpis"><div class="gw-k"><b>'+nf0.format(G.length)+'</b><span>glaciares con series de medidas</span></div>'+
+   '<div class="gw-k neg"><b>'+nf0.format(Math.round(100*neg/mb.length))+' %</b><span>de los glaciares con balance medido desde 2010 pierden masa</span></div>'+
+   '<div class="gw-k neg"><b>'+nf0.format(Math.round(100*ret/fv.length))+' %</b><span>tienen hoy el frente más atrás que al empezar a medirse</span></div>'+
+   '<div class="gw-k"><b>'+nf0.format(G.filter(g=>g.mb10!=null).length)+'</b><span>con balance de masa anual medido en el propio glaciar</span></div></div>'+
+   '<p class="gw-txt">Cada punto es un glaciar con al menos cinco años de observaciones en la base de datos del Servicio Mundial de Vigilancia de Glaciares (WGMS). Los puntos rellenos tienen balance de masa: cuánto hielo ganan o pierden cada año. Los anillos solo tienen medidas de la posición del frente.</p>'+
+   '<div class="gw-ct">Empieza por uno de estos</div><div class="gw-feat">'+feats.map(g=>'<button data-id="'+g.id+'">'+tc(g.n)+'</button>').join('')+'</div>'+
+   src();
+  body.querySelectorAll('.gw-feat button').forEach(b=>b.onclick=()=>select(+b.dataset.id,true));
+}
+function src(){ return '<p class="gw-src">Fuente: <a href="https://wgms.ch/data_databaseversions/" target="_blank" rel="noopener">WGMS: Fluctuations of Glaciers Database</a>, versión '+VER+'. doi:10.5904/wgms-fog-'+VER+'. Balance en metros de equivalente en agua (m eq. a.); 1 m eq. a. ≈ 1,1 m de espesor de hielo.</p>'; }
+
+async function select(id,fly){
+  const g=G.find(x=>x.id===id); if(!g)return;
+  sel=id; hi(id);
+  if(fly) map.flyTo([g.lat,g.lon],Math.max(map.getZoom(),6),{duration:.8});
+  killCharts();
+  body.innerHTML='<button class="gw-back" id="bk">← Volver al resumen</button><div class="gw-h">'+tc(g.n)+'</div><p class="gw-sub">'+country(g.c)+' · '+(REG[g.r]||'')+'</p><p class="gw-txt" style="margin-top:14px">Cargando su historia…</p>';
+  document.getElementById('bk').onclick=intro;
+  try{ await getSeries(); }catch(e){ body.querySelector('.gw-txt').textContent='No se han podido cargar las series. Inténtalo de nuevo en un momento.'; return; }
+  if(sel!==id) return;
+  render(g, SER[id]||[null,null]);
+}
+
+function render(g,s){
+  const mbS=s[0], fvF=s[1];
+  let k='', txt=[], mbYears=[], mbVals=[], cum=[], cumTot=null, y0=null, y1=null;
+  if(mbS){
+    y0=mbS[0]; let c=0;
+    mbS[1].forEach((v,i)=>{ const y=y0+i; if(v==null){return;} c+=v/1000; mbYears.push(y); mbVals.push(v/1000); cum.push(+c.toFixed(2)); });
+    cumTot=c; y1=mbYears[mbYears.length-1];
+    k+='<div class="gw-k '+(g.mb10<0?'neg':'pos')+'"><b>'+fmtS(g.mb10/1000,nf2)+' m</b><span>balance medio anual, últimos 10 años medidos</span></div>';
+    k+='<div class="gw-k '+(cumTot<0?'neg':'pos')+'"><b>'+fmtS(cumTot,nf1)+' m</b><span>eq. agua acumulado '+mbYears[0]+'–'+y1+' ('+mbYears.length+' años medidos)</span></div>';
+    const worst=mbVals.reduce((a,v,i)=>v<a.v?{v,y:mbYears[i]}:a,{v:Infinity,y:null});
+    if(cumTot<0) txt.push('Entre '+mbYears[0]+' y '+y1+' el glaciar ha perdido el equivalente a <b>'+nf1.format(Math.abs(cumTot))+' metros de agua</b> repartidos por toda su superficie, unos '+nf0.format(Math.abs(cumTot)*1.1)+' metros de espesor de hielo.');
+    else txt.push('Entre '+mbYears[0]+' y '+y1+' su balance acumulado es positivo: <b>'+fmtS(cumTot,nf1)+' m eq. agua</b>.');
+    if(y1<2010) txt.push('<i>Ojo: su serie de balance termina en '+y1+', así que no describe su estado actual.</i>');
+    if(worst.y&&worst.v<0) txt.push('Su peor año fue <b>'+worst.y+'</b> ('+fmtS(worst.v,nf2)+' m).');
+  }
+  let fvY=[], fvV=[];
+  if(fvF){ for(let i=0;i<fvF.length;i+=2){ fvY.push(fvF[i]); fvV.push(fvF[i+1]); }
+    const tot=fvV[fvV.length-1], a=fvY[0], b=fvY[fvY.length-1];
+    k+='<div class="gw-k '+(tot<0?'neg':'pos')+'"><b>'+fmtS(tot,nf0)+' m</b><span>cambio de longitud del frente '+a+'–'+b+'</span></div>';
+    if(!mbS) k+='<div class="gw-k"><b>'+(fvY.length-1)+'</b><span>mediciones del frente</span></div>';
+    txt.push(tot<0?'Su frente ha retrocedido <b>'+nf0.format(Math.abs(tot))+' metros</b> entre '+a+' y '+b+(b-a>0?', unos '+nf1.format(Math.abs(tot)/(b-a))+' m al año de media.':'.')
+                  :'Su frente ha avanzado <b>'+nf0.format(tot)+' metros</b> entre '+a+' y '+b+'.');
+  }
+  if(mbS&&!fvF) k+='<div class="gw-k"><b>'+nf0.format(g.lat>0?g.lat:-g.lat)+'° '+(g.lat>0?'N':'S')+'</b><span>latitud</span></div>';
+  body.innerHTML='<button class="gw-back" id="bk">← Volver al resumen</button><div class="gw-h">'+tc(g.n)+'</div><p class="gw-sub">'+country(g.c)+' · '+(REG[g.r]||'')+'</p>'+
+    '<div class="gw-kpis">'+k+'</div><p class="gw-txt">'+txt.join(' ')+'</p>'+
+    (mbS?'<div class="gw-ct">Balance de masa anual y acumulado (m eq. agua)</div><div class="gw-cv"><canvas id="c1"></canvas></div>':'')+
+    (fvF?'<div class="gw-ct">Posición del frente respecto a '+fvY[0]+' (m)</div><div class="gw-cv"><canvas id="c2"></canvas></div>':'')+src();
+  document.getElementById('bk').onclick=intro;
+  Chart.defaults.font.family="'DM Sans',sans-serif"; Chart.defaults.font.size=11; Chart.defaults.color='#6e6e73';
+  const grid={color:'rgba(0,0,0,.06)'};
+  if(mbS){
+    charts.push(new Chart(document.getElementById('c1'),{data:{labels:mbYears,datasets:[
+      {type:'bar',label:'Balance anual',data:mbVals,backgroundColor:mbVals.map(v=>v<0?'rgba(220,38,38,.75)':'rgba(56,189,248,.85)'),yAxisID:'y',order:2},
+      {type:'line',label:'Acumulado',data:cum,borderColor:'#0c4a6e',borderWidth:2,pointRadius:0,tension:.2,yAxisID:'y2',order:1}]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,boxHeight:10}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtS(c.parsed.y,nf2)+' m'}}},
+        scales:{x:{grid:{display:false},ticks:{maxTicksLimit:7,autoSkip:true}},y:{grid,title:{display:true,text:'anual'}},y2:{position:'right',grid:{display:false},title:{display:true,text:'acumulado'}}}}}));
+  }
+  if(fvF){
+    charts.push(new Chart(document.getElementById('c2'),{type:'line',data:{datasets:[{label:'Frente',data:fvY.map((y,i)=>({x:y,y:fvV[i]})),borderColor:'#b45309',backgroundColor:'rgba(180,83,9,.08)',fill:true,borderWidth:2,pointRadius:fvY.length>40?0:2,stepped:false,tension:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtS(c.parsed.y,nf0)+' m respecto a '+fvY[0]}}},
+        scales:{x:{type:'linear',grid:{display:false},ticks:{callback:v=>v,maxTicksLimit:7}},y:{grid}}}}));  }
+  try{ history.replaceState(null,'','#g'+g.id); }catch(e){}
+}
+
+// búsqueda
+const q=document.getElementById('q'), sug=document.getElementById('sug'); let sIdx=-1, sRes=[];
+q.addEventListener('input',()=>{
+  const t=norm(q.value.trim()); if(t.length<2){sug.style.display='none';return;}
+  const al=Object.keys(ALIAS).filter(a=>a.startsWith(t)).map(a=>ALIAS[a]);
+  sRes=G.filter(g=>al.includes(g.n)||norm(g.n).includes(t)||norm(country(g.c)).startsWith(t)).sort((a,b)=>(al.includes(b.n)-al.includes(a.n))||((norm(b.n).startsWith(t))-(norm(a.n).startsWith(t)))||(b.mbN-a.mbN)).slice(0,30);
+  sIdx=-1;
+  sug.innerHTML=sRes.length?sRes.map((g,i)=>'<button data-i="'+i+'">'+tc(g.n)+' <small>· '+country(g.c)+'</small></button>').join(''):'<button disabled><small>Sin resultados</small></button>';
+  sug.style.display='block';
+  sug.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>pick(+b.dataset.i));
+});
+q.addEventListener('keydown',e=>{
+  const bs=sug.querySelectorAll('button[data-i]'); if(!bs.length)return;
+  if(e.key==='ArrowDown'){sIdx=Math.min(sIdx+1,bs.length-1);e.preventDefault();}
+  else if(e.key==='ArrowUp'){sIdx=Math.max(sIdx-1,0);e.preventDefault();}
+  else if(e.key==='Enter'){pick(sIdx<0?0:sIdx);e.preventDefault();return;}
+  else if(e.key==='Escape'){sug.style.display='none';return;}
+  bs.forEach((b,i)=>b.classList.toggle('on',i===sIdx));
+});
+document.addEventListener('click',e=>{ if(!e.target.closest('.gw-search')) sug.style.display='none'; });
+function pick(i){ const g=sRes[i]; if(!g)return; sug.style.display='none'; q.value=tc(g.n); select(g.id,true); }
+
+document.querySelectorAll('#filt button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('#filt button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); filt=b.dataset.f; draw(); });
+
+fetch(IDX_URL).then(r=>r.json()).then(j=>{
+  VER=(j.v||'').replace('WGMS FoG ',''); const f=j.f; G=j.g.map(a=>{const o={}; f.forEach((k,i)=>o[k]=a[i]); return o;});
+  document.getElementById('load').remove();
+  draw(); intro();
+  getSeries();
+  const h=location.hash.match(/^#g(\d+)/); if(h) select(+h[1],true);
+}).catch(()=>{ document.getElementById('load').textContent='No se han podido cargar los datos.'; });
+})();
+</script>
+</body>
+</html>
