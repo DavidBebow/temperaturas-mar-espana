@@ -100,7 +100,14 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase --autostash
+          # 3-10-2026: aqui habia un `git pull --rebase --autostash` ANTES del commit.
+          # Dos pasadas seguidas tocaron los mismos ficheros, el stash no se pudo
+          # reaplicar limpio y se commitearon las marcas <<<<<<< dentro del JSON:
+          # historico y salida rotos 3 horas. Ahora se commitea primero y el rebase
+          # del bucle de push resuelve a favor de esta pasada (-X theirs).
+          if grep -l '^<<<<<<< ' historico_estaciones.json docs/lluvias_municipios.json 2>/dev/null; then
+            echo "Marcas de conflicto en los JSON: no se publica"; exit 1
+          fi
           git add historico_estaciones.json
           # docs/lluvias_municipios.json puede no existir todavia: mientras no
           # haya ningun dia natural cerrado el script guarda historico pero no
