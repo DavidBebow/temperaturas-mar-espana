@@ -1,0 +1,75 @@
+<div class="ctd ctd-hub" id="ctd-hub"><style>.ctd{--ember:#cc4416;--gold:#c98a2b;--red:#CC2200;--cool:#0066CC;--ink:#1d1d1f;--sub:#3a3a3c;--mute:#6e6e73;--line:#e5e5ea;--soft:#f5f5f7;--card:#fff;--n-rojo:#d7191c;--n-naranja:#f28c28;--n-amarillo:#f5c400;max-width:860px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.55;color:var(--ink);-webkit-font-smoothing:antialiased;overflow-wrap:anywhere}
+.ctd *{box-sizing:border-box}
+.ctd a{color:var(--cool);text-decoration:none}
+.ctd a:hover{text-decoration:underline}
+.ctd h2,.ctd h3,.ctd h4,.ctd p,.ctd ol,.ctd ul,.ctd figure{margin:0;padding:0}
+.ctd ol,.ctd ul{list-style:none}
+.ctd-cab{padding:8px 0 20px;border-bottom:1px solid var(--line)}
+.ctd-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--red)}
+.ctd-dot{width:9px;height:9px;border-radius:50%;background:var(--red);animation:ctd-pulso 1.8s ease-out infinite}
+.ctd-fin .ctd-eyebrow{color:var(--mute)}
+.ctd-fin .ctd-dot{background:var(--mute);animation:none}
+@keyframes ctd-pulso{0%{box-shadow:0 0 0 0 rgba(204,34,0,.5)}70%{box-shadow:0 0 0 9px rgba(204,34,0,0)}100%{box-shadow:0 0 0 0 rgba(204,34,0,0)}}
+@media (prefers-reduced-motion:reduce){.ctd-dot{animation:none}}
+.ctd-h{font-size:clamp(24px,5vw,32px);line-height:1.15;font-weight:700;letter-spacing:-.02em;margin:10px 0 6px!important}
+.ctd-act{font-size:13px;color:var(--mute)}
+.ctd-resumen{font-size:18px;line-height:1.5;color:var(--sub);margin-top:14px!important}
+.ctd-nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.ctd-nav a{font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--soft);color:var(--ink)}
+.ctd-sec{padding:28px 0;border-bottom:1px solid var(--line)}
+.ctd-sec>h3,.ctd-sec>h2{font-size:22px;line-height:1.25;font-weight:700;letter-spacing:-.01em;margin-bottom:6px!important}
+.ctd-sec h4{font-size:15px;font-weight:700;margin:20px 0 6px!important}
+.ctd-intro{color:var(--sub)}
+.ctd-nota{font-size:13px;color:var(--mute);margin-top:12px!important}
+.ctd-vacio{color:var(--mute);padding:10px 0}
+.ctd-chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap;line-height:1.4}
+.ctd-rojo{background:var(--n-rojo)}
+.ctd-naranja{background:var(--n-naranja)}
+.ctd-amarillo{background:var(--n-amarillo);color:#3d3000}
+.ctd-sin{background:var(--line);color:var(--sub)}
+.ctd-niveles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 4px}
+.ctd-nivel{background:var(--soft);border-radius:14px;padding:12px 14px}
+.ctd-nivel .ctd-et{display:block;font-size:12px;color:var(--mute);margin-bottom:6px}
+.ctd-aviso{display:grid;grid-template-columns:76px 1fr;gap:2px 10px;align-items:baseline;padding:10px 0;border-top:1px solid var(--line)}
+.ctd-aviso .ctd-chip{text-align:center}
+.ctd-aviso b{font-weight:600}
+.ctd-aviso small{grid-column:2;font-size:13px;color:var(--mute)}
+.ctd-vigor{color:var(--red);font-weight:700}
+.ctd-rank li{padding:10px 0;border-top:1px solid var(--line)}
+.ctd-fila{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.ctd-est{font-weight:600}
+.ctd-mm{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ctd-bar{height:6px;border-radius:3px;background:var(--soft);margin:6px 0;overflow:hidden}
+.ctd-bar i{display:block;height:100%;background:linear-gradient(90deg,#5aa0e6,var(--cool));border-radius:3px}
+.ctd-munis{font-size:13px;color:var(--mute)}
+.ctd-news li{padding:12px 0;border-top:1px solid var(--line)}
+.ctd-meta{display:block;font-size:12px;color:var(--mute);margin-bottom:2px}
+.ctd-meta strong{color:var(--sub);font-weight:600}
+.ctd-news a{color:var(--ink);font-weight:600;line-height:1.4}
+.ctd-videos{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:12px}
+.ctd-video a{color:var(--ink);display:block}
+.ctd-video img{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:12px;display:block;background:var(--soft)}
+.ctd-video b{display:block;font-size:14px;line-height:1.35;margin-top:8px}
+.ctd-posts{display:grid;gap:12px;margin-top:12px}
+.ctd-post{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--card)}
+.ctd-post header{font-size:14px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.ctd-post header span{color:var(--mute)}
+.ctd-post p{margin:8px 0!important;white-space:pre-line}
+.ctd-post footer{font-size:13px}
+.ctd-red{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.ctd-112{display:flex;align-items:center;gap:14px;background:#fff1ee;border-radius:16px;padding:14px 16px;margin:12px 0}
+.ctd-112 strong{font-size:34px;color:var(--red);line-height:1;letter-spacing:-.02em;white-space:nowrap;flex-shrink:0}
+.ctd-enlaces li{padding:7px 0;border-top:1px solid var(--line)}
+.ctd-legal{font-size:13px;color:var(--sub);background:var(--soft);border-radius:12px;padding:12px 14px;margin-top:18px!important}
+.ctd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:12px}
+.ctd-card{border:1px solid var(--line);border-radius:18px;padding:16px;background:var(--card);display:flex;flex-direction:column;gap:6px}
+.ctd-card .ctd-chip{align-self:flex-start}
+.ctd-card h3{font-size:20px;line-height:1.2;font-weight:700;letter-spacing:-.01em}
+.ctd-card p{font-size:14px;color:var(--sub)}
+.ctd-card .ctd-ir{margin-top:auto;padding-top:6px;font-weight:600}
+.ctd-nac li{display:grid;grid-template-columns:76px 1fr;gap:2px 10px;align-items:baseline;padding:9px 0;border-top:1px solid var(--line)}
+.ctd-nac .ctd-chip{text-align:center}
+.ctd-nac small{grid-column:2;font-size:13px;color:var(--mute)}
+.ctd-mas summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--cool);padding:10px 0;border-top:1px solid var(--line)}
+.ctd-hist li{padding:9px 0;border-top:1px solid var(--line)}
+@media (max-width:520px){.ctd-niveles{grid-template-columns:1fr}.ctd-resumen{font-size:17px}.ctd-aviso,.ctd-nac li{grid-template-columns:68px 1fr}}</style><header class="ctd-cab"><p class="ctd-eyebrow"><span class="ctd-dot"></span>Temporales en directo</p><p class="ctd-act">Última actualización: <time datetime="2026-10-03T18:01+02:00">sáb 3 oct, 18:01</time> · Se actualiza cada 30 minutos</p><p class="ctd-resumen">Cobertura en directo de los episodios de lluvias intensas y temporales en España: avisos de AEMET, lluvia registrada, noticias y avisos de las autoridades.</p></header><section class="ctd-sec" id="ctd-ahora"><h2>En directo ahora</h2><div class="ctd-cards"><article class="ctd-card"><span class="ctd-chip ctd-rojo">aviso rojo hoy</span><h3>Barcelona</h3><p>Avisos hasta dom 4 oct, 17:59</p><p>Máximo de lluvia hoy: 34,9 mm en Barcelona Aeropuerto</p><p>21 noticias recogidas</p><a class="ctd-ir" href="https://calentamientoglobal.es/temporal-barcelona/">Seguir el directo →</a></article><article class="ctd-card"><span class="ctd-chip ctd-naranja">aviso naranja hoy</span><h3>Girona</h3><p>Avisos hasta dom 4 oct, 23:59</p><p>Máximo de lluvia hoy: 6,0 mm en Sant Pau de Seguries</p><p>1 noticias recogidas</p><a class="ctd-ir" href="https://calentamientoglobal.es/temporal-girona/">Seguir el directo →</a></article></div></section><section class="ctd-sec" id="ctd-nacional"><h2>Avisos naranja y rojo en vigor ahora</h2><ul class="ctd-nac"><li><span class="ctd-chip ctd-naranja">naranja</span><b>Barcelona</b><small>Lluvias · hasta sáb 3 oct, 23:59</small></li><li><span class="ctd-chip ctd-naranja">naranja</span><b>Cantabria</b><small>Lluvias · hasta dom 4 oct, 07:59</small></li><li><span class="ctd-chip ctd-naranja">naranja</span><b>Girona</b><small>Lluvias · hasta dom 4 oct, 05:59</small></li><li><span class="ctd-chip ctd-naranja">naranja</span><b>Illes Balears</b><small>Tormentas y Lluvias · hasta sáb 3 oct, 19:59</small></li><li><span class="ctd-chip ctd-naranja">naranja</span><b>Madrid</b><small>Lluvias · hasta dom 4 oct, 05:59</small></li><li><span class="ctd-chip ctd-naranja">naranja</span><b>Tarragona</b><small>Lluvias · hasta sáb 3 oct, 23:59</small></li></ul><h4>Previstos en las próximas horas</h4><ul class="ctd-nac"><li><span class="ctd-chip ctd-rojo">rojo</span><b>Barcelona</b><small>Lluvias · desde sáb 3 oct, 21:00</small></li><li><span class="ctd-chip ctd-rojo">rojo</span><b>Girona</b><small>Lluvias · desde dom 4 oct, 00:00</small></li><li><span class="ctd-chip ctd-naranja">naranja</span><b>Asturias</b><small>Lluvias · desde dom 4 oct, 00:00</small></li></ul><p class="ctd-nota">Fuente: AEMET vía MeteoAlarm (EUMETNET). Datos de las sáb 3 oct, 18:01. <a href="https://www.aemet.es/es/eltiempo/prediccion/avisos" rel="nofollow noopener" target="_blank">Todos los avisos en AEMET</a></p></section><p class="ctd-legal">Esta página reúne información publicada por terceros y datos de AEMET. No sustituye a los avisos oficiales: ante una emergencia, llama al 112.</p></div>
