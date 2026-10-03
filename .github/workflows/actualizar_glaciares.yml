@@ -38,4 +38,9 @@ jobs:
           git add docs/glaciares/indice.json docs/glaciares/series.json
           git diff --cached --quiet && exit 0
           git commit -m "Glaciares WGMS $(date -u +'%F %H:%M')"
-          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
+          for i in 1 2 3; do
+            git push && exit 0
+            git pull --rebase --autostash || true
+            sleep 5
+          done
+          exit 1
