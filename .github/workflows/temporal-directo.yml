@@ -1,0 +1,60 @@
+name: Temporales en directo
+
+on:
+  workflow_run:
+    workflows: ["Actualizar avisos meteorológicos"]
+    types: [completed]
+  schedule:
+    - cron: "7,37 * * * *"   # respaldo por si el anterior no dispara
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporal-directo
+  cancel-in-progress: false
+
+jobs:
+  directo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Traer los scripts privados
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: clima-scripts
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install --quiet requests feedparser
+
+      - name: Actualizar directos
+        env:
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          git pull --rebase --autostash || true   # trae el avisos.json recién publicado
+          python clima-scripts/temporal_directo.py \
+            --config estado/temporales.json \
+            --estado estado/temporal_directo \
+            --docs docs
+
+      - name: Guardar estado
+        if: always()
+        run: |
+          git config user.name  "clima-directo-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add estado
+          if git diff --staged --quiet; then echo "Sin cambios de estado."; else git commit -m "Temporales en directo: estado [skip ci]"; git push; fi
