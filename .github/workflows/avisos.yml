@@ -39,4 +39,10 @@ jobs:
           git config user.email "actions@github.com"
           git add docs/avisos.json docs/avisos_historico.json
           git diff --cached --quiet || git commit -m "Avisos meteorológicos $(date -u +'%F %H:%M')"
-          git push
+          # 3-10-2026: dos pasadas fallaron porque otro flujo empujo a la vez.
+          # Si el push se rechaza, se rebasa (gana esta pasada) y se reintenta.
+          for i in 1 2 3 4 5; do
+            git push && break
+            git pull --rebase -X theirs origin main || { git rebase --abort; true; }
+            sleep $((i*5))
+          done
