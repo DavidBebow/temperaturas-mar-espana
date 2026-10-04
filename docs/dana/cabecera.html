@@ -16,21 +16,21 @@
   .cg-hd a{color:inherit}
 
   /* Estado: ¿viene una DANA? */
-  .cg-estado{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 22px;align-items:center;
+  .cg-estado{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;justify-items:center;text-align:center;
     border:1px solid var(--line);border-radius:18px;padding:18px 20px;background:var(--tile);min-height:186px}
-  .cg-estado .et{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px}
+  .cg-estado .et{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px}
   .cg-pulso{color:rgba(125,211,160,.6);width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(125,211,160,.6);animation:p 2s infinite}
   .cg-hd.alerta .cg-pulso{color:rgba(255,106,43,.6);background:var(--ember);box-shadow:0 0 0 0 rgba(255,106,43,.6)}
   @keyframes p{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 9px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}
   .cg-estado h2{font-size:25px;line-height:1.18;letter-spacing:-.02em;font-weight:750;margin:0;color:var(--ink)}
-  .cg-estado h2 em{font-style:normal;color:var(--ember-2)}
+  .cg-estado h2 em{font-style:normal;color:var(--ember-2);white-space:nowrap}
   .cg-hd.calma .cg-estado h2 em{color:var(--ok)}
-  .cg-estado .sub{font-size:13.5px;color:var(--ink-2);margin:8px 0 0;line-height:1.45}
+  .cg-estado .sub{font-size:13.5px;color:var(--ink-2);margin:8px auto 0;line-height:1.45;max-width:640px}
   .cg-ir{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:650;text-decoration:none;
     background:var(--ink);color:#1a1612 !important;border-radius:999px;padding:9px 15px;white-space:nowrap}
   .cg-ir:hover{background:#fff}
 
-  .cg-dias{grid-column:1 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+  .cg-dias{width:100%;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
   .cg-dia{border-radius:10px;padding:6px 4px 7px;text-align:center;background:rgba(255,255,255,.05);border:1px solid transparent}
   .cg-dia .d{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:650}
   .cg-dia .n{font-size:15px;font-weight:700;color:var(--ink-2);line-height:1.2;margin-top:1px}
@@ -40,9 +40,9 @@
 
   /* Tres cifras */
   .cg-cifras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
-  .cg-c{border:1px solid var(--line);border-radius:18px;padding:16px 18px 14px;background:var(--tile);min-height:204px;display:flex;flex-direction:column;overflow:hidden}
+  .cg-c{border:1px solid var(--line);border-radius:18px;padding:16px 18px 14px;background:var(--tile);min-height:204px;display:flex;flex-direction:column;overflow:hidden;text-align:center}
   .cg-c .et{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
-  .cg-c .v{font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--ink);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .cg-c .v{font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--ink);display:flex;align-items:baseline;justify-content:center;gap:8px;flex-wrap:wrap}
   .cg-c .v small{font-size:15px;font-weight:650;letter-spacing:0}
   .cg-c .v .tag{font-size:12px;font-weight:700;letter-spacing:.02em;border-radius:999px;padding:3px 8px;background:rgba(255,106,43,.2);color:var(--ember-2)}
   .cg-c .v .tag.frio{background:rgba(111,179,255,.18);color:var(--cool)}
@@ -57,7 +57,7 @@
   .cg-barra .ml{position:absolute;top:-22px;transform:translateX(-50%);font-size:10.5px;color:var(--ink-2);white-space:nowrap}
   .cg-barra .ex{position:absolute;top:16px;font-size:10.5px;color:var(--ink-3)}
 
-  .cg-pie{font-size:11.5px;color:var(--ink-3);margin:10px 2px 0;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cg-pie{font-size:11.5px;color:var(--ink-3);margin:10px 2px 0;text-align:center;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
   @media (max-width:860px){
     .cg-cifras{grid-template-columns:1fr 1fr}
@@ -66,7 +66,6 @@
   @media (max-width:640px){
     .cg-estado{grid-template-columns:1fr;min-height:0;padding:16px}
     .cg-estado h2{font-size:21px}
-    .cg-estado .cg-ir{justify-self:start;order:3}
     .cg-dias{gap:4px}
     .cg-dia .n{font-size:14px}
     .cg-dia .d{font-size:9.5px;letter-spacing:.03em}
@@ -86,8 +85,8 @@
       <h2 id="eTit">Buscando DANAs en la última pasada del modelo…</h2>
       <p class="sub" id="eSub">&nbsp;</p>
     </div>
-    <a class="cg-ir" href="https://calentamientoglobal.es/dana/#detector" target="_top">Ver el detector <span aria-hidden="true">↓</span></a>
     <div class="cg-dias" id="dias" aria-label="Días con una DANA sobre España según el modelo"></div>
+    <a class="cg-ir" href="https://calentamientoglobal.es/dana/#detector" target="_top">Ver el detector <span aria-hidden="true">↓</span></a>
   </div>
 
   <div class="cg-cifras">
