@@ -1,0 +1,86 @@
+name: Actualizar temporada de DANAs
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+#
+# Pagina /dana/ de calentamientoglobal.es. El script (dana_generar.py) vive en
+# clima-scripts (privado), como el resto. Deja en docs/dana/:
+#   prevision.json             detector de DANAs sobre la ultima pasada de ECMWF
+#   temporada.json             dias con DANA este ano frente a 1991-2020 (NCEP/NCAR)
+#   catalogo.json              todas las DANAs detectadas sobre Espana desde 1948
+#   mediterraneo.json          temperatura del mar de la caja levantina y su normal
+#   mediterraneo_historico.json  serie diaria desde 1981 (OISST)
+#
+# Modo "historico": rehace el archivo completo (1948-hoy y el mar desde 1981).
+# Se lanza UNA vez a mano la primera vez; luego basta el diario.
+
+on:
+  schedule:
+    # Dos pasadas: la de 00Z de ECMWF sale en abierto hacia las 08 UTC y la de
+    # 12Z hacia las 20 UTC. Fuera de la hora en punto, que GitHub va atascado.
+    - cron: '41 8,20 * * *'
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: 'diario o historico'
+        required: false
+        default: 'diario'
+
+concurrency:
+  group: dana
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar librerias
+        run: pip install --quiet eccodes ecmwf-opendata numpy netCDF4
+
+      - name: Ejecutar script
+        env:
+          CG_SALIDA: docs/dana
+          CG_TMP: ${{ runner.temp }}/dana
+          CG_AVISOS: docs/avisos_historico.json
+          CG_MODO: ${{ github.event.inputs.modo || 'diario' }}
+        run: python privado/dana_generar.py
+
+      - name: Publicar cambios
+        # SIEMPRE: si una de las tres piezas falla, lo que haya salido de las
+        # otras se publica igual.
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if grep -rl '^<<<<<<< ' docs/dana 2>/dev/null; then
+            echo "Marcas de conflicto en docs/dana: no se publica"; exit 1
+          fi
+          [ -d docs/dana ] && git add docs/dana || true
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "DANA: $(date -u +%Y-%m-%d\ %H:%M) UTC"
+            # Commit primero y rebase despues, a favor de esta pasada (ver el
+            # incidente del 3-10-2026 en actualizar_lluvias_municipios.yml).
+            for i in 1 2 3 4 5; do
+              git push && break
+              git pull --rebase -X theirs origin main || { git rebase --abort; true; }
+              sleep $((i*5))
+            done
+          fi
