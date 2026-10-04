@@ -166,7 +166,7 @@
         ': '+(fmtDia.format(a)===fmtDia.format(b) ? 'el '+fmtDia.format(a) : 'del '+fmtDia.format(a)+' al '+fmtDia.format(b));
       $('subtitular').textContent='Una DANA no es un aviso de lluvia: según dónde se coloque puede dejar tormentas fuertes o pasar casi en seco. Para saber qué va a pasar en tu zona, mira los avisos de AEMET.';
     } else if(D.sistemas.length){
-      $('titular').textContent='Hay DANAs en el mapa, pero ninguna se acerca a España en los próximos 7 días';
+      $('titular').textContent=D.sistemas.length===1?'Hay una DANA en el mapa, pero no se acerca a España en los próximos 7 días':'Hay '+D.sistemas.length+' DANAs en el mapa, pero ninguna se acerca a España en los próximos 7 días';
       $('subtitular').textContent='El detector sigue las bajas aisladas en altura en todo el Atlántico norte y el Mediterráneo, y avisa cuando alguna entra en la zona vigilada.';
     } else {
       $('titular').textContent='Ninguna DANA a la vista en los próximos 7 días';
