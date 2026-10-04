@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DANA ahora · calentamientoglobal.es</title>
+<style>
+    html,body{margin:0;padding:0;background:transparent}
+  .cg-hd{
+    --ink:#f7f4ef; --ink-2:#cfc6ba; --ink-3:#958b7e; --line:rgba(255,255,255,.12);
+    --tile:rgba(255,255,255,.055); --ember:#ff6a2b; --ember-2:#ffb48a; --cool:#6fb3ff; --ok:#7dd3a0;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums;
+  }
+  .cg-hd *{box-sizing:border-box}
+  .cg-hd a{color:inherit}
+
+  /* Estado: ¿viene una DANA? */
+  .cg-estado{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 22px;align-items:center;
+    border:1px solid var(--line);border-radius:18px;padding:18px 20px;background:var(--tile);min-height:186px}
+  .cg-estado .et{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px}
+  .cg-pulso{color:rgba(125,211,160,.6);width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(125,211,160,.6);animation:p 2s infinite}
+  .cg-hd.alerta .cg-pulso{color:rgba(255,106,43,.6);background:var(--ember);box-shadow:0 0 0 0 rgba(255,106,43,.6)}
+  @keyframes p{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 9px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}
+  .cg-estado h2{font-size:25px;line-height:1.18;letter-spacing:-.02em;font-weight:750;margin:0;color:var(--ink)}
+  .cg-estado h2 em{font-style:normal;color:var(--ember-2)}
+  .cg-hd.calma .cg-estado h2 em{color:var(--ok)}
+  .cg-estado .sub{font-size:13.5px;color:var(--ink-2);margin:8px 0 0;line-height:1.45}
+  .cg-ir{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:650;text-decoration:none;
+    background:var(--ink);color:#1a1612 !important;border-radius:999px;padding:9px 15px;white-space:nowrap}
+  .cg-ir:hover{background:#fff}
+
+  .cg-dias{grid-column:1 / -1;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+  .cg-dia{border-radius:10px;padding:6px 4px 7px;text-align:center;background:rgba(255,255,255,.05);border:1px solid transparent}
+  .cg-dia .d{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:650}
+  .cg-dia .n{font-size:15px;font-weight:700;color:var(--ink-2);line-height:1.2;margin-top:1px}
+  .cg-dia.si{background:rgba(255,106,43,.22);border-color:rgba(255,106,43,.55)}
+  .cg-dia.si .d{color:var(--ember-2)} .cg-dia.si .n{color:#fff}
+  .cg-dia.hoy{border-color:rgba(255,255,255,.35)}
+
+  /* Tres cifras */
+  .cg-cifras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+  .cg-c{border:1px solid var(--line);border-radius:18px;padding:16px 18px 14px;background:var(--tile);min-height:204px;display:flex;flex-direction:column;overflow:hidden}
+  .cg-c .et{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+  .cg-c .v{font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--ink);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .cg-c .v small{font-size:15px;font-weight:650;letter-spacing:0}
+  .cg-c .v .tag{font-size:12px;font-weight:700;letter-spacing:.02em;border-radius:999px;padding:3px 8px;background:rgba(255,106,43,.2);color:var(--ember-2)}
+  .cg-c .v .tag.frio{background:rgba(111,179,255,.18);color:var(--cool)}
+  .cg-c .t{font-size:13px;line-height:1.4;color:var(--ink-2);margin:7px 0 0}
+  .cg-c .t b{color:var(--ink);font-weight:650}
+  .cg-c .viz{margin-top:auto;height:52px;position:relative}
+  .cg-c svg{display:block;width:100%;height:100%;overflow:visible}
+
+  .cg-barra{position:relative;height:10px;border-radius:999px;background:rgba(255,255,255,.08);margin:22px 0 0}
+  .cg-barra i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#ff8a50,#ff5a1a)}
+  .cg-barra .m{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink);border-radius:2px}
+  .cg-barra .ml{position:absolute;top:-22px;transform:translateX(-50%);font-size:10.5px;color:var(--ink-2);white-space:nowrap}
+  .cg-barra .ex{position:absolute;top:16px;font-size:10.5px;color:var(--ink-3)}
+
+  .cg-pie{font-size:11.5px;color:var(--ink-3);margin:10px 2px 0;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  @media (max-width:860px){
+    .cg-cifras{grid-template-columns:1fr 1fr}
+    .cg-cifras .cg-c:last-child{grid-column:1 / -1}
+  }
+  @media (max-width:640px){
+    .cg-estado{grid-template-columns:1fr;min-height:0;padding:16px}
+    .cg-estado h2{font-size:21px}
+    .cg-estado .cg-ir{justify-self:start;order:3}
+    .cg-dias{gap:4px}
+    .cg-dia .n{font-size:14px}
+    .cg-dia .d{font-size:9.5px;letter-spacing:.03em}
+    .cg-cifras{grid-template-columns:1fr}
+    .cg-cifras .cg-c:last-child{grid-column:auto}
+    .cg-c{min-height:186px}
+    .cg-c .v{font-size:36px}
+    .cg-pie{white-space:normal}
+  }
+</style>
+</head>
+<body>
+<div class="cg-hd" id="hd">
+  <div class="cg-estado">
+    <div>
+      <p class="et"><span class="cg-pulso"></span><span id="eEt">Modelo europeo · próximos 7 días</span></p>
+      <h2 id="eTit">Buscando DANAs en la última pasada del modelo…</h2>
+      <p class="sub" id="eSub">&nbsp;</p>
+    </div>
+    <a class="cg-ir" href="https://calentamientoglobal.es/dana/#detector" target="_top">Ver el detector <span aria-hidden="true">↓</span></a>
+    <div class="cg-dias" id="dias" aria-label="Días con una DANA sobre España según el modelo"></div>
+  </div>
+
+  <div class="cg-cifras">
+    <div class="cg-c">
+      <p class="et">El combustible · el mar</p>
+      <div class="v"><span id="mV">–</span><span class="tag" id="mTag" hidden></span></div>
+      <p class="t" id="mT">&nbsp;</p>
+      <div class="viz"><svg id="mSvg" viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+    </div>
+    <div class="cg-c">
+      <p class="et" id="aEt">Días con DANA este año</p>
+      <div class="v"><span id="aV">–</span><span class="tag" id="aTag" hidden></span></div>
+      <p class="t" id="aT">&nbsp;</p>
+      <div class="viz"><div class="cg-barra" id="aBar"></div></div>
+    </div>
+    <div class="cg-c">
+      <p class="et">Cuándo llegan · días al mes</p>
+      <div class="v"><span id="oV">–</span><span class="tag frio" id="oTag" hidden></span></div>
+      <p class="t" id="oT">&nbsp;</p>
+      <div class="viz"><svg id="oSvg" viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+    </div>
+  </div>
+  <p class="cg-pie" id="pie">Datos: ECMWF (datos abiertos), NOAA OISST y reanálisis. Detector propio en 500 hPa.</p>
+</div>
+<script>
+(function(){
+  const qs=new URLSearchParams(location.search);
+  const BASE=qs.get('base')||'https://davidbebow.github.io/temperaturas-mar-espana/dana/';
+  const $=id=>document.getElementById(id);
+  const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const MES3=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const DSEM=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const DS3=['dom','lun','mar','mié','jue','vie','sáb'];
+  const nf=(v,d=1)=>Number(v).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const ni=v=>Number(v).toLocaleString('es-ES',{maximumFractionDigits:1});
+  const U=s=>new Date(s.length<=10?s+'T12:00Z':s.replace(/Z?$/,'Z').replace('ZZ','Z'));
+  const dia=d=>d.toISOString().slice(0,10);
+  const fechaCorta=s=>{const d=U(s);return d.getUTCDate()+' '+MES3[d.getUTCMonth()];};
+  const fechaLarga=s=>{const d=U(s);return DSEM[d.getUTCDay()]+' '+d.getUTCDate();};
+  const signo=v=>(v>0?'+':v<0?'−':'')+nf(Math.abs(v));
+  const ord=n=>n+'.º';
+  const get=f=>fetch(BASE+f+'.json?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json();}).catch(()=>null);
+
+  Promise.all([get('prevision'),get('temporada'),get('mediterraneo')]).then(([P,T,M])=>{
+    const pie=[];
+    /* ---------- 1. Estado de la previsión ---------- */
+    if(P){
+      const run=U(P.run), hd=$('hd');
+      const sis=(P.sistemas||[]).filter(s=>s.afecta);
+      const diasSi=new Set();
+      sis.forEach(s=>{
+        const a=U(s.esp_desde||s.desde), b=U(s.esp_hasta||s.hasta);
+        for(let t=new Date(Date.UTC(a.getUTCFullYear(),a.getUTCMonth(),a.getUTCDate()));t<=b;t=new Date(t.getTime()+864e5)) diasSi.add(dia(t));
+      });
+      const hoy=dia(new Date()), cont=$('dias');
+      for(let i=0;i<8;i++){
+        const d=new Date(Date.UTC(run.getUTCFullYear(),run.getUTCMonth(),run.getUTCDate()+i)), k=dia(d);
+        const el=document.createElement('div');
+        el.className='cg-dia'+(diasSi.has(k)?' si':'')+(k===hoy?' hoy':'');
+        el.title=DSEM[d.getUTCDay()]+' '+d.getUTCDate()+' de '+MESES[d.getUTCMonth()]+(diasSi.has(k)?': DANA sobre España':': sin DANA sobre España');
+        el.innerHTML='<div class="d">'+(k===hoy?'hoy':DS3[d.getUTCDay()])+'</div><div class="n">'+d.getUTCDate()+'</div>';
+        cont.appendChild(el);
+      }
+      if(sis.length){
+        hd.classList.add('alerta');
+        const ini=sis.map(s=>s.esp_desde||s.desde).sort()[0], fin=sis.map(s=>s.esp_hasta||s.hasta).sort().slice(-1)[0];
+        const tmin=Math.min(...sis.map(s=>s.min_t));
+        const mismo=dia(U(ini))===dia(U(fin));
+        $('eTit').innerHTML='El modelo europeo ve una DANA sobre España '+(mismo?'el <em>'+fechaLarga(ini)+'</em>':'del <em>'+fechaLarga(ini)+'</em> al <em>'+fechaLarga(fin)+'</em>');
+        $('eSub').textContent=(sis.length>1?sis.length+' sistemas. ':'')+'Núcleo frío de hasta '+(tmin<0?'−':'')+nf(Math.abs(tmin))+' °C a 5.500 m. Que haya DANA no significa que vaya a llover fuerte en todas partes: depende de dónde se coloque. Consulta los avisos de AEMET.';
+      } else {
+        hd.classList.add('calma');
+        $('eTit').innerHTML='<em>Ninguna DANA</em> sobre España en los próximos 7 días';
+        const n=(P.sistemas||[]).length;
+        $('eSub').textContent=n?'El modelo ve '+(n===1?'una baja aislada':n+' bajas aisladas')+' en altura, pero lejos de la Península.':'El modelo no ve bajas aisladas en altura cerca de la Península.';
+      }
+      $('eEt').textContent='Modelo europeo · pasada del '+fechaCorta(P.run)+', '+P.run.slice(11,13)+' UTC';
+      pie.push('previsión ECMWF '+fechaCorta(P.run));
+    } else {
+      $('eTit').textContent='La previsión no está disponible ahora mismo';
+    }
+
+    /* ---------- 2. Mar ---------- */
+    if(M){
+      $('mV').innerHTML=nf(M.sst)+'<small> °C</small>';
+      if(M.anomalia!=null){$('mTag').hidden=false;$('mTag').textContent=signo(M.anomalia)+' °C';if(M.anomalia<0)$('mTag').classList.add('frio');}
+      const rec=M.puesto_para_la_fecha===1;
+      $('mT').innerHTML='Mediterráneo occidental el '+fechaCorta(M.ultimo)+'. Lo normal es '+nf(M.normal)+' °C. '+
+        (rec?'<b>Récord para esa fecha</b> en '+M.de+' años de satélite.':'El '+ord(M.puesto_para_la_fecha)+' más caliente para esa fecha de '+M.de+' años.');
+      // sparkline 90 días + banda normal
+      const S=(M.serie_actual||[]).slice(-90);
+      if(S.length>5){
+        const C={}; (M.clim||[]).forEach(c=>C[c[0]]=c);
+        const pts=S.map(s=>({v:s[1],c:C[s[0].slice(5)]}));
+        const vals=pts.flatMap(p=>[p.v].concat(p.c?[p.c[2],p.c[3]]:[]));
+        const lo=Math.min(...vals)-.2, hi=Math.max(...vals)+.2, W=300, H=52;
+        const x=i=>i/(pts.length-1)*W, y=v=>H-(v-lo)/(hi-lo)*H;
+        let band='', top=[], bot=[];
+        pts.forEach((p,i)=>{if(p.c){top.push(x(i).toFixed(1)+','+y(p.c[3]).toFixed(1));bot.unshift(x(i).toFixed(1)+','+y(p.c[2]).toFixed(1));}});
+        if(top.length) band='<polygon points="'+top.concat(bot).join(' ')+'" fill="rgba(255,255,255,.10)"/>';
+        const med=pts.map((p,i)=>p.c?x(i).toFixed(1)+','+y(p.c[1]).toFixed(1):null).filter(Boolean).join(' ');
+        const lin=pts.map((p,i)=>x(i).toFixed(1)+','+y(p.v).toFixed(1)).join(' ');
+        const L=pts[pts.length-1];
+        $('mSvg').innerHTML=band+'<polyline points="'+med+'" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>'+
+          '<polyline points="'+lin+'" fill="none" stroke="#ff6a2b" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'+
+          '<circle cx="'+W+'" cy="'+y(L.v).toFixed(1)+'" r="3.2" fill="#ff6a2b"/>';
+      }
+      pie.push('mar NOAA OISST '+fechaCorta(M.ultimo));
+    }
+
+    /* ---------- 3. Año y 4. Meses ---------- */
+    if(T){
+      const y=T.anio_hasta_hoy;
+      $('aEt').textContent='Días con DANA en '+T.anio;
+      $('aV').innerHTML=y.dias+'<small> días</small>';
+      const dif=y.dias-y.media_1991_2020;
+      $('aTag').hidden=false; $('aTag').textContent=(dif>=0?'+':'−')+ni(Math.abs(dif))+' vs normal'; if(dif<0)$('aTag').classList.add('frio');
+      $('aT').innerHTML='Hasta el '+fechaCorta(T.ultimo_dato)+'. Lo normal a estas alturas son '+ni(y.media_1991_2020)+'. '+
+        (y.puesto<=10?'<b>'+ord(y.puesto)+' año con más</b> desde 1958.':'Puesto '+y.puesto+' de '+y.de+' desde 1958.');
+      const mx=Math.max(y.max?y.max[0]:y.dias,y.dias,y.media_1991_2020)*1.02;
+      $('aBar').innerHTML='<i style="width:'+(y.dias/mx*100).toFixed(1)+'%"></i>'+
+        '<span class="m" style="left:'+(y.media_1991_2020/mx*100).toFixed(1)+'%"></span>'+
+        '<span class="ml" style="left:'+(y.media_1991_2020/mx*100).toFixed(1)+'%">normal '+ni(y.media_1991_2020)+'</span>'+
+        (y.max?'<span class="ex" style="right:0">récord: '+y.max[0]+' en '+y.max[1]+'</span>':'');
+
+      const o=T.otono_hasta_hoy, mm=T.mensual_1991_2020||[];
+      $('oV').innerHTML=o.dias+'<small> '+(o.dias===1?'día':'días')+' este otoño</small>';
+      const od=o.dias-o.media_1991_2020;
+      $('oTag').hidden=false; $('oTag').textContent=(od>=0?'+':'−')+ni(Math.abs(od)); if(od>0)$('oTag').classList.remove('frio');
+      // meses pico
+      const orden=mm.slice().sort((a,b)=>b.media-a.media).slice(0,2).map(m=>MESES[m.m-1]).sort((a,b)=>MESES.indexOf(a)-MESES.indexOf(b));
+      $('oT').innerHTML='Lo normal desde el 1 de septiembre son '+ni(o.media_1991_2020)+'. Los meses con más DANAs son <b>'+orden.join(' y ')+'</b>.';
+      if(mm.length===12){
+        const W=300,H=52,bw=W/12, mxm=Math.max(...mm.map(m=>Math.max(m.media,m.actual||0)))||1;
+        const mesAct=U(T.ultimo_dato).getUTCMonth()+1;
+        let s='';
+        mm.forEach((m,i)=>{
+          const h=Math.max(2,m.media/mxm*(H-12)), xx=i*bw+bw*.18, w=bw*.64;
+          s+='<rect x="'+xx.toFixed(1)+'" y="'+(H-12-h).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="2" fill="'+(m.m===mesAct?'#ff6a2b':'rgba(255,255,255,.28)')+'"/>'+
+             '<text x="'+(i*bw+bw/2).toFixed(1)+'" y="'+H+'" text-anchor="middle" font-size="9" fill="'+(m.m===mesAct?'#ffb48a':'#958b7e')+'">'+'EFMAMJJASOND'[i]+'</text>';
+        });
+        $('oSvg').setAttribute('preserveAspectRatio','xMidYMid meet');
+        $('oSvg').innerHTML=s;
+      }
+      pie.push('temporada hasta el '+fechaCorta(T.ultimo_dato));
+    }
+    if(pie.length) $('pie').textContent='Actualizado: '+pie.join(' · ')+'. Detector propio en 500 hPa (criterios de Nieto et al.).';
+  });
+})();
+</script>
+</body>
+</html>
