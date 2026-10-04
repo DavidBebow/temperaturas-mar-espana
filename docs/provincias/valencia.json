@@ -3,8 +3,8 @@
  "provincia": "Valencia",
  "ccaa": "Comunitat Valenciana",
  "capital": "Valencia",
- "generado": "2026-10-03T20:17+02:00",
- "fecha_legible": "03/10/2026 a las 20:17",
+ "generado": "2026-10-04T14:52+02:00",
+ "fecha_legible": "04/10/2026 a las 14:52",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -33,72 +33,91 @@
   },
   "firma_climatica": {
    "nombre": "Valencia",
-   "tmax": 23.9,
+   "tmax": 24.9,
    "retorno_antes": 0.1,
-   "retorno_ahora": 0.2,
+   "retorno_ahora": 0.1,
    "tope_anios": 30.0,
    "sin_precedente": false,
-   "max_antes": 34.6,
-   "delta": 1.3,
+   "max_antes": 33.4,
+   "delta": 1.0,
    "delta_es_cota": false,
-   "percentil": 29.0,
+   "percentil": 46.7,
    "lado": "frio",
    "racha_sin_precedente": 0
   },
   "avisos": {
-   "total": 0,
+   "total": 2,
    "rojos": 0,
    "naranjas": 0,
-   "amarillos": 0,
-   "items": []
+   "amarillos": 2,
+   "items": [
+    {
+     "zona": "Interior norte de Valencia",
+     "nivel": "amarillo",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-10-05T00:00+02:00",
+     "fin": "2026-10-05T03:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Interior norte de Valencia",
+     "nivel": "amarillo",
+     "tipo": "Tormentas",
+     "icono": "⛈️",
+     "inicio": "2026-10-05T00:00+02:00",
+     "fin": "2026-10-05T03:59+02:00",
+     "activo_ya": false
+    }
+   ]
   },
   "mar": [
    {
     "id": "valencia",
     "nombre": "Valencia",
-    "temperatura_actual": null,
-    "anomalia": null,
-    "etiqueta_anomalia": "Sin datos",
-    "dias_consecutivos": null,
-    "signo_consecutivo": null
+    "temperatura_actual": 25.1,
+    "anomalia": 2.6,
+    "etiqueta_anomalia": "Muy por encima de la media",
+    "dias_consecutivos": 2,
+    "signo_consecutivo": "positiva"
    }
   ],
   "nivel_mar": [
    {
     "id": "valencia",
     "nombre": "Valencia",
-    "sla_actual_cm": 15.6,
-    "desviacion_cm": 15.0,
+    "sla_actual_cm": 16.2,
+    "desviacion_cm": 15.6,
     "etiqueta_anomalia": "Nivel muy elevado",
-    "dias_consecutivos": 142
+    "dias_consecutivos": 143
    },
    {
     "id": "valencia_sur",
     "nombre": "Costa Valencia Sur",
-    "sla_actual_cm": 15.1,
-    "desviacion_cm": 14.5,
+    "sla_actual_cm": 15.6,
+    "desviacion_cm": 15.0,
     "etiqueta_anomalia": "Nivel muy elevado",
-    "dias_consecutivos": 142
+    "dias_consecutivos": 143
    }
   ],
   "incendios_ccaa": {
    "nombre": "Comunidad Valenciana",
-   "focos_activos": 1,
+   "focos_activos": 5,
    "tiene_fuego": true,
    "etiqueta": "Actividad baja",
    "dias_consecutivos": 0,
    "dias_anio_actual": 14
   },
   "lluvias": {
-   "mm_ayer": 71.9,
-   "mm_semana": 107.7,
-   "mm_anual": 330.2,
+   "mm_ayer": 24.1,
+   "mm_semana": 131.8,
+   "mm_anual": 354.3,
    "media_anual_mm": 423.8,
-   "media_hasta_hoy_mm": 290.8,
-   "anomalia_semana_pct": 703.7,
-   "anomalia_anual_pct": 13.5,
+   "media_hasta_hoy_mm": 292.6,
+   "anomalia_semana_pct": 898.5,
+   "anomalia_anual_pct": 21.1,
    "etiqueta_semana": "Muy lluvioso",
-   "etiqueta_anual": "Normal"
+   "etiqueta_anual": "Lluvioso"
   },
   "noches_tropicales": [
    {
@@ -113,9 +132,9 @@
   "calidad_aire": [
    {
     "nombre": "Valencia",
-    "etiqueta": "Excelente",
-    "aqi_europeo": 33,
-    "pm25": 3.5,
+    "etiqueta": "Buena",
+    "aqi_europeo": 29,
+    "pm25": 5.6,
     "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
@@ -144,8 +163,8 @@
    {
     "id": "valencia",
     "nombre": "Valencia",
-    "temp": 24.63,
-    "fecha": "2026-10-03",
+    "temp": 24.7,
+    "fecha": "2026-10-04",
     "max_anio": {
      "valor": 29.09,
      "fecha": "2026-08-15"
@@ -163,35 +182,45 @@
  },
  "destacados": [
   {
+   "tipo": "mar_anomalia_valencia",
+   "icono": "🌡️",
+   "nivel": "medio",
+   "texto": "El mar en Valencia está a 25.1 °C, +2.6 °C sobre la media histórica",
+   "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
+   "prioridad": 70,
+   "racha_dias": 1,
+   "nuevo": true
+  },
+  {
    "tipo": "nivel_mar_valencia",
    "icono": "🌊",
    "nivel": "medio",
-   "texto": "Nivel del mar muy elevado en Valencia: +15.0 cm sobre la media 1993-2012 · 8.º día consecutivo",
+   "texto": "Nivel del mar muy elevado en Valencia: +15.6 cm sobre la media 1993-2012 · 9.º día consecutivo",
    "url": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
    "prioridad": 64,
-   "racha_dias": 8,
+   "racha_dias": 9,
    "nuevo": false
   },
   {
    "tipo": "dias32",
    "icono": "🥵",
    "nivel": "medio",
-   "texto": "Valencia ya suma 22 días por encima de 32 °C este año (media 1991-2020: 18; media 1961-1990: 12) · 33.º día consecutivo",
+   "texto": "Valencia ya suma 22 días por encima de 32 °C este año (media 1991-2020: 18; media 1961-1990: 12) · 34.º día consecutivo",
    "url": "https://calentamientoglobal.es/observatorio-climatico/",
    "prioridad": 62,
-   "racha_dias": 33,
+   "racha_dias": 34,
    "nuevo": false
   },
   {
    "tipo": "incendios",
    "icono": "🔥",
    "nivel": "medio",
-   "texto": "1 foco(s) de calor activos detectados por satélite en Comunidad Valenciana (últimas 48 h) · 27.º día consecutivo",
+   "texto": "5 foco(s) de calor activos detectados por satélite en Comunidad Valenciana (últimas 48 h) · 28.º día consecutivo",
    "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
    "prioridad": 56,
-   "racha_dias": 27,
+   "racha_dias": 28,
    "nuevo": false
   }
  ],
- "texto_seo": "Situación climática en Valencia a 03/10/2026: Nivel del mar muy elevado en Valencia: +15.0 cm sobre la media 1993-2012. Valencia ya suma 22 días por encima de 32 °C este año (media 1991-2020: 18; media 1961-1990: 12). 1 foco(s) de calor activos detectados por satélite en Comunidad Valenciana (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Valencia a 04/10/2026: El mar en Valencia está a 25.1 °C, +2.6 °C sobre la media histórica. Nivel del mar muy elevado en Valencia: +15.6 cm sobre la media 1993-2012. Valencia ya suma 22 días por encima de 32 °C este año (media 1991-2020: 18; media 1961-1990: 12). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
