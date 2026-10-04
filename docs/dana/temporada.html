@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La temporada de DANAs, en cifras · calentamientoglobal.es</title>
+<style>
+  .cg-dana{
+    color-scheme: light;
+    --surface:#fcfcfb; --surface-2:#f4f3f0; --line:#e6e4df;
+    --ink:#141412; --ink-2:#57564f; --ink-3:#8a8880;
+    --ember:#cc4416; --cool:#0a4fa0; --banda:rgba(10,79,160,.13);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--surface); color:var(--ink); -webkit-font-smoothing:antialiased;
+    max-width:1100px; margin:0 auto; padding:20px 16px 24px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])) .cg-dana{
+      color-scheme: dark;
+      --surface:#161615; --surface-2:#21211f; --line:#33322e;
+      --ink:#f7f7f5; --ink-2:#bfbdb4; --ink-3:#8b8980;
+      --ember:#e0552a; --cool:#5aa9e6; --banda:rgba(90,169,230,.16);
+    }
+  }
+  html,body{margin:0;padding:0;background:transparent}
+  .cg-dana *{box-sizing:border-box}
+  .cg-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 22px}
+  .cg-tile{border:1px solid var(--line);border-radius:14px;padding:15px 16px;background:var(--surface-2)}
+  .cg-tile .et{font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px;line-height:1.3}
+  .cg-tile .n{font-size:2.1rem;font-weight:660;letter-spacing:-.03em;line-height:1;margin:0;font-variant-numeric:tabular-nums}
+  .cg-tile .n span{font-size:.95rem;font-weight:500;color:var(--ink-2);letter-spacing:0}
+  .cg-tile .t{margin:8px 0 0;font-size:.82rem;color:var(--ink-2);line-height:1.45}
+  .cg-tile .t b{color:var(--ink);font-weight:600}
+  .cg-graficos{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .cg-g{border:1px solid var(--line);border-radius:14px;padding:14px 16px 10px;background:var(--surface)}
+  .cg-g h3{font-size:.98rem;font-weight:650;letter-spacing:-.01em;margin:0 0 3px}
+  .cg-g p{font-size:.8rem;color:var(--ink-2);margin:0 0 10px;line-height:1.45}
+  .cg-g .lienzo{position:relative;height:250px}
+  .cg-ley{display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--ink-2);margin:8px 0 2px}
+  .cg-ley i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+  .cg-ley i.l{height:0;border-top:2px solid;border-radius:0;vertical-align:3px}
+  .cg-eps{margin:20px 0 0}
+  .cg-eps h3{font-size:.98rem;font-weight:650;margin:0 0 6px}
+  .cg-ep{display:grid;grid-template-columns:200px 1fr auto;gap:12px;padding:9px 2px;border-top:1px solid var(--line);font-size:.86rem;align-items:center}
+  .cg-ep:last-child{border-bottom:1px solid var(--line)}
+  .cg-ep small{color:var(--ink-3)}
+  .cg-pie{font-size:.74rem;color:var(--ink-3);line-height:1.5;margin:16px 0 0}
+  .cg-pie a{color:var(--ink-2)}
+  @media (max-width:900px){.cg-tiles{grid-template-columns:1fr 1fr}.cg-graficos{grid-template-columns:1fr}}
+  @media (max-width:420px){.cg-tile .n{font-size:1.7rem}.cg-ep{grid-template-columns:1fr auto}.cg-ep .zona{display:none}}
+</style>
+</head>
+<body>
+<div class="cg-dana">
+  <div class="cg-tiles">
+    <div class="cg-tile"><p class="et">Días con DANA este otoño</p><p class="n" id="k1">—</p><p class="t" id="k1t"></p></div>
+    <div class="cg-tile"><p class="et">Días con DANA en lo que va de año</p><p class="n" id="k2">—</p><p class="t" id="k2t"></p></div>
+    <div class="cg-tile"><p class="et">El Mediterráneo, hoy</p><p class="n" id="k3">—</p><p class="t" id="k3t"></p></div>
+    <div class="cg-tile"><p class="et">Avisos por lluvia desde el 1 de septiembre</p><p class="n" id="k4">—</p><p class="t" id="k4t"></p></div>
+  </div>
+
+  <div class="cg-graficos">
+    <div class="cg-g">
+      <h3>El combustible: el mar frente a su normal</h3>
+      <p id="g1p">Temperatura media de la superficie del Mediterráneo occidental español, día a día.</p>
+      <div class="lienzo"><canvas id="g1" aria-label="Temperatura del mar este año frente a la normal"></canvas></div>
+      <div class="cg-ley"><span><i class="l" style="border-color:var(--ember)"></i><span id="ley1">Este año</span></span><span><i style="background:var(--banda)"></i>Lo normal en 1991-2020 (franja del 80 % de los años)</span></div>
+    </div>
+    <div class="cg-g">
+      <h3>Cuándo llegan: días con DANA por mes</h3>
+      <p>Las DANAs son más frecuentes en verano, pero las que dejan lluvias extremas en el Mediterráneo se concentran en otoño, cuando el mar está más caliente.</p>
+      <div class="lienzo"><canvas id="g2" aria-label="Días con DANA por mes"></canvas></div>
+      <div class="cg-ley"><span><i style="background:var(--cool)"></i>Media 1991-2020</span><span><i style="background:var(--ember)"></i><span id="ley2">Este año</span></span></div>
+    </div>
+    <div class="cg-g">
+      <h3>Año a año: días con DANA sobre España</h3>
+      <p id="g3p">Días de cada año con una DANA centrada sobre la Península, Baleares o el mar que las rodea.</p>
+      <div class="lienzo"><canvas id="g3" aria-label="Días con DANA por año"></canvas></div>
+    </div>
+    <div class="cg-g">
+      <h3>Cómo llega el mar al otoño: septiembre de cada año</h3>
+      <p id="g4p">Temperatura media del Mediterráneo occidental español en septiembre, desde que hay medida por satélite.</p>
+      <div class="lienzo"><canvas id="g4" aria-label="Temperatura media del mar en septiembre de cada año"></canvas></div>
+    </div>
+  </div>
+
+  <div class="cg-eps" id="eps"></div>
+
+  <p class="cg-pie" id="pie">
+    DANAs: detector propio sobre el reanálisis <a href="https://psl.noaa.gov/data/gridded/data.ncep.reanalysis.html" target="_blank" rel="noopener">NCEP/NCAR</a> (NOAA PSL) a 2,5°: baja cerrada en 500 hPa, separada de la corriente del oeste y con núcleo frío, que dura al menos dos días (criterios de Nieto et al., 2005), con el centro entre 32,5° y 45° N y entre 15° O y 7,5° E. Se cuentan desde 1958; antes, el reanálisis tiene pocos datos de altura.
+    Mar: <a href="https://www.ncei.noaa.gov/products/optimum-interpolation-sst" target="_blank" rel="noopener">NOAA OISST v2.1</a>, media de 36,5-41,5° N y 1,5° O-5° E, con normal propia de 1991-2020.
+    Avisos: archivo propio de los avisos de AEMET.
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+  const BASE='https://davidbebow.github.io/temperaturas-mar-espana/dana/';
+  const $=id=>document.getElementById(id);
+  const css=n=>getComputedStyle(document.querySelector('.cg-dana')).getPropertyValue(n).trim();
+  const nf=(v,d=1)=>v.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const signo=v=>(v>0?'+':v<0?'−':'')+nf(Math.abs(v));
+  const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const MESES_L=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const fecha=s=>{const [a,m,d]=s.split('-').map(Number);return d+' de '+MESES_L[m-1];};
+  const ordinal=n=>n+'.º';
+
+  Chart.defaults.font.family='-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif';
+  Chart.defaults.font.size=11;
+  Chart.defaults.color=css('--ink-3');
+  Chart.defaults.borderColor=css('--line');
+  Chart.defaults.plugins.legend.display=false;
+  Chart.defaults.maintainAspectRatio=false;
+  const tt={backgroundColor:'#141412',titleColor:'#fff',bodyColor:'#fff',padding:8,cornerRadius:6,displayColors:false};
+
+  function veces(n){return n===1?'1 día':n+' días';}
+
+  Promise.all(['temporada','mediterraneo'].map(f=>fetch(BASE+f+'.json?t='+Date.now()).then(r=>r.json())))
+  .then(([T,M])=>{
+    const ember=css('--ember'), cool=css('--cool'), banda=css('--banda');
+    // --- tarjetas ---
+    const o=T.otono_hasta_hoy, y=T.anio_hasta_hoy;
+    if(o){
+      $('k1').innerHTML=o.dias+' <span>días</span>';
+      $('k1t').innerHTML='Lo normal hasta el '+fecha(T.ultimo_dato)+' son <b>'+nf(o.media_1991_2020)+'</b>. '+
+        (o.episodios?('Van '+o.episodios+(o.episodios===1?' episodio':' episodios')+' desde el 1 de septiembre.'):'Ningún episodio desde el 1 de septiembre.');
+    } else {
+      $('k1').innerHTML='— <span>aún no</span>'; $('k1t').textContent='El otoño meteorológico empieza el 1 de septiembre.';
+    }
+    $('k2').innerHTML=y.dias+' <span>días</span>';
+    $('k2t').innerHTML='La media 1991-2020 a estas alturas es <b>'+nf(y.media_1991_2020)+'</b>. '+
+      (y.puesto<=10?('Es el '+ordinal(y.puesto)+' año con más días desde 1958.'):'');
+    $('k3').innerHTML=nf(M.sst)+' <span>°C</span>';
+    $('k3t').innerHTML='<b>'+signo(M.anomalia)+' °C</b> sobre lo normal para el '+fecha(M.ultimo)+'. '+
+      (M.puesto_para_la_fecha<=5?('El '+ordinal(M.puesto_para_la_fecha)+' valor más alto para esa fecha desde 1982.'):'Récord para esa fecha: '+nf(M.record_fecha.v)+' °C en '+M.record_fecha.a+'.');
+    const A=T.avisos_lluvia;
+    if(A){
+      $('k4').innerHTML=A.dias_naranja_o_rojo+' <span>días</span>';
+      $('k4t').innerHTML='con aviso naranja o rojo por lluvias en algún punto de España; <b>'+A.dias_rojo+'</b> de ellos con aviso rojo.';
+    }
+    const anio=T.anio;
+    $('ley1').textContent=M.ultimo.slice(0,4); $('ley2').textContent=anio;
+
+    // --- 1. mar ---
+    const lab=M.clim.map(c=>c[0]);
+    const act={}; M.serie_actual.forEach(([f,v])=>act[f.slice(5)]=v);
+    const ticks=lab.map(md=>md.endsWith('-01')?MESES[+md.slice(0,2)-1]:'');
+    new Chart($('g1'),{type:'line',data:{labels:lab,datasets:[
+      {data:M.clim.map(c=>c[3]),borderWidth:0,pointRadius:0,fill:'+1',backgroundColor:banda},
+      {data:M.clim.map(c=>c[2]),borderWidth:0,pointRadius:0,fill:false},
+      {data:M.clim.map(c=>c[1]),borderColor:cool,borderWidth:1,borderDash:[4,4],pointRadius:0},
+      {data:lab.map(md=>act[md]??null),borderColor:ember,borderWidth:2,pointRadius:0,spanGaps:false}
+    ]},options:{animation:false,interaction:{mode:'index',intersect:false},
+      scales:{x:{grid:{display:false},ticks:{callback:(v,i)=>ticks[i],autoSkip:false,maxRotation:0}},
+              y:{ticks:{callback:v=>v+' °C'}}},
+      plugins:{tooltip:Object.assign({},tt,{callbacks:{
+        title:it=>fecha('2001-'+lab[it[0].dataIndex]),
+        label:it=>it.datasetIndex===3?('Este año: '+nf(it.raw,2)+' °C'):it.datasetIndex===2?('Normal: '+nf(it.raw,2)+' °C'):null}})}}});
+
+    // --- 2. mensual ---
+    new Chart($('g2'),{type:'bar',data:{labels:MESES,datasets:[
+      {data:T.mensual_1991_2020.map(m=>m.media),backgroundColor:cool,borderRadius:4,categoryPercentage:.7,barPercentage:.9},
+      {data:T.mensual_1991_2020.map(m=>m.actual),backgroundColor:ember,borderRadius:4,categoryPercentage:.7,barPercentage:.9}
+    ]},options:{animation:false,scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{precision:0}}},
+      plugins:{tooltip:Object.assign({},tt,{callbacks:{title:it=>MESES_L[it[0].dataIndex],
+        label:it=>it.datasetIndex?('En '+anio+': '+veces(it.raw)):('Media 1991-2020: '+nf(it.raw)+' días')}})}}});
+
+    // --- 3. por ano ---
+    const comp=T.por_anio.filter(r=>r.dias!==null);
+    const media=comp.filter(r=>r.a>=1991&&r.a<=2020).reduce((s,r)=>s+r.dias,0)/30;
+    $('g3p').textContent='Días de cada año completo con una DANA centrada sobre la Península, Baleares o el mar que las rodea. La línea es la media de 1991-2020 ('+nf(media)+' días).'+
+      (T.tendencia_dias_decada!==null?' Tendencia desde 1958: '+signo(T.tendencia_dias_decada)+' días por década.':'');
+    new Chart($('g3'),{type:'bar',data:{labels:comp.map(r=>r.a),datasets:[
+      {type:'line',data:comp.map(()=>media),borderColor:cool,borderWidth:1.5,borderDash:[4,4],pointRadius:0},
+      {data:comp.map(r=>r.dias),backgroundColor:ember,borderRadius:2,categoryPercentage:.9,barPercentage:.85}
+    ]},options:{animation:false,scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkipPadding:12}},y:{beginAtZero:true,ticks:{precision:0}}},
+      plugins:{tooltip:Object.assign({},tt,{filter:it=>it.datasetIndex===1,callbacks:{label:it=>veces(it.raw)+' con DANA'}})}}});
+
+    // --- 4. septiembre ---
+    const S=M.septiembre_por_anio;
+    const sMax=S.reduce((a,b)=>b[1]>a[1]?b:a);
+    $('g4p').textContent='Temperatura media del Mediterráneo occidental español en septiembre de cada año, desde que hay medida por satélite. El más cálido fue '+sMax[0]+', con '+nf(sMax[1])+' °C.';
+    new Chart($('g4'),{type:'bar',data:{labels:S.map(s=>s[0]),datasets:[
+      {data:S.map(s=>s[1]),backgroundColor:S.map(s=>s[0]===+M.ultimo.slice(0,4)?ember:cool),borderRadius:2,categoryPercentage:.9,barPercentage:.85}
+    ]},options:{animation:false,scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkipPadding:12}},
+      y:{min:Math.floor(Math.min(...S.map(s=>s[1]))-.5),ticks:{callback:v=>v+' °C'}}},
+      plugins:{tooltip:Object.assign({},tt,{callbacks:{label:it=>nf(it.raw,2)+' °C'}})}}});
+
+    // --- episodios del ano ---
+    const E=T.episodios_anio.slice().sort((a,b)=>b.dias_esp[0].localeCompare(a.dias_esp[0]));
+    if(E.length){
+      let h='<h3>Las DANAs de '+anio+' sobre España</h3>';
+      E.forEach(e=>{
+        const d=e.dias_esp, p=e.traj.find(q=>q[0]===d[0])||e.traj[0];
+        h+='<div class="cg-ep"><b>'+(d.length>1?fecha(d[0])+' – '+fecha(d[d.length-1]):fecha(d[0]))+'</b>'+
+           '<span class="zona"><small>Centro el primer día: '+nf(p[1])+'° N, '+nf(Math.abs(p[2]))+'° '+(p[2]<0?'O':'E')+' · altura mínima '+e.min_z.toLocaleString('es-ES')+' m</small></span>'+
+           '<small>'+veces(d.length)+'</small></div>';
+      });
+      $('eps').innerHTML=h;
+    }
+  }).catch(e=>{console.error(e);});
+})();
+</script>
+</body>
+</html>
