@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grandes DANAs de la historia de España · calentamientoglobal.es</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  .cg-dana{
+    color-scheme: light;
+    --surface:#fcfcfb; --surface-2:#f4f3f0; --line:#e6e4df;
+    --ink:#141412; --ink-2:#57564f; --ink-3:#8a8880;
+    --ember:#cc4416; --cool:#0a4fa0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--surface); color:var(--ink); -webkit-font-smoothing:antialiased;
+    max-width:1100px; margin:0 auto; padding:20px 16px 24px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])) .cg-dana{
+      color-scheme: dark;
+      --surface:#161615; --surface-2:#21211f; --line:#33322e;
+      --ink:#f7f7f5; --ink-2:#bfbdb4; --ink-3:#8b8980; --ember:#e0552a; --cool:#5aa9e6;
+    }
+  }
+  html,body{margin:0;padding:0;background:transparent}
+  .cg-dana *{box-sizing:border-box}
+  .cg-linea{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:thin}
+  .cg-linea button{font:inherit;font-size:.82rem;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--surface-2);
+    color:var(--ink-2);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+  .cg-linea button[aria-pressed="true"]{background:var(--ember);border-color:var(--ember);color:#fff}
+  .cg-cuerpo{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px}
+  #mapa{height:470px;border-radius:14px;border:1px solid var(--line);overflow:hidden;background:#dfe3e6}
+  .cg-ficha{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--surface-2);min-height:470px}
+  .cg-ficha .anio{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ember);font-weight:650;margin:0 0 4px}
+  .cg-ficha h3{font-size:1.3rem;line-height:1.2;letter-spacing:-.015em;margin:0 0 4px}
+  .cg-ficha .zona{font-size:.84rem;color:var(--ink-3);margin:0 0 12px}
+  .cg-ficha dl{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;margin:0 0 12px;font-size:.86rem;line-height:1.45}
+  .cg-ficha dt{color:var(--ink-3)}
+  .cg-ficha dd{margin:0}
+  .cg-ficha p.res{font-size:.88rem;line-height:1.6;color:var(--ink-2);margin:0 0 12px}
+  .cg-det{border-left:3px solid var(--cool);padding:6px 0 6px 11px;font-size:.82rem;line-height:1.5;color:var(--ink-2);margin:0 0 12px}
+  .cg-det b{color:var(--ink)}
+  .cg-fu{font-size:.76rem;color:var(--ink-3);line-height:1.5}
+  .cg-fu a{color:var(--ink-2)}
+  .cg-pie{font-size:.74rem;color:var(--ink-3);line-height:1.5;margin:14px 0 0}
+  .leaflet-tooltip.cg-tt{font:600 11px/1.2 -apple-system,BlinkMacSystemFont,sans-serif;background:#141412;color:#fff;border:0;padding:3px 7px;border-radius:6px}
+  .leaflet-tooltip.cg-tt:before{display:none}
+  @media (max-width:820px){.cg-cuerpo{grid-template-columns:1fr}#mapa{height:300px}.cg-ficha{min-height:0}}
+</style>
+</head>
+<body>
+<div class="cg-dana">
+  <div class="cg-linea" id="linea" role="toolbar" aria-label="Elige un episodio"></div>
+  <div class="cg-cuerpo">
+    <div id="mapa" role="img" aria-label="Mapa de las grandes DANAs de España"></div>
+    <div class="cg-ficha" id="ficha" aria-live="polite"></div>
+  </div>
+  <p class="cg-pie">
+    Cada cifra lleva su fuente; cuando las fuentes no coinciden se da el intervalo. Las cifras que se repiten mucho pero no se sostienen (los «más de 1.000 mm» de Tous o los «521 mm» de Orihuela) se corrigen en la propia ficha.
+    El recuadro azul compara cada episodio con el detector de DANAs de esta página, pasado sobre el reanálisis NCEP/NCAR del día.
+  </p>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  const BASE='https://davidbebow.github.io/temperaturas-mar-espana/dana/';
+  const $=id=>document.getElementById(id);
+  const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const fecha=s=>{const [a,m,d]=s.split('-').map(Number);return d+' de '+MESES[m-1]+' de '+a;};
+  const nf=v=>v.toLocaleString('es-ES',{maximumFractionDigits:1});
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  const mapa=L.map('mapa',{scrollWheelZoom:false,zoomSnap:.25}).fitBounds([[35.5,-6],[42.6,4.5]]);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:10,attribution:'Esri'}).addTo(mapa);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:10}).addTo(mapa);
+  const capaDet=L.layerGroup().addTo(mapa);
+  let EV=[], CAT=null, marcas={};
+
+  function sistemaDelDia(ev){
+    if(!CAT) return undefined;
+    const a=ev.fecha.slice(0,4), lista=(CAT.anios||{})[a];
+    if(!lista) return undefined;          // ese ano no esta en el archivo
+    const d0=new Date(ev.fecha+'T12:00Z').getTime();
+    let mejor=null;
+    lista.forEach(s=>s.traj.forEach(q=>{
+      const dd=Math.abs(new Date(q[0]+'T12:00Z').getTime()-d0)/864e5;
+      if(dd<=1 && (!mejor||dd<mejor.dd||(dd===mejor.dd&&q[3]<mejor.q[3]))) mejor={s,q,dd};
+    }));
+    return mejor;
+  }
+
+  function mostrar(i){
+    const e=EV[i];
+    document.querySelectorAll('#linea button').forEach((b,k)=>b.setAttribute('aria-pressed',k===i));
+    Object.values(marcas).forEach(m=>m.setStyle({fillColor:'#8a8880',radius:6}));
+    marcas[e.id].setStyle({fillColor:'#cc4416',radius:10}).bringToFront();
+    capaDet.clearLayers();
+    let det='';
+    const r=sistemaDelDia(e);
+    if(r===undefined){
+      det='';
+    } else if(r===null){
+      det='<div class="cg-det">El detector no encuentra ese día una baja aislada en 500 hPa sobre España que cumpla todos los criterios. '+
+          (e.dana==='si'?'Con la rejilla de 2,5° del reanálisis, las DANAs pequeñas o muy pegadas a la corriente del oeste pueden quedarse fuera.':'Encaja con lo que dicen las fuentes: no está claro que fuera una DANA.')+'</div>';
+    } else {
+      const q=r.q;
+      det='<div class="cg-det"><b>Lo que ve el detector:</b> una DANA centrada en '+nf(q[1])+'° N, '+nf(Math.abs(q[2]))+'° '+(q[2]<0?'O':'E')+
+          (r.dd?' (el día '+(new Date(q[0]+'T12:00Z')<new Date(e.fecha+'T12:00Z')?'anterior':'siguiente')+')':' ese mismo día')+
+          ', con la superficie de 500 hPa a '+q[3].toLocaleString('es-ES')+' m y '+nf(q[5])+' °C en el núcleo. El sistema duró '+
+          r.s.traj.length+' días ('+fecha(r.s.ini)+' – '+fecha(r.s.fin)+').</div>';
+      L.polyline(r.s.traj.map(t=>[t[1],t[2]]),{color:'#0a4fa0',weight:2,dashArray:'2 6'}).addTo(capaDet);
+      L.circleMarker([q[1],q[2]],{radius:8,color:'#fff',weight:2,fillColor:'#0a4fa0',fillOpacity:1})
+        .bindTooltip('DANA en altura',{permanent:true,direction:'right',className:'cg-tt',offset:[8,0]}).addTo(capaDet);
+    }
+    const filas=[['Lluvia',e.lluvia],['Víctimas',e.muertos],['Daños',e.danos]].filter(f=>f[1]);
+    $('ficha').innerHTML='<p class="anio">'+fecha(e.fecha)+(e.dana==='probable'?' · DANA probable':'')+'</p>'+
+      '<h3>'+esc(e.nombre)+'</h3><p class="zona">'+esc(e.zona)+'</p>'+
+      '<dl>'+filas.map(f=>'<dt>'+f[0]+'</dt><dd>'+esc(f[1])+'</dd>').join('')+'</dl>'+
+      '<p class="res">'+esc(e.resumen)+'</p>'+det+
+      '<div class="cg-fu">Fuentes: '+e.fuentes.map(f=>'<a href="'+esc(f.u)+'" target="_blank" rel="noopener">'+esc(f.t)+'</a>').join(' · ')+'</div>';
+    const pts=[[e.lat,e.lon]]; if(r) pts.push([r.q[1],r.q[2]]);
+    mapa.flyToBounds(L.latLngBounds(pts).pad(pts.length>1?.6:0).extend([[e.lat-2.2,e.lon-3],[e.lat+2.2,e.lon+3]]),{duration:.6});
+  }
+
+  Promise.all([
+    fetch(BASE+'historicas.json?t='+Date.now()).then(r=>r.json()),
+    fetch(BASE+'catalogo.json?t='+Date.now()).then(r=>r.json()).catch(()=>null)
+  ]).then(([H,C])=>{
+    CAT=C; EV=H.eventos.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const li=$('linea');
+    EV.forEach((e,i)=>{
+      const b=document.createElement('button'); b.type='button'; b.textContent=e.fecha.slice(0,4)+' · '+e.nombre.replace(/^(Gran |Riada de |Riadas del |DANA de |Gota fría de |Torrentada de |Pantanada de )/,'');
+      b.addEventListener('click',()=>mostrar(i)); li.appendChild(b);
+      marcas[e.id]=L.circleMarker([e.lat,e.lon],{radius:6,color:'#fff',weight:2,fillColor:'#8a8880',fillOpacity:1})
+        .bindTooltip(e.fecha.slice(0,4),{direction:'top',className:'cg-tt'}).on('click',()=>mostrar(i)).addTo(mapa);
+    });
+    const ini=EV.findIndex(e=>e.id==='valencia-2024');
+    mostrar(ini>=0?ini:EV.length-1);
+    li.querySelectorAll('button')[ini>=0?ini:EV.length-1].scrollIntoView({inline:'center',block:'nearest'});
+  });
+})();
+</script>
+</body>
+</html>
