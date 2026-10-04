@@ -45,6 +45,10 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
           git pull --rebase --autostash || true   # trae el avisos.json recién publicado
+          # Abre y cierra directos según los avisos naranja/rojo (nunca frena el paso)
+          python clima-scripts/temporal_detector.py \
+            --config estado/temporales.json \
+            --docs docs || echo "El detector falló; se siguen los directos"
           python clima-scripts/temporal_directo.py \
             --config estado/temporales.json \
             --estado estado/temporal_directo \
