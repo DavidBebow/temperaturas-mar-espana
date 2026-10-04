@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detector de DANAs · calentamientoglobal.es</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  .cg-dana{
+    color-scheme: light;
+    --surface:#fcfcfb; --surface-2:#f4f3f0; --line:#e6e4df;
+    --ink:#141412; --ink-2:#57564f; --ink-3:#8a8880;
+    --ember:#cc4416; --cool:#0a4fa0; --alerta:#b3261e;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--surface); color:var(--ink); -webkit-font-smoothing:antialiased;
+    max-width:1100px; margin:0 auto; padding:20px 16px 24px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])) .cg-dana{
+      color-scheme: dark;
+      --surface:#161615; --surface-2:#21211f; --line:#33322e;
+      --ink:#f7f7f5; --ink-2:#bfbdb4; --ink-3:#8b8980;
+      --ember:#e0552a; --cool:#5aa9e6; --alerta:#ff6b5e;
+    }
+  }
+  html,body{margin:0;padding:0;background:transparent}
+  .cg-dana *{box-sizing:border-box}
+  .cg-sello{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;color:var(--ink-2);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin-bottom:12px}
+  .cg-punto{width:7px;height:7px;border-radius:50%;background:var(--ember)}
+  .cg-hero{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 14px;background:var(--surface-2)}
+  .cg-hero.alerta{border-color:var(--alerta);box-shadow:inset 4px 0 0 var(--alerta)}
+  .cg-hero-et{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+  .cg-hero-t{font-size:1.35rem;line-height:1.25;font-weight:650;letter-spacing:-.015em;margin:0}
+  .cg-hero-s{margin:8px 0 0;font-size:.9rem;color:var(--ink-2);line-height:1.5}
+  #mapa{height:520px;border-radius:14px;border:1px solid var(--line);overflow:hidden;background:#dfe3e6}
+  .cg-ctrl{display:flex;align-items:center;gap:12px;margin:12px 0 4px;flex-wrap:wrap}
+  .cg-ctrl button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);
+    border-radius:999px;padding:6px 14px;cursor:pointer;min-width:92px}
+  .cg-ctrl input[type=range]{flex:1;min-width:180px;accent-color:var(--ember)}
+  .cg-hora{font-variant-numeric:tabular-nums;font-size:.92rem;font-weight:600;min-width:230px}
+  .cg-hora small{font-weight:400;color:var(--ink-3)}
+  .cg-leyenda{display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:.76rem;color:var(--ink-2);margin:10px 0 0}
+  .cg-escala{display:flex;align-items:center;gap:6px}
+  .cg-escala i{display:block;width:150px;height:9px;border-radius:3px;
+    background:linear-gradient(90deg,#3b2a8f,#2f63c4,#4fa3d9,#a6d6ea,#eef0e6,#f2d39b)}
+  .cg-sw{display:inline-block;width:22px;height:0;border-top:2px dashed var(--ember);vertical-align:middle}
+  .cg-iso{display:inline-block;width:22px;height:0;border-top:1.5px solid #444;vertical-align:middle}
+  .cg-lista{margin:16px 0 0;border-top:1px solid var(--line)}
+  .cg-sis{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line);font-size:.88rem}
+  .cg-sis b{font-weight:600}
+  .cg-tag{font-size:.72rem;border-radius:999px;padding:2px 9px;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+  .cg-tag.si{border-color:var(--alerta);color:var(--alerta)}
+  .cg-pie{font-size:.74rem;color:var(--ink-3);line-height:1.5;margin:14px 0 0}
+  .cg-pie a{color:var(--ink-2)}
+  .leaflet-tooltip.cg-tt{font:600 11px/1.2 -apple-system,BlinkMacSystemFont,sans-serif;background:#141412;color:#fff;border:0;padding:3px 7px;border-radius:6px}
+  .leaflet-tooltip.cg-tt:before{display:none}
+  @media (max-width:640px){#mapa{height:420px}.cg-escala i{width:90px}.cg-hero-t{font-size:1.15rem}.cg-hora{min-width:0}}
+</style>
+</head>
+<body>
+<div class="cg-dana" id="app">
+  <div class="cg-sello"><span class="cg-punto"></span><span id="sello">Cargando la última pasada del modelo…</span></div>
+  <div class="cg-hero" id="hero">
+    <p class="cg-hero-et">Detector de DANAs · próximos 7 días</p>
+    <p class="cg-hero-t" id="titular">—</p>
+    <p class="cg-hero-s" id="subtitular"></p>
+  </div>
+  <div id="mapa" role="img" aria-label="Mapa de la altura de 500 hPa y de la temperatura en altura previstas, con las DANAs detectadas"></div>
+  <div class="cg-ctrl">
+    <button id="play" type="button" aria-label="Reproducir la previsión">▶ Animar</button>
+    <input id="paso" type="range" min="0" max="0" value="0" aria-label="Hora de la previsión">
+    <div class="cg-hora" id="hora">—</div>
+  </div>
+  <div class="cg-leyenda">
+    <span class="cg-escala">Temperatura a 5.500 m <span>−30 °C</span><i></i><span>−5 °C</span></span>
+    <span><span class="cg-iso"></span> altura de 500 hPa, cada 40 m</span>
+    <span><span class="cg-sw"></span> zona de España que vigila el detector</span>
+    <span><span class="cg-iso" style="border-top:2px solid #b3261e"></span> recorrido previsto de la DANA</span>
+  </div>
+  <div class="cg-lista" id="lista"></div>
+  <p class="cg-pie">
+    Datos: modelo determinista del <a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank" rel="noopener">ECMWF</a> (datos abiertos, CC BY 4.0), geopotencial y temperatura en 500 hPa cada 12 horas.
+    Una DANA se cuenta cuando hay una baja cerrada en altura, separada de la corriente del oeste y con el núcleo frío, que dura al menos 36 horas: son los criterios de Nieto et al. (2005, <i>Journal of Climate</i>) aplicados a 500 hPa.
+    Es una herramienta de seguimiento, no un aviso: los avisos oficiales los da <a href="https://www.aemet.es/es/eltiempo/prediccion/avisos" target="_blank" rel="noopener">AEMET</a>.
+  </p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+(function(){
+  const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/dana/prevision.json';
+  const TZ = 'Europe/Madrid';
+  const fmtDia = new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long',timeZone:TZ});
+  const fmtCorto = new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'numeric',month:'short',timeZone:TZ});
+  const fmtHora = new Intl.DateTimeFormat('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:TZ});
+  const $ = id => document.getElementById(id);
+
+  const mapa = L.map('mapa',{preferCanvas:true,zoomSnap:.25,attributionControl:true,scrollWheelZoom:false})
+    .fitBounds([[30,-20],[49,12]]);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:8,attribution:'Esri · ECMWF'}).addTo(mapa);
+  const capaT = L.layerGroup().addTo(mapa);
+  const capaZ = L.layerGroup().addTo(mapa);
+  const capaS = L.layerGroup().addTo(mapa);
+  const refs = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:8,pane:'overlayPane',opacity:.8}).addTo(mapa);
+
+  // escala de frio en altura (de -30 a -5 grados)
+  const escala = d3.scaleLinear().domain([-30,-25,-20,-15,-10,-5])
+    .range(['#3b2a8f','#2f63c4','#4fa3d9','#a6d6ea','#eef0e6','#f2d39b']).clamp(true);
+
+  let D=null, k=0, timer=null;
+
+  function rotulo(iso){ const d=new Date(iso); return fmtCorto.format(d)+', '+fmtHora.format(d); }
+
+  function dibujar(){
+    const p = D.pasos[k], g = D.rejilla;
+    $('paso').value=k;
+    $('hora').innerHTML = rotulo(p.valida)+' <small>· +'+p.h+' h</small>';
+    capaT.clearLayers(); capaZ.clearLayers(); capaS.clearLayers();
+    // temperatura: celdas de 1 grado
+    for(let i=0;i<g.nlat;i++) for(let j=0;j<g.nlon;j++){
+      const la=g.lat0+i*g.d, lo=g.lon0+j*g.d, t=p.t[i][j]/10;
+      L.rectangle([[la-.5,lo-.5],[la+.5,lo+.5]],{stroke:false,fillColor:escala(t),fillOpacity:.55,interactive:false}).addTo(capaT);
+    }
+    // isohipsas
+    const plano=[]; for(let i=0;i<g.nlat;i++) for(let j=0;j<g.nlon;j++) plano.push(p.z[i][j]);
+    const umbrales=d3.range(5000,6040,40);
+    const cs=d3.contours().size([g.nlon,g.nlat]).thresholds(umbrales)(plano);
+    cs.forEach(c=>{
+      const lineas=[];
+      c.coordinates.forEach(pol=>pol.forEach(anillo=>{
+        lineas.push(anillo.map(([x,y])=>[g.lat0+(y-.5)*g.d, g.lon0+(x-.5)*g.d]));
+      }));
+      const grueso = c.value%200===0;
+      L.polyline(lineas,{color:'#2b2b28',weight:grueso?1.6:.8,opacity:grueso?.75:.45,interactive:false}).addTo(capaZ);
+    });
+    // caja de vigilancia
+    const cb=D.caja_espana;
+    L.rectangle([[cb.lat[0],cb.lon[0]],[cb.lat[1],cb.lon[1]]],{color:'#cc4416',weight:1.5,dashArray:'5 5',fill:false,interactive:false}).addTo(capaS);
+    // sistemas: trayectoria completa tenue + posicion en este paso
+    D.sistemas.forEach((s,n)=>{
+      const col = s.afecta ? '#b3261e' : '#57564f';
+      L.polyline(s.traj.map(q=>[q[1],q[2]]),{color:col,weight:2,opacity:.45}).addTo(capaS);
+      s.traj.forEach(q=>L.circleMarker([q[1],q[2]],{radius:2.5,stroke:false,fillColor:col,fillOpacity:.6,interactive:false}).addTo(capaS));
+      const aqui = s.traj.find(q=>q[0]===p.valida);
+      if(aqui){
+        L.circleMarker([aqui[1],aqui[2]],{radius:9,color:'#fff',weight:2,fillColor:col,fillOpacity:1})
+          .bindTooltip('DANA · '+aqui[5].toLocaleString('es-ES').replace('-','−')+' °C a 5.500 m',{permanent:true,direction:'right',className:'cg-tt',offset:[8,0]})
+          .addTo(capaS);
+      }
+    });
+  }
+
+  function textos(){
+    const run=new Date(D.run);
+    $('sello').textContent='Pasada de ECMWF de las '+fmtHora.format(run)+' del '+fmtCorto.format(run)+' (hora peninsular)';
+    const af=D.sistemas.filter(s=>s.afecta);
+    const hero=$('hero');
+    if(af.length){
+      const s=af[0], a=new Date(s.esp_desde), b=new Date(s.esp_hasta);
+      hero.classList.add('alerta');
+      $('titular').textContent = (a.getTime()<=Date.now()+6*3600e3 ? 'Hay una DANA sobre España' : 'El modelo europeo ve llegar una DANA')+
+        ': '+(fmtDia.format(a)===fmtDia.format(b) ? 'el '+fmtDia.format(a) : 'del '+fmtDia.format(a)+' al '+fmtDia.format(b));
+      $('subtitular').textContent='Una DANA no es un aviso de lluvia: según dónde se coloque puede dejar tormentas fuertes o pasar casi en seco. Para saber qué va a pasar en tu zona, mira los avisos de AEMET.';
+    } else if(D.sistemas.length){
+      $('titular').textContent='Hay DANAs en el mapa, pero ninguna se acerca a España en los próximos 7 días';
+      $('subtitular').textContent='El detector sigue las bajas aisladas en altura en todo el Atlántico norte y el Mediterráneo, y avisa cuando alguna entra en la zona vigilada.';
+    } else {
+      $('titular').textContent='Ninguna DANA a la vista en los próximos 7 días';
+      $('subtitular').textContent='El modelo europeo no forma ninguna baja aislada en altura que dure más de 36 horas en el Atlántico norte, Europa y el Mediterráneo.';
+    }
+    const L2=$('lista'); L2.innerHTML='';
+    D.sistemas.slice().sort((x,y)=>y.afecta-x.afecta).forEach(s=>{
+      const r=document.createElement('div'); r.className='cg-sis';
+      const fin=s.traj[s.traj.length-1];
+      r.innerHTML='<span class="cg-tag '+(s.afecta?'si':'')+'">'+(s.afecta?'Sobre España':'Lejos de España')+'</span>'+
+        '<span><b>'+rotulo(s.desde)+' → '+rotulo(s.hasta)+'</b><br><small style="color:var(--ink-3)">Núcleo más frío: '+s.min_t.toLocaleString('es-ES')+' °C a 5.500 m · altura mínima '+s.min_z.toLocaleString('es-ES')+' m</small></span>'+
+        '<span style="font-size:.78rem;color:var(--ink-3)">'+Math.round((new Date(s.hasta)-new Date(s.desde))/3600e3+12)+' h</span>';
+      L2.appendChild(r);
+    });
+  }
+
+  $('paso').addEventListener('input',e=>{k=+e.target.value;dibujar();});
+  $('play').addEventListener('click',()=>{
+    if(timer){clearInterval(timer);timer=null;$('play').textContent='▶ Animar';return;}
+    $('play').textContent='❚❚ Pausa';
+    timer=setInterval(()=>{k=(k+1)%D.pasos.length;dibujar();},900);
+  });
+
+  fetch(JSON_URL+'?t='+Date.now()).then(r=>r.json()).then(d=>{
+    D=d; $('paso').max=D.pasos.length-1;
+    // arranca en el primer paso con una DANA sobre Espana, si la hay
+    const af=D.sistemas.find(s=>s.afecta);
+    if(af){ const i=D.pasos.findIndex(p=>p.valida===af.esp_desde); if(i>=0)k=i; }
+    textos(); dibujar();
+  }).catch(e=>{ $('titular').textContent='No se ha podido cargar la previsión. Vuelve a intentarlo en unos minutos.'; console.error(e); });
+})();
+</script>
+</body>
+</html>
