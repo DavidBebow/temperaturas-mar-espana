@@ -4,11 +4,21 @@ name: Actualizar lluvia de otono por municipio
 # municipio, frente a la normal 1991-2020 del mismo tramo y frente al mismo
 # tramo del ano pasado.
 #
-# LA PRIMERA PASADA ES LARGA. Tiene que bajar 31 otonos (los 30 de la normal mas
-# el del ano pasado) para las 391 celdas de ERA5: son unas 1.240 peticiones y
-# ronda la media hora. Se guarda en archivo/otonio/normal_era5.json y a partir de
-# ahi las pasadas diarias solo bajan el ano en curso, que son 40 peticiones.
-# Lanzala a mano la primera vez con minutos = 120.
+# LA PRIMERA BAJADA NO CABE EN UNA PASADA, Y NO PASA NADA. Hay que bajar 31
+# otonos (los 30 de la normal mas el del ano pasado) para las 391 celdas de
+# ERA5: unas 1.240 peticiones. MEDIDO el 6-10-2026: 100 celdas en 118 minutos,
+# o sea unos 70 s por celda, porque Open-Meteo limita por hora y casi cada
+# peticion acaba esperando. Las 391 salen por tanto a unas siete horas y pico
+# repartidas en tres o cuatro pasadas.
+#
+# Eso esta previsto: cada celda entra entera en archivo/otonio/normal_era5.json
+# o no entra, el cache se commitea siempre, y la pasada siguiente arranca por
+# donde iba. Mientras falten celdas el script sale con codigo 0 y sin publicar
+# nada: no es un fallo y no deberia mandar correo de "Run failed".
+#
+# Hasta que el cache diga "completo": true, lanzala a mano con minutos = 170
+# (el trabajo muere a los 180). Despues, la pasada diaria solo baja el ano en
+# curso -40 peticiones, un minuto- y publica.
 #
 # A LAS 06:20 UTC y no antes: ERA5 se consolida con unos seis dias de retraso,
 # asi que no hay prisa ninguna dentro del dia; esta hora solo evita cruzarse con
@@ -20,9 +30,9 @@ on:
   workflow_dispatch:
     inputs:
       minutos:
-        description: 'Minutos de presupuesto (120 para la primera bajada)'
+        description: 'Minutos de presupuesto (170 mientras se construyen las normales)'
         required: false
-        default: '50'
+        default: '170'
 
 concurrency:
   group: otonio-municipios
@@ -52,7 +62,9 @@ jobs:
 
       - name: Ejecutar
         env:
-          CG_MINUTOS: ${{ github.event.inputs.minutos || '50' }}
+          # 170 y no 180: el trabajo muere a los 180 y hay que dejarle sitio al
+          # commit del cache, que es lo unico que salva el trabajo de la pasada.
+          CG_MINUTOS: ${{ github.event.inputs.minutos || '170' }}
         run: python privado/otonio_municipios.py
 
       - name: Publicar cambios
