@@ -110,6 +110,7 @@
   <div class="k">España · <span id="hsem">—</span></div>
   <div class="big" id="hpct">—</div>
   <div class="cap">de la capacidad total embalsada</div>
+  <div class="delta" id="hsemana"></div>
   <div class="delta" id="hdelta"></div>
   <div class="div"></div>
   <div class="comp">
@@ -234,10 +235,27 @@ function pintarHud(d){
   document.getElementById('hvol').textContent=fmt(Math.round(n.volumen_total_hm3));
   document.getElementById('hcap').textContent=fmt(Math.round(n.capacidad_total_hm3));
   document.getElementById('hnum').textContent=n.total_embalses;
+  // La semana primero: es lo que cambia cada boletín. Sale del propio fichero
+  // (pct_hace_1s), que lo publica el generador desde el 6 de octubre de 2026;
+  // si todavía no estuviera, la línea no se pinta y no pasa nada.
+  if(n.pct!=null&&n.pct_hace_1s!=null){
+    const dif=Math.round((n.pct-n.pct_hace_1s)*10)/10;
+    const hm3=(n.volumen_total_hm3!=null&&n.vol_hace_1s_hm3!=null)
+      ? Math.round(n.volumen_total_hm3-n.vol_hace_1s_hm3) : null;
+    const el=document.getElementById('hsemana');
+    if(Math.abs(dif)<0.05){
+      el.textContent='Sin cambios desde el boletín anterior';
+      el.style.color='var(--tenue, #6e6e73)';
+    }else{
+      el.textContent=(dif>0?'▲ ':'▼ ')+signo(dif)+' puntos esta semana'
+        +(hm3?' ('+signo(hm3)+' hm³)':'');
+      el.style.color=dif>0?'#2e7d46':'var(--critico)';
+    }
+  }
   if(n.pct!=null&&n.pct_hace_1a!=null){
     const dif=Math.round((n.pct-n.pct_hace_1a)*10)/10, up=dif>=0;
     const el=document.getElementById('hdelta');
-    el.textContent=(up?'▲ +':'▼ ')+fmt(dif)+' puntos vs hace un año';
+    el.textContent=(up?'▲ +':'▼ ')+fmt(Math.abs(dif))+' puntos vs hace un año';
     el.style.color=up?'#2e7d46':'var(--critico)';
   }
 }
