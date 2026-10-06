@@ -1,0 +1,75 @@
+name: Actualizar lluvia de otono por municipio
+
+# Publica docs/otonio_municipios.json: lo que lleva llovido el otono en cada
+# municipio, frente a la normal 1991-2020 del mismo tramo y frente al mismo
+# tramo del ano pasado.
+#
+# LA PRIMERA PASADA ES LARGA. Tiene que bajar 31 otonos (los 30 de la normal mas
+# el del ano pasado) para las 391 celdas de ERA5: son unas 1.240 peticiones y
+# ronda la media hora. Se guarda en archivo/otonio/normal_era5.json y a partir de
+# ahi las pasadas diarias solo bajan el ano en curso, que son 40 peticiones.
+# Lanzala a mano la primera vez con minutos = 120.
+#
+# A LAS 06:20 UTC y no antes: ERA5 se consolida con unos seis dias de retraso,
+# asi que no hay prisa ninguna dentro del dia; esta hora solo evita cruzarse con
+# el resto de flujos.
+
+on:
+  schedule:
+    - cron: '20 6 * * *'
+  workflow_dispatch:
+    inputs:
+      minutos:
+        description: 'Minutos de presupuesto (120 para la primera bajada)'
+        required: false
+        default: '50'
+
+concurrency:
+  group: otonio-municipios
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ejecutar
+        env:
+          CG_MINUTOS: ${{ github.event.inputs.minutos || '50' }}
+        run: python privado/otonio_municipios.py
+
+      - name: Publicar cambios
+        # SIEMPRE. Si el script se queda sin tiempo a mitad de la bajada de
+        # normales, lo que lleve bajado ya esta en el cache y la pasada siguiente
+        # arranca desde ahi; sin este `always()` ese trabajo se perderia con el
+        # runner y la primera bajada no terminaria nunca.
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          [ -f archivo/otonio/normal_era5.json ] && git add archivo/otonio/normal_era5.json || true
+          [ -f docs/otonio_municipios.json ] && git add docs/otonio_municipios.json || true
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+          else
+            git commit -m "Lluvia de otono por municipio: $(date -u +%Y-%m-%d\ %H:%M) UTC"
+            git push
+          fi
