@@ -79,7 +79,7 @@ display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 </div>
 
 <div class="band">
-<div class="stat"><div class="n" id="pct">—</div><div class="l">de la capacidad, embalsado esta semana</div><div class="d" id="delta"></div></div>
+<div class="stat"><div class="n" id="pct">—</div><div class="l">de la capacidad, embalsado esta semana</div><div class="d" id="delta"></div><div class="d" id="delta1a"></div></div>
 <div class="stat"><div class="n" id="pct1a" style="color:#556270">—</div><div class="l">hace un año, misma semana</div></div>
 <div class="stat"><div class="n" id="pct10" style="color:#556270">—</div><div class="l">media de los últimos 10 años</div></div>
 <div class="stat"><div class="n" id="vol">—</div><div class="l" id="voll">hm³ embalsados</div></div>
@@ -124,11 +124,16 @@ const BASE='https://davidbebow.github.io/temperaturas-mar-espana/embalses/';
 const MAPA_NACIONAL='https://calentamientoglobal.es/embalses-espana/';
 
 // La provincia sale de ?p=… o, si este archivo es una copia {slug}.html, del propio nombre.
+// A Coruña se llama a_coruña.json, con eñe: el nombre del archivo llega a
+// location.pathname con la eñe escapada (a_coru%C3%B1a), así que se descodifica
+// aquí y se vuelve a escapar al pedir el JSON. Sin esto, A Coruña era la única
+// provincia que necesitaba una copia distinta del widget.
 function slugActual(){
 const q=new URLSearchParams(location.search).get('p');
 if(q) return q.toLowerCase();
-const f=location.pathname.split('/').pop().replace(/\.html?$/,'');
-return (f && f!=='provincia')?f:null;
+let f=location.pathname.split('/').pop().replace(/\.html?$/,'');
+try{ f=decodeURIComponent(f); }catch(e){}
+return (f && f!=='provincia')?f.toLowerCase():null;
 }
 const cuencaTxt=c=>{
 if(/^(Segura|Tajo|Duero|Ebro|Júcar|Guadiana|Guadalquivir|Cantábrico Occidental|Cantábrico Oriental)$/.test(c))return 'Cuenca del '+c;
@@ -140,9 +145,29 @@ const pretty=n=>{const m=n.match(/^(.+),\s*(La|El|Los|Las|Nª Sª de|A|As|Os)$/)
 const fmt=n=>n==null?'—':n.toLocaleString('es-ES',{maximumFractionDigits:1});
 const pctTxt=p=>p==null?'—':fmt(p)+'%';
 
+// ─────────────── Variación respecto al boletín anterior ───────────────
+// No hace falta ningún dato nuevo: el JSON ya trae la serie semanal (104
+// semanas), y la penúltima semana ES el boletín anterior. Si la serie no
+// termina en el boletín que se está pintando, no se calcula nada: antes
+// ninguna cifra que una cifra que compara semanas que no son.
+function semanaAnterior(d){
+  const s=(d.serie||[]).filter(p=>p&&p.pct!=null);
+  if(s.length<2) return null;
+  const act=s[s.length-1], ant=s[s.length-2];
+  if(d.boletin_fecha && act.fecha && act.fecha!==d.boletin_fecha) return null;
+  const actual=(d.pct_media!=null)?d.pct_media:act.pct;
+  const pts=Math.round((actual-ant.pct)*10)/10;
+  // Los hm³ salen de los puntos sobre la capacidad: es exacto mientras la
+  // capacidad no cambie, y solo cambia cuando entra o sale un embalse del
+  // boletín, no de una semana a la siguiente.
+  const hm3=(d.capacidad_total_hm3!=null)?Math.round(pts/100*d.capacidad_total_hm3):null;
+  return {pts:pts, hm3:hm3, pct:ant.pct, fecha:ant.fecha};
+}
+const signo=n=>(n>0?'+':'−')+fmt(Math.abs(n));
+
 const slug=slugActual();
 if(!slug){document.getElementById('err').textContent='Provincia no indicada (…/provincia.html?p=murcia)';}
-else fetch(BASE+slug+'.json?_='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).then(pintar)
+else fetch(BASE+encodeURIComponent(slug)+'.json?_='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).then(pintar)
 .catch(()=>{document.getElementById('err').textContent='No hay datos de embalses para esta provincia.'});
 
 function pintar(d){
@@ -156,16 +181,35 @@ document.getElementById('pct1a').textContent=pctTxt(d.pct_hace_1a);
 document.getElementById('pct10').textContent=pctTxt(d.pct_media_10a);
 document.getElementById('vol').textContent=fmt(d.volumen_total_hm3);
 document.getElementById('voll').textContent='hm³ embalsados de '+fmt(d.capacidad_total_hm3)+' hm³';
+// Primera línea: la semana. Es el dato que cambia cada lunes y el que
+// contesta «¿ha subido o ha bajado?», así que va antes que el año.
+const sa=semanaAnterior(d);
+const elS=document.getElementById('delta');
+if(sa){
+if(Math.abs(sa.pts)<0.05){
+elS.textContent='Sin cambios desde el boletín anterior';
+elS.style.color='#6e6e73';
+}else{
+elS.textContent=(sa.pts>0?'▲ ':'▼ ')+signo(sa.pts)+' pts esta semana'
++(sa.hm3?' ('+signo(sa.hm3)+' hm³)':'');
+elS.style.color=sa.pts>0?'#2e7d46':'#CC2200';
+}
+}
 if(d.pct_media!=null&&d.pct_hace_1a!=null){
 const dif=Math.round((d.pct_media-d.pct_hace_1a)*10)/10, up=dif>=0;
-const el=document.getElementById('delta');
-el.textContent=(up?'▲ +':'▼ ')+fmt(dif)+' pts vs hace un año';
+const el=document.getElementById('delta1a');
+el.textContent=(up?'▲ +':'▼ ')+fmt(Math.abs(dif))+' pts vs hace un año';
 el.style.color=up?'#2e7d46':'#CC2200';
 }
 document.getElementById('frase').innerHTML=
 'Los embalses de la provincia de <b>'+d.provincia+'</b> están al <b>'+pctTxt(d.pct_media)+
 '</b> de su capacidad en la semana del '+d.fecha_legible+
 ' ('+fmt(d.volumen_total_hm3)+' hm³ de '+fmt(d.capacidad_total_hm3)+' hm³). '+
+(sa?(Math.abs(sa.pts)<0.05
+? 'Es el mismo porcentaje que en el boletín anterior. '
+: 'En una semana han '+(sa.pts>0?'subido':'bajado')+' <b>'+fmt(Math.abs(sa.pts))+
+' puntos</b>'+(sa.hm3?' ('+fmt(Math.abs(sa.hm3))+' hm³ '+(sa.hm3>0?'más':'menos')+')':'')+
+', desde el '+pctTxt(sa.pct)+' del boletín anterior. '):'')+
 'Hace un año estaban al <b>'+pctTxt(d.pct_hace_1a)+'</b> y la media de los últimos 10 años para estas fechas es del <b>'+
 pctTxt(d.pct_media_10a)+'</b>. Fuente: Boletín Hidrológico Semanal del MITECO.';
 document.getElementById('fecha').textContent='Boletín del '+d.fecha_legible;
@@ -195,7 +239,11 @@ document.getElementById('lista').innerHTML=(d.embalses||[]).map(e=>
 const conCoord=(d.embalses||[]).filter(e=>e.lat&&e.lon);
 if(conCoord.length){
 const mini=L.map('mini',{zoomSnap:.25,attributionControl:false,scrollWheelZoom:false});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',opacity:.9}).addTo(mini);
+// CARTO dejó de servir teselas gratis a finales de agosto de 2026 y estampaba
+// «API KEY REQUIRED» sobre el mapa. Callejero gris del IGN, igual que el mapa
+// nacional y el resto de las herramientas.
+L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',
+{opacity:.55,attribution:'&copy; Instituto Geográfico Nacional de España'}).addTo(mini);
 const g=L.featureGroup(conCoord.map(e=>{
 const r=6+Math.sqrt(e.capacidad_hm3||1)*.9;
 return L.circleMarker([e.lat,e.lon],{radius:Math.min(r,22),color:'#fff',weight:1.5,
