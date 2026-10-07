@@ -25,6 +25,7 @@ h1 b{color:var(--agua)}
 .stat .d{font-size:11px;font-weight:700;margin-top:3px}
 .frase{margin:14px 0 0;background:#eef4f9;border:1px solid #d8e6f1;border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.6;color:#27333d}
 .frase b{font-variant-numeric:tabular-nums}
+.frase .precision{display:block;margin-top:8px;padding-top:8px;border-top:1px solid #d8e6f1;font-size:12.5px;color:#4a5864}
 .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:15px 16px 13px;margin:12px 0 0}
 .card h2{margin:0;font-size:16px;font-weight:800;letter-spacing:-.01em}
 .card .sub{font-size:12px;color:var(--soft);margin:2px 0 8px;line-height:1.45}
@@ -196,6 +197,12 @@ function pintar(){
   const rk=f.ranking_semana;
   if(rk) fr+='Es el <b>'+(rk.posicion===1?'':rk.posicion+'.º ')+'nivel más alto</b> para esta semana de los '+rk.de+' años con dato desde '+rk.desde+'. ';
   fr+='Fuente: Boletín Hidrológico Semanal del MITECO.';
+  // Embalses pequeños: el boletín da el volumen en hm³ enteros, así que el % avanza a saltos.
+  if(f.capacidad_hm3 && f.capacidad_hm3<100){
+    const paso=100/f.capacidad_hm3;
+    fr+='<span class="precision"><b>Sobre la precisión:</b> el MITECO publica el agua embalsada en hm³ enteros, sin decimales. En un embalse de '+fmt(f.capacidad_hm3,0)+
+      ' hm³ cada hm³ equivale a '+fmt(paso)+' puntos, así que el porcentaje cambia a saltos de '+fmt(paso)+' puntos y es habitual que dos semanas coincidan exactamente o que un cambio pequeño de agua parezca una subida o bajada brusca.</span>';
+  }
   document.getElementById('frase').innerHTML=fr;
   document.getElementById('fecha').textContent='Boletín del '+f.fecha_legible;
 
