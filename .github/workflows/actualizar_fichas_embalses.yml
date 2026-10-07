@@ -1,0 +1,104 @@
+name: Actualizar fichas de embalses
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+# Trae del privado (clima-scripts) embalses_fichas_generar.py, que reutiliza la
+# lectura del BD-Embalses de embalses_generar.py, y publica en docs/embalses/fichas/:
+#   {slug}.json  ficha de cada embalse (serie semanal desde 1988, comparativas)
+#   rios.json    caudal de los rios que llegan a cada embalse (de docs/caudal/)
+#   index.json   lista de fichas (la usan las paginas de provincia para enlazar)
+# Despues rellena las paginas de WordPress de ficha que esten vacias (solo la
+# primera vez) y reescribe su bloque de servidor con el dato de la semana.
+#
+# Calendario:
+#  - martes 18:10 y miercoles 08:10 (hora peninsular de verano): todo
+#    (despues de actualizar_embalses, que corre a las 17:30 y 07:30)
+#  - a diario 10:20 y 17:20: solo rios (despues de actualizar_caudales)
+on:
+  schedule:
+    - cron: '10 16 * * 2'
+    - cron: '10 6 * * 3'
+    - cron: '20 8 * * *'
+    - cron: '20 15 * * *'
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: 'todo, embalses o rios'
+        default: 'todo'
+  push:
+    paths:
+      - '.github/workflows/actualizar_fichas_embalses.yml'
+concurrency:
+  group: actualizar-fichas-embalses
+  cancel-in-progress: false
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: clima-scripts
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Elegir modo
+        id: modo
+        run: |
+          MODO="rios"
+          case "${{ github.event_name }}" in
+            workflow_dispatch) MODO="${{ github.event.inputs.modo }}" ;;
+            push) MODO="todo" ;;
+            schedule)
+              case "${{ github.event.schedule }}" in
+                '10 16 * * 2'|'10 6 * * 3') MODO="todo" ;;
+              esac ;;
+          esac
+          # la primera vez no hay fichas: se generan aunque toque solo rios
+          if [ ! -f docs/embalses/fichas/index.json ]; then MODO="todo"; fi
+          echo "modo=$MODO" >> "$GITHUB_OUTPUT"
+          echo "Modo: $MODO"
+
+      - name: Instalar dependencias
+        run: |
+          if [ "${{ steps.modo.outputs.modo }}" != "rios" ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq mdbtools
+          fi
+          pip install requests
+
+      - name: Generar fichas
+        env:
+          SALIDA_DIR: ${{ github.workspace }}/docs
+          CAUDAL_DIR: ${{ github.workspace }}/docs/caudal
+          WP_URL: https://calentamientoglobal.es
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
+        run: python clima-scripts/embalses_fichas_generar.py --modo "${{ steps.modo.outputs.modo }}" --paginas --publicar-wp
+
+      - name: Guardar cambios
+        run: |
+          rm -rf clima-scripts
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add docs/embalses/fichas/
+          if git diff --staged --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "Fichas de embalses (${{ steps.modo.outputs.modo }}): $(date +'%d/%m/%Y %H:%M')"
+          for intento in 1 2 3 4 5; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push fallo. Reintento $intento/5..."
+            git rebase --abort 2>/dev/null || true
+            sleep $((intento*7))
+          done
+          exit 1
