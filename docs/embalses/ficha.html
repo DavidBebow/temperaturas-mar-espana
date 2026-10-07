@@ -194,7 +194,7 @@ function pintar(){
   if(f.pct_media_10a!=null) fr+=(h1?' y la':'La')+' media de los últimos 10 años para estas fechas es del <b>'+pctTxt(f.pct_media_10a)+'</b>';
   fr+='. ';
   const rk=f.ranking_semana;
-  if(rk) fr+='Es el <b>'+rk.posicion+'.º nivel más alto</b> para esta semana de los '+rk.de+' años con dato desde '+rk.desde+'. ';
+  if(rk) fr+='Es el <b>'+(rk.posicion===1?'':rk.posicion+'.º ')+'nivel más alto</b> para esta semana de los '+rk.de+' años con dato desde '+rk.desde+'. ';
   fr+='Fuente: Boletín Hidrológico Semanal del MITECO.';
   document.getElementById('frase').innerHTML=fr;
   document.getElementById('fecha').textContent='Boletín del '+f.fecha_legible;
