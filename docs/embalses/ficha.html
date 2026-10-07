@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha de embalse · Boletín Hidrológico MITECO</title>
+<style>
+:root{--bg:#f7f9fb;--ink:#1d1d1f;--soft:#6e6e73;--line:#dfe5ea;--card:#ffffff;--agua:#0071b8;--prev:#7a4bc2}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:22px 18px 26px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.eyebrow{font-size:10.5px;letter-spacing:.14em;color:var(--soft);text-transform:uppercase;font-weight:700}
+h1{margin:3px 0 0;font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+h1 b{color:var(--agua)}
+.tr{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.et{font-size:11.5px;font-weight:800;color:#fff;border-radius:8px;padding:5px 11px;letter-spacing:.04em;flex:none}
+.volver{font-size:12.5px;font-weight:700;color:var(--agua);text-decoration:none;flex:none}
+.band{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 15px}
+.stat .n{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat .l{font-size:11px;color:var(--soft);margin-top:3px;line-height:1.35}
+.stat .d{font-size:11px;font-weight:700;margin-top:3px}
+.frase{margin:14px 0 0;background:#eef4f9;border:1px solid #d8e6f1;border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.6;color:#27333d}
+.frase b{font-variant-numeric:tabular-nums}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:15px 16px 13px;margin:12px 0 0}
+.card h2{margin:0;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.card .sub{font-size:12px;color:var(--soft);margin:2px 0 8px;line-height:1.45}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;overflow:visible}
+.ley{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--soft);margin-top:6px}
+.ley i{display:inline-block;width:16px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.ley i.ln{height:0;border-top:2.5px solid;border-radius:0}
+.ley i.dash{height:0;border-top:2px dashed;border-radius:0}
+.nota{font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.5}
+.nota b{color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two .card{margin-top:12px}
+.rio{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.rio:first-of-type{border-top:0;padding-top:0;margin-top:4px}
+.rio .hd{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.rio .hd b{font-size:15px;font-weight:800}
+.rio .papel{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);font-weight:700;display:block}
+.pill{font-size:11px;font-weight:800;color:#fff;border-radius:7px;padding:3px 9px;flex:none}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 6px}
+.kpi{background:#f4f7fa;border-radius:11px;padding:9px 11px}
+.kpi .k{font-size:10.5px;color:var(--soft);line-height:1.3}
+.kpi .v{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:2px}
+.kpi .u{font-size:10.5px;color:var(--soft)}
+.afo{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:10px}
+.afo>div{border:1px solid var(--line);border-radius:11px;padding:9px 12px;font-size:12.5px}
+.afo b{font-size:17px;font-variant-numeric:tabular-nums}
+.afo .t{font-size:10.5px;color:var(--soft);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.cta{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:var(--agua);text-decoration:none}
+.vacio{font-size:13.5px;color:#424245;background:#f4f7fa;border-radius:11px;padding:12px 14px}
+#tip{position:absolute;pointer-events:none;background:#1d1d1f;color:#fff;font-size:11.5px;line-height:1.45;padding:7px 9px;border-radius:8px;white-space:nowrap;display:none;z-index:9;font-variant-numeric:tabular-nums}
+.fuente{margin-top:18px;padding-top:12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--soft);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fuente a{color:var(--agua);text-decoration:none;font-weight:600}
+#err{padding:40px 10px;text-align:center;color:var(--soft)}
+#app{display:none}
+@media(max-width:720px){.band{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="err">Cargando la ficha del embalse…</div>
+<div id="app">
+  <div class="top">
+    <div><div class="eyebrow" id="eyebrow"></div><h1>Embalse de <b id="nom"></b></h1></div>
+    <div class="tr"><a class="volver" id="volver" href="#" target="_top"></a><span class="et" id="et"></span></div>
+  </div>
+
+  <div class="band">
+    <div class="stat"><div class="n" id="pct"></div><div class="l">de su capacidad esta semana</div><div class="d" id="dsem"></div></div>
+    <div class="stat"><div class="n" id="vol"></div><div class="l" id="voll"></div></div>
+    <div class="stat"><div class="n" id="p1a" style="color:#556270"></div><div class="l">hace un año, misma semana</div><div class="d" id="d1a"></div></div>
+    <div class="stat"><div class="n" id="p10" style="color:#556270"></div><div class="l">media de los últimos 10 años</div><div class="d" id="d10"></div></div>
+  </div>
+  <div class="frase" id="frase"></div>
+
+  <div class="card">
+    <h2>Los últimos 12 meses</h2>
+    <div class="sub">Nivel semanal del embalse frente al año anterior y a lo que es habitual en cada semana del año.</div>
+    <div class="chart" id="c12"></div>
+    <div class="ley">
+      <span><i class="ln" style="border-color:#0071b8"></i>Este año</span>
+      <span><i class="ln" style="border-color:#9aa6b1"></i>Hace un año</span>
+      <span><i class="dash" style="border-color:#1d1d1f"></i>Media 10 años</span>
+      <span><i style="background:rgba(0,113,184,.12)"></i>Mínimo–máximo de los 10 años anteriores</span>
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <h2>Esta semana, año a año</h2>
+      <div class="sub" id="subAn"></div>
+      <div class="chart" id="cAn"></div>
+      <div class="nota" id="notaAn"></div>
+    </div>
+    <div class="card">
+      <h2 id="tSerie">Toda la serie</h2>
+      <div class="sub" id="subSerie"></div>
+      <div class="chart" id="cSerie"></div>
+      <div class="nota" id="notaSerie"></div>
+    </div>
+  </div>
+
+  <div class="card" id="cardRio">
+    <h2 id="tRio">El río que llena el embalse</h2>
+    <div class="sub">Caudal simulado por el modelo GloFAS de Copernicus en el río aguas arriba del embalse, comparado con lo normal para cada fecha (1997–2025). En morado, la previsión.</div>
+    <div id="rios"></div>
+  </div>
+
+  <div class="fuente">
+    <span id="fecha"></span>
+    <span>Fuentes: <a href="https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/boletin-hidrologico.html" target="_blank" rel="noopener">Boletín Hidrológico Semanal · MITECO</a> · caudal: <a href="https://global-flood.emergency.copernicus.eu/" target="_blank" rel="noopener">Copernicus CEMS · GloFAS</a> · CalentamientoGlobal.es</span>
+  </div>
+</div>
+</div>
+<div id="tip"></div>
+
+<script>
+const BASE='https://davidbebow.github.io/temperaturas-mar-espana/embalses/fichas/';
+const MAPA_CAUDAL='https://calentamientoglobal.es/caudal-rios-espana-mapa/';
+const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+// El embalse sale de ?e=… (las páginas de WordPress llaman a ficha.html?e=la-serena)
+function slugActual(){
+  const q=new URLSearchParams(location.search).get('e');
+  if(q) return q.toLowerCase().replace(/[^a-z0-9-]/g,'');
+  let f=location.pathname.split('/').pop().replace(/\.html?$/,'');
+  return (f&&f!=='ficha')?f.toLowerCase():null;
+}
+const fmt=(n,d)=>n==null||isNaN(n)?'—':n.toLocaleString('es-ES',{maximumFractionDigits:d==null?1:d});
+const pctTxt=p=>p==null?'—':fmt(p)+' %';
+const signo=n=>(n>0?'+':'−')+fmt(Math.abs(n));
+const fmtQ=q=>q==null?'—':q<10?fmt(q,2):q<100?fmt(q,1):fmt(q,0);
+const D=s=>new Date(s+'T00:00:00Z');
+const fLarga=s=>{const d=D(s);return d.getUTCDate()+' de '+MESESL[d.getUTCMonth()]+' de '+d.getUTCFullYear();};
+const fCorta=s=>{const d=D(s);return d.getUTCDate()+' '+MESES[d.getUTCMonth()]+' '+d.getUTCFullYear();};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tip=document.getElementById('tip');
+function showTip(ev,html){ tip.innerHTML=html; tip.style.display='block';
+  const x=ev.pageX, y=ev.pageY, w=tip.offsetWidth;
+  tip.style.left=Math.max(6,Math.min(document.documentElement.clientWidth-w-6,x-w/2))+'px'; tip.style.top=(y-tip.offsetHeight-14)+'px'; }
+function hideTip(){ tip.style.display='none'; }
+const ancho=el=>Math.max(280,el.clientWidth||640);
+const mobile=()=>window.innerWidth<720;
+
+const slug=slugActual();
+let F=null, RIOS=null;
+if(!slug){ document.getElementById('err').textContent='Embalse no indicado (…/ficha.html?e=la-serena)'; }
+else{
+  const t='?_='+Date.now();
+  Promise.all([
+    fetch(BASE+slug+'.json'+t).then(r=>{if(!r.ok)throw 0;return r.json();}),
+    fetch(BASE+'rios.json'+t).then(r=>r.ok?r.json():null).catch(()=>null)
+  ]).then(([f,r])=>{F=f;RIOS=r;pintar();})
+   .catch(()=>{document.getElementById('err').textContent='No hay datos para este embalse.';});
+}
+
+function pintar(){
+  const f=F;
+  document.getElementById('err').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('eyebrow').textContent=f.provincia+' · '+(f.cuenca||'')+' · río '+f.rio+' · semana del '+f.fecha_legible;
+  document.getElementById('nom').textContent=f.nombre;
+  const et=document.getElementById('et'); et.textContent=f.etiqueta; et.style.background=f.color;
+  const v=document.getElementById('volver'); v.textContent='← Embalses de '+f.provincia; v.href=f.url_provincia;
+  const pe=document.getElementById('pct'); pe.textContent=pctTxt(f.pct); pe.style.color=f.color;
+  document.getElementById('vol').textContent=fmt(f.volumen_hm3,0);
+  document.getElementById('voll').textContent='hm³ embalsados de '+fmt(f.capacidad_hm3,0)+' hm³ de capacidad';
+  const sa=f.semana_anterior, ds=document.getElementById('dsem');
+  if(sa&&sa.dif_pts!=null){
+    if(Math.abs(sa.dif_pts)<0.05){ds.textContent='Sin cambios esta semana';ds.style.color='#6e6e73';}
+    else{ds.textContent=(sa.dif_pts>0?'▲ ':'▼ ')+signo(sa.dif_pts)+' pts esta semana ('+signo(Math.round(sa.dif_hm3))+' hm³)';ds.style.color=sa.dif_pts>0?'#2e7d46':'#CC2200';}
+  }
+  const h1=f.hace_1a;
+  document.getElementById('p1a').textContent=pctTxt(h1&&h1.pct);
+  document.getElementById('p10').textContent=pctTxt(f.pct_media_10a);
+  const dif=(a,b,el)=>{ if(a==null||b==null) return; const d=Math.round((a-b)*10)/10, e=document.getElementById(el);
+    e.textContent=Math.abs(d)<0.05?'Igual que ahora':(d>=0?'▲ ':'▼ ')+'ahora '+fmt(Math.abs(d))+' pts '+(d>=0?'más':'menos'); e.style.color=d>=0?'#2e7d46':'#CC2200'; };
+  dif(f.pct,h1&&h1.pct,'d1a'); dif(f.pct,f.pct_media_10a,'d10');
+
+  // frase citable
+  let fr='El embalse de <b>'+esc(f.nombre)+'</b> está al <b>'+pctTxt(f.pct)+'</b> de su capacidad en la semana del '+fLarga(f.boletin_fecha)+
+    ' ('+fmt(f.volumen_hm3,0)+' de '+fmt(f.capacidad_hm3,0)+' hm³). ';
+  if(sa&&sa.dif_pts!=null) fr+= Math.abs(sa.dif_pts)<0.05 ? 'Es el mismo nivel que en el boletín anterior. ' :
+    'En una semana ha '+(sa.dif_pts>0?'ganado':'perdido')+' <b>'+fmt(Math.abs(sa.dif_hm3),0)+' hm³</b> ('+fmt(Math.abs(sa.dif_pts))+' puntos). ';
+  if(h1) fr+='Hace un año estaba al <b>'+pctTxt(h1.pct)+'</b>';
+  if(f.pct_media_10a!=null) fr+=(h1?' y la':'La')+' media de los últimos 10 años para estas fechas es del <b>'+pctTxt(f.pct_media_10a)+'</b>';
+  fr+='. ';
+  const rk=f.ranking_semana;
+  if(rk) fr+='Es el <b>'+rk.posicion+'.º nivel más alto</b> para esta semana de los '+rk.de+' años con dato desde '+rk.desde+'. ';
+  fr+='Fuente: Boletín Hidrológico Semanal del MITECO.';
+  document.getElementById('frase').innerHTML=fr;
+  document.getElementById('fecha').textContent='Boletín del '+f.fecha_legible;
+
+  dibujarTodo();
+  rios();
+  avisar(); setTimeout(avisar,400); setTimeout(avisar,1500);
+}
+function dibujarTodo(){ c12(); cAnual(); cSerie(); }
+let rT=null; window.addEventListener('resize',()=>{ clearTimeout(rT); rT=setTimeout(()=>{ if(F){ dibujarTodo(); rios(); avisar(); } },150); });
+const avisar=()=>parent.postMessage({embalsesAltura:document.body.scrollHeight,slug:'ficha-'+slug},'*');
+
+/* ───────── gráfico 1: últimos 12 meses ───────── */
+function c12(){
+  const el=document.getElementById('c12'), rows=(F.ultimos_12m&&F.ultimos_12m.filas)||[];
+  if(rows.length<4){ el.innerHTML='<div class="vacio">Sin serie suficiente.</div>'; return; }
+  const W=ancho(el), H=mobile()?210:250, m={l:36,r:10,t:10,b:24}, iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const t0=D(rows[0][0]).getTime(), t1=D(rows[rows.length-1][0]).getTime();
+  const X=s=>m.l+(D(s).getTime()-t0)/(t1-t0)*iw, Y=v=>m.t+ih-(v/100)*ih;
+  let s=`<svg viewBox="0 0 ${W} ${H}" height="${H}">`;
+  [0,25,50,75,100].forEach(v=>{ s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eef1f4"/><text x="${m.l-6}" y="${Y(v)+4}" font-size="10" fill="#8a9097" text-anchor="end">${v}%</text>`; });
+  // meses
+  let mesAnt=-1, nm=0; rows.forEach(r=>{ const d=D(r[0]); if(d.getUTCMonth()!==mesAnt && d.getUTCDate()<=7){ mesAnt=d.getUTCMonth(); if(mobile()&&(nm++)%2) return; s+=`<text x="${X(r[0])}" y="${H-6}" font-size="10" fill="#8a9097" text-anchor="middle">${MESES[mesAnt]}</text>`; } });
+  // banda min-max
+  const conB=rows.filter(r=>r[3]!=null);
+  if(conB.length>2){
+    s+=`<path d="M${conB.map(r=>X(r[0])+','+Y(r[5])).join('L')}L${conB.slice().reverse().map(r=>X(r[0])+','+Y(r[3])).join('L')}Z" fill="rgba(0,113,184,.12)"/>`;
+    s+=`<path d="M${conB.map(r=>X(r[0])+','+Y(r[4])).join('L')}" fill="none" stroke="#1d1d1f" stroke-width="1.4" stroke-dasharray="4 3"/>`;
+  }
+  const linea=(k,col,w)=>{ const p=rows.filter(r=>r[k]!=null); if(p.length>1) s+=`<path d="M${p.map(r=>X(r[0])+','+Y(r[k])).join('L')}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linejoin="round"/>`; };
+  linea(2,'#9aa6b1',1.8); linea(1,'#0071b8',2.8);
+  const u=rows[rows.length-1]; if(u[1]!=null) s+=`<circle cx="${X(u[0])}" cy="${Y(u[1])}" r="4.5" fill="#0071b8" stroke="#fff" stroke-width="2"/>`;
+  s+=`<rect id="h12" x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent"/><line id="g12" y1="${m.t}" y2="${m.t+ih}" stroke="#c4ccd3" display="none"/></svg>`;
+  el.innerHTML=s;
+  const hit=el.querySelector('#h12'), g=el.querySelector('#g12');
+  hit.addEventListener('mousemove',ev=>{
+    const bb=hit.getBoundingClientRect(), fx=(ev.clientX-bb.left)/bb.width; let i=Math.round(fx*(rows.length-1)); i=Math.max(0,Math.min(rows.length-1,i));
+    const r=rows[i]; g.setAttribute('x1',X(r[0])); g.setAttribute('x2',X(r[0])); g.setAttribute('display','');
+    showTip(ev,'<b>'+fCorta(r[0])+'</b><br>Este año: '+pctTxt(r[1])+'<br>Hace un año: '+pctTxt(r[2])+(r[4]!=null?'<br>Media 10 años: '+pctTxt(r[4])+'<br>Rango 10 años: '+fmt(r[3])+'–'+fmt(r[5])+' %':''));
+  });
+  hit.addEventListener('mouseleave',()=>{hideTip();g.setAttribute('display','none');});
+}
+
+/* ───────── gráfico 2: la misma semana, año a año ───────── */
+function cAnual(){
+  const el=document.getElementById('cAn'), A=(F.anual_semana||[]).filter(a=>a.pct!=null);
+  const d=D(F.boletin_fecha);
+  document.getElementById('subAn').textContent='Nivel del embalse en torno al '+d.getUTCDate()+' de '+MESESL[d.getUTCMonth()]+' de cada año.';
+  if(A.length<3){ el.innerHTML='<div class="vacio">Sin años suficientes.</div>'; return; }
+  const W=ancho(el), H=200, m={l:30,r:6,t:8,b:22}, iw=W-m.l-m.r, ih=H-m.t-m.b, bw=iw/A.length;
+  const Y=v=>m.t+ih-(v/100)*ih, anioAct=d.getUTCFullYear();
+  let s=`<svg viewBox="0 0 ${W} ${H}" height="${H}">`;
+  [0,50,100].forEach(v=>{ s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eef1f4"/><text x="${m.l-5}" y="${Y(v)+4}" font-size="10" fill="#8a9097" text-anchor="end">${v}%</text>`; });
+  A.forEach((a,i)=>{ const act=a.anio===anioAct;
+    s+=`<rect class="b" data-i="${i}" x="${m.l+i*bw+bw*.12}" y="${Y(a.pct)}" width="${Math.max(1,bw*.76)}" height="${Math.max(0,m.t+ih-Y(a.pct))}" rx="${Math.min(2,bw*.2)}" fill="${act?F.color:'#c9d3dc'}"${act?' stroke="#1d1d1f" stroke-width="1"':''}/>`;
+    const paso=A.length>20?10:5, lejos=Math.min(i,A.length-1-i)>=(mobile()?4:3);
+    if(i===0||i===A.length-1||(a.anio%paso===0&&lejos)) s+=`<text x="${m.l+i*bw+bw/2}" y="${H-6}" font-size="10" fill="#8a9097" text-anchor="middle">${a.anio}</text>`; });
+  if(F.pct_media_historica!=null) s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(F.pct_media_historica)}" y2="${Y(F.pct_media_historica)}" stroke="#1d1d1f" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+  s+='</svg>'; el.innerHTML=s;
+  el.querySelectorAll('rect.b').forEach(r=>{ r.addEventListener('mousemove',ev=>{ const a=A[+r.dataset.i]; showTip(ev,'<b>'+a.anio+'</b> · '+fCorta(a.fecha)+'<br>'+pctTxt(a.pct)+' · '+fmt(a.vol_hm3,0)+' hm³'); }); r.addEventListener('mouseleave',hideTip); });
+  const rk=F.ranking_semana; let n='';
+  if(rk){ n='Este año va <b>'+rk.posicion+'.º de '+rk.de+'</b> (de más a menos agua) para esta semana. ';
+    if(rk.anio_mas_alto) n+='El más lleno: <b>'+rk.anio_mas_alto.anio+'</b> ('+pctTxt(rk.anio_mas_alto.pct)+'). ';
+    if(rk.anio_mas_bajo) n+='El más vacío: <b>'+rk.anio_mas_bajo.anio+'</b> ('+pctTxt(rk.anio_mas_bajo.pct)+'). '; }
+  if(F.pct_media_historica!=null) n+='Línea discontinua: media de todos los años anteriores ('+pctTxt(F.pct_media_historica)+').';
+  document.getElementById('notaAn').innerHTML=n;
+}
+
+/* ───────── gráfico 3: toda la serie ───────── */
+function cSerie(){
+  const el=document.getElementById('cSerie'), S=((F.serie&&F.serie.filas)||[]).filter(r=>r[2]>0&&r[1]!=null);
+  if(S.length<10){ el.innerHTML='<div class="vacio">Sin serie suficiente.</div>'; return; }
+  const a0=S[0][0].slice(0,4);
+  document.getElementById('tSerie').textContent='Toda la serie, desde '+a0;
+  document.getElementById('subSerie').textContent='Porcentaje de llenado semana a semana desde el primer boletín con dato.';
+  const W=ancho(el), H=200, m={l:30,r:6,t:8,b:22}, iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const t0=D(S[0][0]).getTime(), t1=D(S[S.length-1][0]).getTime();
+  const X=s=>m.l+(D(s).getTime()-t0)/(t1-t0)*iw, Y=v=>m.t+ih-(Math.min(100,v)/100)*ih, P=r=>r[1]/r[2]*100;
+  // se reduce a 1 punto cada ~2 px para no dibujar 2.000 vértices en móvil
+  const paso=Math.max(1,Math.floor(S.length/(iw/2))), pts=S.filter((r,i)=>i%paso===0||i===S.length-1);
+  let s=`<svg viewBox="0 0 ${W} ${H}" height="${H}">`;
+  [0,50,100].forEach(v=>{ s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eef1f4"/><text x="${m.l-5}" y="${Y(v)+4}" font-size="10" fill="#8a9097" text-anchor="end">${v}%</text>`; });
+  const y0=+a0, y1=+S[S.length-1][0].slice(0,4);
+  for(let y=Math.ceil(y0/10)*10;y<=y1;y+=10){ const x=X(y+'-01-01'); s+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${m.t+ih}" stroke="#f0f2f4"/><text x="${x}" y="${H-6}" font-size="10" fill="#8a9097" text-anchor="middle">${y}</text>`; }
+  const path=pts.map(r=>X(r[0])+','+Y(P(r))).join('L');
+  s+=`<path d="M${X(pts[0][0])},${Y(0)}L${path}L${X(pts[pts.length-1][0])},${Y(0)}Z" fill="rgba(0,113,184,.12)"/><path d="M${path}" fill="none" stroke="#0071b8" stroke-width="1.4" stroke-linejoin="round"/>`;
+  (F.cambios_capacidad||[]).forEach(c=>{ const x=X(c.fecha); s+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${m.t+ih}" stroke="#CC2200" stroke-dasharray="3 3"/>`; });
+  const rc=F.record||{};
+  if(rc.max) s+=`<circle cx="${X(rc.max.fecha)}" cy="${Y(rc.max.pct)}" r="4" fill="#0077DD" stroke="#fff" stroke-width="1.5"/>`;
+  if(rc.min) s+=`<circle cx="${X(rc.min.fecha)}" cy="${Y(rc.min.pct)}" r="4" fill="#CC2200" stroke="#fff" stroke-width="1.5"/>`;
+  s+=`<rect id="hS" x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent"/></svg>`;
+  el.innerHTML=s;
+  const hit=el.querySelector('#hS');
+  hit.addEventListener('mousemove',ev=>{ const bb=hit.getBoundingClientRect(), fx=(ev.clientX-bb.left)/bb.width; let i=Math.round(fx*(S.length-1)); i=Math.max(0,Math.min(S.length-1,i)); const r=S[i];
+    showTip(ev,'<b>'+fCorta(r[0])+'</b><br>'+pctTxt(P(r))+' · '+fmt(r[1],0)+' de '+fmt(r[2],0)+' hm³'); });
+  hit.addEventListener('mouseleave',hideTip);
+  let n='';
+  const desde=F.serie_comparable_desde;
+  if(rc.max) n+='Máximo: <b>'+pctTxt(rc.max.pct)+'</b> el '+fLarga(rc.max.fecha)+'. ';
+  if(rc.min) n+='Mínimo: <b>'+pctTxt(rc.min.pct)+'</b> el '+fLarga(rc.min.fecha)+'. ';
+  if((F.cambios_capacidad||[]).length){ const c=F.cambios_capacidad[F.cambios_capacidad.length-1];
+    n+='La línea roja marca el '+fLarga(c.fecha)+', cuando la capacidad pasó de '+fmt(c.de_hm3,0)+' a '+fmt(c.a_hm3,0)+' hm³: las comparaciones y los récords se calculan desde entonces.'; }
+  document.getElementById('notaSerie').innerHTML=n;
+}
+
+/* ───────── el río que lo llena ───────── */
+function rios(){
+  const box=document.getElementById('rios'), ids=F.rios||[], afs=F.aforos||[], pap=F.papeles||{};
+  const P=RIOS&&RIOS.puntos?RIOS.puntos:{}, A=RIOS&&RIOS.aforos?RIOS.aforos:{};
+  document.getElementById('tRio').textContent=ids.length>1?'Los ríos que llenan el embalse':'El río que llena el embalse';
+  let h='';
+  const disp=ids.filter(id=>P[id]);
+  if(!disp.length){
+    h='<div class="vacio">'+(ids.length&&!RIOS?'El dato de caudal no está disponible en este momento. ':
+      'Ninguno de los puntos que vigila nuestra red de caudales está aguas arriba de este embalse, así que aquí no se muestra un caudal de entrada. ')+
+      'El estado del '+esc(F.rio)+' y de toda la red fluvial se puede consultar en el mapa de caudales.</div>';
+  }
+  disp.forEach((id,k)=>{ const p=P[id];
+    const papel=pap[id]==='afluente'?'Afluente que llega al embalse':'Entra en el embalse';
+    h+=`<div class="rio"><div class="hd"><div><span class="papel">${papel}</span><b>${esc(p.nombre)}</b></div>`+
+      (p.estado?`<span class="pill" style="background:${p.color}">${p.estado} para la fecha · percentil ${fmt(p.percentil,0)}</span>`:'')+`</div>`+
+      `<div class="kpis"><div class="kpi"><div class="k">Caudal hoy (modelo)</div><div class="v">${fmtQ(p.q_hoy)}</div><div class="u">m³/s</div></div>`+
+      `<div class="kpi"><div class="k">Normal para esta fecha</div><div class="v">${fmtQ(p.mediana_hoy)}</div><div class="u">m³/s · mediana</div></div>`+
+      `<div class="kpi"><div class="k">Respecto a lo normal</div><div class="v">${p.vs_mediana_pct==null?'—':Math.abs(p.vs_mediana_pct)>500?'×'+fmt(1+p.vs_mediana_pct/100,0):(p.vs_mediana_pct>0?'+':'')+fmt(p.vs_mediana_pct,0)+' %'}</div><div class="u">${p.vs_mediana_pct==null&&p.mediana_hoy!=null?'el río suele ir casi seco':'frente a la mediana'}</div></div>`+
+      `<div class="kpi"><div class="k">Últimos 7 días</div><div class="v">${p.d7_pct==null?'—':(p.d7_pct>0?'▲ +':'▼ ')+fmt(Math.abs(p.d7_pct),0)+' %'}</div><div class="u">${p.d7_pct==null?'':p.d7_pct>0?'sube':'baja'}</div></div></div>`+
+      `<div class="chart" id="cr${k}"></div>`+
+      `<div class="ley"><span><i class="ln" style="border-color:#14202b"></i>Caudal</span><span><i class="dash" style="border-color:#7a4bc2"></i>Previsión</span><span><i class="dash" style="border-color:#7d8a94"></i>Mediana</span><span><i style="background:rgba(61,139,212,.14)"></i>Lo habitual (p10–p90)</span><span><i style="background:rgba(61,139,212,.3)"></i>p25–p75</span></div></div>`;
+  });
+  const disA=afs.filter(id=>A[id]);
+  if(disA.length){
+    h+='<div class="afo">'+disA.map(id=>{ const a=A[id], pa=pap[id]==='salida'?'Medido a la salida':'Medido a la entrada';
+      return `<div><div class="t">${pa} · aforo</div>${esc(a.nombre)} (${esc(a.rio||'')})<br><b>${fmtQ(a.q)} m³/s</b> <span style="color:#6e6e73;font-size:11px">${a.t?fCorta(a.t.slice(0,10))+' '+a.t.slice(11,16)+' UTC':''} · ${esc(a.fuente||'')}</span></div>`; }).join('')+'</div>';
+  }
+  h+=`<a class="cta" href="${(RIOS&&RIOS.url_caudal)||F.url_caudal||MAPA_CAUDAL}" target="_top">Ver el ${esc(F.rio)} en el mapa de caudales de España →</a>`;
+  if(disp.length) h+='<div class="nota">Es caudal <b>simulado</b> por el modelo, no medido. En ríos regulados por presas, trasvases o regadíos, los m³/s del modelo pueden quedar lejos del caudal real; lo fiable es la comparación de cada río con su propia normalidad, que es lo que indica el percentil. '+(RIOS&&RIOS.emitida?'Previsión emitida el '+fLarga(RIOS.emitida)+'.':'')+'</div>';
+  box.innerHTML=h;
+  disp.forEach((id,k)=>grafRio(document.getElementById('cr'+k),P[id]));
+}
+function grafRio(el,p){
+  const q=p.q||[], B=p.banda||[], n=q.length, hoy=RIOS.hoy, t0=D(RIOS.t0);
+  if(n<5){ el.innerHTML=''; return; }
+  const W=ancho(el), H=mobile()?170:200, m={l:42,r:8,t:8,b:22}, iw=W-m.l-m.r, ih=H-m.t-m.b;
+  let ymax=0; q.forEach(v=>{if(v!=null) ymax=Math.max(ymax,v);}); B.forEach(b=>{ if(b) ymax=Math.max(ymax,b[4]); }); ymax=ymax*1.08||1;
+  const X=i=>m.l+i/(n-1)*iw, Y=v=>m.t+ih-(v/ymax)*ih, dia=i=>new Date(t0.getTime()+i*864e5).toISOString().slice(0,10);
+  let s=`<svg viewBox="0 0 ${W} ${H}" height="${H}">`;
+  [0,.5,1].forEach(f=>{ const v=ymax/1.08*f; s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eef1f4"/><text x="${m.l-5}" y="${Y(v)+4}" font-size="10" fill="#8a9097" text-anchor="end">${fmtQ(v)}</text>`; });
+  if(B.length===n){
+    const area=(a,b,c)=>`<path d="M${B.map((x,i)=>X(i)+','+Y(x[b])).join('L')}L${B.map((x,i)=>[i,x]).reverse().map(([i,x])=>X(i)+','+Y(x[a])).join('L')}Z" fill="${c}"/>`;
+    s+=area(0,4,'rgba(61,139,212,.14)')+area(1,3,'rgba(61,139,212,.30)');
+    s+=`<path d="M${B.map((x,i)=>X(i)+','+Y(x[2])).join('L')}" fill="none" stroke="#7d8a94" stroke-width="1.2" stroke-dasharray="4 3"/>`;
+  }
+  const seg=(a,b,col,dash)=>{ const pts=[]; for(let i=a;i<=b;i++) if(q[i]!=null) pts.push(X(i)+','+Y(q[i])); if(pts.length>1) s+=`<path d="M${pts.join('L')}" fill="none" stroke="${col}" stroke-width="2.2"${dash?' stroke-dasharray="5 3"':''} stroke-linejoin="round"/>`; };
+  seg(0,hoy,'#14202b',false); seg(hoy,n-1,'#7a4bc2',true);
+  s+=`<line x1="${X(hoy)}" x2="${X(hoy)}" y1="${m.t}" y2="${m.t+ih}" stroke="#b9c2ca"/><text x="${X(hoy)}" y="${m.t+10}" font-size="10" fill="#6e6e73" text-anchor="middle" dx="14">hoy</text>`;
+  [0,Math.round(hoy/2),hoy,n-1].forEach(i=>{ s+=`<text x="${X(i)}" y="${H-6}" font-size="10" fill="#8a9097" text-anchor="${i===0?'start':i===n-1?'end':'middle'}">${fCorta(dia(i)).replace(/ \d{4}$/,'')}</text>`; });
+  s+=`<rect class="h" x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent"/></svg>`;
+  el.innerHTML=s;
+  const hit=el.querySelector('rect.h');
+  hit.addEventListener('mousemove',ev=>{ const bb=hit.getBoundingClientRect(); let i=Math.round((ev.clientX-bb.left)/bb.width*(n-1)); i=Math.max(0,Math.min(n-1,i));
+    const b=B[i]; showTip(ev,'<b>'+fCorta(dia(i))+'</b>'+(i>hoy?' · previsión':'')+'<br>Caudal: '+fmtQ(q[i])+' m³/s'+(b?'<br>Mediana: '+fmtQ(b[2])+' m³/s<br>Habitual: '+fmtQ(b[0])+'–'+fmtQ(b[4]):'')); });
+  hit.addEventListener('mouseleave',hideTip);
+}
+</script>
+</body>
+</html>
