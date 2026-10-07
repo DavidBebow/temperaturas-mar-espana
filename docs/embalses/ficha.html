@@ -68,7 +68,7 @@ h1 b{color:var(--agua)}
 <div id="err">Cargando la ficha del embalse…</div>
 <div id="app">
   <div class="top">
-    <div><div class="eyebrow" id="eyebrow"></div><h1>Embalse de <b id="nom"></b></h1></div>
+    <div><div class="eyebrow" id="eyebrow"></div><h1>Embalse <span id="nomde">de</span> <b id="nom"></b></h1></div>
     <div class="tr"><a class="volver" id="volver" href="#" target="_top"></a><span class="et" id="et"></span></div>
   </div>
 
@@ -167,7 +167,7 @@ function pintar(){
   document.getElementById('err').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('eyebrow').textContent=f.provincia+' · '+(f.cuenca||'')+' · río '+f.rio+' · semana del '+f.fecha_legible;
-  document.getElementById('nom').textContent=f.nombre;
+  document.getElementById('nom').textContent=f.nombre; document.getElementById('nomde').textContent=f.de||'de';
   const et=document.getElementById('et'); et.textContent=f.etiqueta; et.style.background=f.color;
   const v=document.getElementById('volver'); v.textContent='← Embalses de '+f.provincia; v.href=f.url_provincia;
   const pe=document.getElementById('pct'); pe.textContent=pctTxt(f.pct); pe.style.color=f.color;
@@ -186,7 +186,7 @@ function pintar(){
   dif(f.pct,h1&&h1.pct,'d1a'); dif(f.pct,f.pct_media_10a,'d10');
 
   // frase citable
-  let fr='El embalse de <b>'+esc(f.nombre)+'</b> está al <b>'+pctTxt(f.pct)+'</b> de su capacidad en la semana del '+fLarga(f.boletin_fecha)+
+  let fr='El embalse '+(f.de||'de')+' <b>'+esc(f.nombre)+'</b> está al <b>'+pctTxt(f.pct)+'</b> de su capacidad en la semana del '+fLarga(f.boletin_fecha)+
     ' ('+fmt(f.volumen_hm3,0)+' de '+fmt(f.capacidad_hm3,0)+' hm³). ';
   if(sa&&sa.dif_pts!=null) fr+= Math.abs(sa.dif_pts)<0.05 ? 'Es el mismo nivel que en el boletín anterior. ' :
     'En una semana ha '+(sa.dif_pts>0?'ganado':'perdido')+' <b>'+fmt(Math.abs(sa.dif_hm3),0)+' hm³</b> ('+fmt(Math.abs(sa.dif_pts))+' puntos). ';
@@ -315,7 +315,7 @@ function rios(){
       'El estado del '+esc(F.rio)+' y de toda la red fluvial se puede consultar en el mapa de caudales.</div>';
   }
   disp.forEach((id,k)=>{ const p=P[id];
-    const papel=pap[id]==='afluente'?'Afluente que llega al embalse':'Entra en el embalse';
+    const papel=pap[id]==='afluente'?'Afluente que llega al embalse':(pap[id]==='salida'?'Aguas abajo de la presa':'Entra en el embalse');
     h+=`<div class="rio"><div class="hd"><div><span class="papel">${papel}</span><b>${esc(p.nombre)}</b></div>`+
       (p.estado?`<span class="pill" style="background:${p.color}">${p.estado} para la fecha · percentil ${fmt(p.percentil,0)}</span>`:'')+`</div>`+
       `<div class="kpis"><div class="kpi"><div class="k">Caudal hoy (modelo)</div><div class="v">${fmtQ(p.q_hoy)}</div><div class="u">m³/s</div></div>`+
