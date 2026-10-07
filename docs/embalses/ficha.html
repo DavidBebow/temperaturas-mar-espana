@@ -166,7 +166,7 @@ function pintar(){
   const f=F;
   document.getElementById('err').style.display='none';
   document.getElementById('app').style.display='block';
-  document.getElementById('eyebrow').textContent=f.provincia+' · '+(f.cuenca||'')+' · río '+f.rio+' · semana del '+f.fecha_legible;
+  document.getElementById('eyebrow').textContent=f.provincia+' · '+(f.cuenca||'')+(f.rio?' · río '+f.rio:'')+' · semana del '+f.fecha_legible;
   document.getElementById('nom').textContent=f.nombre; document.getElementById('nomde').textContent=f.de||'de';
   const et=document.getElementById('et'); et.textContent=f.etiqueta; et.style.background=f.color;
   const v=document.getElementById('volver'); v.textContent='← Embalses de '+f.provincia; v.href=f.url_provincia;
@@ -312,7 +312,7 @@ function rios(){
   if(!disp.length){
     h='<div class="vacio">'+(ids.length&&!RIOS?'El dato de caudal no está disponible en este momento. ':
       'Ninguno de los puntos que vigila nuestra red de caudales está aguas arriba de este embalse, así que aquí no se muestra un caudal de entrada. ')+
-      'El estado del '+esc(F.rio)+' y de toda la red fluvial se puede consultar en el mapa de caudales.</div>';
+      (F.rio?'El estado del '+esc(F.rio)+' y de toda':'El estado de toda')+' la red fluvial se puede consultar en el mapa de caudales.</div>';
   }
   disp.forEach((id,k)=>{ const p=P[id];
     const papel=pap[id]==='afluente'?'Afluente que llega al embalse':(pap[id]==='salida'?'Aguas abajo de la presa':'Entra en el embalse');
@@ -330,7 +330,7 @@ function rios(){
     h+='<div class="afo">'+disA.map(id=>{ const a=A[id], pa=pap[id]==='salida'?'Medido a la salida':'Medido a la entrada';
       return `<div><div class="t">${pa} · aforo</div>${esc(a.nombre)} (${esc(a.rio||'')})<br><b>${fmtQ(a.q)} m³/s</b> <span style="color:#6e6e73;font-size:11px">${a.t?fCorta(a.t.slice(0,10))+' '+a.t.slice(11,16)+' UTC':''} · ${esc(a.fuente||'')}</span></div>`; }).join('')+'</div>';
   }
-  h+=`<a class="cta" href="${(RIOS&&RIOS.url_caudal)||F.url_caudal||MAPA_CAUDAL}" target="_top">Ver el ${esc(F.rio)} en el mapa de caudales de España →</a>`;
+  h+=`<a class="cta" href="${(RIOS&&RIOS.url_caudal)||F.url_caudal||MAPA_CAUDAL}" target="_top">${F.rio?'Ver el '+esc(F.rio):'Ver los ríos'} en el mapa de caudales de España →</a>`;
   if(disp.length) h+='<div class="nota">Es caudal <b>simulado</b> por el modelo, no medido. En ríos regulados por presas, trasvases o regadíos, los m³/s del modelo pueden quedar lejos del caudal real; lo fiable es la comparación de cada río con su propia normalidad, que es lo que indica el percentil. '+(RIOS&&RIOS.emitida?'Previsión emitida el '+fLarga(RIOS.emitida)+'.':'')+'</div>';
   box.innerHTML=h;
   disp.forEach((id,k)=>grafRio(document.getElementById('cr'+k),P[id]));
