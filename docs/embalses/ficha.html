@@ -282,6 +282,7 @@ function cSerie(){
   const path=pts.map(r=>X(r[0])+','+Y(P(r))).join('L');
   s+=`<path d="M${X(pts[0][0])},${Y(0)}L${path}L${X(pts[pts.length-1][0])},${Y(0)}Z" fill="rgba(0,113,184,.12)"/><path d="M${path}" fill="none" stroke="#0071b8" stroke-width="1.4" stroke-linejoin="round"/>`;
   (F.cambios_capacidad||[]).forEach(c=>{ const x=X(c.fecha); s+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${m.t+ih}" stroke="#CC2200" stroke-dasharray="3 3"/>`; });
+  if(F.primer_llenado_hasta){ const x=X(F.primer_llenado_hasta); s+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${m.t+ih}" stroke="#8a9097" stroke-dasharray="3 3"/>`; }
   const rc=F.record||{};
   if(rc.max) s+=`<circle cx="${X(rc.max.fecha)}" cy="${Y(rc.max.pct)}" r="4" fill="#0077DD" stroke="#fff" stroke-width="1.5"/>`;
   if(rc.min) s+=`<circle cx="${X(rc.min.fecha)}" cy="${Y(rc.min.pct)}" r="4" fill="#CC2200" stroke="#fff" stroke-width="1.5"/>`;
@@ -297,6 +298,7 @@ function cSerie(){
   if(rc.min) n+='Mínimo: <b>'+pctTxt(rc.min.pct)+'</b> el '+fLarga(rc.min.fecha)+'. ';
   if((F.cambios_capacidad||[]).length){ const c=F.cambios_capacidad[F.cambios_capacidad.length-1];
     n+='La línea roja marca el '+fLarga(c.fecha)+', cuando la capacidad pasó de '+fmt(c.de_hm3,0)+' a '+fmt(c.a_hm3,0)+' hm³: las comparaciones y los récords se calculan desde entonces.'; }
+  if(F.primer_llenado_hasta) n+='Las comparaciones y los récords se calculan desde el '+fLarga(F.primer_llenado_hasta)+', cuando el embalse llegó por primera vez a la mitad de su capacidad: antes estaba en su primer llenado (línea gris).';
   document.getElementById('notaSerie').innerHTML=n;
 }
 
