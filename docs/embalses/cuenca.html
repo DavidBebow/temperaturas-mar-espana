@@ -221,7 +221,7 @@ sparkline(d.serie||[]);
 // tarjetas
 const w=v=>Math.max(0,Math.min(100,v||0));
 document.getElementById('lista').innerHTML=(d.embalses||[]).map(e=>
-'<div class="emb">'+
+'<div class="emb" data-n="'+e.nombre.replace(/"/g,'')+'">'+
 '<div class="nm"><b>'+pretty(e.nombre)+'</b><span class="pc" style="color:'+e.color+'">'+pctTxt(e.pct)+'</span></div>'+
 '<div class="meta">'+cuencaTxt(e.cuenca)+(e.electrico?' · uso hidroeléctrico':'')+' · capacidad '+fmt(e.capacidad_hm3)+' hm³</div>'+
 '<div class="bar"><div class="fill" style="width:'+w(e.pct)+'%;background:'+e.color+'"></div>'+
@@ -234,6 +234,8 @@ document.getElementById('lista').innerHTML=(d.embalses||[]).map(e=>
 '<span class="m10">Media 10 años <b>'+pctTxt(e.pct_media_10a)+'</b></span>'+
 '</div>'+
 '</div>').join('');
+
+enlazarFichas();
 
 // mini mapa
 const conCoord=(d.embalses||[]).filter(e=>e.lat&&e.lon);
@@ -259,6 +261,22 @@ document.querySelector('.mapa').style.display='none';
 const avisar=()=>parent.postMessage({embalsesAltura:document.body.scrollHeight,slug:slug},'*');
 setTimeout(avisar,300); setTimeout(avisar,1200);
 window.addEventListener('resize',avisar);
+}
+
+// Fichas individuales de embalse: si un embalse de la lista tiene página propia
+// (fichas/index.json, url_web solo cuando la página existe), su nombre enlaza a ella.
+function enlazarFichas(){
+fetch(BASE+'fichas/index.json?_='+Date.now()).then(r=>r.ok?r.json():null).then(ix=>{
+if(!ix||!ix.fichas)return;
+const urls={}; ix.fichas.forEach(f=>{ if(f.url_web) urls[f.nombre_boletin]=f.url_web; });
+document.querySelectorAll('.emb[data-n]').forEach(el=>{
+const u=urls[el.dataset.n]; if(!u)return;
+const b=el.querySelector('.nm b');
+b.innerHTML='<a href="'+u+'" target="_top" style="color:inherit;text-decoration:none">'+b.textContent+'</a>';
+const c=el.querySelector('.cmp');
+if(c) c.insertAdjacentHTML('beforeend','<span><a href="'+u+'" target="_top" style="color:var(--agua);font-weight:700;text-decoration:none">Ficha y evolución →</a></span>');
+});
+}).catch(()=>{});
 }
 
 function sparkline(serie){
