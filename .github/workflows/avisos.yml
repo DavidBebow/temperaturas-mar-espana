@@ -8,6 +8,12 @@ on:
 permissions:
   contents: write
 
+# Sin esto, dos pasadas de avisos pueden solaparse entre ellas y pelearse por
+# el mismo fichero ademas de con el resto del repo.
+concurrency:
+  group: avisos
+  cancel-in-progress: false
+
 jobs:
   avisos:
     runs-on: ubuntu-latest
@@ -41,8 +47,16 @@ jobs:
           git diff --cached --quiet || git commit -m "Avisos meteorológicos $(date -u +'%F %H:%M')"
           # 3-10-2026: dos pasadas fallaron porque otro flujo empujo a la vez.
           # Si el push se rechaza, se rebasa (gana esta pasada) y se reintenta.
+          #
+          # 9-10-2026: el reintento no reintentaba. Le faltaba --autostash: el
+          # paso «Descargar scripts privados» sobrescribe scripts/, que esta
+          # versionado, asi que el arbol tiene cambios sin confirmar y el rebase
+          # se niega en seco («cannot pull with rebase: You have unstaged
+          # changes»). Moria en el primer intento con exit 128.
           for i in 1 2 3 4 5; do
-            git push && break
-            git pull --rebase -X theirs origin main || { git rebase --abort; true; }
+            git push && exit 0
+            git pull --rebase --autostash origin main || git rebase --abort || true
             sleep $((i*5))
           done
+          echo "No se pudo empujar tras 5 intentos."
+          exit 1
