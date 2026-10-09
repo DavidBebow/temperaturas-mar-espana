@@ -59,6 +59,23 @@ jobs:
         run: |
           git config user.name  "clima-directo-bot"
           git config user.email "bot@users.noreply.github.com"
-          git pull --rebase --autostash
           git add estado
-          if git diff --staged --quiet; then echo "Sin cambios de estado."; else git commit -m "Temporales en directo: estado [skip ci]"; git push; fi
+          if git diff --staged --quiet; then
+            echo "Sin cambios de estado."
+            exit 0
+          fi
+          git commit -m "Temporales en directo: estado [skip ci]"
+          # 9-10-2026. Fallaba 1 de cada 3 pasadas con «cannot lock ref
+          # refs/heads/main». No era de los temporales: entre el pull y el push
+          # caben los 3 segundos que tarda otro de los ~50 flujos del repo en
+          # adelantarse, y GitHub rechaza el empujon. El pull tiene que ir DENTRO
+          # del bucle; fuera, solo sirve para el primer intento.
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash && git push && exit 0
+            sleep $((i*5))
+          done
+          # Y si se agotan, el paso FALLA. Un bucle que se traga el fallo deja
+          # pasadas en verde que no han publicado nada, que cuesta mas caro que
+          # un correo de aviso.
+          echo "No se pudo empujar el estado tras 5 intentos."
+          exit 1
