@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Cola de prensa · hallazgos del observatorio</title>
+<style>
+:root{--bg:#f7f9fb;--ink:#1d1d1f;--soft:#6e6e73;--line:#dfe5ea;--card:#fff;--acc:#0071b8;--alta:#1f9d55;--media:#d9821a;--ctx:#8a8f94;--ember:#cc4416}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:22px 18px 40px}
+.eyebrow{font-size:10.5px;letter-spacing:.14em;color:var(--soft);text-transform:uppercase;font-weight:700}
+h1{margin:3px 0 0;font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.sub{font-size:13px;color:var(--soft);margin-top:6px}
+.band{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 15px}
+.stat .n{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat .l{font-size:11px;color:var(--soft);margin-top:3px;line-height:1.35}
+h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);font-weight:800;margin:26px 0 8px 4px}
+.lista{display:flex;flex-direction:column;gap:10px}
+.h{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:52px 1fr;gap:14px}
+.f{font-size:22px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--acc);line-height:1}
+.f small{display:block;font-size:9.5px;color:var(--soft);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+.t{font-size:16.5px;font-weight:800;letter-spacing:-.01em;line-height:1.3}
+.d{font-size:13px;color:var(--soft);margin-top:4px;line-height:1.45}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;border-radius:6px;padding:3px 8px;background:#eef0f2;color:var(--soft)}
+.tag.alta{background:#e8f6ee;color:var(--alta)}.tag.media{background:#fdf1e2;color:var(--media)}.tag.contexto{background:#eef0f2;color:var(--ctx)}
+.tag.nacional{background:#e6f1f9;color:var(--acc)}.tag.excl{background:#fbe9e6;color:var(--ember)}
+.lim{margin:8px 0 0;padding:8px 10px;background:#fdf6ec;border-radius:9px;font-size:12px;color:#6a4a10;line-height:1.45}
+.lim.alerta{background:#fbe9e6;color:#8a1a06}
+.links{margin-top:8px;font-size:12.5px;display:flex;gap:12px;flex-wrap:wrap}
+.links a{color:var(--acc);font-weight:700;text-decoration:none}
+details{margin-top:8px}summary{font-size:12.5px;color:var(--acc);cursor:pointer;font-weight:700}
+.ctx{font-size:12.5px;color:var(--soft);margin:6px 0 0 14px}
+.sec{margin-top:4px}
+.copy{font-size:11px;border:1px solid var(--line);background:#fff;border-radius:7px;padding:3px 9px;cursor:pointer;color:var(--soft)}
+.pie{margin-top:26px;padding-top:12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--soft);line-height:1.6}
+#err{padding:60px 20px;text-align:center;color:var(--soft)}
+@media(max-width:700px){.band{grid-template-columns:repeat(2,1fr)}.h{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app" style="display:none">
+  <div class="eyebrow">Observatorio climático · prensa · uso interno</div>
+  <h1>Cola de hallazgos</h1>
+  <div class="sub" id="sub"></div>
+  <div class="band" id="band"></div>
+  <h2>Enviables · ordenados por fuerza periodística</h2>
+  <div class="lista" id="enviables"></div>
+  <h2>Ángulos locales (forman parte de un hallazgo nacional)</h2>
+  <div class="lista" id="locales"></div>
+  <h2>Solo contexto · no se envían solos</h2>
+  <div class="lista" id="contexto"></div>
+  <h2>Descartados por el detector</h2>
+  <div class="lista" id="descartes"></div>
+  <div class="pie" id="pie"></div>
+</div>
+<div id="err" style="display:none">No se ha podido cargar hallazgos.json.</div>
+<script>
+const BASE='https://davidbebow.github.io/temperaturas-mar-espana/';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TIPO={record_absoluto:'récord absoluto',record_fecha:'récord para la fecha',primera_vez_desde:'primera vez desde',puesto_extremo:'puesto extremo',racha:'racha',anomalia_fuerte:'anomalía fuerte',percentil_extremo:'percentil extremo',contexto:'contexto'};
+function fecha(s){const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('es-ES',{day:'numeric',month:'long'});}
+function copiar(txt,btn){navigator.clipboard.writeText(txt).then(()=>{btn.textContent='copiado';setTimeout(()=>btn.textContent='copiar',1200)});}
+function card(h){
+  const lim=(h.limites||[]).map(l=>`<div class="lim ${/COMPROBAR/.test(l)?'alerta':''}">${esc(l)}</div>`).join('');
+  const links=[h.dossier?`<a href="${BASE+h.dossier}" target="_blank">dossier</a>`:'',h.grafico?`<a href="${BASE+h.grafico}" target="_blank">gráfico</a>`:'',h.csv?`<a href="${BASE+h.csv}" target="_blank">csv</a>`:'',h.pagina?`<a href="${esc(h.pagina)}" target="_blank">página</a>`:''].filter(Boolean).join('');
+  const ctx=(h.contexto||[]).map(c=>`<div class="ctx">· ${esc(c)}</div>`).join('');
+  const txt=`${h.titular}\n${h.dato}\nFuente: ${h.fuente} (serie desde ${h.serie_desde})\n${(h.contexto||[]).join('\n')}`;
+  return `<div class="h"><div class="f">${Math.round(h.fuerza)}<small>fuerza</small></div><div>
+    <div class="t">${esc(h.titular)}</div><div class="d">${esc(h.dato)}</div>
+    <div class="tags"><span class="tag ${h.citabilidad}">${h.citabilidad}</span><span class="tag ${h.ambito==='nacional'?'nacional':''}">${h.ambito}</span><span class="tag">${TIPO[h.tipo]||h.tipo}</span>${h.exclusivo?'<span class="tag excl">exclusivo</span>':'<span class="tag">dato oficial</span>'}<span class="tag">dato del ${fecha(h.fecha_dato)}</span><span class="tag">${esc(h.serie)}</span></div>
+    ${lim}
+    <details><summary>contexto, fuente y método</summary>${ctx}<div class="ctx">· Fuente: ${esc(h.fuente)} · serie desde ${esc(h.serie_desde)}</div><div class="ctx">· Método: ${esc(h.metodo)}</div></details>
+    <div class="links">${links}<button class="copy" onclick='copiar(${JSON.stringify(txt)},this)'>copiar</button></div>
+  </div></div>`;
+}
+fetch(BASE+'prensa/hallazgos.json?v='+Date.now()).then(r=>r.json()).then(d=>{
+  const g=new Date(d.generado);
+  $('#sub').textContent='Generado el '+g.toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · el detector propone, tú decides. Nada se envía solo.';
+  $('#band').innerHTML=[[d.total,'hallazgos','tras agrupar los que cuentan lo mismo'],[d.por_citabilidad.alta,'citabilidad alta','fuente oficial y método publicado'],[d.por_citabilidad.media,'citabilidad media','reanálisis o cálculo propio con límites declarados'],[d.por_citabilidad.contexto,'solo contexto','no enviar como noticia principal']].map(([n,l,s])=>`<div class="stat"><div class="n">${n}</div><div class="l"><b>${l}</b><br>${s}</div></div>`).join('');
+  $('#enviables').innerHTML=d.enviables.map(card).join('')||'<div class="h"><div></div><div class="d">Nada enviable hoy. Es normal: un hallazgo de verdad no sale todos los días.</div></div>';
+  $('#locales').innerHTML=(d.locales||[]).map(card).join('')||'<div class="h"><div></div><div class="d">—</div></div>';
+  $('#contexto').innerHTML=(d.contexto||[]).map(card).join('')||'<div class="h"><div></div><div class="d">—</div></div>';
+  $('#descartes').innerHTML=(d.descartados||[]).map(x=>`<div class="h"><div></div><div><div class="d"><b>${esc(x.serie)} · ${esc(x.territorio)}</b> — ${esc(x.motivo)}${x.dato?' · '+esc(x.dato):''}</div></div></div>`).join('')||'<div class="h"><div></div><div class="d">—</div></div>';
+  if(d.errores&&d.errores.length) $('#descartes').innerHTML+=d.errores.map(e=>`<div class="h"><div></div><div class="d">⚠ ${esc(e)}</div></div>`).join('');
+  $('#pie').innerHTML='Fuerza = tipo de hallazgo × ámbito × exclusividad × frescura. «Alta»: fuente oficial, método publicado y reproducible. «Media»: reanálisis o cálculo propio; se envía con los límites declarados. «Contexto»: dato que publica cualquiera o serie corta; acompaña, no abre. Datos: <a href="'+BASE+'prensa/hallazgos.json">hallazgos.json</a>.';
+  $('#app').style.display='';
+}).catch(e=>{console.error(e);$('#err').style.display='';});
+</script>
+</body>
+</html>
