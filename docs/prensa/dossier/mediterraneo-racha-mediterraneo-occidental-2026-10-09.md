@@ -7,7 +7,7 @@
 
 ## Contexto
 - 77 días de 2026 han sido récord para su fecha.
-- Máximo absoluto de la serie: 28,25 °C el 24 de agosto de 2023.
+- Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.
 - Hoy el mar está como corresponde a un 12 de septiembre normal.
 
 ## Fuente y método
