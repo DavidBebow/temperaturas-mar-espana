@@ -134,6 +134,15 @@ def anadir(h: dict):
     if h["citabilidad"] == "contexto":
         fuerza *= 0.5
     h["fuerza"] = round(fuerza, 1)
+    h["requiere_revision"] = any("COMPROBAR" in l for l in h["limites"])
+    # slug de la ficha provincial, para que la sala de prensa de cada provincia
+    # encuentre lo suyo sin adivinar nombres
+    nombre_prov = h.get("provincia") or (h["territorio"] if h.get("ambito") == "provincial" else None)
+    if nombre_prov:
+        for cod, (nom, slug) in PROVINCIAS.items():
+            if nom == nombre_prov:
+                h["provincia_slug"] = slug
+                break
     crudo = unicodedata.normalize("NFKD", f"{h['serie']}-{h['tipo']}-{h['territorio']}-{h['fecha_dato']}").encode("ascii", "ignore").decode()
     h["id"] = re.sub(r"[^a-z0-9]+", "-", crudo.lower()).strip("-")
     hallazgos.append(h)
@@ -301,13 +310,13 @@ def mediterraneo():
     maximo_fecha: dict[str, tuple[float, int]] = {}
     maximo_abs = (-99.0, "")
     for f, v in serie.items():
+        if v > maximo_abs[0]:
+            maximo_abs = (v, f)  # máximo de TODA la serie, año en curso incluido
         if int(f[:4]) >= anio:
             continue
         k = f[5:]
         if k not in maximo_fecha or v > maximo_fecha[k][0]:
             maximo_fecha[k] = (v, int(f[:4]))
-        if v > maximo_abs[0]:
-            maximo_abs = (v, f)
     # días del año en curso en récord y racha final
     actual = sorted((f, v) for f, v in serie.items() if int(f[:4]) == anio)
     en_record = [(f, v) for f, v in actual if f[5:] in maximo_fecha and v > maximo_fecha[f[5:]][0]]
@@ -820,6 +829,30 @@ def main():
     Path(args.salida).parent.mkdir(parents=True, exist_ok=True)
     with open(args.salida, "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, indent=1)
+
+    # Historial: un registro por hallazgo enviable, con la primera y la última vez
+    # que apareció. Da memoria a la sala de prensa (60 días) sin repetir entradas.
+    hist_p = Path(args.salida).parent / "hallazgos_historial.json"
+    hist = {}
+    try:
+        with open(hist_p, encoding="utf-8") as f:
+            for x in json.load(f).get("hallazgos", []):
+                hist[x["id"]] = x
+    except Exception:
+        pass
+    hoy = HOY.isoformat()
+    for h in salida["enviables"] + locales:
+        x = hist.get(h["id"]) or {"id": h["id"], "primera_vez": hoy}
+        x.update({"ultima_vez": hoy, "titular": h["titular"], "dato": h["dato"], "fecha_dato": h["fecha_dato"],
+                  "serie": h["serie"], "tipo": h["tipo"], "ambito": h["ambito"], "territorio": h["territorio"],
+                  "provincia_slug": h.get("provincia_slug"), "citabilidad": h["citabilidad"], "exclusivo": h["exclusivo"],
+                  "fuerza": h["fuerza"], "pagina": h.get("pagina"), "dossier": h.get("dossier"),
+                  "grafico": h.get("grafico"), "csv": h.get("csv"), "requiere_revision": h["requiere_revision"]})
+        hist[h["id"]] = x
+    limite = (HOY - timedelta(days=60)).isoformat()
+    lista = sorted((x for x in hist.values() if x["ultima_vez"] >= limite), key=lambda x: (x["ultima_vez"], x["fuerza"]), reverse=True)
+    with open(hist_p, "w", encoding="utf-8") as f:
+        json.dump({"generado": salida["generado"], "dias": 60, "hallazgos": lista}, f, ensure_ascii=False, indent=1)
     print(f"{len(unicos)} hallazgos · enviables {len(salida['enviables'])} · locales {len(locales)} · contexto {len(salida['contexto'])} · descartes {len(descartes)} · errores {len(errores)}")
     for h in salida["enviables"][:15]:
         print(f"  [{h['fuerza']:5.1f}] {h['citabilidad']:8s} {h['titular']}")
