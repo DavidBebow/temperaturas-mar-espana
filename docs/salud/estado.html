@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado de los datos · Observatorio climático</title>
+<style>
+:root{--bg:#f7f9fb;--ink:#1d1d1f;--soft:#6e6e73;--line:#dfe5ea;--card:#fff;--acc:#0071b8;
+--ok:#1f9d55;--okbg:#e8f6ee;--av:#d9821a;--avbg:#fdf1e2;--er:#cc2200;--erbg:#fbe9e6;--es:#8a8f94;--esbg:#eef0f2}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:22px 18px 26px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.eyebrow{font-size:10.5px;letter-spacing:.14em;color:var(--soft);text-transform:uppercase;font-weight:700}
+h1{margin:3px 0 0;font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.chip{font-size:11.5px;font-weight:800;color:#fff;border-radius:8px;padding:6px 12px;letter-spacing:.04em;flex:none;text-transform:uppercase}
+.chip.ok{background:var(--ok)}.chip.aviso{background:var(--av)}.chip.error{background:var(--er)}
+.sub{font-size:13px;color:var(--soft);margin-top:6px}
+.band{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 15px}
+.stat .n{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat .l{font-size:11px;color:var(--soft);margin-top:3px;line-height:1.35}
+.stat.ok .n{color:var(--ok)}.stat.aviso .n{color:var(--av)}.stat.error .n{color:var(--er)}
+.hist{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 15px;margin:12px 0 0}
+.k{font-size:9.5px;letter-spacing:.12em;color:var(--soft);text-transform:uppercase;font-weight:700;margin-bottom:6px}
+.hist svg{width:100%;height:46px;display:block}
+.hist .leg{display:flex;gap:14px;font-size:11px;color:var(--soft);margin-top:6px;flex-wrap:wrap}
+.hist .leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.fam{margin-top:18px}
+.fam h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);font-weight:800;margin:0 0 8px 4px}
+.lista{display:flex;flex-direction:column;gap:8px}
+.row{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 14px;display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:center}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--es)}
+.dot.ok{background:var(--ok);box-shadow:0 0 0 3px var(--okbg)}.dot.aviso{background:var(--av);box-shadow:0 0 0 3px var(--avbg)}
+.dot.error{background:var(--er);box-shadow:0 0 0 3px var(--erbg)}.dot.estatico{background:var(--es);box-shadow:0 0 0 3px var(--esbg)}
+.nm{font-weight:800;font-size:15px;letter-spacing:-.01em}
+.nm a{color:inherit;text-decoration:none}.nm a:hover{color:var(--acc)}
+.meta{font-size:11.5px;color:var(--soft);margin-top:1px}
+.when{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.when b{display:block;font-size:14px;font-weight:800}
+.when span{display:block;font-size:11px;color:var(--soft)}
+.motivo{grid-column:2/4;font-size:12.5px;line-height:1.45;border-radius:9px;padding:7px 10px;margin-top:2px}
+.motivo.aviso{background:var(--avbg);color:#7a4607}.motivo.error{background:var(--erbg);color:#8a1a06}
+.motivo a{color:inherit;font-weight:700}
+.inc{margin-top:20px}
+.inc ul{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.inc li{display:flex;gap:12px;padding:9px 14px;border-top:1px solid var(--line);font-size:13px;align-items:baseline}
+.inc li:first-child{border-top:0}
+.inc time{color:var(--soft);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:12px;flex:none;width:118px}
+.tag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;border-radius:6px;padding:2px 7px;flex:none}
+.tag.ok{background:var(--okbg);color:var(--ok)}.tag.aviso{background:var(--avbg);color:var(--av)}.tag.error{background:var(--erbg);color:var(--er)}.tag.estatico{background:var(--esbg);color:var(--es)}
+.fuente{margin-top:18px;padding-top:12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--soft);line-height:1.6}
+.fuente a{color:var(--acc);text-decoration:none;font-weight:600}
+#err{padding:60px 20px;text-align:center;color:var(--soft)}
+@media(max-width:700px){.band{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:14px 1fr}.when{text-align:left;grid-column:2}.motivo{grid-column:2}.inc time{width:auto}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app" style="display:none">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Observatorio climático · Estado de los datos</div>
+      <h1 id="h1">Así están los datos ahora mismo</h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="chip" id="chip"></div>
+  </div>
+  <div class="band" id="band"></div>
+  <div class="hist">
+    <div class="k">Últimos 30 días · herramientas al día en cada comprobación (una por hora)</div>
+    <svg id="spark" viewBox="0 0 720 46" preserveAspectRatio="none"></svg>
+    <div class="leg"><span><i style="background:var(--ok)"></i>al día</span><span><i style="background:var(--av)"></i>con aviso</span><span><i style="background:var(--er)"></i>con problema</span></div>
+  </div>
+  <div id="familias"></div>
+  <div class="inc" id="inc"></div>
+  <div class="fuente" id="pie"></div>
+</div>
+<div id="err" style="display:none">No se ha podido cargar el estado. Vuelve a intentarlo en unos minutos.</div>
+<script>
+const BASE='https://davidbebow.github.io/temperaturas-mar-espana/salud/';
+const ORDEN=['Agua','Tiempo','Fuego','Mar','Aire','Calor','Planeta','Directo','Web','Otros'];
+const TXT={ok:'al día',aviso:'con aviso',error:'con problema',estatico:'estático'};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hace(h){if(h==null)return '—';if(h<1)return 'hace '+Math.max(1,Math.round(h*60))+' min';if(h<48)return 'hace '+Math.round(h)+' h';return 'hace '+Math.round(h/24)+' días';}
+function fechaCorta(s){if(!s)return '';const d=new Date(s);if(isNaN(d))return s;return d.toLocaleDateString('es-ES',{day:'numeric',month:'short'});}
+function fechaHora(s){const d=new Date(s);return isNaN(d)?s:d.toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
+function alto(){try{const h=Math.ceil(document.querySelector('.wrap').getBoundingClientRect().height)+8;parent.postMessage({cgHeight:h,cgTool:'salud'},'*');}catch(e){}}
+async function cargar(){
+  const [e,hist]=await Promise.all([
+    fetch(BASE+'estado.json?v='+Date.now()).then(r=>r.json()),
+    fetch(BASE+'historial.json?v='+Date.now()).then(r=>r.ok?r.json():[]).catch(()=>[])
+  ]);
+  const r=e.resumen, gen=new Date(e.generado), mins=Math.round((Date.now()-gen)/60000);
+  $('#chip').className='chip '+e.general;
+  $('#chip').textContent=e.general==='ok'?'todo al día':e.general==='aviso'?'con avisos':'hay problemas';
+  $('#sub').textContent='Comprobado el '+e.generado_legible+' (hace '+(mins<60?mins+' min':Math.round(mins/60)+' h')+') · se vuelve a comprobar cada hora'+(e.api_github_ok?'':' · esta pasada no pudo consultar los workflows');
+  $('#band').innerHTML=[
+    ['',r.total,'herramientas vigiladas','de las que se publica un dato propio'],
+    ['ok',r.al_dia,'al día','dentro de su ventana y con el contenido esperado'],
+    ['aviso',r.aviso,'con aviso','retraso leve o un run fallido con el dato aún al día'],
+    ['error',r.error,'con problema','sin actualizar, sin archivo o contenido incompleto']
+  ].map(([c,n,l,d])=>`<div class="stat ${c}"><div class="n">${n}</div><div class="l"><b>${l}</b><br>${d}</div></div>`).join('');
+  // sparkline apilada
+  const H=hist.slice(-720), W=720, n=Math.max(H.length,1), w=W/n;
+  $('#spark').innerHTML=H.map((p,i)=>{const t=p.ok+p.aviso+p.error||1;const ho=46*p.ok/t,ha=46*p.aviso/t,he=46*p.error/t;
+    return `<rect x="${(i*w).toFixed(2)}" y="${(46-ho).toFixed(2)}" width="${(w+.3).toFixed(2)}" height="${ho.toFixed(2)}" fill="#1f9d55"/>`+
+           `<rect x="${(i*w).toFixed(2)}" y="${(46-ho-ha).toFixed(2)}" width="${(w+.3).toFixed(2)}" height="${ha.toFixed(2)}" fill="#d9821a"/>`+
+           `<rect x="${(i*w).toFixed(2)}" y="0" width="${(w+.3).toFixed(2)}" height="${he.toFixed(2)}" fill="#cc2200"/>`;}).join('');
+  // familias
+  const fams={};e.herramientas.forEach(h=>{(fams[h.familia]=fams[h.familia]||[]).push(h)});
+  const peso={error:2,aviso:1,ok:0,estatico:0};
+  $('#familias').innerHTML=ORDEN.filter(f=>fams[f]).map(f=>`<div class="fam"><h2>${f}</h2><div class="lista">`+
+    fams[f].sort((a,b)=>peso[b.estado]-peso[a.estado]||a.nombre.localeCompare(b.nombre)).map(h=>{
+      const nm=h.pagina?`<a href="${esc(h.pagina)}" target="_top">${esc(h.nombre)}</a>`:esc(h.nombre);
+      const meta=[h.fuente,h.cadencia].filter(Boolean).map(esc).join(' · ');
+      const when=`<b>${hace(h.horas)}</b><span>${h.dato_del?'dato del '+esc(fechaCorta(h.dato_del)):(h.generado_origen?esc(h.generado_origen):'')}</span>`;
+      let mot='';
+      if(h.estado==='aviso'||h.estado==='error'){
+        const run=h.run&&h.run.ultimo&&h.run.ultimo.conclusion!=='success'?` · <a href="${esc(h.run.ultimo.url)}" target="_blank" rel="noopener">ver el run</a>`:'';
+        mot=`<div class="motivo ${h.estado}">${esc(h.motivo||'')}${run}</div>`;}
+      return `<div class="row"><div class="dot ${h.estado}" title="${TXT[h.estado]}"></div><div><div class="nm">${nm}</div><div class="meta">${meta}</div></div><div class="when">${when}</div>${mot}</div>`;
+    }).join('')+`</div></div>`).join('');
+  // incidencias
+  const inc=(e.incidencias_recientes||[]).slice(0,15);
+  $('#inc').innerHTML=`<div class="fam"><h2>Cambios de estado recientes</h2></div>`+(inc.length?`<ul>`+inc.map(i=>`<li><time>${esc(fechaHora(i.fecha))}</time><span class="tag ${i.a}">${TXT[i.a]}</span><span><b>${esc(i.nombre)}</b> pasa de ${TXT[i.de]} a ${TXT[i.a]}${i.motivo?': '+esc(i.motivo):''}</span></li>`).join('')+`</ul>`:`<ul><li><span>Sin cambios de estado registrados todavía.</span></li></ul>`);
+  $('#pie').innerHTML=`Cada hora un proceso automático lee el archivo que publica cada herramienta, comprueba cuándo se generó, si su contenido tiene lo que debe y cómo acabó la última ejecución de su proceso. «Al día» significa dentro de su ventana de actualización; «con aviso», que lleva más de lo esperado sin refrescarse o que su último proceso falló aunque el dato siga siendo válido; «con problema», que lleva más de tres ventanas sin dato, que falta el archivo o que no pasa las comprobaciones de contenido. Datos abiertos: <a href="${BASE}estado.json" target="_blank" rel="noopener">estado.json</a> · <a href="${BASE}historial.json" target="_blank" rel="noopener">historial.json</a> · <a href="${BASE}incidencias.json" target="_blank" rel="noopener">incidencias.json</a> · <a href="${BASE}herramientas.json" target="_blank" rel="noopener">herramientas.json</a> (qué se comprueba de cada una). ${esc(e.licencia||'')}.`;
+  $('#app').style.display='';
+  alto(); setTimeout(alto,400); setTimeout(alto,1500);
+}
+cargar().catch(err=>{console.error(err);$('#err').style.display='';});
+window.addEventListener('resize',alto);
+</script>
+</body>
+</html>
