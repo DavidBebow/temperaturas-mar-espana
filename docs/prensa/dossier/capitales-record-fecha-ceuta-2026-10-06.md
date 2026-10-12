@@ -1,13 +1,13 @@
-# Ceuta tuvo el 4 de octubre la noche más cálida para esa fecha desde 1940: mínima de 22,3 °C
+# Ceuta tuvo el 6 de octubre la noche más cálida para esa fecha desde 1940: mínima de 21,6 °C
 
-**Dato:** mínima 22,3 °C · normal 18,3 °C  
-**Fecha del dato:** 4 de octubre de 2026  
+**Dato:** mínima 21,6 °C · normal 18,1 °C  
+**Fecha del dato:** 6 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Ceuta  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
 - Serie de 87 años.
-- Normal 1991-2020 para ese día: 18,3 °C.
+- Normal 1991-2020 para ese día: 18,1 °C.
 
 ## Fuente y método
 - **Fuente:** ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0
@@ -20,8 +20,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-ceuta/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-ceuta-2026-10-04.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-ceuta-2026-10-04.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-ceuta-2026-10-06.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-ceuta-2026-10-06.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

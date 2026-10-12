@@ -1,13 +1,13 @@
-# Málaga tuvo el 4 de octubre la noche más cálida para esa fecha desde 1940: mínima de 22,2 °C
+# Málaga tuvo el 6 de octubre la noche más cálida para esa fecha desde 1940: mínima de 21,7 °C
 
-**Dato:** mínima 22,2 °C · normal 17,8 °C  
-**Fecha del dato:** 4 de octubre de 2026  
+**Dato:** mínima 21,7 °C · normal 17,6 °C  
+**Fecha del dato:** 6 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Málaga  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
 - Serie de 87 años.
-- Normal 1991-2020 para ese día: 17,8 °C.
+- Normal 1991-2020 para ese día: 17,6 °C.
 
 ## Fuente y método
 - **Fuente:** ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0
@@ -20,8 +20,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-malaga/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-malaga-2026-10-04.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-malaga-2026-10-04.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-malaga-2026-10-06.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-malaga-2026-10-06.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
