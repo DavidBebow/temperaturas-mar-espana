@@ -1,7 +1,7 @@
-# Melilla tuvo el 4 de octubre la noche más cálida para esa fecha desde 1940: mínima de 24,1 °C
+# Melilla tuvo el 5 de octubre la noche más cálida para esa fecha desde 1940: mínima de 24,6 °C
 
-**Dato:** mínima 24,1 °C · normal 19 °C  
-**Fecha del dato:** 4 de octubre de 2026  
+**Dato:** mínima 24,6 °C · normal 19 °C  
+**Fecha del dato:** 5 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Melilla  
 **Citabilidad:** media · **Exclusivo:** sí
 
@@ -20,8 +20,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-melilla/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-melilla-2026-10-04.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-melilla-2026-10-04.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-melilla-2026-10-05.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-melilla-2026-10-05.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
