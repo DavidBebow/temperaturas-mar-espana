@@ -1,6 +1,6 @@
-# Cádiz tuvo el 6 de octubre la noche más cálida para esa fecha desde 1940: mínima de 21,7 °C
+# Cádiz tuvo el 6 de octubre la noche más cálida para esa fecha desde 1940: mínima de 21,3 °C
 
-**Dato:** mínima 21,7 °C · normal 17 °C  
+**Dato:** mínima 21,3 °C · normal 17 °C  
 **Fecha del dato:** 6 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Cádiz  
 **Citabilidad:** media · **Exclusivo:** sí

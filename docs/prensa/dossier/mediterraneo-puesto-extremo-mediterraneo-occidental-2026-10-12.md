@@ -1,14 +1,14 @@
-# El Mediterráneo español vive su segundo 11 de octubre más cálido desde 1981: 24,5 °C, 1,9 °C por encima de lo normal
+# El Mediterráneo español vive su segundo 12 de octubre más cálido desde 1981: 24,6 °C, 2,1 °C por encima de lo normal
 
-**Dato:** 24,50 °C · puesto 2 de 43 años para la fecha · récord 24,63 °C (2023) · normal 1991-2020 22,57 °C (+1,93)  
-**Fecha del dato:** 11 de octubre de 2026  
+**Dato:** 24,57 °C · puesto 2 de 42 años para la fecha · récord 24,60 °C (2023) · normal 1991-2020 22,47 °C (+2,10)  
+**Fecha del dato:** 12 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** Mediterráneo occidental  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
 - 77 días de 2026 han sido récord para su fecha.
 - Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.
-- Hoy el mar está como corresponde a un 19 de julio normal.
+- Hoy el mar está como corresponde a un 17 de septiembre normal.
 
 ## Fuente y método
 - **Fuente:** NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E
@@ -21,8 +21,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/dana/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-11.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-11.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-12.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-12.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

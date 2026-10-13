@@ -1,12 +1,12 @@
 # 10 capitales españolas tuvieron ayer máximas de al menos 5 °C por encima de lo normal para un 12 de octubre
 
-**Dato:** 10 de 50 capitales · las más extremas: Ávila 23,9 °C (+6,6); Soria 24,1 °C (+6); Huesca 26,2 °C (+5,9); Zaragoza 28,5 °C (+5,4); León 23,5 °C (+5,4); Burgos 22,9 °C (+5,2); Salamanca 24,5 °C (+5,1); Zamora 25,3 °C (+5,1)  
+**Dato:** 10 de 50 capitales · las más extremas: Ávila 23,9 °C (+6,8); Soria 24,1 °C (+6,1); Huesca 26,2 °C (+5,9); León 23,5 °C (+5,6); Zaragoza 28,5 °C (+5,6); Burgos 23 °C (+5,5); Salamanca 24,5 °C (+5,3); Zamora 25,3 °C (+5,3)  
 **Fecha del dato:** 12 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Media de la desviación en esas 10 capitales: +5,5 °C.
+- Media de la desviación en esas 10 capitales: +5,6 °C.
 - Normal de referencia: 1991-2020, día a día, en la celda de cada capital.
 
 ## Fuente y método
