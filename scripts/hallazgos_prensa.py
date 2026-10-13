@@ -44,6 +44,7 @@ DOCS = RAIZ / "docs"
 PRENSA = DOCS / "prensa"
 DOSSIER = PRENSA / "dossier"
 HOY = date.today()
+AYER = (HOY - timedelta(days=1)).isoformat()
 AHORA = datetime.now(timezone.utc).replace(microsecond=0)
 
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
@@ -292,6 +293,185 @@ def _capital(a: dict):
                 "titular": f"{cap} lleva {e['d32']} días de más de 32 °C en {ultimo[:4]}, {f1(e['d32'] / e['d32_normal'])} veces su normal",
                 "dato": f"{e['d32']} días · normal 1991-2020: {f1(e['d32_normal'])}",
                 "contexto": [f"Media 1951-1980: {c.get('d32_antes')} días al año · media 1996-2025: {c.get('d32_ahora')}."]})
+
+
+# ----------------------------------------------------------------------------
+# 1b · Capitales, los días que ERA5 aún no ha consolidado · Open-Meteo (IFS)
+# ----------------------------------------------------------------------------
+# El archivo de capitales se detiene donde ERA5 es definitivo (~6 días atrás).
+# Para que la sala de prensa tenga el dato de AYER, se piden a Open-Meteo los días
+# que faltan con el análisis IFS del ECMWF (9 km). El IFS no es ERA5 (25 km): en
+# cada capital tiene un sesgo sistemático (p. ej. mínimas 1-2 °C más frías en la
+# costa), así que se calibra con los 21 días en que ambos existen y solo se declara
+# récord si el valor IFS Y el valor corregido superan el récord con margen.
+# Se marcan como provisionales; ERA5 los confirma o desmiente a los seis días.
+OPEN_METEO = "https://archive-api.open-meteo.com/v1/archive"
+IFS_SOLAPE = 21      # días de solape IFS/ERA5 para calibrar
+IFS_MARGEN = 0.3     # °C por encima del récord que se exigen al valor corregido
+IFS_MAX_SESGO = 3.0  # si el sesgo medio supera esto, la celda no es comparable: se salta
+
+
+def capitales_ayer():
+    import urllib.request
+    import urllib.parse
+    try:
+        coords = {c["provincia"]: (c["lat"], c["lon"]) for c in leer(DOCS / "viento.json")["capitales"]}
+    except Exception as e:
+        errores.append(f"capitales_ayer: sin coordenadas ({e})")
+        return
+    archivos = []
+    for fp in sorted(glob.glob(str(DOCS / "archivo" / "[0-9][0-9].json"))):
+        try:
+            a = leer(Path(fp))
+        except Exception:
+            continue
+        prov = PROVINCIAS.get(a["cod"], (None, None))[0]
+        if prov in coords:
+            archivos.append((a, prov, coords[prov]))
+    if not archivos:
+        return
+    ultimo_era5 = max(a["ultimo"] for a, _, _ in archivos)
+    fin = (HOY - timedelta(days=1)).isoformat()
+    if ultimo_era5 >= fin:
+        return
+    inicio = (date.fromisoformat(ultimo_era5) - timedelta(days=IFS_SOLAPE - 1)).isoformat()
+    q = urllib.parse.urlencode({
+        "latitude": ",".join(f"{c[0]:.4f}" for _, _, c in archivos),
+        "longitude": ",".join(f"{c[1]:.4f}" for _, _, c in archivos),
+        "start_date": inicio, "end_date": fin, "timezone": "Europe/Madrid",
+        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum", "models": "ecmwf_ifs",
+    })
+    try:
+        with urllib.request.urlopen(f"{OPEN_METEO}?{q}", timeout=60) as r:
+            res = json.load(r)
+    except Exception as e:
+        errores.append(f"capitales_ayer: Open-Meteo {e}")
+        return
+    if isinstance(res, dict):
+        res = [res]
+    if len(res) != len(archivos):
+        errores.append(f"capitales_ayer: Open-Meteo devolvió {len(res)} series para {len(archivos)} capitales")
+        return
+    ayer_anom = []  # (capital, prov, tx, anom_tx, tn, anom_tn) de AYER, para el ángulo nacional
+    for (a, prov, _), r in zip(archivos, res):
+        d = r.get("daily") or {}
+        fechas, tx, tn, ll = d.get("time", []), d.get("temperature_2m_max", []), d.get("temperature_2m_min", []), d.get("precipitation_sum", [])
+        cap, desde, rec = a["capital"], a["desde"][:4], a["records"]
+        cod = a["cod"]
+        # calibración IFS → ERA5 con los días de solape
+        u = a["ult30"]
+        idx = {f: i for i, f in enumerate(u["f"])}
+        dtx, dtn = [], []
+        for i, f in enumerate(fechas):
+            j = idx.get(f)
+            if j is None or f > a["ultimo"]:
+                continue
+            if i < len(tx) and tx[i] is not None and u["tx"][j] is not None:
+                dtx.append(tx[i] - u["tx"][j])
+            if i < len(tn) and tn[i] is not None and u["tn"][j] is not None:
+                dtn.append(tn[i] - u["tn"][j])
+        if len(dtx) < 10 or len(dtn) < 10:
+            descartar("capitales", cap, "sin solape suficiente para calibrar el IFS")
+            continue
+        sesgo_tx, sesgo_tn = sum(dtx) / len(dtx), sum(dtn) / len(dtn)
+        if abs(sesgo_tx) > IFS_MAX_SESGO or abs(sesgo_tn) > IFS_MAX_SESGO:
+            descartar("capitales", cap, f"celda IFS no comparable con ERA5 (sesgo máx {f1(sesgo_tx)} / mín {f1(sesgo_tn)} °C)")
+            continue
+        calib = f"calibrado con {len(dtx)} días de solape: sesgo IFS−ERA5 máximas {'+' if sesgo_tx >= 0 else ''}{f1(sesgo_tx)} °C, mínimas {'+' if sesgo_tn >= 0 else ''}{f1(sesgo_tn)} °C"
+        # normal 1991-2020 de los días posteriores a «ultimo»: extrapolación lineal de los últimos 15 días (±0,2 °C en octubre)
+        def normal_extrapolada(serie_normal, dias_mas):
+            vals = [v for v in serie_normal[-15:] if v is not None]
+            if len(vals) < 8:
+                return None
+            pendiente = (vals[-1] - vals[0]) / (len(vals) - 1)
+            return vals[-1] + pendiente * dias_mas
+        slug = PROVINCIAS.get(cod, (None, cod))[1]
+        base = {
+            "serie": "capitales", "fuente": "ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-" + ultimo_era5[:4],
+            "serie_desde": desde, "territorio": cap, "provincia": prov, "provisional": True,
+            "pagina": f"https://calentamientoglobal.es/cambio-climatico-en-{slug}/",
+            "metodo": f"Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre {cap}, corregido del sesgo frente a ERA5 "
+                      f"({calib}) y comparado con el récord para esa fecha de la serie ERA5 diaria desde {desde}. Solo cuenta como récord si lo "
+                      f"superan tanto el valor IFS como el corregido, con {f1(IFS_MARGEN)} °C de margen.",
+            "limites": ["Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
+                        "Reanálisis en una celda de ~10 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+                        "Antes de publicarlo, cotejar con el resumen diario de AEMET; si AEMET no lo confirma, no es noticia."],
+            "citabilidad": "media",
+        }
+        dias = []
+        for i, f in enumerate(fechas):
+            if f <= a["ultimo"] or f > fin:
+                continue
+            x, n, p = (tx[i] if i < len(tx) else None), (tn[i] if i < len(tn) else None), (ll[i] if i < len(ll) else None)
+            dias.append((f, x, n, p))
+            if f == fin:
+                k = (date.fromisoformat(f) - date.fromisoformat(a["ultimo"])).days
+                ntx_f, ntn_f = normal_extrapolada(u["ntx"], k), normal_extrapolada(u["ntn"], k)
+                if x is not None and n is not None and ntx_f is not None and ntn_f is not None:
+                    ayer_anom.append((cap, prov, x, x - sesgo_tx - ntx_f, n, n - sesgo_tn - ntn_f))
+            rr = rec.get(f[5:7] + f[8:10])
+            if not rr or len(rr) < 10:
+                continue
+            xc = None if x is None else x - sesgo_tx
+            nc = None if n is None else n - sesgo_tn
+            ctx = [f"Serie de récords {desde}-{ultimo_era5[:4]} (ERA5); dato del día provisional (análisis IFS)."]
+
+            def lim_extra(margen, umbral=2.0, unidad="°C"):
+                # Un récord batido por mucho es la mejor noticia y también el artefacto más probable:
+                # pasa a «requiere revisión» hasta que se coteje con AEMET.
+                if margen > umbral:
+                    return base["limites"] + [f"COMPROBAR antes de enviar: supera el récord anterior en {f1(margen)} {unidad}, demasiado para un análisis; confirmar con la estación de AEMET."]
+                return base["limites"]
+            if x is not None and x > rr[0] + 0.05 and xc > rr[0] + IFS_MARGEN:
+                anadir({**base, "tipo": "record_fecha", "fecha_dato": f, "indicador": "tmax",
+                        "titular": f"{cap} marcó {'ayer' if f == fin else 'el ' + fecha_dia(f)} su máxima más alta para esa fecha desde {desde}: {f1(x)} °C",
+                        "dato": f"{f1(x)} °C (corregido a escala ERA5: {f1(xc)} °C) · récord anterior para la fecha {f1(rr[0])} °C ({rr[1]})",
+                        "contexto": ctx, "limites": lim_extra(xc - rr[0])})
+            if n is not None and n > rr[6] + 0.05 and nc > rr[6] + IFS_MARGEN:
+                anadir({**base, "tipo": "record_fecha", "fecha_dato": f, "indicador": "tmin_alta",
+                        "titular": f"{cap} tuvo {'anoche' if f == fin else 'el ' + fecha_dia(f)} la noche más cálida para esa fecha desde {desde}: mínima de {f1(n)} °C",
+                        "dato": f"mínima {f1(n)} °C (corregida a escala ERA5: {f1(nc)} °C) · récord anterior para la fecha {f1(rr[6])} °C ({rr[7]})",
+                        "contexto": ctx, "limites": lim_extra(nc - rr[6])})
+            if n is not None and n < rr[2] - 0.05 and nc < rr[2] - IFS_MARGEN:
+                anadir({**base, "tipo": "record_fecha", "fecha_dato": f, "indicador": "tmin_baja",
+                        "titular": f"{cap} registró {'anoche' if f == fin else 'el ' + fecha_dia(f)} su mínima más baja para esa fecha desde {desde}: {f1(n)} °C",
+                        "dato": f"mínima {f1(n)} °C (corregida a escala ERA5: {f1(nc)} °C) · récord anterior para la fecha {f1(rr[2])} °C ({rr[3]})",
+                        "contexto": ctx, "limites": lim_extra(rr[2] - nc)})
+            if p is not None and p >= 10 and p > rr[8] * 1.2:
+                anadir({**base, "tipo": "record_fecha", "fecha_dato": f, "indicador": "lluvia",
+                        "titular": f"{cap} recogió {'ayer' if f == fin else 'el ' + fecha_dia(f)} {f1(p)} mm, la mayor lluvia para esa fecha desde {desde}",
+                        "dato": f"{f1(p)} mm en un día · récord anterior para la fecha {f1(rr[8])} mm ({rr[9]})",
+                        "limites": lim_extra(p / max(rr[8], 1), 2.0, "veces") + ["La lluvia de un análisis es una media de celda: el pluviómetro local puede dar más o menos."]})
+        # los días provisionales se guardan en el hallazgo para que el gráfico los pinte
+        for h in hallazgos:
+            if h["serie"] == "capitales" and h.get("provisional") and h["territorio"] == cap and "prov_dias" not in h:
+                h["prov_dias"] = dias
+
+    # --- el ángulo de AYER a escala nacional: cuántas capitales muy por encima / por debajo de lo normal ----
+    if len(ayer_anom) >= 40:
+        base_n = {"serie": "capitales", "serie_desde": "1940", "territorio": "España", "ambito": "nacional", "provisional": True,
+                  "fuente": "ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; normal 1991-2020 de ERA5 (Copernicus)",
+                  "pagina": "https://calentamientoglobal.es/el-tiempo/",
+                  "metodo": "Máxima y mínima de ayer del análisis IFS del ECMWF (9 km) en las 52 capitales, corregidas del sesgo frente a ERA5 "
+                            "con 21 días de solape, comparadas con la normal 1991-2020 de cada capital para la fecha (ERA5, extrapolada los "
+                            "días que ERA5 aún no cubre).",
+                  "limites": ["Dato provisional de un análisis, no de las estaciones de AEMET: la cifra oficial puede diferir en 1-2 °C.",
+                              "La normal de los últimos días es una extrapolación lineal (±0,2 °C)."],
+                  "citabilidad": "media"}
+        for ix, etiqueta, signo in ((3, "máximas", +1), (3, "máximas", -1), (5, "mínimas", +1), (5, "mínimas", -1)):
+            # (capital, provincia, valor, anomalía) de ayer, solo las que se desvían ≥ 5 °C en el sentido buscado
+            lista = [(t[0], t[1], t[2] if ix == 3 else t[4], t[ix]) for t in ayer_anom if signo * t[ix] >= 5]
+            lista.sort(key=lambda t: -signo * t[3])
+            if len(lista) >= 10:
+                n = len(lista)
+                arriba = signo > 0
+                nombres = "; ".join(f"{c} {f1(v)} °C ({'+' if an > 0 else ''}{f1(an)})" for c, pr, v, an in lista[:8])
+                anadir({**base_n, "tipo": "anomalia_fuerte", "fecha_dato": fin, "indicador": f"ayer_{etiqueta}_{'calor' if arriba else 'frio'}",
+                        "titular": f"{n} capitales españolas tuvieron ayer {etiqueta} de al menos 5 °C {'por encima' if arriba else 'por debajo'} de lo normal para un {fecha_dia(fin)}",
+                        "dato": f"{n} de {len(ayer_anom)} capitales · las más extremas: {nombres}",
+                        "contexto": [f"Media de la desviación en esas {n} capitales: {'+' if arriba else ''}{f1(sum(t[3] for t in lista) / n)} °C.",
+                                     "Normal de referencia: 1991-2020, día a día, en la celda de cada capital."],
+                        "miembros_txt": [c for c, _, _, _ in lista]})
 
 
 # ----------------------------------------------------------------------------
@@ -605,11 +785,11 @@ def agregar():
             dato = "; ".join(f"{h['territorio']} {h['dato'].split(' días')[0]}" for h in sorted(lista, key=lambda h: -int(h["dato"].split(" ")[0])))
             tipo = "record_absoluto"
         elif clave.startswith("capitales_tmin_alta"):
-            titular = f"{n} capitales españolas vivieron el {fecha_dia(cuando)} su noche más cálida para esa fecha desde 1940"
+            titular = f"{n} capitales españolas vivieron {'anoche' if cuando == AYER else 'el ' + fecha_dia(cuando)} su noche más cálida para esa fecha desde 1940"
             dato = "; ".join(f"{h['territorio']} {h['dato'].split(' °C')[0].replace('mínima ', '')} °C" for h in lista)
             tipo = "record_fecha"
         elif clave.startswith("capitales_tmax"):
-            titular = f"{n} capitales españolas marcaron el {fecha_dia(cuando)} su máxima más alta para esa fecha desde 1940"
+            titular = f"{n} capitales españolas marcaron {'ayer' if cuando == AYER else 'el ' + fecha_dia(cuando)} su máxima más alta para esa fecha desde 1940"
             dato = "; ".join(f"{h['territorio']} {h['dato'].split(' °C')[0]} °C" for h in lista)
             tipo = "record_fecha"
         elif clave.startswith("capitales_tmin_baja"):
@@ -630,6 +810,7 @@ def agregar():
             continue
         anadir({"serie": p["serie"], "fuente": p["fuente"], "serie_desde": p["serie_desde"], "territorio": "España",
                 "ambito": "nacional", "pagina": p["pagina"] if p["serie"] == "dias32" else "https://calentamientoglobal.es/el-tiempo/",
+                "provisional": bool(p.get("provisional")),
                 "tipo": tipo, "fecha_dato": p["fecha_dato"], "indicador": clave + "_nacional",
                 "titular": titular, "dato": dato,
                 "contexto": [f"Territorios: {nombres}.", f"Cada uno comparado contra su propia serie desde {p['serie_desde']}."],
@@ -732,7 +913,10 @@ def _serie_para(h: dict) -> dict | None:
         if not cod:
             return None
         a = leer(DOCS / "archivo" / f"{cod}.json")
-        u = a["ult30"]
+        u = {k: list(v) for k, v in a["ult30"].items()}
+        for f, x, n, p in h.get("prov_dias", []):
+            u["f"].append(f); u["tx"].append(x); u["tn"].append(n); u["ll"].append(p)
+            u["ntx"].append(None); u["ntn"].append(None); u["nll"].append(None)
         filas = list(zip(u["f"], u["tx"], u["ntx"], u["tn"], u["ntn"], u["ll"], u["nll"]))
 
         def plot(plt, out, h):
@@ -752,6 +936,8 @@ def _serie_para(h: dict) -> dict | None:
                 ax.plot(xs, u["ntn"], color="#6e6e73", lw=1, label="mínima normal 1991-2020")
                 ax.plot(xs, u["tn"], color="#cc2200", lw=2.2, label="mínima")
                 titulo = f"{h['territorio']} · mínimas de los últimos 30 días (°C)"
+            if h.get("prov_dias"):
+                ax.axvspan(len(u["f"]) - len(h["prov_dias"]) - 0.5, len(u["f"]) - 0.5, color="#fff3e0", zorder=0, label="provisional (IFS)")
             _estilo(ax, plt, titulo, h)
             ax.set_xticks(xs[::5]); ax.set_xticklabels([f[8:10] + "/" + f[5:7] for f in u["f"]][::5])
             fig.savefig(out, bbox_inches="tight"); plt.close(fig)
@@ -811,7 +997,7 @@ def main():
     ap.add_argument("--salida", default=str(PRENSA / "hallazgos.json"))
     args = ap.parse_args()
 
-    for fn in (capitales, mediterraneo, danas, dias32, embalses, caudal, planeta):
+    for fn in (capitales, capitales_ayer, mediterraneo, danas, dias32, embalses, caudal, planeta):
         try:
             fn()
         except Exception as e:
@@ -868,7 +1054,8 @@ def main():
                   "serie": h["serie"], "tipo": h["tipo"], "ambito": h["ambito"], "territorio": h["territorio"],
                   "provincia_slug": h.get("provincia_slug"), "citabilidad": h["citabilidad"], "exclusivo": h["exclusivo"],
                   "fuerza": h["fuerza"], "pagina": h.get("pagina"), "dossier": h.get("dossier"),
-                  "grafico": h.get("grafico"), "csv": h.get("csv"), "requiere_revision": h["requiere_revision"]})
+                  "grafico": h.get("grafico"), "csv": h.get("csv"), "requiere_revision": h["requiere_revision"],
+                  "provisional": bool(h.get("provisional"))})
         hist[h["id"]] = x
     limite = (HOY - timedelta(days=60)).isoformat()
     lista = sorted((x for x in hist.values() if x["ultima_vez"] >= limite), key=lambda x: (x["ultima_vez"], x["fuerza"]), reverse=True)
