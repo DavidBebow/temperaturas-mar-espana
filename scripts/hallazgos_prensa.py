@@ -77,6 +77,11 @@ FUERZA = {
 }
 AMBITO_F = {"nacional": 1.0, "regional": 0.9, "provincial": 0.8, "local": 0.7, "global": 0.85}
 
+# Vida útil de un hallazgo según la cadencia de su serie (días desde fecha_dato).
+# Pasado ese plazo ya no es noticia: no entra en la cola, solo queda en el historial.
+VIDA = {"capitales": 9, "mediterraneo": 7, "danas": 30, "dias32": 45, "embalses": 10, "caudal": 4,
+        "oceano": 10, "temperatura_global": 20}
+
 hallazgos: list[dict] = []
 descartes: list[dict] = []
 errores: list[str] = []
@@ -129,7 +134,13 @@ def anadir(h: dict):
     h.setdefault("exclusivo", True)
     h.setdefault("citabilidad", "media")
     h.setdefault("ambito", "provincial")
-    frescura = max(0.5, 1 - 0.04 * max(0, dias_desde(h["fecha_dato"]) - 2))  # -4 %/día a partir del 3.º
+    edad = dias_desde(h["fecha_dato"])
+    vida = VIDA.get(h["serie"], 10)
+    if edad > vida:
+        descartar(h["serie"], h["territorio"], f"dato de hace {edad} días: caducado para esta serie (vida {vida} días)", h.get("titular", ""))
+        return
+    frescura = max(0.35, 1 - 0.07 * max(0, edad - 1))  # -7 %/día a partir del 2.º
+    h["edad_dias"] = edad
     fuerza = FUERZA[h["tipo"]] * AMBITO_F[h["ambito"]] * (1.0 if h["exclusivo"] else 0.7) * frescura
     if h["citabilidad"] == "contexto":
         fuerza *= 0.5
@@ -340,10 +351,20 @@ def mediterraneo():
                              f"Hoy el mar está como corresponde a un {_fecha_equivalente(m, sst)} normal."],
                 "racha": racha})
     elif rec_prev:
-        descartar("mediterraneo", "Mediterráneo occidental", "no está en récord para la fecha",
-                  f"{f1(sst)} °C frente a {f1(rec_prev[0])} °C ({rec_prev[1]}); puesto {m.get('puesto_para_la_fecha')} de {m.get('de')}")
-    # anomalía fuerte sin récord
-    if anom is not None and anom >= 2 and racha == 0:
+        puesto, de = int(num(m.get("puesto_para_la_fecha"), 99)), int(num(m.get("de"), 0))
+        if 2 <= puesto <= 3 and de >= 30:
+            ordinal = {2: "segundo", 3: "tercer"}[puesto]
+            anadir({**base, "tipo": "puesto_extremo", "fecha_dato": ultimo, "indicador": "sst_puesto_fecha",
+                    "titular": f"El Mediterráneo español vive su {ordinal} {fecha_dia(ultimo)} más cálido desde 1981: {f1(sst)} °C, {f1(anom)} °C por encima de lo normal",
+                    "dato": f"{f2(sst)} °C · puesto {puesto} de {de} años para la fecha · récord {f2(rec_prev[0])} °C ({rec_prev[1]}) · normal 1991-2020 {f2(normal)} °C (+{f2(anom)})",
+                    "contexto": [f"{len(en_record)} días de {anio} han sido récord para su fecha.",
+                                 f"Máximo absoluto de la serie: {f2(maximo_abs[0])} °C el {fecha_larga(maximo_abs[1])}.",
+                                 f"Hoy el mar está como corresponde a un {_fecha_equivalente(m, sst)} normal."]})
+        else:
+            descartar("mediterraneo", "Mediterráneo occidental", "no está en récord para la fecha",
+                      f"{f1(sst)} °C frente a {f1(rec_prev[0])} °C ({rec_prev[1]}); puesto {puesto} de {de}")
+    # anomalía fuerte sin récord ni puesto extremo
+    if anom is not None and anom >= 1.5 and racha == 0 and not any(h["indicador"] == "sst_puesto_fecha" for h in hallazgos):
         anadir({**base, "tipo": "anomalia_fuerte", "fecha_dato": ultimo, "indicador": "sst_anomalia",
                 "titular": f"El Mediterráneo español está {f1(anom)} °C por encima de lo normal para un {fecha_dia(ultimo)}: {f1(sst)} °C",
                 "dato": f"{f1(sst)} °C · normal {f1(normal)} °C · p90 para la fecha {f1(num(m['p90']))} °C",
