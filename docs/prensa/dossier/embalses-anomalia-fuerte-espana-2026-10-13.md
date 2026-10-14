@@ -1,0 +1,23 @@
+# La reserva de agua de España está al 57,8 %, 14,4 puntos por encima de su media de diez años para esta semana
+
+**Dato:** 57,8 % (32398.0 de 56038.0 hm³) · hace un año 53,1 % · media 10 años 43,4 %  
+**Fecha del dato:** 13 de octubre de 2026  
+**Ámbito:** nacional · **Territorio:** España  
+**Citabilidad:** alta · **Exclusivo:** no (dato oficial que publica cualquiera)
+
+## Contexto
+- Boletín del 13 de octubre de 2026.
+
+## Fuente y método
+- **Fuente:** Boletín Hidrológico Semanal — MITECO (BD-Embalses)
+- **Serie desde:** 1988
+- **Método:** Boletín Hidrológico Semanal del MITECO; media de diez años calculada para la misma semana del año.
+
+## Límites (decirlos antes de que los descubran)
+- Dato oficial del MITECO que publica cualquier medio: el valor está en el ángulo (comparación y contexto), no en la cifra.
+
+## Enlaces
+- Página: https://calentamientoglobal.es/embalses-espana/
+
+## Atribución
+Observatorio climático de calentamientoglobal.es, a partir de Boletín Hidrológico Semanal — MITECO (BD-Embalses). Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

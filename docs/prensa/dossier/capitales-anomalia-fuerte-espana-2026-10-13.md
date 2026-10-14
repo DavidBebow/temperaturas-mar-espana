@@ -1,12 +1,12 @@
 # 25 capitales españolas tuvieron ayer máximas de al menos 5 °C por encima de lo normal para un 13 de octubre
 
-**Dato:** 25 de 50 capitales · las más extremas: Ávila 24,6 °C (+7,7); Soria 25,3 °C (+7,5); Salamanca 26,2 °C (+7,2); Zamora 26,4 °C (+6,6); Palencia 26 °C (+6,5); Toledo 28,8 °C (+6,4); León 24 °C (+6,3); Segovia 23,8 °C (+6,3)  
+**Dato:** 25 de 50 capitales · las más extremas: Ávila 24,6 °C (+7,8); Soria 25,3 °C (+7,8); Salamanca 26,2 °C (+7,3); Palencia 26 °C (+6,7); Zamora 26,4 °C (+6,6); Toledo 28,8 °C (+6,6); Cuenca 25,5 °C (+6,4); Segovia 23,8 °C (+6,4)  
 **Fecha del dato:** 13 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Media de la desviación en esas 25 capitales: +6,1 °C.
+- Media de la desviación en esas 25 capitales: +6,2 °C.
 - Normal de referencia: 1991-2020, día a día, en la celda de cada capital.
 
 ## Fuente y método

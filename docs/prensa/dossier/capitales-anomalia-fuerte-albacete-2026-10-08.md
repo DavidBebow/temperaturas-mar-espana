@@ -1,12 +1,12 @@
-# Albacete ya ha recogido en 7 días de octubre el 80 % de la lluvia de todo un octubre normal
+# Albacete ya ha recogido en 8 días de octubre el 80 % de la lluvia de todo un octubre normal
 
-**Dato:** 28,2 mm hasta el día 7 · normal hasta hoy 4,7 mm · normal del mes completo 35,3 mm  
-**Fecha del dato:** 7 de octubre de 2026  
+**Dato:** 28,2 mm hasta el día 8 · normal hasta hoy 5,1 mm · normal del mes completo 35,3 mm  
+**Fecha del dato:** 8 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Albacete  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- 599 % de lo normal para estas fechas del mes.
+- 549 % de lo normal para estas fechas del mes.
 
 ## Fuente y método
 - **Fuente:** ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0
@@ -19,8 +19,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-albacete/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-anomalia-fuerte-albacete-2026-10-07.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-anomalia-fuerte-albacete-2026-10-07.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-anomalia-fuerte-albacete-2026-10-08.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-anomalia-fuerte-albacete-2026-10-08.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
