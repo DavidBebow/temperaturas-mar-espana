@@ -1,4 +1,4 @@
-# Santander marcó ayer su máxima más alta para esa fecha desde 1940: 25,2 °C
+# Santander marcó el 14 de octubre su máxima más alta para esa fecha desde 1940: 25,2 °C
 
 **Dato:** 25,2 °C (corregido a escala ERA5: 24,5 °C) · récord anterior para la fecha 23,7 °C (1977)  
 **Fecha del dato:** 14 de octubre de 2026  

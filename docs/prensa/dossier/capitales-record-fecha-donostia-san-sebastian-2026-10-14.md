@@ -1,4 +1,4 @@
-# Donostia/San Sebastián marcó ayer su máxima más alta para esa fecha desde 1940: 27,3 °C
+# Donostia/San Sebastián marcó el 14 de octubre su máxima más alta para esa fecha desde 1940: 27,3 °C
 
 **Dato:** 27,3 °C (corregido a escala ERA5: 27 °C) · récord anterior para la fecha 25,8 °C (2017)  
 **Fecha del dato:** 14 de octubre de 2026  

@@ -1,12 +1,12 @@
-# 33 capitales españolas tuvieron ayer máximas de al menos 5 °C por encima de lo normal para un 14 de octubre
+# 21 capitales españolas tuvieron ayer máximas de al menos 5 °C por encima de lo normal para un 15 de octubre
 
-**Dato:** 33 de 50 capitales · las más extremas: Lugo 26,5 °C (+9,2); Ávila 24,9 °C (+8,4); Ourense 29,5 °C (+8,3); Burgos 25,2 °C (+8,3); Badajoz 32 °C (+8,2); Vitoria-Gasteiz 25,7 °C (+8,2); Salamanca 26,7 °C (+8,1); Pamplona/Iruña 25,2 °C (+7,4)  
-**Fecha del dato:** 14 de octubre de 2026  
+**Dato:** 21 de 50 capitales · las más extremas: Burgos 25,3 °C (+8,7); Lugo 25,8 °C (+8,7); Vitoria-Gasteiz 25,7 °C (+8,4); Ourense 29 °C (+8,1); Pamplona/Iruña 25,5 °C (+8,1); Palencia 26,7 °C (+7,9); Salamanca 25,9 °C (+7,7); León 24,7 °C (+7,6)  
+**Fecha del dato:** 15 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Media de la desviación en esas 33 capitales: +6,7 °C.
+- Media de la desviación en esas 21 capitales: +7,1 °C.
 - Normal de referencia: 1991-2020, día a día, en la celda de cada capital.
 
 ## Fuente y método

@@ -1,4 +1,4 @@
-# 3 capitales españolas marcaron ayer su máxima más alta para esa fecha desde 1940
+# 3 capitales españolas marcaron el 14 de octubre su máxima más alta para esa fecha desde 1940
 
 **Dato:** Bilbao 28,7 °C; Donostia/San Sebastián 27,3 °C; Santander 25,2 °C  
 **Fecha del dato:** 14 de octubre de 2026  
@@ -20,7 +20,7 @@
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026
 - **Serie desde:** 1940
-- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Bilbao, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +1,4 °C, mínimas -1,6 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
+- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Bilbao, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +1,4 °C, mínimas -1,7 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
