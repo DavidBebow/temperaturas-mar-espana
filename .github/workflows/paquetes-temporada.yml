@@ -3,7 +3,8 @@ name: Paquetes de temporada
 # El «Climate Matters» español: cada lunes, paquetes de datos por capital desde 1940
 # sobre la temporada en curso (el otoño se calienta, la primera helada llega más
 # tarde, noches tropicales…) con titulares, gráfico por capital, CSV y método.
-# Descarga ERA5 (Open-Meteo, 13 peticiones de 4 capitales) y guarda solo agregados anuales.
+# No descarga nada: lee la serie ERA5 que mantiene «Actualizar archivo de las capitales»
+# en archivo/era5/NN/ y guarda agregados anuales + paquetes + gráficos.
 
 on:
   workflow_dispatch:
@@ -36,7 +37,7 @@ jobs:
       - name: Instalar dependencias
         run: pip install matplotlib
 
-      - name: Calcular los paquetes (52 capitales, ERA5 desde 1940)
+      - name: Calcular los paquetes (52 capitales, ERA5 desde 1940, serie local)
         run: python scripts/paquetes_temporada.py
 
       - name: Guardar
