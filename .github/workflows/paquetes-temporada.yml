@@ -1,0 +1,57 @@
+name: Paquetes de temporada
+
+# El «Climate Matters» español: cada lunes, paquetes de datos por capital desde 1940
+# sobre la temporada en curso (el otoño se calienta, la primera helada llega más
+# tarde, noches tropicales…) con titulares, gráfico por capital, CSV y método.
+# Descarga ERA5 (Open-Meteo) para las 52 capitales y guarda solo agregados anuales.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 5 * * 1"   # lunes 05:30 UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: paquetes-temporada
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  paquetes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install matplotlib
+
+      - name: Calcular los paquetes (52 capitales, ERA5 desde 1940)
+        run: python scripts/paquetes_temporada.py
+
+      - name: Guardar
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs/prensa/paquetes
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "prensa: paquetes de temporada $(date -u +'%Y-%m-%d')"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
