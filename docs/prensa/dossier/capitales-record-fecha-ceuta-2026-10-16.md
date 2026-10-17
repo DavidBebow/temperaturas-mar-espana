@@ -1,7 +1,7 @@
-# Ceuta tuvo anoche la noche más cálida para esa fecha desde 1940: mínima de 21,3 °C
+# Ceuta tuvo anoche la noche más cálida para esa fecha desde 1940: mínima de 20,8 °C
 
-**Dato:** mínima 21,3 °C (corregida a escala ERA5: 21,5 °C) · récord anterior para la fecha 20,4 °C (1971)  
-**Fecha del dato:** 15 de octubre de 2026  
+**Dato:** mínima 20,8 °C (corregida a escala ERA5: 21 °C) · récord anterior para la fecha 20,1 °C (2024)  
+**Fecha del dato:** 16 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Ceuta  
 **Citabilidad:** media · **Exclusivo:** sí
 
@@ -20,8 +20,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-ceuta/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-ceuta-2026-10-15.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-ceuta-2026-10-15.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-ceuta-2026-10-16.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-ceuta-2026-10-16.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
