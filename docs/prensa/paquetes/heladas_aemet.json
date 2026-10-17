@@ -1,7 +1,7 @@
 {
  "id": "heladas_aemet",
  "titulo": "La helada pierde terreno",
- "generado": "2026-10-17T15:58:16Z",
+ "generado": "2026-10-17T16:25:37Z",
  "de_temporada": true,
  "ventana": [
   10,
@@ -23,14 +23,14 @@
  ],
  "por_que_importa": "Menos heladas alteran el reposo invernal de los frutales, alargan la temporada de plagas y reducen la reserva de nieve y de agua de primavera.",
  "hallazgos": [
-  "La helada pierde terreno: 10 de las 10 capitales con estación de AEMET de serie larga y homogénea hielan hoy menos que a principios de los setenta",
-  "De media, 18,5 días de helada menos al año (estaciones de AEMET, tendencia 1970-2025)."
+  "La helada pierde terreno: 6 de las 6 capitales con estación de AEMET de serie larga y homogénea hielan hoy menos que a principios de los setenta",
+  "De media, 25,7 días de helada menos al año (estaciones de AEMET, tendencia 1970-2025)."
  ],
  "n_capitales": 14,
- "n_aemet": 10,
- "media_delta": -18.49,
+ "n_aemet": 6,
+ "media_delta": -25.67,
  "mediana_delta": -13.1,
- "n_revisar": 4,
+ "n_revisar": 8,
  "donde_mas": [
   {
    "cod": "16",
@@ -57,7 +57,7 @@
    "cod": "32",
    "capital": "Ourense",
    "slug": "ourense",
-   "delta": -20.4,
+   "delta": -19.3,
    "estacion": "Ourense"
   },
   {
@@ -76,13 +76,13 @@
    "capital": "Ciudad Real",
    "provincia": "Ciudad Real",
    "slug": "ciudad-real",
-   "titular": "La helada pierde terreno en Ciudad Real: 45 días menos al año que a principios de los setenta, según AEMET",
-   "dato": "de 67,7 días de helada al año en los setenta a 23,7 en los últimos diez · tendencia −45 días (−8,1 por década) · estación de AEMET Ciudad Real",
+   "titular": "La helada pierde terreno en Ciudad Real: 44 días menos al año que a principios de los setenta, según AEMET",
+   "dato": "de 67,7 días de helada al año en los setenta a 23,7 en los últimos diez · tendencia −44 días (−8,1 por década) · estación de AEMET Ciudad Real",
    "contexto": [
     "El año con menos heladas de la serie: 1997 (11 días); con más: 1973 (94 días).",
     "55 años con dato completo entre 1971 y 2025."
    ],
-   "delta": -44.6,
+   "delta": -43.8,
    "pendiente_decada": -8.11,
    "r2": 0.43,
    "media_1970s": 67.7,
@@ -175,13 +175,13 @@
    "capital": "Ourense",
    "provincia": "Ourense",
    "slug": "ourense",
-   "titular": "Ourense tiene hoy 20 días de helada menos al año que a principios de los setenta, según AEMET",
-   "dato": "de 36,9 días de helada al año en los setenta a 17,3 en los últimos diez · tendencia −20 días (−3,7 por década) · estación de AEMET Ourense",
+   "titular": "Ourense tiene hoy 19 días de helada menos al año que a principios de los setenta, según AEMET",
+   "dato": "de 36,9 días de helada al año en los setenta a 17,3 en los últimos diez · tendencia −19 días (−3,7 por década) · estación de AEMET Ourense",
    "contexto": [
     "El año con menos heladas de la serie: 1997 (4 días); con más: 1973 (74 días).",
     "51 años con dato completo entre 1973 y 2025."
    ],
-   "delta": -20.4,
+   "delta": -19.3,
    "pendiente_decada": -3.71,
    "r2": 0.19,
    "media_1970s": 36.9,
@@ -264,9 +264,9 @@
    "fuente_fila": "AEMET",
    "estacion": "Huesca aeropuerto",
    "indicativo": "9898",
+   "discrepa": "La estación de AEMET de Huesca no cuadra con el reanálisis en 2 estaciones del año (posible cambio de emplazamiento)",
    "grafico": "prensa/paquetes/heladas_aemet/22.png",
    "csv": "prensa/paquetes/heladas_aemet/22.csv",
-   "discrepa": "La estación de AEMET de Huesca no cuadra con el reanálisis en 2 estaciones del año (posible cambio de emplazamiento)",
    "revisar": true,
    "limites": [
     "COMPROBAR: La estación de AEMET de Huesca no cuadra con el reanálisis en 2 estaciones del año (posible cambio de emplazamiento). No se publica hasta revisar el historial de la estación."
@@ -291,10 +291,13 @@
    "fuente_fila": "AEMET",
    "estacion": "Zamora",
    "indicativo": "2614",
+   "discrepa": "La tendencia de Zamora no se sostiene: r² 0.05, medias por década 52,3 → 38,9 días frente a una tendencia de −11",
    "grafico": "prensa/paquetes/heladas_aemet/49.png",
    "csv": "prensa/paquetes/heladas_aemet/49.csv",
-   "revisar": false,
-   "limites": []
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La tendencia de Zamora no se sostiene: r² 0.05, medias por década 52,3 → 38,9 días frente a una tendencia de −11. No se publica hasta revisar el historial de la estación."
+   ]
   },
   {
    "cod": "48",
@@ -339,10 +342,13 @@
    "fuente_fila": "AEMET",
    "estacion": "Madrid-Retiro",
    "indicativo": "3195",
+   "discrepa": "La tendencia de Madrid no se sostiene: r² 0.09, medias por década 15,2 → 10,1 días frente a una tendencia de −8",
    "grafico": "prensa/paquetes/heladas_aemet/28.png",
    "csv": "prensa/paquetes/heladas_aemet/28.csv",
-   "revisar": false,
-   "limites": []
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La tendencia de Madrid no se sostiene: r² 0.09, medias por década 15,2 → 10,1 días frente a una tendencia de −8. No se publica hasta revisar el historial de la estación."
+   ]
   },
   {
    "cod": "14",
@@ -363,10 +369,13 @@
    "fuente_fila": "AEMET",
    "estacion": "Córdoba aeropuerto",
    "indicativo": "5402",
+   "discrepa": "La tendencia de Córdoba no se sostiene: r² 0.04, medias por década 14,1 → 13,4 días frente a una tendencia de −7",
    "grafico": "prensa/paquetes/heladas_aemet/14.png",
    "csv": "prensa/paquetes/heladas_aemet/14.csv",
-   "revisar": false,
-   "limites": []
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La tendencia de Córdoba no se sostiene: r² 0.04, medias por década 14,1 → 13,4 días frente a una tendencia de −7. No se publica hasta revisar el historial de la estación."
+   ]
   },
   {
    "cod": "37",
@@ -387,10 +396,13 @@
    "fuente_fila": "AEMET",
    "estacion": "Salamanca aeropuerto",
    "indicativo": "2867",
+   "discrepa": "La tendencia de Salamanca no se sostiene: r² 0.00, medias por década 82,2 → 75,4 días frente a una tendencia de −4",
    "grafico": "prensa/paquetes/heladas_aemet/37.png",
    "csv": "prensa/paquetes/heladas_aemet/37.csv",
-   "revisar": false,
-   "limites": []
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La tendencia de Salamanca no se sostiene: r² 0.00, medias por década 82,2 → 75,4 días frente a una tendencia de −4. No se publica hasta revisar el historial de la estación."
+   ]
   },
   {
    "cod": "26",
@@ -411,9 +423,9 @@
    "fuente_fila": "AEMET",
    "estacion": "Logroño aeropuerto",
    "indicativo": "9170",
+   "discrepa": "La estación de AEMET de Logroño no cuadra con el reanálisis en 2 estaciones del año (posible cambio de emplazamiento)",
    "grafico": "prensa/paquetes/heladas_aemet/26.png",
    "csv": "prensa/paquetes/heladas_aemet/26.csv",
-   "discrepa": "La estación de AEMET de Logroño no cuadra con el reanálisis en 2 estaciones del año (posible cambio de emplazamiento)",
    "revisar": true,
    "limites": [
     "COMPROBAR: La estación de AEMET de Logroño no cuadra con el reanálisis en 2 estaciones del año (posible cambio de emplazamiento). No se publica hasta revisar el historial de la estación."
