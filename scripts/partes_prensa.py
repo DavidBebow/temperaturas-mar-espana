@@ -96,6 +96,42 @@ def pct_txt(v) -> str:
     return f"{f1(v)} %"
 
 
+# Población por provincia (INE, padrón a 1-1-2024, en miles, redondeada). Solo para dimensionar alertas.
+POBLACION_MILES = {
+    "01": 338, "02": 388, "03": 1990, "04": 755, "05": 161, "06": 666, "07": 1231, "08": 5826, "09": 360, "10": 388,
+    "11": 1261, "12": 603, "13": 490, "14": 775, "15": 1129, "16": 199, "17": 814, "18": 937, "19": 282, "20": 733,
+    "21": 539, "22": 230, "23": 620, "24": 450, "25": 453, "26": 326, "27": 324, "28": 7002, "29": 1790, "30": 1576,
+    "31": 679, "32": 304, "33": 1010, "34": 158, "35": 1145, "36": 951, "37": 328, "38": 1072, "39": 592, "40": 156,
+    "41": 1965, "42": 90, "43": 870, "44": 135, "45": 740, "46": 2690, "47": 523, "48": 1160, "49": 166, "50": 996,
+    "51": 83, "52": 86,
+}
+
+
+def signo_txt(v):
+    return ("+" if (v or 0) >= 0 else "−") + f1(abs(v or 0))
+
+
+def indice_desplazamiento(fc: dict):
+    """(nivel 1-5, ratio, titular, dato) o None. Basado en firma_climatica.json."""
+    if not fc or fc.get("tmax") is None or fc.get("lado") != "calor":
+        return None
+    cap = fc.get("nombre", "")
+    if fc.get("sin_precedente"):
+        return (5, 99.0, f"Los {f1(fc['tmax'])} °C previstos hoy en {cap} no tienen precedente para estas fechas en 1951-1980: el máximo entonces fue {f1(fc['max_antes'])} °C",
+                f"nivel 5 (sin precedente) · máxima prevista {f1(fc['tmax'])} °C · máximo de 1951-1980 para estas fechas {f1(fc['max_antes'])} °C")
+    ra, rh = num(fc.get("retorno_antes")), num(fc.get("retorno_ahora"))
+    if not ra or not rh or ra < 1 or rh <= 0:
+        return None
+    ratio = ra / rh
+    if ratio < 2:
+        return None
+    nivel = min(5, int(ratio))
+    veces = "más del doble de" if nivel == 2 else f"al menos {nivel} veces más"
+    return (nivel, round(ratio, 1),
+            f"El calor previsto hoy en {cap} ({f1(fc['tmax'])} °C) es {veces} frecuente que en 1951-1980 (nivel {nivel} de 5)",
+            f"un día así ocurría cada {f1(ra)} años en 1951-1980 y ahora cada {f1(rh)} · ×{f1(ratio)} · nivel {nivel} de 5")
+
+
 class Parte:
     def __init__(self, cod: str, nombre: str, slug: str):
         self.cod, self.nombre, self.slug = cod, nombre, slug
@@ -226,18 +262,21 @@ def sonda_ayer(P: Parte, D: Datos, pj: dict):
               "AEMET OpenData", "Mínima diaria de la estación AEMET de la ciudad; noche tropical = mínima ≥ 20 °C.",
               pagina="https://calentamientoglobal.es/noches-tropicales/")
 
-    # --- firma climática de la capital -------------------------------------------
+    # --- índice de desplazamiento climático (nuestro «Climate Shift Index») ---------
+    # ¿Cuántas veces más frecuente es la máxima prevista hoy que en 1951-1980? Solo cuando
+    # el día era raro entonces (retorno ≥ 1 año): con retornos más cortos el cociente es ruido.
     fc = pj.get("indicadores", {}).get("firma_climatica") or {}
-    if fc.get("tmax") is not None and (fc.get("sin_precedente") or (fc.get("retorno_antes") and fc["retorno_antes"] >= 3)):
-        if fc.get("sin_precedente"):
-            tit = f"Los {f1(fc['tmax'])} °C de ayer en {fc['nombre']} no tienen precedente para estas fechas en 1951-1980: el máximo entonces fue {f1(fc['max_antes'])} °C"
-        else:
-            tit = f"Un día como ayer en {fc['nombre']} ({f1(fc['tmax'])} °C) ocurría una vez cada {f1(fc['retorno_antes'])} años en 1951-1980; ahora, cada {f1(fc['retorno_ahora'])}"
-        P.add("ayer", "extremo", tit,
-              f"máxima {f1(fc['tmax'])} °C · percentil {f1(fc.get('percentil', 0))} del clima 1951-1980 · periodo de retorno antes {fc.get('retorno_antes')} años, ahora {fc.get('retorno_ahora')}",
-              "ERA5 (Copernicus) · cálculo propio", "Índice de desplazamiento climático: frecuencia de una máxima así en 1951-1980 frente a 1996-2025, ventana de ±15 días.",
-              citabilidad="media", limites=["Reanálisis en la celda de la capital, no la estación de AEMET."],
+    idc = indice_desplazamiento(fc)
+    if idc:
+        nivel, ratio, tit, dato = idc
+        P.cifra("Índice de desplazamiento climático (hoy)", f"×{f1(ratio)}" if not fc.get("sin_precedente") else "sin precedente", f"nivel {nivel} de 5 · {f1(fc['tmax'])} °C previstos", "cálculo propio")
+        P.add("ayer", "extremo" if nivel >= 3 else "comparacion", tit, dato,
+              "ERA5 (Copernicus) · cálculo propio", "Índice de desplazamiento climático: frecuencia con la que una máxima como la prevista hoy ocurría en estas fechas (±15 días) en 1951-1980 frente a 1996-2025, en la celda ERA5 de la capital. Nivel 1-5 = al menos 1-5 veces más frecuente ahora.",
+              citabilidad="media", fecha_dato=HOY.isoformat(),
+              contexto=[f"Máxima prevista hoy: {f1(fc['tmax'])} °C · percentil {f1(fc.get('percentil', 0))} del clima 1951-1980 · desplazamiento de la distribución: {signo_txt(fc.get('delta'))} °C."],
+              limites=["Reanálisis en la celda de la capital, no la estación de AEMET.", "Método observacional (comparación de periodos), no un modelo con y sin emisiones: es la mitad «observada» del índice de Climate Central."],
               pagina="https://calentamientoglobal.es/firma-climatica/")
+        P.items[-1]["indice_desplazamiento"] = nivel
 
     # --- mar en la boya ------------------------------------------------------------
     for b in (pj.get("indicadores", {}).get("boyas") or [])[:1]:
@@ -513,10 +552,24 @@ def sonda_impacto(P: Parte, D: Datos, pj: dict):
         P.cifra(f"Avisos AEMET desde el {fecha_dia(A['desde'])}", str(suma), f"{tot['rojo']} rojos · {tot['naranja']} naranjas · {tot['amarillo']} amarillos", "AEMET/MeteoAlarm")
         hoy_av = pj.get("indicadores", {}).get("avisos") or {}
         if hoy_av.get("naranjas") or hoy_av.get("rojos"):
-            P.add("impacto", "extremo", f"{P.nombre} está hoy en aviso {'rojo' if hoy_av.get('rojos') else 'naranja'} de AEMET" + (f": {hoy_av['items'][0].get('fenomeno', '')}" if hoy_av.get("items") else ""),
-                  f"{hoy_av.get('rojos', 0)} rojos · {hoy_av.get('naranjas', 0)} naranjas · {hoy_av.get('amarillos', 0)} amarillos hoy · desde el {fecha_dia(A['desde'])}: {suma} avisos-zona",
-                  "AEMET vía MeteoAlarm", "Avisos vigentes hoy en las zonas de la provincia; acumulado por fecha de inicio.", fecha_dato=HOY.isoformat(),
-                  limites=["Nunca contradecir ni matizar un aviso de AEMET con otro dato."], pagina="https://calentamientoglobal.es/avisos-meteorologicos/")
+            nivel = "rojo" if hoy_av.get("rojos") else "naranja"
+            graves = [it for it in hoy_av.get("items", []) if it.get("nivel") == nivel]
+            tipos = sorted({(it.get("tipo") or "").lower() for it in graves if it.get("tipo")})
+            zonas = sorted({it.get("zona") for it in graves if it.get("zona")})
+            por = (" por " + " y ".join(tipos)) if tipos else ""
+            activo = any(it.get("activo_ya") for it in graves)
+            inicio = min((it.get("inicio") or "" for it in graves), default="")
+            if activo or not inicio:
+                cuando = "está en aviso"
+            else:
+                cuando = f"tendrá aviso"
+            desde = ""
+            if not activo and inicio:
+                desde = f" desde el {fecha_dia(inicio[:10])} a las {inicio[11:16]}"
+            P.add("impacto", "record" if nivel == "rojo" else "extremo", f"{P.nombre} {cuando} {nivel} de AEMET{por}{desde}" + (f" ({', '.join(zonas[:3])})" if zonas else ""),
+                  f"{hoy_av.get('rojos', 0)} rojos · {hoy_av.get('naranjas', 0)} naranjas · {hoy_av.get('amarillos', 0)} amarillos vigentes o anunciados · desde el {fecha_dia(A['desde'])}: {suma} avisos-zona",
+                  "AEMET vía MeteoAlarm", "Avisos vigentes o ya anunciados por AEMET en las zonas de la provincia; acumulado por fecha de inicio.", fecha_dato=HOY.isoformat(),
+                  limites=["Nunca contradecir ni matizar un aviso de AEMET con otro dato.", "Comprobar la hora de inicio y fin en aemet.es antes de publicar."], pagina="https://calentamientoglobal.es/avisos-meteorologicos/")
         elif suma >= 10:
             P.add("impacto", "cifra", f"{P.nombre} acumula {suma} avisos de AEMET desde el {fecha_dia(A['desde'])}, {tot['naranja'] + tot['rojo']} de ellos naranjas o rojos",
                   f"{tot['rojo']} rojos · {tot['naranja']} naranjas · {tot['amarillo']} amarillos · {dias_con} días con algún aviso", "AEMET vía MeteoAlarm",
@@ -588,6 +641,22 @@ def parte_provincia(cod: str, D: Datos) -> dict:
 def coincidencias(partes: list[dict]) -> list[dict]:
     """Lo que se repite en muchas provincias es noticia nacional."""
     out = []
+    # alerta de desplazamiento climático: ≥ 8 provincias con nivel ≥ 3 (o cualquiera sin precedente)
+    niveles, cods = {}, {}
+    for p in partes:
+        for h in p["angulos"].get("ayer", []):
+            if h.get("indice_desplazamiento"):
+                niveles[p["provincia"]] = max(niveles.get(p["provincia"], 0), h["indice_desplazamiento"])
+                cods[p["provincia"]] = p["cod"]
+    altas = {k: v for k, v in niveles.items() if v >= 3}
+    if len(altas) >= 8 or sum(1 for v in altas.values() if v >= 5) >= 4:
+        pob = sum(POBLACION_MILES.get(cods[k], 0) for k in altas) / 1000
+        top = sorted(altas.items(), key=lambda kv: -kv[1])[:10]
+        out.append({"tipo": "alerta_desplazamiento", "n": len(altas), "poblacion_millones": round(pob, 1),
+                    "titular": f"Alerta de desplazamiento climático: el calor previsto hoy es al menos 3 veces más frecuente que en 1951-1980 en {len(altas)} provincias"
+                               + (f", donde viven {pob:.1f} millones de personas".replace(".", ",") if pob else ""),
+                    "provincias": list(altas), "dato": "; ".join(f"{k} (nivel {v})" for k, v in top),
+                    "metodo": "Índice de desplazamiento climático por capital: frecuencia de la máxima prevista hoy en 1951-1980 frente a 1996-2025 (ERA5). Nivel 3 = al menos tres veces más frecuente ahora; nivel 5 = cinco veces o sin precedente."})
     def cuenta(pred, titulo, dato_fn):
         provs = [p for p in partes if any(pred(h) for h in sum(p["angulos"].values(), []))]
         if len(provs) >= 8:
