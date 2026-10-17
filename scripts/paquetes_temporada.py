@@ -17,6 +17,17 @@ Escribe (docs/prensa/paquetes/):
   <paquete>/NN.png|.csv     gráfico (sin el año en curso: estable) y serie por capital
   index.json                paquetes disponibles, cuáles son de temporada ahora, titulares
 
+Auditoría del 17-10-2026 (v2): el reanálisis en una celda no reproduce bien los umbrales de una
+ciudad. Contrastado con las estaciones de AEMET (2017-2025), la celda da a Granada 60 noches
+tropicales al año frente a 10 en la estación, y a Burgos 33 días de helada frente a 69. Por eso:
+  · los paquetes de umbral sobre ERA5 (noches tropicales, primera helada, días de 30 °C, heladas,
+    lluvia intensa) se siguen calculando pero NO se publican (publicable: false);
+  · en los paquetes de estación (otoño, invierno…), cada capital con estación de AEMET de serie
+    larga (aemet_estaciones_largas.json, valores mensuales oficiales) publica la cifra de AEMET;
+    las demás, la del reanálisis, dicho en el titular;
+  · las heladas salen de AEMET (días con mínima ≤ 0 °C de los valores mensuales), no de ERA5.
+Los titulares no empiezan por la fecha de referencia: primero el sitio y la cifra.
+
 Nada se envía solo: el paquete propone, David decide.
 """
 from __future__ import annotations
@@ -51,6 +62,18 @@ LIMITES_BASE = [
     "ERA5 se consolida con unos seis días de retraso: el dato «en curso» llega hasta el último día disponible, no hasta ayer.",
     f"Tendencia lineal {INICIO_TENDENCIA}-{HOY.year - 1}; el año en curso no entra en la tendencia.",
 ]
+
+AEMET_LARGAS = PAQ / "aemet_estaciones_largas.json"   # mensuales oficiales de AEMET, una estación por capital
+MIN_ANIOS_AEMET = 40                                  # años completos exigidos dentro de 1970-último
+
+# Qué paquetes se publican y, si no, por qué (lo lee la sala de prensa)
+NO_PUBLICABLE = {
+    "primera_helada": "Fecha de la primera helada en la celda del reanálisis: la celda hiela mucho menos que la estación de AEMET (Burgos: 33 días de helada al año frente a 69). Pendiente de rehacer con datos diarios de AEMET.",
+    "noches_tropicales": "Noches tropicales en la celda del reanálisis: difieren de la estación de AEMET hasta seis veces (Granada: 60 al año frente a 10). Pendiente de rehacer con datos diarios de AEMET.",
+    "dias_30": "Días de 30 °C en la celda del reanálisis: difieren de la estación de AEMET (Almería: 4 al año frente a 72).",
+    "heladas": "Días de helada en la celda del reanálisis: se publica en su lugar el paquete de heladas con los datos de AEMET.",
+    "lluvia_extrema": "Días de lluvia intensa en la celda del reanálisis: una media de celda no representa el chubasco local y la tendencia nacional no es clara.",
+}
 
 ESTACIONES = {
     "primavera": ([3, 4, 5], "primavera"), "verano": ([6, 7, 8], "verano"),
@@ -305,7 +328,7 @@ def paquete_estacion(nombre_est: str):
             ctx.append(f"{art} {etiqueta} de {HOY.year}, hasta el {fecha_dia(r['en_curso']['hasta']) if r['en_curso'].get('hasta') else 'último dato'} ({r['en_curso']['dias']} días): {f1(r['en_curso']['t'])} °C de media, con {r['en_curso']['sobre_normal']} días por encima de lo normal.")
         return tit, dato, ctx
 
-    return {"id": nombre_est, "titulo": f"{ARTICULO[nombre_est]} {etiqueta} se calienta", "ventana": ventana, "unidad": "°C", "etiqueta_serie": f"temperatura media del {etiqueta} (°C)",
+    return {"id": nombre_est, "titulo": f"{ARTICULO[nombre_est]} {etiqueta} se calienta", "ventana": ventana, "unidad": "°C", "etiqueta_serie": f"temperatura media del {etiqueta} (°C)", "ult": ult,
             "calc": calc, "textos": textos, "clave_ranking": "delta", "ranking_desc": True,
             "metodo": f"Temperatura media diaria ((máxima + mínima)/2) de ERA5 en la celda de cada capital, promediada por {etiqueta} meteorológico ({', '.join(MESES[m - 1] for m in meses)}); "
                       f"tendencia lineal {INICIO_TENDENCIA}-{ult}. «Días por encima de lo normal»: días con media superior a la normal 1991-2020 de ese día del año (suavizada ±7 días).",
@@ -388,6 +411,141 @@ def paquete_fecha(id_, titulo, clave, etiqueta_serie, ventana, titular_fn, metod
             "clave_ranking": "delta", "ranking_desc": ranking_desc, "metodo": metodo, "por_que_importa": por_que}
 
 
+
+# ----------------------------------------------------------------------------
+# AEMET: estaciones de serie larga (valores mensuales oficiales)
+# ----------------------------------------------------------------------------
+PLURAL = {"otono": "otoños", "verano": "veranos", "invierno": "inviernos", "primavera": "primaveras"}
+
+
+def cargar_aemet() -> dict:
+    try:
+        return leer(AEMET_LARGAS)["estaciones"]
+    except Exception:
+        return {}
+
+
+NOMBRE_ESTACION = {"STA.CRUZ DE TENERIFE": "Santa Cruz de Tenerife", "ALACANT/ALICANTE": "Alicante", "VALÈNCIA": "València",
+                   "MADRID, RETIRO": "Madrid-Retiro", "LEÓN, VIRGEN DEL CAMINO": "León-Virgen del Camino",
+                   "HUESCA, AEROPUERTO": "Huesca aeropuerto", "LOGROÑO, AEROPUERTO": "Logroño aeropuerto", "ZARAGOZA, AEROPUERTO": "Zaragoza aeropuerto"}
+
+
+def nombre_estacion(e: dict) -> str:
+    """«BURGOS AEROPUERTO» → «Burgos aeropuerto»"""
+    n = (e.get("estacion") or "").strip()
+    if n in NOMBRE_ESTACION:
+        return NOMBRE_ESTACION[n]
+    t = n.lower().title()
+    for a, b in ((" De ", " de "), (" Del ", " del "), ("Aeropuerto", "aeropuerto"), (" La ", " la ")):
+        t = t.replace(a, b)
+    return t
+
+
+def calc_estacion_aemet(est: dict, nombre_est: str, ult: int):
+    """Mismo cálculo que el de ERA5, sobre la media estacional de la estación de AEMET."""
+    anios = est.get("anios") or {}
+    xs, ys = [], []
+    for y in range(INICIO_TENDENCIA, ult + 1):
+        v = (anios.get(str(y)) or {}).get(nombre_est)
+        if v is not None:
+            xs.append(y)
+            ys.append(float(v))
+    if len(xs) < MIN_ANIOS_AEMET or xs[0] > INICIO_TENDENCIA + 3:
+        return None
+    t = tendencia(xs, ys)
+    if not t:
+        return None
+    n_anios = ult - INICIO_TENDENCIA
+    ini = [v for y, v in zip(xs, ys) if y < INICIO_TENDENCIA + 10]
+    fin = [v for y, v in zip(xs, ys) if y > ult - 10]
+    orden = sorted(zip(ys, xs), reverse=True)
+    puesto_ult = next((i + 1 for i, (v, y) in enumerate(orden) if y == ult), None)
+    return {"delta": round(t["pendiente"] * n_anios, 2), "pendiente_decada": round(t["pendiente"] * 10, 2), "r2": round(t["r2"], 2),
+            "media_1970s": round(sum(ini) / max(1, len(ini)), 2), "media_ult10": round(sum(fin) / max(1, len(fin)), 2),
+            "mas_calido": {"anio": orden[0][1], "t": round(orden[0][0], 2)}, "mas_frio": {"anio": orden[-1][1], "t": round(orden[-1][0], 2)},
+            "ultimo": {"anio": ult, "t": (anios.get(str(ult)) or {}).get(nombre_est), "puesto": puesto_ult, "de": len(orden)},
+            "anios_con_dato": len(xs), "primer_anio": xs[0],
+            "serie": [(y, v, None) for y, v in zip(xs, ys)]}
+
+
+def titular_estacion(cap: str, cod: str, nombre_est: str, d: float, fuente: str) -> str:
+    """Tres construcciones que rotan por provincia para que la portada no repita la misma frase.
+    Ninguna empieza por la fecha: primero el sitio y la cifra."""
+    etiqueta = ESTACIONES[nombre_est][1]
+    art = ARTICULO[nombre_est]
+    fem = art == "La"
+    o = "a" if fem else "o"
+    pl = PLURAL[nombre_est]
+    seg = ", según AEMET" if fuente == "AEMET" else ", según el reanálisis ERA5"
+    if abs(d) < 0.25:
+        return f"{art} {etiqueta} de {cap} apenas ha cambiado desde principios de los setenta ({signo(d)} °C){seg}"
+    if d < 0:
+        return f"{art} {etiqueta} de {cap} es hoy {f1(abs(d))} °C más fresc{o} que a principios de los setenta{seg}"
+    k = int(cod) % 3
+    if k == 0:
+        return f"{art} {etiqueta} es hoy {f1(d)} °C más cálid{o} en {cap} que a principios de los setenta{seg}"
+    if k == 1:
+        return f"{cap} tiene {pl} {f1(d)} °C más cálid{o}s que a principios de los setenta{seg}"
+    return f"{pl.capitalize()} {f1(d)} °C más cálid{o}s: así ha cambiado {art.lower()} {etiqueta} en {cap} en medio siglo{seg}"
+
+
+def paquete_heladas_aemet():
+    """Días de helada al año en las estaciones de AEMET de serie larga (nt_00 de los valores mensuales)."""
+    ult = HOY.year - 1
+
+    def filas(aemet: dict, capitales: dict):
+        out = []
+        for cod, est in sorted(aemet.items()):
+            if cod not in capitales:
+                continue
+            anios = est.get("anios") or {}
+            xs, ys = [], []
+            for y in range(INICIO_TENDENCIA, ult + 1):
+                v = (anios.get(str(y)) or {}).get("helada")
+                if v is not None:
+                    xs.append(y)
+                    ys.append(int(v))
+            if len(xs) < MIN_ANIOS_AEMET or xs[0] > INICIO_TENDENCIA + 3:
+                continue
+            ini = [v for y, v in zip(xs, ys) if y < INICIO_TENDENCIA + 10]
+            fin = [v for y, v in zip(xs, ys) if y > ult - 10]
+            m_ini, m_fin = sum(ini) / max(1, len(ini)), sum(fin) / max(1, len(fin))
+            if max(m_ini, m_fin) < 5:
+                continue
+            t = tendencia(xs, ys)
+            if not t:
+                continue
+            cap, prov, slug = capitales[cod]
+            delta = round(t["pendiente"] * (ult - INICIO_TENDENCIA), 1)
+            ne = nombre_estacion(est)
+            if delta <= -1:
+                n = int(round(abs(delta)))
+                tit = (f"{cap} tiene hoy {n} días de helada menos al año que a principios de los setenta, según AEMET" if int(cod) % 2 == 0 else
+                       f"La helada pierde terreno en {cap}: {n} días menos al año que a principios de los setenta, según AEMET")
+            elif delta >= 3:
+                tit = f"{cap} hiela hoy {int(round(delta))} días más al año que a principios de los setenta, según AEMET"
+            else:
+                tit = f"{cap} hiela casi lo mismo que a principios de los setenta ({signo(delta, 0)} días al año), según AEMET"
+            orden = sorted(zip(ys, xs))
+            out.append({"cod": cod, "capital": cap, "provincia": prov, "slug": slug, "titular": tit,
+                        "dato": f"de {f1(m_ini)} días de helada al año en los setenta a {f1(m_fin)} en los últimos diez · tendencia {signo(delta, 0)} días ({signo(t['pendiente'] * 10)} por década) · estación de AEMET {ne}",
+                        "contexto": [f"El año con menos heladas de la serie: {orden[0][1]} ({orden[0][0]} días); con más: {orden[-1][1]} ({orden[-1][0]} días).",
+                                     f"{len(xs)} años con dato completo entre {xs[0]} y {xs[-1]}."],
+                        "delta": delta, "pendiente_decada": round(t["pendiente"] * 10, 2), "r2": round(t["r2"], 2),
+                        "media_1970s": round(m_ini, 1), "media_ult10": round(m_fin, 1), "fuente_fila": "AEMET", "estacion": ne,
+                        "indicativo": est.get("indicativo"), "serie": [(y, v, None) for y, v in zip(xs, ys)]})
+        return out
+
+    return {"id": "heladas_aemet", "titulo": "La helada pierde terreno", "ventana": [10, 11, 12, 1, 2, 3], "unidad": "días",
+            "etiqueta_serie": "días de helada al año (mínima ≤ 0 °C)", "filas": filas, "clave_ranking": "delta", "ranking_desc": False,
+            "fuente": "AEMET · valores climatológicos mensuales de la estación (días con mínima ≤ 0 °C)",
+            "metodo": f"Suma anual de los días con temperatura mínima ≤ 0 °C que publica AEMET en los valores mensuales de la estación de referencia de cada capital; "
+                      f"tendencia lineal {INICIO_TENDENCIA}-{ult}. Solo estaciones con al menos {MIN_ANIOS_AEMET} años completos y capitales con 5 o más heladas al año.",
+            "por_que_importa": "Menos heladas alteran el reposo invernal de los frutales, alargan la temporada de plagas y reducen la reserva de nieve y de agua de primavera.",
+            "limites": ["Una estación por capital (en muchos casos el aeropuerto, a las afueras): no es la ciudad entera.",
+                        f"Tendencia lineal {INICIO_TENDENCIA}-{ult}; el año en curso no entra.",
+                        "Solo las capitales cuya estación de AEMET tiene serie larga descargada en el observatorio (21 de 52)."]}
+
 def fecha_desde_doy(d, anio=2025):
     return fecha_dia((date(anio, 1, 1) + timedelta(days=int(round(d)) - 1)).isoformat())
 
@@ -428,7 +586,7 @@ PAQUETES = [
 # ----------------------------------------------------------------------------
 # gráfico y csv por capital
 # ----------------------------------------------------------------------------
-def grafico(plt, out: Path, paq: dict, cap: str, r: dict):
+def grafico(plt, out: Path, paq: dict, cap: str, r: dict, fuente_txt: str = "ERA5 (Copernicus) vía Open-Meteo"):
     serie = [(y, v) for y, v, _ in r["serie"] if v is not None]
     if len(serie) < 10:
         return False
@@ -454,7 +612,7 @@ def grafico(plt, out: Path, paq: dict, cap: str, r: dict):
     ax.spines[["top", "right"]].set_visible(False)
     ax.grid(axis="y", color="#eeeeee")
     ax.legend(frameon=False, fontsize=10, loc="upper left")
-    ax.text(1, -0.1, "Observatorio climático · calentamientoglobal.es · ERA5 (Copernicus) vía Open-Meteo · CC BY 4.0", transform=ax.transAxes, ha="right", fontsize=9, color="#6e6e73")
+    ax.text(1, -0.1, f"Observatorio climático · calentamientoglobal.es · {fuente_txt} · CC BY 4.0", transform=ax.transAxes, ha="right", fontsize=9, color="#6e6e73")
     fig.savefig(out, bbox_inches="tight")
     plt.close(fig)
     return True
@@ -463,14 +621,18 @@ def grafico(plt, out: Path, paq: dict, cap: str, r: dict):
 def csv_capital(out: Path, paq: dict, r: dict):
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        if paq["id"] in ESTACIONES:
+        if paq["id"] in ESTACIONES and r.get("fuente_fila") == "AEMET":
+            w.writerow(["anio", "temperatura_media_C_AEMET"])
+        elif paq["id"] in ESTACIONES:
             w.writerow(["anio", "temperatura_media_C", "dias_sobre_normal"])
         elif paq["unidad"] == "día del año":
             w.writerow(["anio", "dia_del_anio", "fecha"])
         else:
             w.writerow(["anio", paq["etiqueta_serie"].replace(" ", "_")])
         for y, v, sn in r["serie"]:
-            if paq["id"] in ESTACIONES:
+            if paq["id"] in ESTACIONES and r.get("fuente_fila") == "AEMET":
+                w.writerow([y, v])
+            elif paq["id"] in ESTACIONES:
                 w.writerow([y, v, sn])
             elif paq["unidad"] == "día del año":
                 w.writerow([y, v, (date(y, 1, 1) + timedelta(days=int(v) - 1)).isoformat() if v else ""])
@@ -534,29 +696,103 @@ def main():
             import matplotlib.pyplot as plt  # noqa: F811
         except Exception:
             plt = None
-    indice = []
+    aemet = cargar_aemet()
+    if not aemet:
+        errores.append("aemet_estaciones_largas.json: no se pudo leer; los paquetes de estación salen solo con ERA5")
+    # Auditoría 17-10-2026 (segunda pasada): las series de estación de AEMET no están homogeneizadas. Ciudad Real
+    # salta unos 2 °C entre 1979 y 1981 (cambio de emplazamiento) y daba «+3,1 °C en otoño» frente a +2,1 °C del
+    # reanálisis. Comprobación cruzada: si la tendencia de la estación y la de la celda ERA5 que la cubre se separan
+    # más de TOL_HOMOG en una estación del año, esa fila no se publica; si se separan en dos o más estaciones del año,
+    # la estación entera se considera no homogénea y tampoco cuenta para las heladas.
+    TOL_HOMOG = 0.7
+    discrepa: dict[str, dict] = {}
     for paq in PAQUETES:
-        de_temporada = HOY.month in paq["ventana"]
-        filas = []
+        if paq["id"] not in ESTACIONES:
+            continue
         for cod, agg in series.items():
-            cap, prov, slug = capitales[cod]
-            try:
-                r = paq["calc"](agg, cap)
-            except Exception as e:  # noqa: BLE001
-                errores.append(f"{paq['id']} {cap}: {type(e).__name__}: {e}")
-                r = None
-            if not r:
+            if cod not in aemet:
                 continue
-            tit, dato, ctx = paq["textos"](cap, prov, r)
-            fila = {"cod": cod, "capital": cap, "provincia": prov, "slug": slug, "titular": tit, "dato": dato, "contexto": ctx,
-                    **{k: v for k, v in r.items() if k != "serie"}}
-            if (de_temporada or args.todos) and plt:
-                (PAQ / paq["id"]).mkdir(exist_ok=True)
-                if grafico(plt, PAQ / paq["id"] / f"{cod}.png", paq, cap, r):
-                    fila["grafico"] = f"prensa/paquetes/{paq['id']}/{cod}.png"
-                csv_capital(PAQ / paq["id"] / f"{cod}.csv", paq, r)
-                fila["csv"] = f"prensa/paquetes/{paq['id']}/{cod}.csv"
-            filas.append(fila)
+            try:
+                r_e = paq["calc"](agg, capitales[cod][0])
+                r_a = calc_estacion_aemet(aemet[cod], paq["id"], paq["ult"])
+            except Exception:  # noqa: BLE001
+                continue
+            if r_e and r_a and abs(r_a["delta"] - r_e["delta"]) > TOL_HOMOG:
+                discrepa.setdefault(cod, {})[paq["id"]] = round(r_a["delta"] - r_e["delta"], 2)
+    no_homogeneas = {cod for cod, d in discrepa.items() if len(d) >= 2}
+    indice = []
+    for paq in PAQUETES + [paquete_heladas_aemet()]:
+        de_temporada = HOY.month in paq["ventana"]
+        publicable = paq["id"] not in NO_PUBLICABLE
+        es_estacion = paq["id"] in ESTACIONES
+        filas = []
+        if "filas" in paq:                       # paquete que sale entero de AEMET
+            for fila in paq["filas"](aemet, capitales):
+                r = fila
+                if (de_temporada or args.todos) and plt:
+                    (PAQ / paq["id"]).mkdir(exist_ok=True)
+                    if grafico(plt, PAQ / paq["id"] / f"{fila['cod']}.png", paq, fila["capital"], r, f"AEMET, estación {fila['estacion']}"):
+                        fila["grafico"] = f"prensa/paquetes/{paq['id']}/{fila['cod']}.png"
+                    csv_capital(PAQ / paq["id"] / f"{fila['cod']}.csv", paq, r)
+                    fila["csv"] = f"prensa/paquetes/{paq['id']}/{fila['cod']}.csv"
+                fila.pop("serie", None)
+                if fila["cod"] in no_homogeneas:
+                    fila["discrepa"] = (f"La estación de AEMET de {fila['capital']} no cuadra con el reanálisis en "
+                                        f"{len(discrepa[fila['cod']])} estaciones del año (posible cambio de emplazamiento)")
+                filas.append(fila)
+        else:
+            for cod, agg in series.items():
+                cap, prov, slug = capitales[cod]
+                try:
+                    r = paq["calc"](agg, cap)
+                except Exception as e:  # noqa: BLE001
+                    errores.append(f"{paq['id']} {cap}: {type(e).__name__}: {e}")
+                    r = None
+                if not r:
+                    continue
+                fuente_graf = "ERA5 (Copernicus) vía Open-Meteo"
+                if es_estacion:
+                    ra = calc_estacion_aemet(aemet[cod], paq["id"], paq["ult"]) if cod in aemet else None
+                    era5 = {k: r[k] for k in ("delta", "pendiente_decada", "media_1970s", "media_ult10", "dias_sobre_normal_delta")}
+                    if ra:
+                        ne = nombre_estacion(aemet[cod])
+                        r = {**ra, "en_curso": r.get("en_curso"), "dias_sobre_normal_delta": r.get("dias_sobre_normal_delta"),
+                             "fuente_fila": "AEMET", "estacion": ne, "indicativo": aemet[cod].get("indicativo"), "era5": era5}
+                        fuente_graf = f"AEMET, estación {ne}"
+                    else:
+                        r = {**r, "fuente_fila": "ERA5", "era5": era5}
+                    tit = titular_estacion(cap, cod, paq["id"], r["delta"], r["fuente_fila"])
+                    et = ESTACIONES[paq["id"]][1]
+                    art = ARTICULO[paq["id"]]
+                    fem = art == "La"
+                    o = "a" if fem else "o"
+                    dato = (f"tendencia {signo(r['delta'])} °C entre {r.get('primer_anio') or INICIO_TENDENCIA} y {paq['ult']} ({signo(r['pendiente_decada'])} °C por década) · "
+                            f"media de los años setenta {f1(r['media_1970s'])} °C · últimos diez {f1(r['media_ult10'])} °C · "
+                            + (f"estación de AEMET {r['estacion']}" if r["fuente_fila"] == "AEMET" else "reanálisis ERA5 en la celda de la capital"))
+                    ctx = []
+                    if r.get("mas_calido"):
+                        ctx.append(f"{art} {et} más cálid{o} de la serie: {r['mas_calido']['anio']} ({f1(r['mas_calido']['t'])} °C); {'la' if fem else 'el'} más frí{o}: {r['mas_frio']['anio']} ({f1(r['mas_frio']['t'])} °C).")
+                    if r.get("ultimo", {}).get("puesto"):
+                        ctx.append(f"{art} {et} de {paq['ult']} fue {'la' if fem else 'el'} {ordinal(r['ultimo']['puesto'])} más cálid{o} de los {r['ultimo']['de']} con dato desde {INICIO_TENDENCIA}.")
+                    if r["fuente_fila"] == "AEMET":
+                        ctx.append(f"En la celda del reanálisis ERA5 que cubre {cap} la tendencia es {signo(era5['delta'])} °C: la cifra de la estación es la que vale para la ciudad.")
+                    fila = {"cod": cod, "capital": cap, "provincia": prov, "slug": slug, "titular": tit, "dato": dato, "contexto": ctx,
+                            **{k: v for k, v in r.items() if k != "serie"}}
+                    if r["fuente_fila"] == "AEMET" and (cod in no_homogeneas or abs(r["delta"] - era5["delta"]) > TOL_HOMOG):
+                        fila["discrepa"] = (f"La estación de AEMET ({signo(r['delta'])} °C) y la celda del reanálisis ({signo(era5['delta'])} °C) "
+                                            f"se separan {f1(abs(r['delta'] - era5['delta']))} °C" + (" y no cuadran en otras estaciones del año" if cod in no_homogeneas else "")
+                                            + ": posible cambio de emplazamiento de la estación")
+                else:
+                    tit, dato, ctx = paq["textos"](cap, prov, r)
+                    fila = {"cod": cod, "capital": cap, "provincia": prov, "slug": slug, "titular": tit, "dato": dato, "contexto": ctx,
+                            "fuente_fila": "ERA5", **{k: v for k, v in r.items() if k != "serie"}}
+                if (de_temporada or args.todos) and plt and publicable:
+                    (PAQ / paq["id"]).mkdir(exist_ok=True)
+                    if grafico(plt, PAQ / paq["id"] / f"{cod}.png", paq, cap, r, fuente_graf):
+                        fila["grafico"] = f"prensa/paquetes/{paq['id']}/{cod}.png"
+                    csv_capital(PAQ / paq["id"] / f"{cod}.csv", paq, r)
+                    fila["csv"] = f"prensa/paquetes/{paq['id']}/{cod}.csv"
+                filas.append(fila)
         if not filas:
             continue
         filas.sort(key=lambda x: x[paq["clave_ranking"]], reverse=paq["ranking_desc"])
@@ -565,45 +801,61 @@ def main():
         n_sube = sum(1 for d in deltas if d > 0)
         n_baja = sum(1 for d in deltas if d < 0)
         u = paq["unidad"]
-        # capitales cuya celda ERA5 cambia mucho más que la mediana nacional: se marcan COMPROBAR y no encabezan el ranking
         mediana = sorted(deltas)[len(deltas) // 2]
         for x in filas:
-            x["revisar"] = bool(u == "°C" and mediana > 0 and x["delta"] > 1.6 * mediana)
-            x["limites"] = ([f"COMPROBAR con la estación de AEMET: la celda ERA5 de {x['capital']} muestra un cambio muy superior al del resto de capitales ({signo(x['delta'])} °C frente a una mediana de {signo(mediana)} °C); puede estar afectada por la orografía."] if x["revisar"] else [])
-        top = [x for x in filas if not x["revisar"]][:5]
-        if paq["id"] in ESTACIONES:
+            # una celda de reanálisis que cambia mucho más que el resto se marca para cotejar
+            celda_rara = bool(u == "°C" and x.get("fuente_fila") != "AEMET" and mediana > 0 and x["delta"] > 1.6 * mediana)
+            x["revisar"] = celda_rara or bool(x.get("discrepa"))
+            x["limites"] = (([f"COMPROBAR con la estación de AEMET: la celda ERA5 de {x['capital']} muestra un cambio muy superior al del resto de capitales ({signo(x['delta'])} °C frente a una mediana de {signo(mediana)} °C); puede estar afectada por la orografía."] if celda_rara else [])
+                            + ([f"COMPROBAR: {x['discrepa']}. No se publica hasta revisar el historial de la estación."] if x.get("discrepa") else []))
+        # lo que se publica: filas sin nada que revisar
+        aemet_filas = [x for x in filas if x.get("fuente_fila") == "AEMET" and not x["revisar"]]
+        donde_mas = sorted(aemet_filas, key=lambda x: x["delta"], reverse=paq["ranking_desc"])[:5]
+        if paq["id"] == "heladas_aemet":
+            deltas = [x["delta"] for x in aemet_filas] or deltas
+            media = sum(deltas) / len(deltas)
+            n_baja = sum(1 for d in deltas if d < 0)
+        if es_estacion:
             et = ESTACIONES[paq["id"]][1]
-            hallazgos = [f"{ARTICULO[paq['id']]} {et} se ha calentado en {n_sube} de las {len(filas)} capitales desde {INICIO_TENDENCIA}: {signo(media)} °C de media.",
-                         f"Donde más: " + ", ".join(f"{x['capital']} ({signo(x['delta'])} °C)" for x in top) + ".",
-                         f"{sum(1 for x in filas if x['delta'] >= 2)} capitales se han calentado 2 °C o más."]
+            art = ARTICULO[paq["id"]]
+            o = "a" if art == "La" else "o"
+            m_era5 = sum(x["era5"]["delta"] for x in filas) / len(filas)
+            m_aemet = sum(x["delta"] for x in aemet_filas) / len(aemet_filas) if aemet_filas else None
+            n_sube_e = sum(1 for x in filas if x["era5"]["delta"] > 0)
+            hallazgos = [f"{art} {et} es hoy {f1(m_era5)} °C más cálid{o} que a principios de los setenta en las capitales de provincia españolas, según el reanálisis ERA5",
+                         (f"Las {len(aemet_filas)} capitales con estación de AEMET de serie larga y coherente con el reanálisis: {signo(m_aemet)} °C de media; "
+                          f"las 52 en el reanálisis ERA5: {signo(m_era5)} °C. Sube en {n_sube_e} de las {len(filas)} capitales." if m_aemet is not None else
+                          f"Sube en {n_sube_e} de las {len(filas)} capitales (reanálisis ERA5).")]
             dsn = [x["dias_sobre_normal_delta"] for x in filas if x.get("dias_sobre_normal_delta") is not None]
             if dsn:
-                hallazgos.append(f"De media, cada {et} tiene hoy {int(round(sum(dsn) / len(dsn)))} días más por encima de lo normal que en {INICIO_TENDENCIA}; en {sum(1 for d in dsn if d >= 14)} capitales son dos semanas o más.")
+                hallazgos.append(f"En el reanálisis, cada {et} tiene hoy {int(round(sum(dsn) / len(dsn)))} días más por encima de lo normal que a principios de los setenta.")
+            media = m_era5
+        elif paq["id"] == "heladas_aemet":
+            hallazgos = [f"La helada pierde terreno: {n_baja} de las {len(aemet_filas)} capitales con estación de AEMET de serie larga y homogénea hielan hoy menos que a principios de los setenta",
+                         f"De media, {f1(abs(media))} días de helada menos al año (estaciones de AEMET, tendencia {INICIO_TENDENCIA}-{HOY.year - 1})."]
         elif u == "día del año":
-            hallazgos = [f"La primera helada llega más tarde en {n_sube} de las {len(filas)} capitales con heladas: {int(round(media))} días de media desde {INICIO_TENDENCIA}.",
-                         "Donde más se retrasa: " + ", ".join(f"{x['capital']} ({signo(x['delta'], 0)} días)" for x in top) + "."]
-        elif abs(media) < 0.5 and (n_sube < 0.7 * len(filas) and n_baja < 0.7 * len(filas)):
-            hallazgos = [f"{paq['titulo']}: sin tendencia clara en el conjunto de capitales; sube en {n_sube}, baja en {n_baja} y la media del cambio es {signo(media)} {u} al año desde {INICIO_TENDENCIA}.",
-                         "Donde más sube: " + ", ".join(f"{x['capital']} ({signo(x['delta'])})" for x in top) + "."]
+            hallazgos = [f"La primera helada llega {int(round(media))} días más tarde de media en {n_sube} de las {len(filas)} capitales con heladas (reanálisis)."]
         else:
-            if paq["ranking_desc"]:
-                hallazgos = [f"{paq['titulo']}: suben en {n_sube} de {len(filas)} capitales; {signo(media, 0)} {u} al año de media desde {INICIO_TENDENCIA}.",
-                             "Donde más: " + ", ".join(f"{x['capital']} ({signo(x['delta'], 0)})" for x in top) + "."]
-            else:
-                hallazgos = [f"{paq['titulo']}: bajan en {n_baja} de {len(filas)} capitales; {signo(media, 0)} {u} al año de media desde {INICIO_TENDENCIA}.",
-                             "Donde más: " + ", ".join(f"{x['capital']} ({signo(x['delta'], 0)})" for x in top) + "."]
+            hallazgos = [f"{paq['titulo']}: cambio medio {signo(media)} {u} al año en {len(filas)} capitales (reanálisis)."]
         salida = {"id": paq["id"], "titulo": paq["titulo"], "generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "de_temporada": de_temporada, "ventana": paq["ventana"],
-                  "periodo": f"{INICIO_TENDENCIA}-{HOY.year - 1}", "fuente": FUENTE, "metodo": paq["metodo"], "limites": LIMITES_BASE,
-                  "por_que_importa": paq["por_que_importa"], "hallazgos": hallazgos, "n_capitales": len(filas), "media_delta": round(media, 2),
-                  "mediana_delta": round(mediana, 2), "n_revisar": sum(1 for x in filas if x["revisar"]),
+                  "publicable": publicable, "motivo_no_publicable": NO_PUBLICABLE.get(paq["id"]),
+                  "periodo": f"{INICIO_TENDENCIA}-{HOY.year - 1}",
+                  "fuente": paq.get("fuente") or ("AEMET (estaciones de serie larga, valores mensuales) y ERA5 (Copernicus/ECMWF) vía Open-Meteo, CC BY 4.0 · cálculo propio de calentamientoglobal.es" if es_estacion else FUENTE),
+                  "metodo": (paq["metodo"] + (f" Las capitales con estación de AEMET de serie larga (al menos {MIN_ANIOS_AEMET} {et}s completos desde {INICIO_TENDENCIA}) "
+                                               f"usan la media estacional de los valores mensuales oficiales de AEMET; el resto, el reanálisis." if es_estacion else "")),
+                  "limites": paq.get("limites") or LIMITES_BASE,
+                  "por_que_importa": paq["por_que_importa"], "hallazgos": hallazgos, "n_capitales": len(filas), "n_aemet": len(aemet_filas),
+                  "media_delta": round(media, 2), "mediana_delta": round(mediana, 2), "n_revisar": sum(1 for x in filas if x["revisar"]),
+                  "donde_mas": [{"cod": x["cod"], "capital": x["capital"], "slug": x["slug"], "delta": x["delta"], "estacion": x.get("estacion")} for x in donde_mas],
                   "unidad": u, "etiqueta_serie": paq["etiqueta_serie"], "capitales": filas,
-                  "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · ERA5 conserva la licencia de Copernicus",
+                  "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · los datos de origen (AEMET, Copernicus) conservan su licencia",
                   "contacto": "contacto@calentamientoglobal.es"}
         with open(PAQ / f"{paq['id']}.json", "w", encoding="utf-8") as f:
             json.dump(salida, f, ensure_ascii=False, indent=1)
-        indice.append({"id": paq["id"], "titulo": paq["titulo"], "de_temporada": de_temporada, "ventana": paq["ventana"], "n_capitales": len(filas),
-                       "hallazgo": hallazgos[0], "media_delta": round(media, 2), "unidad": u, "con_graficos": bool((de_temporada or args.todos) and plt)})
-        print(f"{paq['id']:18s} {'TEMPORADA' if de_temporada else '         '} {len(filas):2d} cap · {hallazgos[0]}")
+        indice.append({"id": paq["id"], "titulo": paq["titulo"], "de_temporada": de_temporada, "publicable": publicable, "ventana": paq["ventana"],
+                       "n_capitales": len(filas), "n_aemet": len(aemet_filas), "hallazgo": hallazgos[0], "media_delta": round(media, 2), "unidad": u,
+                       "con_graficos": bool((de_temporada or args.todos) and plt and publicable)})
+        print(f"{paq['id']:18s} {'TEMPORADA' if de_temporada else '         '} {'PUBLICA' if publicable else 'interno'} {len(filas):2d} cap ({len(aemet_filas)} AEMET) · {hallazgos[0]}")
 
     with open(PAQ / "index.json", "w", encoding="utf-8") as f:
         json.dump({"generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "fecha": HOY.isoformat(), "paquetes": indice, "errores": errores}, f, ensure_ascii=False, indent=1)

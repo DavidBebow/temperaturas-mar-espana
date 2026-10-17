@@ -26,6 +26,20 @@ Escribe:  prensa/partes/NN.json (el parte de hoy), prensa/partes/archivo/AAAA-MM
   prensa/partes/index.json (titular del día de cada provincia + coincidencias nacionales)
 
 Nada se envía solo: el parte propone, David decide.
+
+Auditoría del 17-10-2026 (segunda pasada). Regla: una cifra de un lugar se publica solo si la ha
+medido un organismo oficial en ese lugar. Quedan en revisión (no salen en la web sin aprobación):
+  · lluvia municipal y año hidrológico del reanálisis ERA5, y la proyección 2050 de un solo modelo;
+  · caudal simulado (GloFAS), calidad del aire modelizada (CAMS), focos FIRMS por comunidad;
+  · la temperatura de la boya frente a «lo normal» (la normal sale de un cálculo sin auditar);
+  · el recuento de avisos desde julio (el archivo propio tiene días sin descargar);
+  · un embalse por debajo del 1 % (suele ser un vaciado por obras, no sequía).
+Corregido: la lluvia de estaciones ya no mezcla la media de las estaciones con el porcentaje de
+otro cálculo; solo cuentan estaciones de la propia provincia (inventario de AEMET); «sin lluvia
+apreciable» pasa a «sin recoger 1 mm» (para AEMET, apreciable es ≥ 0,1 mm); la racha que llega al
+tope de la ventana se da como «al menos»; la predicción descarta el municipio cuya normal sale de
+una estación que no se parece a sus vecinos (Castellbisbal comparado con Montserrat, a 1.000 m);
+la mortalidad por calor da el periodo real del dato provincial.
 """
 from __future__ import annotations
 
@@ -79,12 +93,28 @@ def dist_km(a, b, c, d):
 
 
 def dia_semana(iso: str) -> str:
+    """«el sábado 17»: absoluto, para que el titular no caduque (un «mañana» leído al día siguiente miente)."""
     d = date.fromisoformat(iso)
-    if d == HOY:
-        return "hoy"
-    if d == HOY + timedelta(days=1):
-        return "mañana"
-    return "el " + DIAS_SEMANA[d.weekday()]
+    return f"el {DIAS_SEMANA[d.weekday()]} {d.day}"
+
+
+def lista_nombres(nombres: list[str], maximo: int = 3) -> str:
+    """«Cáceres, Plasencia y Coria» · «Cáceres, Plasencia, Coria y otras 3 localidades»"""
+    nombres = list(dict.fromkeys(nombres))
+    if len(nombres) <= maximo:
+        return nombres[0] if len(nombres) == 1 else ", ".join(nombres[:-1]) + " y " + nombres[-1]
+    resto = len(nombres) - maximo
+    return ", ".join(nombres[:maximo]) + f" y otras {resto} localidad{'es' if resto > 1 else ''}"
+
+
+def nombre_embalse(f: dict) -> str:
+    """«de Alarcón», «de la Fuensanta», «de Los Rábanos», «del Vado»: la preposición que trae la ficha."""
+    nombre = f["nombre"]
+    if nombre.startswith("El "):
+        return "del " + nombre[3:]
+    if nombre.lower().startswith(("la ", "los ", "las ")):
+        return "de " + nombre
+    return f"{f.get('de') or 'de'} {nombre}"
 
 
 def slugify(s: str) -> str:
@@ -94,6 +124,13 @@ def slugify(s: str) -> str:
 
 def pct_txt(v) -> str:
     return f"{f1(v)} %"
+
+
+def miles(v) -> str:
+    try:
+        return f"{int(round(float(v))):,}".replace(",", ".")
+    except (TypeError, ValueError):
+        return str(v)
 
 
 # Población por provincia (INE, padrón a 1-1-2024, en miles, redondeada). Solo para dimensionar alertas.
@@ -109,6 +146,39 @@ POBLACION_MILES = {
 
 def signo_txt(v):
     return ("+" if (v or 0) >= 0 else "−") + f1(abs(v or 0))
+
+
+def plural(n, uno: str, varios: str) -> str:
+    """«1 naranja», «3 naranjas»."""
+    return f"{n} {uno if n == 1 else varios}"
+
+
+def _norm_nombre(s) -> str:
+    s = unicodedata.normalize("NFKD", str(s or "")).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]", "", s)
+
+
+# Inventario de estaciones de AEMET (indicativo → nombre, provincia, altitud), sacado de los diarios
+# climatológicos de AEMET OpenData. Sirve para no atribuir a una provincia una estación de la vecina
+# (Alcalá de Henares, en Madrid, es la estación de referencia de Azuqueca, en Guadalajara).
+INVENTARIO = leer_o(DOCS / "prensa" / "aemet_inventario.json", {}) or {}
+_PROV_INV = {"arabaalava": "alava", "illesbalears": "baleares", "baleares": "baleares", "stacruzdetenerife": "santa-cruz-de-tenerife",
+             "santacruzdetenerife": "santa-cruz-de-tenerife", "acoruna": "a-coruna", "ciudadreal": "ciudad-real", "larioja": "la-rioja",
+             "laspalmas": "las-palmas"}
+_EST_PROV: dict[str, set] = {}
+for _cod, (_nom, _prov, _alt) in INVENTARIO.items():
+    _p = _norm_nombre(_prov)
+    _EST_PROV.setdefault(_norm_nombre(_nom), set()).add(_PROV_INV.get(_p, _p))
+
+
+def estacion_en_provincia(est: str, slug: str, municipios_ref: list[str]) -> bool:
+    """True solo si consta que la estación está en la provincia: por el inventario de AEMET o porque
+    su nombre empieza por el de un municipio de la provincia que la usa de referencia."""
+    provs = _EST_PROV.get(_norm_nombre(est))
+    if provs:
+        return slug.replace("-", "") in {p.replace("-", "") for p in provs}
+    ne = _norm_nombre(est)
+    return any(len(_norm_nombre(m)) >= 4 and ne.startswith(_norm_nombre(m)) for m in municipios_ref)
 
 
 def indice_desplazamiento(fc: dict):
@@ -209,87 +279,86 @@ class Datos:
 # ----------------------------------------------------------------------------
 def sonda_ayer(P: Parte, D: Datos, pj: dict):
     cod = P.cod
-    # --- lluvia por municipio (AEMET observación) ---------------------------------
+    # --- lluvia por estación (AEMET observación) -----------------------------------
+    # Solo estaciones que constan en la provincia, y todas las cifras del mismo fichero: antes se mezclaba la
+    # media de las estaciones con el «% frente a lo normal» de otro cálculo y no cuadraban (0 mm y «−54 %»).
     L = D.lluvias
     if L.get("municipios"):
         fecha = L.get("fecha", AYER.isoformat())
         mios = {k: v for k, v in L["municipios"].items() if k.startswith(cod)}
-        pv = (L.get("provincias") or {}).get(cod, {})
-        if mios:
-            top = max(mios.values(), key=lambda m: num(m.get("dia"), 0) or 0)
+        refs: dict[str, list] = {}
+        for m in mios.values():
+            if m.get("est"):
+                refs.setdefault(m["est"], []).append(m)
+        estaciones = {e: ms[0] for e, ms in refs.items() if estacion_en_provincia(e, P.slug, [x["n"] for x in ms])}
+        fuente = L.get("fuente", "AEMET OpenData · observación convencional")
+        metodo = "Precipitación de 0 a 24 h (hora local) de las estaciones de AEMET de la provincia, sumada a partir del dato horario de AEMET OpenData."
+        tope = max((int(num(m.get("racha"), 0) or 0) for m in L["municipios"].values()), default=0)
+        if estaciones:
+            n_est = len(estaciones)
+            con_lluvia = sum(1 for m in estaciones.values() if (num(m.get("dia"), 0) or 0) >= 1)
+            sem_media = sum(num(m.get("sem"), 0) or 0 for m in estaciones.values()) / n_est
+            e_top, top = max(estaciones.items(), key=lambda kv: num(kv[1].get("dia"), 0) or 0)
             mm = num(top.get("dia"), 0) or 0
-            fuente = L.get("fuente", "AEMET OpenData · observación convencional")
-            metodo = "Suma de la precipitación horaria de la estación AEMET más próxima a cada municipio, de 0 a 24 h hora local."
             if mm >= 10:
                 P.add("ayer", "extremo" if mm >= 30 else "comparacion",
-                      f"{top['n']} recogió ayer {f1(mm)} mm, lo más llovido de la provincia de {P.nombre}",
-                      f"{f1(mm)} mm en la estación {top.get('est')} · {pv.get('mojadas', '?')} de {pv.get('est', '?')} estaciones de la provincia con lluvia · semana: {f1(num(pv.get('sem'), 0))} mm",
+                      f"La estación de AEMET de {e_top} recogió {f1(mm)} mm el {fecha_dia(fecha)}, la cifra más alta entre las estaciones de AEMET de la provincia de {P.nombre}",
+                      f"{f1(mm)} mm el {fecha_dia(fecha)} en la estación {e_top} · {con_lluvia} de {n_est} estaciones de la provincia recogieron 1 mm o más ese día",
                       fuente, metodo, fecha_dato=fecha,
-                      contexto=[f"Estaciones de la provincia con lluvia ayer: {pv.get('mojadas', 0)} de {pv.get('est', 0)}."],
-                      limites=["Dato de la estación AEMET más cercana al municipio, no un pluviómetro en cada pueblo."],
+                      limites=["Lluvia de una estación de AEMET: en el resto del término municipal pudo llover más o menos."],
                       pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
             else:
-                seco = [m for m in mios.values() if (num(m.get("racha"), 0) or 0) >= 10]
-                racha_max = max(mios.values(), key=lambda m: num(m.get("racha"), 0) or 0)
+                e_seca, racha_max = max(estaciones.items(), key=lambda kv: num(kv[1].get("racha"), 0) or 0)
                 r = int(num(racha_max.get("racha"), 0) or 0)
-                lp = pj.get("indicadores", {}).get("lluvias", {})
                 if r >= 10:
+                    # la ventana del cálculo tiene tope: si la racha llega a él, la real puede ser más larga
+                    al_menos = "al menos " if tope and r >= tope else ""
                     P.add("ayer", "comparacion",
-                          f"{racha_max['n']} lleva {r} días sin lluvia apreciable; la provincia de {P.nombre} suma {f1(num(pv.get('sem'), 0))} mm esta semana",
-                          f"{r} días seguidos con menos de 1 mm en {racha_max['n']} · {len(seco)} municipios con 10 o más días secos · semana {f1(num(pv.get('sem'), 0))} mm"
-                          + (f" ({f1(lp['anomalia_semana_pct'])} % frente a lo normal)" if lp.get("anomalia_semana_pct") is not None else ""),
-                          fuente, metodo, fecha_dato=fecha, citabilidad="alta",
-                          contexto=[f"Acumulado de 2026 en la provincia: {f1(lp['mm_anual'])} mm, {f1(lp['anomalia_anual_pct'])} % frente a lo normal hasta la fecha ({f1(lp['media_hasta_hoy_mm'])} mm)."] if lp.get("mm_anual") is not None else [],
+                          f"La estación de AEMET de {e_seca} lleva {al_menos}{r} días seguidos sin recoger 1 mm de lluvia (hasta el {fecha_dia(fecha)})",
+                          f"{al_menos}{r} días seguidos con menos de 1 mm en la estación de {e_seca} · media de las {n_est} estaciones de AEMET de la provincia en los últimos siete días: {f1(sem_media)} mm",
+                          fuente, "Días consecutivos, hasta el último día completo, en que la estación de AEMET recogió menos de 1 mm.", fecha_dato=fecha, citabilidad="alta",
+                          limites=([f"La ventana de cálculo es de {tope} días: la racha real puede ser más larga."] if al_menos else []),
                           pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
-                elif lp.get("anomalia_semana_pct") is not None:
-                    P.add("ayer", "cifra",
-                          f"Sin lluvia ayer en {P.nombre}: la semana deja {f1(num(pv.get('sem'), 0))} mm, un {abs(int(lp['anomalia_semana_pct']))} % {'menos' if lp['anomalia_semana_pct'] < 0 else 'más'} de lo normal",
-                          f"{pv.get('mojadas', 0)} de {pv.get('est', 0)} estaciones con lluvia · semana {f1(num(pv.get('sem'), 0))} mm · 2026: {f1(lp.get('mm_anual', 0))} mm ({f1(lp.get('anomalia_anual_pct', 0))} % frente a lo normal)",
-                          fuente, metodo, fecha_dato=fecha, pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
-            P.cifra("Lluvia ayer (máximo provincial)", f"{f1(mm)} mm", top["n"], "AEMET")
-        if pv.get("sem") is not None:
-            P.cifra("Lluvia de la semana", f"{f1(num(pv['sem'], 0))} mm", f"media de {pv.get('est', '?')} estaciones", "AEMET")
+            if mm > 0:
+                P.cifra(f"Lluvia el {fecha_dia(fecha)} (máximo provincial)", f"{f1(mm)} mm", e_top, "AEMET")
+            else:
+                P.cifra(f"Lluvia el {fecha_dia(fecha)}", "0 mm", f"en las {n_est} estaciones de AEMET de la provincia", "AEMET")
+            P.cifra("Lluvia de los últimos siete días", f"{f1(sem_media)} mm", f"media de {n_est} estaciones de AEMET", "AEMET")
 
     # --- noches tropicales (AEMET) --------------------------------------------------
+    # Auditoría 17-10-2026: el recuento anual («81 noches tropicales en 2026») sale de un archivo diario con huecos
+    # (Valencia sin datos desde abril daba 0; Cartagena, sin datos desde julio, 30). No se publica el recuento:
+    # solo la noche concreta que ha medido la estación.
     nt = pj.get("indicadores", {}).get("noches_tropicales") or []
-    for c in nt[:3]:
-        if c.get("nt_anyo"):
-            P.cifra(f"Noches tropicales en 2026 · {c['nombre']}", str(c["nt_anyo"]), f"{c.get('nt_mes', 0)} en {MESES[HOY.month - 1]}", "AEMET")
     if nt and nt[0].get("t_min_anoche") is not None and nt[0]["t_min_anoche"] >= 20:
         c = nt[0]
-        P.add("ayer", "extremo", f"Noche tropical en {c['nombre']} a mediados de {MESES[HOY.month - 1]}: mínima de {f1(c['t_min_anoche'])} °C",
-              f"mínima {f1(c['t_min_anoche'])} °C · {c.get('nt_anyo')} noches tropicales en 2026, {c.get('nt_mes')} en {MESES[HOY.month - 1]}",
-              "AEMET OpenData", "Mínima diaria de la estación AEMET de la ciudad; noche tropical = mínima ≥ 20 °C.",
+        fna = c.get("fecha_anoche") or D.nocturnas.get("fecha_anoche") or AYER.isoformat()
+        P.add("ayer", "extremo", f"Noche tropical en {c['nombre']} el {fecha_dia(fna)}: la estación de AEMET no bajó de {f1(c['t_min_anoche'])} °C",
+              f"mínima {f1(c['t_min_anoche'])} °C en la estación de AEMET de {c['nombre']} la noche del {fecha_dia(fna)}",
+              "AEMET OpenData", "Mínima diaria de la estación AEMET de la ciudad; noche tropical = mínima ≥ 20 °C.", fecha_dato=fna,
               pagina="https://calentamientoglobal.es/noches-tropicales/")
 
     # --- índice de desplazamiento climático (nuestro «Climate Shift Index») ---------
     # ¿Cuántas veces más frecuente es la máxima prevista hoy que en 1951-1980? Solo cuando
     # el día era raro entonces (retorno ≥ 1 año): con retornos más cortos el cociente es ruido.
-    fc = pj.get("indicadores", {}).get("firma_climatica") or {}
-    idc = indice_desplazamiento(fc)
-    if idc:
-        nivel, ratio, tit, dato = idc
-        P.cifra("Índice de desplazamiento climático (hoy)", f"×{f1(ratio)}" if not fc.get("sin_precedente") else "sin precedente", f"nivel {nivel} de 5 · {f1(fc['tmax'])} °C previstos", "cálculo propio")
-        P.add("ayer", "extremo" if nivel >= 3 else "comparacion", tit, dato,
-              "ERA5 (Copernicus) · cálculo propio", "Índice de desplazamiento climático: frecuencia con la que una máxima como la prevista hoy ocurría en estas fechas (±15 días) en 1951-1980 frente a 1996-2025, en la celda ERA5 de la capital. Nivel 1-5 = al menos 1-5 veces más frecuente ahora.",
-              citabilidad="media", fecha_dato=HOY.isoformat(),
-              contexto=[f"Máxima prevista hoy: {f1(fc['tmax'])} °C · percentil {f1(fc.get('percentil', 0))} del clima 1951-1980 · desplazamiento de la distribución: {signo_txt(fc.get('delta'))} °C."],
-              limites=["Reanálisis en la celda de la capital, no la estación de AEMET.", "Método observacional (comparación de periodos), no un modelo con y sin emisiones: es la mitad «observada» del índice de Climate Central."],
-              pagina="https://calentamientoglobal.es/firma-climatica/")
-        P.items[-1]["indice_desplazamiento"] = nivel
+    # El índice de desplazamiento climático se retiró de la sala de prensa el 17-10-2026: compara la
+    # previsión de Open-Meteo (modelos de alta resolución en el punto) con un clima de reanálisis de
+    # ~25 km; en capitales costeras eso infla el nivel. Vuelve cuando previsión y clima salgan del mismo modelo.
 
     # --- mar en la boya ------------------------------------------------------------
     for b in (pj.get("indicadores", {}).get("boyas") or [])[:1]:
         if b.get("temp") is not None:
             an = b.get("anomalia_reciente")
-            P.cifra(f"Mar en {b['nombre']}", f"{f1(b['temp'])} °C", f"{'+' if an and an > 0 else ''}{f1(an)} °C frente a lo normal" if an is not None else "", "Puertos del Estado")
+            P.cifra(f"Mar en la boya de {b['nombre']}", f"{f1(b['temp'])} °C", f"dato del {fecha_dia(b['fecha'])}" if b.get("fecha") else "", "Puertos del Estado")
             if an is not None and abs(an) >= 1.5:
                 P.add("ayer", "comparacion",
-                      f"El mar en {b['nombre']} está a {f1(b['temp'])} °C, {f1(abs(an))} °C {'por encima' if an > 0 else 'por debajo'} de lo normal para estas fechas",
+                      f"La boya de {b['nombre']} midió el mar a {f1(b['temp'])} °C el {fecha_dia(b['fecha'])}, {f1(abs(an))} °C {'por encima' if an > 0 else 'por debajo'} de lo normal para estas fechas",
                       f"{f1(b['temp'])} °C el {fecha_dia(b['fecha'])} · máximo del año {f1(b['max_anio']['valor'])} °C ({fecha_dia(b['max_anio']['fecha'])})"
                       + (f" · tendencia +{f1(b['tendencia_decada'])} °C por década" if b.get("tendencia_decada") else ""),
                       "Puertos del Estado (REDEXT/REDCOS) vía Copernicus Marine", "Temperatura del agua medida por la boya; normal calculada sobre su propia serie.",
-                      fecha_dato=b.get("fecha"), pagina="https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/")
+                      fecha_dato=b.get("fecha"), pagina="https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
+                      limites=["COMPROBAR: la «normal» y la anomalía «reciente» salen de un cálculo propio sin auditar (no consta qué días promedia ni contra qué periodo); "
+                               "la tendencia, de una serie de unos 20 años con huecos. No se publica sin revisar."])
 
     # --- canícula / aire ---------------------------------------------------------
     ca = pj.get("indicadores", {}).get("canicula") or {}
@@ -297,12 +366,15 @@ def sonda_ayer(P: Parte, D: Datos, pj: dict):
         P.add("ayer", "extremo", f"{P.nombre} encadena {ca['dias_consecutivos']} días por encima del percentil 90 de calor para la fecha",
               f"{ca['dias_consecutivos']} días seguidos · máxima {f1(ca.get('tmax_hoy', 0))} °C · umbral p90 {f1(ca.get('ref_p90', 0))} °C",
               "Open-Meteo · índice propio", "Índice de canícula: días consecutivos con máxima sobre el percentil 90 de 1991-2020 para la fecha.",
-              citabilidad="media", pagina="https://calentamientoglobal.es/canicula/")
+              citabilidad="media", pagina="https://calentamientoglobal.es/canicula/",
+              limites=["COMPROBAR: índice propio sobre modelo, sin contraste con las estaciones de AEMET; no se publica."])
     for a in (pj.get("indicadores", {}).get("calidad_aire") or [])[:1]:
         if a.get("supera_oms") or a.get("sahariano"):
-            P.add("ayer", "comparacion", f"{a['nombre']} respira hoy aire «{a['etiqueta']}»: {a['contaminante_dominante']} por encima del límite de la OMS" if a.get("supera_oms") else f"Polvo sahariano sobre {a['nombre']}: calidad del aire «{a['etiqueta']}»",
+            P.add("ayer", "comparacion", f"El modelo CAMS de Copernicus da aire «{a['etiqueta']}» en {a['nombre']} el {fecha_dia(HOY.isoformat())}: {a['contaminante_dominante']} por encima del límite de la OMS" if a.get("supera_oms") else f"El modelo CAMS de Copernicus prevé polvo sahariano sobre {a['nombre']} el {fecha_dia(HOY.isoformat())}: calidad del aire «{a['etiqueta']}»",
                   f"índice europeo {a.get('aqi_europeo')} · PM2.5 {a.get('pm25')} µg/m³",
                   "CAMS (Copernicus) vía Open-Meteo", "Calidad del aire modelizada en la capital; límites OMS 2021.", citabilidad="media",
+                  limites=["COMPROBAR: es un modelo (celda de unos 10 km), no una estación de la red de calidad del aire; la etiqueta no "
+                           "cuadraba con el índice (índice europeo 63 rotulado «Buena»). No se publica."],
                   pagina="https://calentamientoglobal.es/calidad-del-aire/")
 
     # --- hallazgos del detector de esta provincia --------------------------------
@@ -315,26 +387,46 @@ def sonda_ayer(P: Parte, D: Datos, pj: dict):
             it["id_hallazgo"] = h["id"]
 
 
-def sonda_semana(P: Parte, D: Datos):
+def sonda_semana(P: Parte, D: Datos, capital: str = ""):
     pr = leer_o(DOCS / "prediccion" / f"{P.cod}.json")
     if not pr or not pr.get("municipios"):
         return
     fuente = pr.get("fuente", "AEMET OpenData · predicción por municipio")
-    anom = []   # (anomalía, municipio, fecha, tx, nx)
-    frio = []
+    bruto = []  # (anomalía, municipio, fecha, tx, nx, km)
     lluvia = {}  # fecha → [municipios con pp ≥ 80]
     n_mun = 0
     for code, m in pr["municipios"].items():
         dias = (m.get("d") or {}).get("dias") or []
         n_mun += 1
+        km = num((m.get("norm") or {}).get("km"), 99)
         for d in dias[1:7]:
-            if d.get("tx") is not None and d.get("nx") is not None:
-                a = d["tx"] - d["nx"]
-                anom.append((a, m["n"], d["f"], d["tx"], d["nx"]))
-                if a <= -5:
-                    frio.append((a, m["n"], d["f"], d["tx"], d["nx"]))
+            if d["f"] < HOY.isoformat():
+                continue
+            # la normal es de una estación de AEMET: solo vale si está cerca del municipio
+            if d.get("tx") is not None and d.get("nx") is not None and km <= 25:
+                bruto.append((d["tx"] - d["nx"], m["n"], d["f"], d["tx"], d["nx"], km))
             if (d.get("pp") or 0) >= 80:
                 lluvia.setdefault(d["f"], []).append(m["n"])
+    # Auditoría 17-10-2026: la estación «más cercana» puede estar a otra altitud (Castellbisbal se comparaba con
+    # Montserrat, a 1.000 m, y salía +9,4 °C). La predicción de AEMET es suave en el espacio: si la desviación de
+    # un municipio se separa más de 3 °C de la mediana de la provincia ese día, el fallo es de la normal, no del
+    # tiempo, y el municipio no cuenta. Con menos de cinco municipios ese día solo vale una estación a ≤ 10 km.
+    por_fecha: dict[str, list] = {}
+    for x in bruto:
+        por_fecha.setdefault(x[2], []).append(x[0])
+    def _mediana(v):
+        v = sorted(v)
+        n = len(v)
+        return v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2
+    anom = []
+    for x in bruto:
+        vals = por_fecha[x[2]]
+        if len(vals) >= 5:
+            if abs(x[0] - _mediana(vals)) <= 3:
+                anom.append(x[:5])
+        elif x[5] <= 10:
+            anom.append(x[:5])
+    frio = [x for x in anom if x[0] <= -5]
     if not anom:
         return
     metodo = (f"Predicción oficial de AEMET para cada municipio, comparada con la máxima normal 1991-2020 de la estación AEMET de referencia "
@@ -345,22 +437,23 @@ def sonda_semana(P: Parte, D: Datos):
     if calor:
         a, mun, f, tx, nx = calor[0]
         n_m = len({x[1] for x in calor})
-        P.add("semana", "prevision", f"AEMET prevé {int(round(tx))} °C en {mun} {dia_semana(f)}, {f1(a)} °C por encima de lo normal para un {fecha_dia(f)}",
-              f"máxima prevista {tx} °C · normal 1991-2020 {f1(nx)} °C · {n_m} de {n_mun} municipios con algún día ≥ 5 °C sobre lo normal esta semana",
+        P.add("semana", "prevision", f"AEMET prevé {int(round(tx))} °C en {mun} {dia_semana(f)}, {f1(a)} °C más de lo normal para la fecha",
+              f"máxima prevista {tx} °C · normal 1991-2020 de la estación de AEMET más cercana: {f1(nx)} °C · {n_m} de las {n_mun} localidades de la provincia que sigue el observatorio {'supera' if n_m == 1 else 'superan'} lo normal en 5 °C algún día de la semana",
               fuente, metodo, limites=limites, fecha_dato=HOY.isoformat(), citabilidad="alta",
               contexto=[f"Municipios con más de 5 °C de exceso: " + ", ".join(sorted({x[1] for x in calor})[:10]) + ("…" if n_m > 10 else "") + "."],
               pagina=f"https://calentamientoglobal.es/el-tiempo/{P.slug}/")
     if frio:
         a, mun, f, tx, nx = min(frio)
-        P.add("semana", "prevision", f"AEMET prevé {int(round(tx))} °C en {mun} {dia_semana(f)}, {f1(abs(a))} °C por debajo de lo normal para un {fecha_dia(f)}",
-              f"máxima prevista {tx} °C · normal 1991-2020 {f1(nx)} °C · {len({x[1] for x in frio})} municipios con algún día ≥ 5 °C bajo lo normal",
+        P.add("semana", "prevision", f"AEMET prevé solo {int(round(tx))} °C de máxima en {mun} {dia_semana(f)}, {f1(abs(a))} °C menos de lo normal para la fecha",
+              f"máxima prevista {tx} °C · normal 1991-2020 de la estación de AEMET más cercana: {f1(nx)} °C · {len({x[1] for x in frio})} de las {n_mun} localidades que sigue el observatorio {'queda' if len({x[1] for x in frio}) == 1 else 'quedan'} 5 °C o más por debajo algún día",
               fuente, metodo, limites=limites, fecha_dato=HOY.isoformat(), pagina=f"https://calentamientoglobal.es/el-tiempo/{P.slug}/")
     if lluvia:
         f = max(lluvia, key=lambda k: len(lluvia[k]))
         n = len(lluvia[f])
         if n >= max(3, n_mun // 4):
-            P.add("semana", "prevision", f"AEMET da lluvia casi segura (≥ 80 %) {dia_semana(f)} en {n} de {n_mun} municipios de {P.nombre}",
-                  f"{n} municipios con probabilidad ≥ 80 % el {fecha_dia(f)} · días con lluvia probable: " + ", ".join(dia_semana(k) for k in sorted(lluvia)),
+            orden = sorted(lluvia[f], key=lambda n: (n != capital, 0))
+            P.add("semana", "prevision", f"AEMET da una probabilidad de lluvia del 80 % o más {dia_semana(f)} en {lista_nombres(orden)}",
+                  f"{n} de las {n_mun} localidades de {P.nombre} que sigue el observatorio con probabilidad ≥ 80 % el {fecha_dia(f)} · días con lluvia probable: " + ", ".join(dia_semana(k) for k in sorted(lluvia)),
                   fuente, "Probabilidad de precipitación diaria de la predicción municipal de AEMET.", limites=limites[:1], fecha_dato=HOY.isoformat(),
                   pagina=f"https://calentamientoglobal.es/el-tiempo/{P.slug}/")
     # media de la semana frente a lo normal
@@ -368,7 +461,7 @@ def sonda_semana(P: Parte, D: Datos):
     P.cifra("Semana que viene (AEMET)", f"{'+' if med >= 0 else ''}{f1(med)} °C", "máximas frente a lo normal, media de los municipios", "AEMET")
     if abs(med) >= 3 and not calor and not frio:
         P.add("semana", "comparacion", f"Semana {'cálida' if med > 0 else 'fría'} en {P.nombre}: AEMET prevé máximas {f1(abs(med))} °C {'por encima' if med > 0 else 'por debajo'} de lo normal de media",
-              f"media de {n_mun} municipios y 6 días · desviación media {'+' if med > 0 else ''}{f1(med)} °C", fuente, metodo, limites=limites, fecha_dato=HOY.isoformat(),
+              f"media de {n_mun} localidades y 6 días · desviación media {'+' if med > 0 else ''}{f1(med)} °C", fuente, metodo, limites=limites, fecha_dato=HOY.isoformat(),
               pagina=f"https://calentamientoglobal.es/el-tiempo/{P.slug}/")
 
 
@@ -381,7 +474,12 @@ def sonda_agua(P: Parte, D: Datos, pj: dict):
         rk = f.get("ranking_semana") or {}
         pos, de = rk.get("posicion"), rk.get("de")
         pct, cap = num(f.get("pct")), num(f.get("capacidad_hm3"), 0) or 0
-        if pct is None or not pos or not de or de < 15 or cap < 5:
+        vol = num(f.get("volumen_hm3"))
+        # Auditoría 17-10-2026: (1) los «Sistema …» del boletín agrupan varias presas: no son un embalse;
+        # (2) el boletín da hm³ enteros, así que por debajo de 20 hm³ un solo hm³ mueve 5 puntos o más y el
+        # puesto no es fiable; (3) un empate con el récord no es récord.
+        if (pct is None or vol is None or not pos or not de or de < 15 or cap < 20
+                or str(f.get("nombre", "")).lower().startswith("sistema")):
             continue
         bol = f.get("boletin_fecha", AYER.isoformat())
         h1a = (f.get("hace_1a") or {}).get("pct")
@@ -390,24 +488,33 @@ def sonda_agua(P: Parte, D: Datos, pj: dict):
                f"Media de diez años para esta semana: {pct_txt(f['pct_media_10a'])}." if f.get("pct_media_10a") is not None else "",
                f"Variación semanal: {'+' if (sa.get('dif_pts') or 0) >= 0 else ''}{f1(sa.get('dif_pts', 0))} puntos." if sa else ""]
         ctx = [c for c in ctx if c]
+        lim = ["Dato oficial del MITECO; el ángulo (su puesto en la serie) es cálculo propio."]
+        if pct < 1 or vol < 1:
+            # Alfonso XIII (Murcia) al 0 %: un embalse vacío suele ser un desembalse por obras o un dato sin
+            # reportar, no la sequía. Se publica solo si la confederación lo confirma.
+            lim.append("COMPROBAR: embalse por debajo del 1 % (0 hm³). Confirmar con la confederación que no es un vaciado por obras ni un dato sin reportar.")
         base = dict(fuente=fuente, metodo=metodo, fecha_dato=bol, citabilidad="alta", contexto=ctx,
-                    pagina=f.get("url_web"), limites=["Dato oficial del MITECO; el ángulo (su puesto en la serie) es cálculo propio."])
-        nombre = f"{f.get('de', 'de')} {f['nombre']}" if not f["nombre"].lower().startswith(("el ", "la ", "los ", "las ")) else f["nombre"]
-        if pos == 1:
-            P.add("agua", "record", f"El embalse {nombre} está al {pct_txt(pct)}, su nivel más alto para esta semana desde {rk.get('desde', 1988)}",
-                  f"{pct_txt(pct)} ({f1(f.get('volumen_hm3', 0))} de {f1(cap)} hm³) · anterior máximo para la semana {pct_txt(rk['anio_mas_alto']['pct'])} ({rk['anio_mas_alto']['anio']})", **base)
-        elif pos == de:
-            P.add("agua", "record", f"El embalse {nombre} está al {pct_txt(pct)}, su nivel más bajo para esta semana desde {rk.get('desde', 1988)}",
-                  f"{pct_txt(pct)} ({f1(f.get('volumen_hm3', 0))} de {f1(cap)} hm³) · " + (f"empata con el mínimo de {rk['anio_mas_bajo']['anio']}" if abs(pct - num(rk['anio_mas_bajo']['pct'], -1)) < 0.05 else f"anterior mínimo para la semana {pct_txt(rk['anio_mas_bajo']['pct'])} ({rk['anio_mas_bajo']['anio']})"), **base)
-        elif pos <= 3:
-            P.add("agua", "extremo", f"El embalse {nombre}, al {pct_txt(pct)}: el {pos}.º nivel más alto para esta semana en {de} años",
-                  f"{pct_txt(pct)} · máximo para la semana {pct_txt(rk['anio_mas_alto']['pct'])} ({rk['anio_mas_alto']['anio']}) · puesto {pos} de {de}", **base)
-        elif pos >= de - 2:
-            P.add("agua", "extremo", f"El embalse {nombre}, al {pct_txt(pct)}: el {de - pos + 1}.º nivel más bajo para esta semana en {de} años",
-                  f"{pct_txt(pct)} · mínimo para la semana {pct_txt(rk['anio_mas_bajo']['pct'])} ({rk['anio_mas_bajo']['anio']}) · puesto {pos} de {de}", **base)
+                    pagina=f.get("url_web"), limites=lim)
+        nombre = nombre_embalse(f)
+        desde = rk.get("desde", 1988)
+        alto, bajo = rk.get("anio_mas_alto") or {}, rk.get("anio_mas_bajo") or {}
+        vol_alto, vol_bajo = num(alto.get("vol_hm3")), num(bajo.get("vol_hm3"))
+        serie_txt = f"en los {de} años de su serie, que empieza en {desde}"
+        if pos == 1 and vol_alto is not None and vol > vol_alto:
+            P.add("agua", "record", f"El embalse {nombre} está al {pct_txt(pct)}: nunca había tenido tanta agua en esta semana {serie_txt}",
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · anterior máximo para la semana: {pct_txt(alto.get('pct'))} ({alto.get('anio')})", **base)
+        elif pos == de and vol_bajo is not None and vol < vol_bajo:
+            P.add("agua", "record", f"El embalse {nombre} está al {pct_txt(pct)}: nunca había tenido tan poca agua en esta semana {serie_txt}",
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · anterior mínimo para la semana: {pct_txt(bajo.get('pct'))} ({bajo.get('anio')})", **base)
+        elif cap >= 100 and 2 <= pos <= 3 and vol_alto is not None and vol < vol_alto:
+            P.add("agua", "extremo", f"El embalse {nombre}, al {pct_txt(pct)}: su {pos}.º nivel más alto para esta semana {serie_txt}",
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · máximo para la semana {pct_txt(alto.get('pct'))} ({alto.get('anio')}) · puesto {pos} de {de}", **base)
+        elif cap >= 100 and de - 2 <= pos <= de - 1 and vol_bajo is not None and vol > vol_bajo:
+            P.add("agua", "extremo", f"El embalse {nombre}, al {pct_txt(pct)}: su {de - pos + 1}.º nivel más bajo para esta semana {serie_txt}",
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · mínimo para la semana {pct_txt(bajo.get('pct'))} ({bajo.get('anio')}) · puesto {pos} de {de}", **base)
         elif h1a is not None and abs(pct - h1a) >= 25:
             P.add("agua", "comparacion", f"El embalse {nombre} tiene {f1(abs(pct - h1a))} puntos {'más' if pct > h1a else 'menos'} de agua que hace un año: {pct_txt(pct)} frente a {pct_txt(h1a)}",
-                  f"{pct_txt(pct)} · hace un año {pct_txt(h1a)} · puesto {pos} de {de} para la semana", **base)
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · hace un año {pct_txt(h1a)} · puesto {pos} de {de} para la semana", **base)
     # provincia entera
     emb = None
     for fp in glob.glob(str(DOCS / "embalses" / "*.json")):
@@ -429,11 +536,22 @@ def sonda_agua(P: Parte, D: Datos, pj: dict):
         cerca = [a for a in D.aforos.get("estaciones", []) if a.get("lat") and dist_km(a["lat"], a["lon"], cap["lat"], cap["lon"]) <= 60]
         for a in sorted(cerca, key=lambda a: -abs(num(a.get("v24"), 0) or 0))[:1]:
             v = num(a.get("v24"))
-            if v is not None and abs(v) >= 40 and (num(a.get("q"), 0) or 0) >= 1:
-                P.add("agua", "extremo", f"El {a['rio']} en {a['nombre'].split(' en ')[-1]} {'sube' if v > 0 else 'baja'} un {int(abs(v))} % en 24 horas: {f1(a['q'])} m³/s",
-                      f"{f1(a['q'])} m³/s a las {a['t'][11:16]} UTC · variación 24 h {'+' if v > 0 else ''}{f1(v)} %", a.get("fuente_n", "aforo oficial"),
-                      "Caudal medido en la estación de aforo del organismo de cuenca, último dato publicado.", fecha_dato=HOY.isoformat(),
-                      limites=["Dato en tiempo real, sujeto a validación del organismo."], pagina="https://calentamientoglobal.es/caudal-rios-espana-mapa/")
+            # Auditoría 17-10-2026: «sube un 54 %» con 4,2 m³/s es ruido de un caudal mínimo. Solo con caudal ≥ 20 m³/s,
+            # y con la fecha y la hora local del dato en el titular.
+            if v is not None and abs(v) >= 40 and (num(a.get("q"), 0) or 0) >= 20 and a.get("t"):
+                try:
+                    from zoneinfo import ZoneInfo
+                    tl = datetime.fromisoformat(a["t"].replace("Z", "+00:00"))
+                    if tl.tzinfo is None:
+                        tl = tl.replace(tzinfo=timezone.utc)
+                    tl = tl.astimezone(ZoneInfo("Atlantic/Canary" if P.cod in ("35", "38") else "Europe/Madrid"))
+                except Exception:
+                    continue
+                lugar = a['nombre'].split(' en ')[-1]
+                P.add("agua", "extremo", f"El {a['rio']} en {lugar} {'subió' if v > 0 else 'bajó'} un {int(abs(v))} % en las 24 horas previas a las {tl:%H:%M} del {fecha_dia(tl.date().isoformat())}: {f1(a['q'])} m³/s",
+                      f"{f1(a['q'])} m³/s a las {tl:%H:%M} (hora local) del {fecha_dia(tl.date().isoformat())} · variación en 24 horas {'+' if v > 0 else ''}{f1(v)} %", a.get("fuente_n", "aforo oficial"),
+                      "Caudal medido en la estación de aforo del organismo de cuenca, último dato publicado.", fecha_dato=tl.date().isoformat(),
+                      limites=["Dato en tiempo real, sujeto a validación del organismo de cuenca."], pagina="https://calentamientoglobal.es/caudal-rios-espana-mapa/")
         # --- GloFAS ---
         puntos = [p for p in D.red.get("puntos", []) if dist_km(p["lat"], p["lon"], cap["lat"], cap["lon"]) <= 80 and int(p["id"]) in D.pct_hoy]
         if puntos:
@@ -445,18 +563,22 @@ def sonda_agua(P: Parte, D: Datos, pj: dict):
             if pc <= 10:
                 P.add("agua", "comparacion", f"El {ext['rio']} en {ext['lugar']} lleva un caudal en el percentil {pc} de su serie: muy por debajo de lo habitual para la fecha",
                       f"percentil {pc} (1997-2025) · tramo GloFAS «{ext['nombre']}»", "GloFAS v4 (Copernicus CEMS)", "Caudal simulado comparado con los percentiles de su época del año (1997-2025).",
-                      citabilidad="media", fecha_dato=emitida, limites=["Caudal simulado, no aforado: en ríos regulados puede diferir del dato real."], pagina="https://calentamientoglobal.es/caudal-rios-espana-mapa/")
+                      citabilidad="media", fecha_dato=emitida, limites=["Caudal simulado, no aforado: en ríos regulados puede diferir del dato real.",
+                                                                         "COMPROBAR: es un modelo (GloFAS), no un aforo; no se publica sin contrastarlo con el SAIH de la cuenca."], pagina="https://calentamientoglobal.es/caudal-rios-espana-mapa/")
             elif ph >= 90:
                 P.add("agua", "comparacion", f"El {hum['rio']} en {hum['lugar']} lleva un caudal en el percentil {ph}: más agua de la habitual para la fecha",
                       f"percentil {ph} (1997-2025) · tramo GloFAS «{hum['nombre']}»", "GloFAS v4 (Copernicus CEMS)", "Caudal simulado comparado con los percentiles de su época del año (1997-2025).",
-                      citabilidad="media", fecha_dato=emitida, limites=["Caudal simulado, no aforado."], pagina="https://calentamientoglobal.es/caudal-rios-espana-mapa/")
+                      citabilidad="media", fecha_dato=emitida, limites=["Caudal simulado, no aforado.",
+                                                                         "COMPROBAR: es un modelo (GloFAS), no un aforo; no se publica sin contrastarlo con el SAIH de la cuenca."], pagina="https://calentamientoglobal.es/caudal-rios-espana-mapa/")
     # --- nivel del mar ----------------------------------------------------------------
     for n in (pj.get("indicadores", {}).get("nivel_mar") or [])[:1]:
         if n.get("desviacion_cm") is not None and abs(n["desviacion_cm"]) >= 10:
-            P.add("agua", "comparacion", f"El nivel del mar en {n['nombre']} lleva {n.get('dias_consecutivos', 0)} días {'por encima' if n['desviacion_cm'] > 0 else 'por debajo'} de la media: {'+' if n['desviacion_cm'] > 0 else ''}{f1(n['desviacion_cm'])} cm",
+            P.add("agua", "comparacion", f"El nivel del mar frente a {n['nombre']} lleva {n.get('dias_consecutivos', 0)} días {'por encima' if n['desviacion_cm'] > 0 else 'por debajo'} de la media 1993-2012: {'+' if n['desviacion_cm'] > 0 else ''}{f1(n['desviacion_cm'])} cm",
                   f"{'+' if n['desviacion_cm'] > 0 else ''}{f1(n['desviacion_cm'])} cm sobre la media 1993-2012 · {n.get('dias_consecutivos', 0)} días consecutivos",
                   "Copernicus Marine (altimetría)", "Anomalía del nivel del mar en el punto de costa más próximo, frente a la media 1993-2012.", citabilidad="media",
-                  limites=["Altimetría de satélite, no mareógrafo: incluye marea meteorológica y variación estacional."], pagina="https://calentamientoglobal.es/nivel-del-mar-espana-ahora/")
+                  limites=["Altimetría de satélite, no mareógrafo: incluye marea meteorológica y variación estacional.",
+                           "COMPROBAR: la referencia es la media anual 1993-2012, no lo normal para la estación del año; en otoño el mar está más alto por ciclo estacional. No se publica hasta usar una normal estacional."],
+                  pagina="https://calentamientoglobal.es/nivel-del-mar-espana-ahora/")
 
 
 def sonda_municipios(P: Parte, D: Datos, pj: dict):
@@ -477,20 +599,19 @@ def sonda_municipios(P: Parte, D: Datos, pj: dict):
             metodo = f"Lluvia acumulada del otoño (desde el 1 de septiembre hasta el {fecha_dia(hasta)}) en la celda ERA5 de cada municipio, frente a la normal 1991-2020 del mismo periodo."
             lim = [O.get("aviso", "Reanálisis en una celda de unos 25 km, no el pluviómetro.")]
             if len(secos) >= max(2, len(vals) // 3):
-                P.add("municipios", "comparacion", f"{len(secos)} de {len(vals)} municipios de {P.nombre} llevan menos de la mitad de la lluvia normal de otoño; {s['n']}, solo el {s['pct']} %",
+                P.add("municipios", "comparacion", f"{len(secos)} de {len(vals)} municipios de {P.nombre} llevan menos de la mitad de la lluvia normal de otoño, según el reanálisis ERA5; {s['n']}, solo el {s['pct']} %",
                       f"{s['n']} {f1(s['mm'])} mm de {f1(s['normal'])} normales ({s['pct']} %) · media provincial {int(med)} % · el más lluvioso: {h['n']} ({h['pct']} %)",
                       fuente, metodo, limites=lim, citabilidad="media", fecha_dato=hasta,
                       contexto=[f"El otoño pasado hasta la misma fecha, {s['n']} llevaba {f1(s.get('anterior', 0))} mm."] if s.get("anterior") is not None else [],
                       pagina=f"https://calentamientoglobal.es/lluvia-otono-{P.slug}/")
             elif len(humedos) >= max(2, len(vals) // 3):
-                P.add("municipios", "comparacion", f"{len(humedos)} de {len(vals)} municipios de {P.nombre} ya han recogido más de 1,5 veces la lluvia normal de otoño; {h['n']}, el {h['pct']} %",
+                P.add("municipios", "comparacion", f"{len(humedos)} de {len(vals)} municipios de {P.nombre} ya han recogido más de 1,5 veces la lluvia normal de otoño, según el reanálisis ERA5; {h['n']}, el {h['pct']} %",
                       f"{h['n']} {f1(h['mm'])} mm de {f1(h['normal'])} normales ({h['pct']} %) · media provincial {int(med)} % · el más seco: {s['n']} ({s['pct']} %)",
                       fuente, metodo, limites=lim, citabilidad="media", fecha_dato=hasta, pagina=f"https://calentamientoglobal.es/lluvia-otono-{P.slug}/")
             else:
-                P.add("municipios", "cifra", f"Otoño al {int(med)} % de lo normal en {P.nombre}: de {s['n']} ({s['pct']} %) a {h['n']} ({h['pct']} %)",
+                P.add("municipios", "cifra", f"Otoño al {int(med)} % de la lluvia normal en {P.nombre}, según el reanálisis ERA5: de {s['n']} ({s['pct']} %) a {h['n']} ({h['pct']} %)",
                       f"{len(vals)} municipios · media {int(med)} % · {len(secos)} por debajo del 50 % · {len(humedos)} por encima del 150 %",
                       fuente, metodo, limites=lim, citabilidad="media", fecha_dato=hasta, pagina=f"https://calentamientoglobal.es/lluvia-otono-{P.slug}/")
-            P.cifra("Otoño (lluvia frente a lo normal)", f"{int(med)} %", f"media de {len(vals)} municipios", "ERA5")
     # --- año por municipio desde 1981 ----------------------------------------------
     M = D.mun_mapa
     if M.get("municipios"):
@@ -509,7 +630,7 @@ def sonda_municipios(P: Parte, D: Datos, pj: dict):
                 m = secos[0]
                 r = de - m[iP] + 1
                 P.add("municipios", "record" if r == 1 else "extremo",
-                      f"{m[iN]} vive el {'año más seco' if r == 1 else str(r) + '.º año más seco'} desde {M.get('desde_anio', 1981)}: {f1(m[iMM])} mm frente a {f1(m[iMed])} de mediana"
+                      f"{m[iN]} lleva {'el año más seco' if r == 1 else 'su ' + str(r) + '.º año más seco'} (hasta el {fecha_dia(hasta)}) de la serie del reanálisis ERA5, que empieza en {M.get('desde_anio', 1981)}: {f1(m[iMM])} mm frente a {f1(m[iMed])} de mediana"
                       + (f"; otros {len(secos) - 1} municipios de {P.nombre} están entre los tres más secos" if len(secos) > 1 else ""),
                       f"{f1(m[iMM])} mm hasta el {fecha_dia(hasta)} · mediana {f1(m[iMed])} mm · puesto {m[iP]} de {de} por lluvia", fuente, metodo, limites=lim, citabilidad="media", fecha_dato=hasta,
                       contexto=[f"También entre los tres más secos: " + ", ".join(x[iN] for x in secos[1:8]) + "."] if len(secos) > 1 else [],
@@ -517,7 +638,7 @@ def sonda_municipios(P: Parte, D: Datos, pj: dict):
             if humedos:
                 m = humedos[0]
                 P.add("municipios", "record" if m[iP] == 1 else "extremo",
-                      f"{m[iN]} vive el {'año más lluvioso' if m[iP] == 1 else str(m[iP]) + '.º año más lluvioso'} desde {M.get('desde_anio', 1981)}: {f1(m[iMM])} mm frente a {f1(m[iMed])} de mediana"
+                      f"{m[iN]} lleva {'el año más lluvioso' if m[iP] == 1 else 'su ' + str(m[iP]) + '.º año más lluvioso'} (hasta el {fecha_dia(hasta)}) de la serie del reanálisis ERA5, que empieza en {M.get('desde_anio', 1981)}: {f1(m[iMM])} mm frente a {f1(m[iMed])} de mediana"
                       + (f"; otros {len(humedos) - 1} municipios de {P.nombre} están entre los tres más lluviosos" if len(humedos) > 1 else ""),
                       f"{f1(m[iMM])} mm hasta el {fecha_dia(hasta)} · mediana {f1(m[iMed])} mm · puesto {m[iP]} de {de}", fuente, metodo, limites=lim, citabilidad="media", fecha_dato=hasta,
                       contexto=[f"También entre los tres más lluviosos: " + ", ".join(x[iN] for x in humedos[1:8]) + "."] if len(humedos) > 1 else [],
@@ -528,7 +649,7 @@ def sonda_municipios(P: Parte, D: Datos, pj: dict):
         meta = D.mun2050.get("meta", {})
         top = max(items, key=lambda m: (m["c5"] - m["ch"]))
         capital = next((m for m in items if m["prov"] == P.nombre and m["n"] == pj.get("capital")), None)
-        P.add("municipios", "cifra", f"{top['n']} pasará de {top['ch']} a {top['c5']} días de calor extremo al año en 2050, el mayor salto de la provincia de {P.nombre}",
+        P.add("municipios", "cifra", f"Un modelo climático de alta resolución proyecta para {top['n']} de {top['ch']} a {top['c5']} días de más de 35 °C al año hacia 2035-2050, el mayor salto de la provincia de {P.nombre}",
               f"días con máxima ≥ 35 °C: {top['ch']} (2005-2020) → {top['c5']} (2035-2050) · noches tropicales: {top.get('nh')} → {top.get('n5')} · clima análogo en 2050: {top.get('an')}"
               + (f" · capital: {capital['ch']} → {capital['c5']} días" if capital else ""),
               f"{meta.get('fuente', 'CMIP6 HighResMIP')} · modelo {meta.get('modelo', '')}", "Proyección climática CMIP6 de alta resolución, periodo 2035-2050 frente a 2005-2020, en el punto de cada municipio.",
@@ -549,65 +670,59 @@ def sonda_impacto(P: Parte, D: Datos, pj: dict):
                 for k in tot:
                     tot[k] += int(pp.get(k, 0) or 0)
         suma = sum(tot.values())
-        P.cifra(f"Avisos AEMET desde el {fecha_dia(A['desde'])}", str(suma), f"{tot['rojo']} rojos · {tot['naranja']} naranjas · {tot['amarillo']} amarillos", "AEMET/MeteoAlarm")
+        # días que el archivo propio no llegó a descargar (sin ellos el acumulado se queda corto)
+        huecos = []
+        try:
+            x, fin = date.fromisoformat(A["desde"]), AYER
+            while x <= fin:
+                if x.isoformat() not in A["dias"]:
+                    huecos.append(x)
+                x += timedelta(days=1)
+        except Exception:
+            huecos = [None]
         hoy_av = pj.get("indicadores", {}).get("avisos") or {}
-        if hoy_av.get("naranjas") or hoy_av.get("rojos"):
-            nivel = "rojo" if hoy_av.get("rojos") else "naranja"
-            graves = [it for it in hoy_av.get("items", []) if it.get("nivel") == nivel]
-            tipos = sorted({(it.get("tipo") or "").lower() for it in graves if it.get("tipo")})
-            zonas = sorted({it.get("zona") for it in graves if it.get("zona")})
-            por = (" por " + " y ".join(tipos)) if tipos else ""
-            activo = any(it.get("activo_ya") for it in graves)
-            inicio = min((it.get("inicio") or "" for it in graves), default="")
-            if activo or not inicio:
-                cuando = "está en aviso"
-            else:
-                cuando = f"tendrá aviso"
-            desde = ""
-            if not activo and inicio:
-                desde = f" desde el {fecha_dia(inicio[:10])} a las {inicio[11:16]}"
-            P.add("impacto", "record" if nivel == "rojo" else "extremo", f"{P.nombre} {cuando} {nivel} de AEMET{por}{desde}" + (f" ({', '.join(zonas[:3])})" if zonas else ""),
-                  f"{hoy_av.get('rojos', 0)} rojos · {hoy_av.get('naranjas', 0)} naranjas · {hoy_av.get('amarillos', 0)} amarillos vigentes o anunciados · desde el {fecha_dia(A['desde'])}: {suma} avisos-zona",
-                  "AEMET vía MeteoAlarm", "Avisos vigentes o ya anunciados por AEMET en las zonas de la provincia; acumulado por fecha de inicio.", fecha_dato=HOY.isoformat(),
-                  limites=["Nunca contradecir ni matizar un aviso de AEMET con otro dato.", "Comprobar la hora de inicio y fin en aemet.es antes de publicar."], pagina="https://calentamientoglobal.es/avisos-meteorologicos/")
-        elif suma >= 10:
-            P.add("impacto", "cifra", f"{P.nombre} acumula {suma} avisos de AEMET desde el {fecha_dia(A['desde'])}, {tot['naranja'] + tot['rojo']} de ellos naranjas o rojos",
-                  f"{tot['rojo']} rojos · {tot['naranja']} naranjas · {tot['amarillo']} amarillos · {dias_con} días con algún aviso", "AEMET vía MeteoAlarm",
-                  "Recuento de avisos-zona por fecha de inicio en las zonas de la provincia.", fecha_dato=AYER.isoformat(), limites=["Serie propia desde julio de 2026: no permite comparar con años anteriores todavía."],
+        # Auditoría 17-10-2026: el aviso vigente ya no sale como noticia del parte. El parte se genera dos veces al día
+        # y AEMET cambia los avisos cada pocas horas: el 17-10 a las 13:11 Almería estaba en naranja y a las 14:44 AEMET
+        # lo subió a rojo; el parte habría seguido diciendo «naranja» hasta la noche, contradiciendo a AEMET. Los avisos
+        # se consultan en directo en /avisos-meteorologicos/ (enlace fijo en la sala de prensa).
+        if suma >= 10 and not (hoy_av.get("naranjas") or hoy_av.get("rojos")):
+            P.add("impacto", "cifra", f"{P.nombre} suma {suma} avisos de AEMET por zona desde el {fecha_dia(A['desde'])}, {tot['naranja'] + tot['rojo']} de ellos naranjas o rojos",
+                  f"{plural(tot['rojo'], 'rojo', 'rojos')} · {plural(tot['naranja'], 'naranja', 'naranjas')} · {plural(tot['amarillo'], 'amarillo', 'amarillos')} · {dias_con} días con algún aviso", "AEMET vía MeteoAlarm",
+                  "Recuento de avisos-zona por fecha de inicio en las zonas de la provincia.", fecha_dato=AYER.isoformat(),
+                  limites=["Serie propia desde julio de 2026: no permite comparar con años anteriores todavía."]
+                          + ([f"COMPROBAR: al archivo le faltan {len(huecos)} días sin descargar; el acumulado se queda corto. No se publica."] if huecos else []),
                   pagina="https://calentamientoglobal.es/avisos-meteorologicos/")
     # --- mortalidad por calor ---------------------------------------------------------
     C = D.calor
     pc = (C.get("provincias") or {}).get(P.slug) or (C.get("provincias") or {}).get(P.slug.replace("-", "_"))
-    if pc and pc.get("verano") is not None:
-        va = C.get("verano_actual") or {}
-        P.cifra("Muertes atribuibles al calor (verano 2026)", str(pc["verano"]), f"desde el 1 de junio · España: {va.get('atribuibles_calor', '')}", "ISCIII (MoMo)")
+    if pc and pc.get("verano") is not None and pc.get("desde") and pc.get("hasta"):
+        # Auditoría 17-10-2026: el dato provincial acaba el 30 de septiembre y el nacional sigue hasta octubre; antes se
+        # daban juntos «hasta el 16 de octubre». Ahora el periodo es el del dato provincial y España, el mismo periodo.
+        desde_p, hasta_p = pc["desde"], pc["hasta"]
+        nac = sum(int(d.get("atribuibles") or 0) for d in (C.get("dias") or []) if desde_p <= d.get("fecha", "") <= hasta_p)
+        periodo = f"entre el {fecha_dia(desde_p)} y el {fecha_dia(hasta_p)}"
+        # Auditoría 17-10-2026: contrastado con el fichero de datos de MoMo (momo.isciii.es/public/momo/data). El
+        # generador redondea cada día antes de sumar, y el total se desvía: Ciudad Real 18 frente a 25,6 de MoMo,
+        # Castellón 124 frente a 128,7, España 5.689 frente a 5.684. No se publica hasta que el generador sume los
+        # valores sin redondear.
+        redondeo = "COMPROBAR: el generador de calor_mortalidad.json suma valores diarios ya redondeados y el total se aparta del de MoMo (hasta 8 defunciones por provincia). No se publica hasta corregirlo."
         if pc["verano"] >= 20:
-            P.add("impacto", "cifra", f"{pc['verano']} muertes atribuibles al calor en {P.nombre} desde el 1 de junio, según el sistema MoMo",
-                  f"{pc['verano']} atribuibles · España: {va.get('atribuibles_calor')} · dato hasta el {fecha_dia(va.get('a_fecha', AYER.isoformat()))}",
-                  C.get("fuente", "ISCIII · MoMo"), "Estimación estadística del ISCIII del exceso de defunciones por temperatura (no muertes por golpe de calor).",
-                  fecha_dato=va.get("a_fecha", AYER.isoformat()), limites=["Se revisa a medida que entran datos: citar solo meses cerrados como definitivos."],
+            P.add("impacto", "cifra", f"{pc['verano']} muertes atribuibles al calor en {P.nombre} {periodo}, según el sistema MoMo del Instituto de Salud Carlos III",
+                  f"{pc['verano']} defunciones atribuibles al exceso de temperatura {periodo}" + (f" · España, en el mismo periodo: {miles(nac)}" if nac else ""),
+                  C.get("fuente", "ISCIII · MoMo"), "Estimación estadística del ISCIII del exceso de defunciones atribuible a la temperatura (no son muertes por golpe de calor).",
+                  fecha_dato=hasta_p, limites=["Estimación que el ISCIII revisa a medida que entran defunciones: citar como «según la estimación del sistema MoMo».", redondeo],
                   pagina="https://calentamientoglobal.es/muertes-por-calor-espana/")
-    # --- coste de desastres --------------------------------------------------------
-    cd = pj.get("indicadores", {}).get("coste_desastres") or {}
-    if cd.get("coste_millones_eur"):
-        P.cifra("Coste de desastres (Consorcio)", f"{cd['coste_millones_eur']} M€", "riesgos extraordinarios, acumulado", "Consorcio de Compensación de Seguros")
     # --- incendios -----------------------------------------------------------------
     inc = pj.get("indicadores", {}).get("incendios_ccaa") or {}
     if inc.get("tiene_fuego") and (inc.get("focos_activos") or 0) >= 5:
-        P.add("impacto", "extremo", f"{inc['focos_activos']} focos de calor activos en {inc['nombre']} en las últimas 48 horas (satélite)",
+        P.add("impacto", "cifra", f"Los satélites de la NASA detectaron {inc['focos_activos']} focos de calor en {inc['nombre']} (toda la comunidad) en las 48 horas previas al {fecha_dia(HOY.isoformat())}",
               f"{inc['focos_activos']} focos · {inc.get('dias_consecutivos', 0)} días seguidos con fuego · {inc.get('dias_anio_actual', 0)} días con fuego en 2026",
               "NASA FIRMS (VIIRS)", "Detecciones de puntos calientes por satélite en la comunidad autónoma, ventana de 48 horas.", citabilidad="media", fecha_dato=HOY.isoformat(),
-              limites=["Un foco satelital no equivale a un incendio declarado: contrastar con el servicio autonómico."], pagina="https://calentamientoglobal.es/incendios-forestales-espana/")
-    # --- días de más de 32 °C ---------------------------------------------------------
-    for p in D.dias32.get("provincias", []):
-        if p.get("prov") == P.nombre and p.get("actual") is not None and p.get("media_9120"):
-            r = num(p["actual"]) / num(p["media_9120"])
-            P.cifra("Días de más de 32 °C en 2026", str(p["actual"]), f"normal 1991-2020: {f1(p['media_9120'])}", "ERA5")
-            if r >= 1.5 and num(p["actual"]) >= 20:
-                P.add("impacto", "comparacion", f"{P.nombre} suma {p['actual']} días de más de 32 °C en 2026, {f1(r)} veces su normal",
-                      f"{p['actual']} días · normal 1991-2020: {f1(p['media_9120'])} · media 1961-1990: {f1(p.get('media_6190', 0))}", D.dias32.get("fuente", "ERA5 vía Open-Meteo"),
-                      "Días con máxima ≥ 32 °C en el punto de referencia de la provincia, contados por año natural.", citabilidad="media", fecha_dato=D.dias32.get("actualizado", AYER.isoformat())[:10],
-                      limites=["Un punto por provincia (reanálisis), no la red de AEMET."], pagina="https://calentamientoglobal.es/dias-de-mas-de-32-grados/")
+              limites=["Un foco satelital no equivale a un incendio declarado: contrastar con el servicio autonómico.",
+                       "COMPROBAR: los focos incluyen quemas agrícolas y fuentes industriales fijas, y los «días con fuego» salen de un archivo propio sin auditar. No se publica."],
+              pagina="https://calentamientoglobal.es/incendios-forestales-espana/")
+    # Los días de más de 32 °C del punto de reanálisis (dias32.json) se retiraron el 17-10-2026: no coinciden
+    # ni con el archivo de capitales ni con las estaciones de AEMET (Castellón: 20 frente a 72 de AEMET).
 
 
 # ----------------------------------------------------------------------------
@@ -617,12 +732,18 @@ def parte_provincia(cod: str, D: Datos) -> dict:
     nombre, slug = PROVINCIAS[cod]
     P = Parte(cod, nombre, slug)
     pj = leer_o(DOCS / "provincias" / f"{SLUG_PROV_JSON.get(slug, slug.replace('-', '_'))}.json", {}) or {}
-    for sonda in (lambda: sonda_ayer(P, D, pj), lambda: sonda_semana(P, D), lambda: sonda_agua(P, D, pj),
+    for sonda in (lambda: sonda_ayer(P, D, pj), lambda: sonda_semana(P, D, pj.get("capital") or ""), lambda: sonda_agua(P, D, pj),
                   lambda: sonda_municipios(P, D, pj), lambda: sonda_impacto(P, D, pj)):
         try:
             sonda()
         except Exception as e:
             P.errores.append(f"{sonda.__code__.co_name}: {type(e).__name__}: {e}")
+    # Auditoría 17-10-2026: la lluvia por municipio sale de la celda del reanálisis ERA5 (unos 25 km) y la proyección
+    # 2050 de un solo modelo; ninguna es una medición en el municipio. Quedan en revisión: no salen sin aprobación.
+    for h in P.items:
+        if h["angulo"] == "municipios" and not h["requiere_revision"]:
+            h["limites"] = list(h["limites"]) + ["COMPROBAR: cifra de un municipio calculada con reanálisis o modelo, no medida por AEMET en él. No se publica sin revisión."]
+            h["requiere_revision"] = True
     # dedupe por titular y orden por fuerza dentro de cada ángulo
     vistos, items = set(), []
     for h in sorted(P.items, key=lambda h: -h["fuerza"]):
@@ -631,7 +752,9 @@ def parte_provincia(cod: str, D: Datos) -> dict:
         vistos.add(h["titular"])
         items.append(h)
     angulos = {a: [h for h in items if h["angulo"] == a] for a in ("ayer", "semana", "agua", "municipios", "impacto")}
-    titular = max(items, key=lambda h: h["fuerza"]) if items else None
+    # el titular del día sale solo de lo que se publica (nada pendiente de revisión)
+    publicables = [h for h in items if not h.get("requiere_revision")]
+    titular = max(publicables, key=lambda h: h["fuerza"]) if publicables else None
     return {"generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "fecha": HOY.isoformat(), "cod": cod, "provincia": nombre, "slug": slug,
             "capital": pj.get("capital"), "ccaa": pj.get("ccaa"), "titular_del_dia": titular, "angulos": angulos, "cifras": P.cifras,
             "n_items": len(items), "errores": P.errores,
@@ -641,39 +764,41 @@ def parte_provincia(cod: str, D: Datos) -> dict:
 def coincidencias(partes: list[dict]) -> list[dict]:
     """Lo que se repite en muchas provincias es noticia nacional."""
     out = []
-    # alerta de desplazamiento climático: ≥ 8 provincias con nivel ≥ 3 (o cualquiera sin precedente)
-    niveles, cods = {}, {}
-    for p in partes:
-        for h in p["angulos"].get("ayer", []):
-            if h.get("indice_desplazamiento"):
-                niveles[p["provincia"]] = max(niveles.get(p["provincia"], 0), h["indice_desplazamiento"])
-                cods[p["provincia"]] = p["cod"]
-    altas = {k: v for k, v in niveles.items() if v >= 3}
-    if len(altas) >= 8 or sum(1 for v in altas.values() if v >= 5) >= 4:
-        pob = sum(POBLACION_MILES.get(cods[k], 0) for k in altas) / 1000
-        top = sorted(altas.items(), key=lambda kv: -kv[1])[:10]
-        out.append({"tipo": "alerta_desplazamiento", "n": len(altas), "poblacion_millones": round(pob, 1),
-                    "titular": f"Alerta de desplazamiento climático: el calor previsto hoy es al menos 3 veces más frecuente que en 1951-1980 en {len(altas)} provincias"
-                               + (f", donde viven {pob:.1f} millones de personas".replace(".", ",") if pob else ""),
-                    "provincias": list(altas), "dato": "; ".join(f"{k} (nivel {v})" for k, v in top),
-                    "metodo": "Índice de desplazamiento climático por capital: frecuencia de la máxima prevista hoy en 1951-1980 frente a 1996-2025 (ERA5). Nivel 3 = al menos tres veces más frecuente ahora; nivel 5 = cinco veces o sin precedente."})
     def cuenta(pred, titulo, dato_fn):
-        provs = [p for p in partes if any(pred(h) for h in sum(p["angulos"].values(), []))]
+        # solo cuenta lo que la sala de prensa publica (nada en revisión)
+        provs = [p for p in partes if any(pred(h) and not h.get("requiere_revision") for h in sum(p["angulos"].values(), []))]
         if len(provs) >= 8:
             out.append({"titular": titulo.format(n=len(provs)), "provincias": [p["provincia"] for p in provs], "n": len(provs), "dato": dato_fn(provs)})
     cuenta(lambda h: h["angulo"] == "municipios" and "menos de la mitad de la lluvia normal de otoño" in h["titular"],
-           "{n} provincias tienen a un tercio o más de sus municipios con menos de la mitad de la lluvia normal de otoño", lambda ps: "; ".join(p["provincia"] for p in ps))
-    cuenta(lambda h: h["angulo"] == "semana" and "por encima de lo normal" in h["titular"] and h["clase"] == "prevision",
-           "AEMET prevé esta semana máximas 5 °C o más por encima de lo normal en municipios de {n} provincias", lambda ps: "; ".join(p["provincia"] for p in ps))
-    cuenta(lambda h: h["angulo"] == "agua" and h["clase"] == "record" and "más bajo" in h["titular"],
-           "Embalses en su nivel más bajo para esta semana desde 1988 en {n} provincias", lambda ps: "; ".join(p["provincia"] for p in ps))
-    cuenta(lambda h: h["angulo"] == "agua" and h["clase"] == "record" and "más alto" in h["titular"],
-           "Embalses en su nivel más alto para esta semana desde 1988 en {n} provincias", lambda ps: "; ".join(p["provincia"] for p in ps))
-    cuenta(lambda h: h["angulo"] == "municipios" and "más seco desde" in h["titular"],
-           "Municipios con el año más seco (o entre los tres más secos) desde 1981 en {n} provincias", lambda ps: "; ".join(p["provincia"] for p in ps))
-    cuenta(lambda h: h["angulo"] == "ayer" and "sin lluvia apreciable" in h["titular"],
-           "Rachas de 10 o más días sin lluvia en municipios de {n} provincias", lambda ps: "; ".join(p["provincia"] for p in ps))
+           "{n} provincias tienen a un tercio o más de sus municipios con menos de la mitad de la lluvia normal de otoño, según el reanálisis ERA5", lambda ps: "; ".join(p["provincia"] for p in ps))
+    cuenta(lambda h: h["angulo"] == "semana" and "más de lo normal" in h["titular"] and h["clase"] == "prevision",
+           "AEMET prevé esta semana máximas al menos 5 °C por encima de lo normal en localidades de {n} provincias", lambda ps: "; ".join(p["provincia"] for p in ps))
+    cuenta(lambda h: h["angulo"] == "agua" and h["clase"] == "record" and "tan poca agua" in h["titular"],
+           "{n} provincias tienen algún embalse con el nivel más bajo de toda su serie para esta semana del año", lambda ps: "; ".join(p["provincia"] for p in ps))
+    cuenta(lambda h: h["angulo"] == "agua" and h["clase"] == "record" and "tanta agua" in h["titular"],
+           "{n} provincias tienen algún embalse con el nivel más alto de toda su serie para esta semana del año", lambda ps: "; ".join(p["provincia"] for p in ps))
+    cuenta(lambda h: h["angulo"] == "municipios" and "año más seco" in h["titular"],
+           "{n} provincias tienen algún municipio con uno de sus tres años más secos de la serie del reanálisis ERA5, que empieza en 1981", lambda ps: "; ".join(p["provincia"] for p in ps))
+    cuenta(lambda h: h["angulo"] == "ayer" and "sin recoger 1 mm de lluvia" in h["titular"],
+           "En {n} provincias hay al menos una estación de AEMET que lleva 10 días o más seguidos sin recoger 1 mm de lluvia", lambda ps: "; ".join(p["provincia"] for p in ps))
     return out
+
+
+def destacados(p: dict, n: int = 5) -> list[dict]:
+    """Lo más fuerte del parte, un ítem por ángulo primero, sin nada pendiente de revisión."""
+    pub = sorted((h for a in p["angulos"].values() for h in a if not h.get("requiere_revision")), key=lambda h: -h["fuerza"])
+    elegidos, angulos = [], set()
+    for h in pub:
+        if h["angulo"] not in angulos:
+            elegidos.append(h)
+            angulos.add(h["angulo"])
+    for h in pub:
+        if len(elegidos) >= n:
+            break
+        if h not in elegidos:
+            elegidos.append(h)
+    elegidos = sorted(elegidos[:n], key=lambda h: -h["fuerza"])
+    return [{k: h.get(k) for k in ("id", "angulo", "clase", "titular", "dato", "fuente", "fecha_dato", "provisional", "pagina", "citabilidad")} for h in elegidos]
 
 
 def main():
@@ -702,8 +827,12 @@ def main():
             json.dump(compacto, f, ensure_ascii=False)
         idx = {"generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "fecha": HOY.isoformat(),
                "provincias": [{"cod": p["cod"], "provincia": p["provincia"], "slug": p["slug"], "n_items": p["n_items"],
+                               "n_publicables": sum(1 for a in p["angulos"].values() for h in a if not h.get("requiere_revision")),
+                               "capital": p.get("capital"),
                                "titular": (p["titular_del_dia"] or {}).get("titular"), "angulo": (p["titular_del_dia"] or {}).get("angulo"),
-                               "fuerza": (p["titular_del_dia"] or {}).get("fuerza")} for p in partes],
+                               "fuerza": (p["titular_del_dia"] or {}).get("fuerza"),
+                               # lo que la portada enseña al elegir la provincia: lo más fuerte de cada ángulo, sin nada en revisión
+                               "destacados": destacados(p)} for p in partes],
                "coincidencias": coincidencias(partes)}
         with open(salida / "index.json", "w", encoding="utf-8") as f:
             json.dump(idx, f, ensure_ascii=False, indent=1)
