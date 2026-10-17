@@ -8,7 +8,7 @@ titulares, cifras, gráfico por capital, CSV, texto de método y límites.
 
 Series: ERA5 (Copernicus/ECMWF) vía Open-Meteo Archive, celda de cada capital, diario
 desde 1940 (las mismas coordenadas y modelo que docs/archivo/NN.json). Se descarga en
-cada ejecución (52 peticiones) y se reduce a agregados anuales que sí se guardan.
+cada ejecución (13 peticiones de 4 capitales) y se reduce a agregados anuales que sí se guardan.
 
 Escribe (docs/prensa/paquetes/):
   series/NN.json            agregados por año y capital (estaciones, noches, días de calor, heladas, lluvia)
@@ -26,6 +26,7 @@ import json
 import math
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
@@ -96,19 +97,34 @@ def ordinal(n: int) -> str:
 # ----------------------------------------------------------------------------
 # descarga y agregados por año
 # ----------------------------------------------------------------------------
-def descargar(lat, lon, reintentos=4):
+LOTE = 4   # capitales por petición: menos peticiones = menos 429 (la API acepta listas de coordenadas)
+
+
+def descargar_lote(coords, reintentos=8):
+    """Descarga las series diarias de varias capitales en una sola petición. Devuelve una lista de 'daily'."""
     q = urllib.parse.urlencode({
-        "latitude": f"{lat:.4f}", "longitude": f"{lon:.4f}", "start_date": f"{DESDE}-01-01", "end_date": AYER.isoformat(),
+        "latitude": ",".join(f"{la:.4f}" for la, _ in coords), "longitude": ",".join(f"{lo:.4f}" for _, lo in coords),
+        "start_date": f"{DESDE}-01-01", "end_date": AYER.isoformat(),
         "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum", "timezone": "Europe/Madrid", "models": "era5",
     })
     for i in range(reintentos):
         try:
-            with urllib.request.urlopen(f"{OPEN_METEO}?{q}", timeout=120) as r:
-                return json.load(r)["daily"]
+            with urllib.request.urlopen(f"{OPEN_METEO}?{q}", timeout=180) as r:
+                datos = json.load(r)
+            if isinstance(datos, dict):
+                datos = [datos]
+            return [d["daily"] for d in datos]
+        except urllib.error.HTTPError as e:
+            if i == reintentos - 1:
+                raise
+            espera = min(600, 30 * (2 ** i)) if e.code == 429 else 15
+            print(f"    · reintento {i + 1} (HTTP {e.code}) — espero {espera} s", flush=True)
+            time.sleep(espera)
         except Exception as e:  # noqa: BLE001
             if i == reintentos - 1:
                 raise
-            time.sleep(10 * (i + 1))
+            print(f"    · reintento {i + 1} ({type(e).__name__}) — espero 15 s", flush=True)
+            time.sleep(15)
 
 
 def normales_doy(fechas, tmed):
@@ -481,9 +497,10 @@ def main():
             cap = prov
         capitales[cod] = (cap, prov, slug)
 
-    # 1 · series → agregados
+    # 1 · series → agregados (por lotes de LOTE capitales por petición)
     series = {}
     errores = []
+    pendientes = []
     for cod, (cap, prov, slug) in capitales.items():
         p = PAQ / "series" / f"{cod}.json"
         if args.sin_descarga and p.exists():
@@ -493,18 +510,33 @@ def main():
         if not c:
             errores.append(f"{cod} {prov}: sin coordenadas")
             continue
+        pendientes.append((cod, c))
+    for i in range(0, len(pendientes), LOTE):
+        lote = pendientes[i:i + LOTE]
+        print(f"[lote {i // LOTE + 1}/{(len(pendientes) + LOTE - 1) // LOTE}] " + ", ".join(capitales[cod][0] for cod, _ in lote), flush=True)
         try:
-            d = descargar(c["lat"], c["lon"])
-            agg = agregar(d)
-            series[cod] = agg
-            with open(p, "w", encoding="utf-8") as f:
-                json.dump({"cod": cod, "capital": cap, "provincia": prov, "lat": c["lat"], "lon": c["lon"], "fuente": FUENTE, "desde": DESDE,
-                           "hasta": AYER.isoformat(), "generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "anios": agg}, f, ensure_ascii=False)
-            time.sleep(0.6)
+            diarios = descargar_lote([(c["lat"], c["lon"]) for _, c in lote])
         except Exception as e:  # noqa: BLE001
-            errores.append(f"{cod} {cap}: {type(e).__name__}: {e}")
-            if p.exists():
-                series[cod] = {int(k): v for k, v in leer(p)["anios"].items()}
+            diarios = [None] * len(lote)
+            errores.append(f"lote {i // LOTE + 1}: {type(e).__name__}: {e}")
+        for (cod, c), d in zip(lote, diarios):
+            cap, prov, slug = capitales[cod]
+            p = PAQ / "series" / f"{cod}.json"
+            if d is None:
+                if p.exists():
+                    series[cod] = {int(k): v for k, v in leer(p)["anios"].items()}
+                    print(f"    · {cap}: sin descarga, uso la serie guardada", flush=True)
+                continue
+            try:
+                agg = agregar(d)
+                series[cod] = agg
+                with open(p, "w", encoding="utf-8") as f:
+                    json.dump({"cod": cod, "capital": cap, "provincia": prov, "lat": c["lat"], "lon": c["lon"], "fuente": FUENTE, "desde": DESDE,
+                               "hasta": AYER.isoformat(), "generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "anios": agg}, f, ensure_ascii=False)
+                print(f"    · {cap}: {len(d['time'])} días → {len(agg)} años", flush=True)
+            except Exception as e:  # noqa: BLE001
+                errores.append(f"{cod} {cap}: {type(e).__name__}: {e}")
+        time.sleep(6)
 
     # 2 · paquetes
     plt = None
