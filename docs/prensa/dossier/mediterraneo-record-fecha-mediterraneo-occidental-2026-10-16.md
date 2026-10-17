@@ -1,14 +1,14 @@
-# El Mediterráneo español vive su segundo 15 de octubre más cálido desde 1981: 24,2 °C, 2,1 °C por encima de lo normal
+# El Mediterráneo español marcó el 16 de octubre su temperatura más alta para esa fecha desde 1981: 24,28 °C
 
-**Dato:** 24,24 °C · puesto 2 de 46 años para la fecha · récord 24,35 °C (2023) · normal 1991-2020 22,18 °C (+2,06)  
-**Fecha del dato:** 15 de octubre de 2026  
+**Dato:** 24,28 °C · récord anterior para la fecha 24,25 °C (2023) · normal 1991-2020 21,92 °C (+2,36)  
+**Fecha del dato:** 16 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** Mediterráneo occidental  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- 77 días de 2026 han sido récord para su fecha en la serie desde 1981.
+- 78 días de 2026 han sido récord para su fecha en la serie desde 1981.
 - Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.
-- 24,2 °C es lo normal en esta zona para un 14 de julio (media 1991-2020).
+- 24,3 °C es lo normal en esta zona para un 17 de julio (media 1991-2020).
 
 ## Fuente y método
 - **Fuente:** NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E
@@ -22,8 +22,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/dana/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-15.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-15.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-record-fecha-mediterraneo-occidental-2026-10-16.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-record-fecha-mediterraneo-occidental-2026-10-16.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
