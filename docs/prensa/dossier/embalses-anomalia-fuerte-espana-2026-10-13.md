@@ -1,6 +1,6 @@
 # La reserva de agua de España está al 57,8 %, 14,4 puntos por encima de su media de diez años para esta semana
 
-**Dato:** 57,8 % (32398.0 de 56038.0 hm³) · hace un año 53,1 % · media 10 años 43,4 %  
+**Dato:** 57,8 % (32.398 de 56.038 hm³) · hace un año 53,1 % · media 10 años 43,4 %  
 **Fecha del dato:** 13 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** no (dato oficial que publica cualquiera)

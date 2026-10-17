@@ -1,4 +1,4 @@
-# Ceuta tuvo anoche la noche más cálida para esa fecha desde 1940: mínima de 20,8 °C
+# Ceuta tuvo el 16 de octubre la mínima más alta para esa fecha desde 1940: 20,8 °C
 
 **Dato:** mínima 20,8 °C (corregida a escala ERA5: 20,9 °C) · récord anterior para la fecha 20,1 °C (2024)  
 **Fecha del dato:** 16 de octubre de 2026  
@@ -15,8 +15,8 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
-- Reanálisis en una celda de ~10 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
-- Antes de publicarlo, cotejar con el resumen diario de AEMET; si AEMET no lo confirma, no es noticia.
+- Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
+- COMPROBAR: pendiente de que AEMET publique el dato de la estación de Ceuta (llega con 2-4 días de retraso).
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-ceuta/

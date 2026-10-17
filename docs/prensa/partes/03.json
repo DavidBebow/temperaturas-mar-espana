@@ -1,5 +1,5 @@
 {
- "generado": "2026-10-17T12:59:38Z",
+ "generado": "2026-10-17T16:01:44Z",
  "fecha": "2026-10-17",
  "cod": "03",
  "provincia": "Alicante",
@@ -7,24 +7,23 @@
  "capital": "Alicante",
  "ccaa": "Comunitat Valenciana",
  "titular_del_dia": {
-  "id": "03-impacto-alicante-tendra-aviso-rojo-de-aemet-por-lluvias-desde-el-18-de-octubre-2026-10-17",
-  "angulo": "impacto",
-  "clase": "record",
-  "titular": "Alicante tendrá aviso rojo de AEMET por lluvias desde el 18 de octubre a las 10:00 (Litoral norte de Alicante)",
-  "dato": "2 rojos · 4 naranjas · 14 amarillos vigentes o anunciados · desde el 18 de julio: 211 avisos-zona",
+  "id": "03-semana-aemet-da-una-probabilidad-de-lluvia-del-80-o-mas-el-domingo-18-en-al-2026-10-17",
+  "angulo": "semana",
+  "clase": "prevision",
+  "titular": "AEMET da una probabilidad de lluvia del 80 % o más el domingo 18 en Albatera, Alcoi/Alcoy, l'Alfàs del Pi y otras 50 localidades",
+  "dato": "53 de las 53 localidades de Alicante que sigue el observatorio con probabilidad ≥ 80 % el 18 de octubre · días con lluvia probable: el sábado 17, el domingo 18, el lunes 19, el martes 20",
   "contexto": [],
-  "fuente": "AEMET vía MeteoAlarm",
-  "metodo": "Avisos vigentes o ya anunciados por AEMET en las zonas de la provincia; acumulado por fecha de inicio.",
+  "fuente": "AEMET OpenData · predicción específica por municipio",
+  "metodo": "Probabilidad de precipitación diaria de la predicción municipal de AEMET.",
   "limites": [
-   "Nunca contradecir ni matizar un aviso de AEMET con otro dato.",
-   "Comprobar la hora de inicio y fin en aemet.es antes de publicar."
+   "Es una predicción: AEMET la actualiza dos veces al día y puede cambiar. Citar siempre como «AEMET prevé»."
   ],
   "citabilidad": "alta",
   "fecha_dato": "2026-10-17",
   "edad_dias": 0,
   "provisional": false,
-  "pagina": "https://calentamientoglobal.es/avisos-meteorologicos/",
-  "fuerza": 100.0,
+  "pagina": "https://calentamientoglobal.es/el-tiempo/alicante/",
+  "fuerza": 70.0,
   "csv": null,
   "grafico": null,
   "requiere_revision": false
@@ -32,16 +31,14 @@
  "angulos": {
   "ayer": [
    {
-    "id": "03-ayer-benidorm-lleva-14-dias-sin-lluvia-apreciable-la-provincia-de-alicante-2026-10-16",
+    "id": "03-ayer-la-estacion-de-aemet-de-benidorm-parc-les-foietes-lleva-14-dias-segu-2026-10-16",
     "angulo": "ayer",
     "clase": "comparacion",
-    "titular": "Benidorm lleva 14 días sin lluvia apreciable; la provincia de Alicante suma 0 mm esta semana",
-    "dato": "14 días seguidos con menos de 1 mm en Benidorm · 41 municipios con 10 o más días secos · semana 0 mm (-53,8 % frente a lo normal)",
-    "contexto": [
-     "Acumulado de 2026 en la provincia: 263,2 mm, 9,4 % frente a lo normal hasta la fecha (240,6 mm)."
-    ],
+    "titular": "La estación de AEMET de Benidorm (parc Les Foietes) lleva 14 días seguidos sin recoger 1 mm de lluvia (hasta el 16 de octubre)",
+    "dato": "14 días seguidos con menos de 1 mm en la estación de Benidorm (parc Les Foietes) · media de las 7 estaciones de AEMET de la provincia en los últimos siete días: 0 mm",
+    "contexto": [],
     "fuente": "AEMET OpenData · observación convencional",
-    "metodo": "Suma de la precipitación horaria de la estación AEMET más próxima a cada municipio, de 0 a 24 h hora local.",
+    "metodo": "Días consecutivos, hasta el último día completo, en que la estación de AEMET recogió menos de 1 mm.",
     "limites": [],
     "citabilidad": "alta",
     "fecha_dato": "2026-10-16",
@@ -52,42 +49,15 @@
     "csv": null,
     "grafico": null,
     "requiere_revision": false
-   },
-   {
-    "id": "03-ayer-alicante-suma-22-dias-de-mas-de-32-c-en-2026-mas-que-en-ningun-ano-d-2026-10-01",
-    "angulo": "ayer",
-    "clase": "record",
-    "titular": "Alicante suma 22 días de más de 32 °C en 2026, más que en ningún año desde 1961",
-    "dato": "22 días · anterior máximo 19 (2022) · media 1991-2020: 4,9",
-    "contexto": [
-     "Media 1961-1990: 2,7 días; 1991-2020: 4,9."
-    ],
-    "fuente": "ERA5 (Open-Meteo Archive) · Proyección: distribución 1991-2020 + calentamiento IPCC AR6 (Sur de Europa)",
-    "metodo": "Días con máxima ≥ 32.0 °C en el punto de referencia de la provincia, ERA5 vía Open-Meteo, contados por año natural desde 1961.",
-    "limites": [
-     "Un punto por provincia (reanálisis), no la red de estaciones de AEMET.",
-     "El año 2026 no ha terminado: la cifra puede subir si hay más días de 32 °C.",
-     "COMPROBAR antes de enviar: dias32.json etiqueta el año en curso como 2025; confirmar en dias32_generar.py que el conteo es de 2026."
-    ],
-    "citabilidad": "media",
-    "fecha_dato": "2026-10-01",
-    "edad_dias": 16,
-    "provisional": false,
-    "pagina": "https://calentamientoglobal.es/cambio-climatico-por-provincias/",
-    "fuerza": 34.0,
-    "csv": "prensa/dossier/dias32-record-absoluto-alicante-2026-10-01.csv",
-    "grafico": "prensa/dossier/dias32-record-absoluto-alicante-2026-10-01.png",
-    "requiere_revision": true,
-    "id_hallazgo": "dias32-record-absoluto-alicante-2026-10-01"
    }
   ],
   "semana": [
    {
-    "id": "03-semana-aemet-da-lluvia-casi-segura-80-manana-en-53-de-53-municipios-de-2026-10-17",
+    "id": "03-semana-aemet-da-una-probabilidad-de-lluvia-del-80-o-mas-el-domingo-18-en-al-2026-10-17",
     "angulo": "semana",
     "clase": "prevision",
-    "titular": "AEMET da lluvia casi segura (≥ 80 %) mañana en 53 de 53 municipios de Alicante",
-    "dato": "53 municipios con probabilidad ≥ 80 % el 18 de octubre · días con lluvia probable: hoy, mañana, el lunes, el martes",
+    "titular": "AEMET da una probabilidad de lluvia del 80 % o más el domingo 18 en Albatera, Alcoi/Alcoy, l'Alfàs del Pi y otras 50 localidades",
+    "dato": "53 de las 53 localidades de Alicante que sigue el observatorio con probabilidad ≥ 80 % el 18 de octubre · días con lluvia probable: el sábado 17, el domingo 18, el lunes 19, el martes 20",
     "contexto": [],
     "fuente": "AEMET OpenData · predicción específica por municipio",
     "metodo": "Probabilidad de precipitación diaria de la predicción municipal de AEMET.",
@@ -108,16 +78,17 @@
   "agua": [],
   "municipios": [
    {
-    "id": "03-municipios-albatera-pasara-de-22-a-31-dias-de-calor-extremo-al-ano-en-2050-el-ma-2026-10-17",
+    "id": "03-municipios-un-modelo-climatico-de-alta-resolucion-proyecta-para-albatera-de-22-a-2026-10-17",
     "angulo": "municipios",
     "clase": "cifra",
-    "titular": "Albatera pasará de 22 a 31 días de calor extremo al año en 2050, el mayor salto de la provincia de Alicante",
+    "titular": "Un modelo climático de alta resolución proyecta para Albatera de 22 a 31 días de más de 35 °C al año hacia 2035-2050, el mayor salto de la provincia de Alicante",
     "dato": "días con máxima ≥ 35 °C: 22 (2005-2020) → 31 (2035-2050) · noches tropicales: 67 → 88 · clima análogo en 2050: Almería",
     "contexto": [],
     "fuente": "Open-Meteo Climate API (CMIP6 HighResMIP, ~2050) · modelo MRI_AGCM3_2_S",
     "metodo": "Proyección climática CMIP6 de alta resolución, periodo 2035-2050 frente a 2005-2020, en el punto de cada municipio.",
     "limites": [
-     "Un solo modelo climático: la cifra exacta variará entre modelos; la dirección y el orden de magnitud son robustos."
+     "Un solo modelo climático: la cifra exacta variará entre modelos; la dirección y el orden de magnitud son robustos.",
+     "COMPROBAR: cifra de un municipio calculada con reanálisis o modelo, no medida por AEMET en él. No se publica sin revisión."
     ],
     "citabilidad": "media",
     "fecha_dato": "2026-10-17",
@@ -127,19 +98,20 @@
     "fuerza": 29.8,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    },
    {
-    "id": "03-municipios-otono-al-75-de-lo-normal-en-alicante-de-benidorm-54-a-redovan-2026-10-10",
+    "id": "03-municipios-otono-al-75-de-la-lluvia-normal-en-alicante-segun-el-reanalisis-era-2026-10-10",
     "angulo": "municipios",
     "clase": "cifra",
-    "titular": "Otoño al 75 % de lo normal en Alicante: de Benidorm (54 %) a Redován (112 %)",
+    "titular": "Otoño al 75 % de la lluvia normal en Alicante, según el reanálisis ERA5: de Benidorm (54 %) a Redován (112 %)",
     "dato": "53 municipios · media 75 % · 0 por debajo del 50 % · 0 por encima del 150 %",
     "contexto": [],
     "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
     "metodo": "Lluvia acumulada del otoño (desde el 1 de septiembre hasta el 10 de octubre) en la celda ERA5 de cada municipio, frente a la normal 1991-2020 del mismo periodo.",
     "limites": [
-     "Reanálisis en una celda de unos 25 km, no el pluviómetro. ERA5 se consolida con unos seis días de retraso."
+     "Reanálisis en una celda de unos 25 km, no el pluviómetro. ERA5 se consolida con unos seis días de retraso.",
+     "COMPROBAR: cifra de un municipio calculada con reanálisis o modelo, no medida por AEMET en él. No se publica sin revisión."
     ],
     "citabilidad": "media",
     "fecha_dato": "2026-10-10",
@@ -149,118 +121,69 @@
     "fuerza": 19.0,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    }
   ],
   "impacto": [
    {
-    "id": "03-impacto-alicante-tendra-aviso-rojo-de-aemet-por-lluvias-desde-el-18-de-octubre-2026-10-17",
+    "id": "03-impacto-los-satelites-de-la-nasa-detectaron-5-focos-de-calor-en-comunidad-vale-2026-10-17",
     "angulo": "impacto",
-    "clase": "record",
-    "titular": "Alicante tendrá aviso rojo de AEMET por lluvias desde el 18 de octubre a las 10:00 (Litoral norte de Alicante)",
-    "dato": "2 rojos · 4 naranjas · 14 amarillos vigentes o anunciados · desde el 18 de julio: 211 avisos-zona",
-    "contexto": [],
-    "fuente": "AEMET vía MeteoAlarm",
-    "metodo": "Avisos vigentes o ya anunciados por AEMET en las zonas de la provincia; acumulado por fecha de inicio.",
-    "limites": [
-     "Nunca contradecir ni matizar un aviso de AEMET con otro dato.",
-     "Comprobar la hora de inicio y fin en aemet.es antes de publicar."
-    ],
-    "citabilidad": "alta",
-    "fecha_dato": "2026-10-17",
-    "edad_dias": 0,
-    "provisional": false,
-    "pagina": "https://calentamientoglobal.es/avisos-meteorologicos/",
-    "fuerza": 100.0,
-    "csv": null,
-    "grafico": null,
-    "requiere_revision": false
-   },
-   {
-    "id": "03-impacto-5-focos-de-calor-activos-en-comunidad-valenciana-en-las-ultimas-48-hor-2026-10-17",
-    "angulo": "impacto",
-    "clase": "extremo",
-    "titular": "5 focos de calor activos en Comunidad Valenciana en las últimas 48 horas (satélite)",
+    "clase": "cifra",
+    "titular": "Los satélites de la NASA detectaron 5 focos de calor en Comunidad Valenciana (toda la comunidad) en las 48 horas previas al 17 de octubre",
     "dato": "5 focos · 0 días seguidos con fuego · 14 días con fuego en 2026",
     "contexto": [],
     "fuente": "NASA FIRMS (VIIRS)",
     "metodo": "Detecciones de puntos calientes por satélite en la comunidad autónoma, ventana de 48 horas.",
     "limites": [
-     "Un foco satelital no equivale a un incendio declarado: contrastar con el servicio autonómico."
+     "Un foco satelital no equivale a un incendio declarado: contrastar con el servicio autonómico.",
+     "COMPROBAR: los focos incluyen quemas agrícolas y fuentes industriales fijas, y los «días con fuego» salen de un archivo propio sin auditar. No se publica."
     ],
     "citabilidad": "media",
     "fecha_dato": "2026-10-17",
     "edad_dias": 0,
     "provisional": false,
     "pagina": "https://calentamientoglobal.es/incendios-forestales-espana/",
-    "fuerza": 68.0,
+    "fuerza": 29.8,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    },
    {
-    "id": "03-impacto-278-muertes-atribuibles-al-calor-en-alicante-desde-el-1-de-junio-segu-2026-10-16",
+    "id": "03-impacto-278-muertes-atribuibles-al-calor-en-alicante-entre-el-1-de-junio-y-el-2026-09-30",
     "angulo": "impacto",
     "clase": "cifra",
-    "titular": "278 muertes atribuibles al calor en Alicante desde el 1 de junio, según el sistema MoMo",
-    "dato": "278 atribuibles · España: 5705 · dato hasta el 16 de octubre",
+    "titular": "278 muertes atribuibles al calor en Alicante entre el 1 de junio y el 30 de septiembre, según el sistema MoMo del Instituto de Salud Carlos III",
+    "dato": "278 defunciones atribuibles al exceso de temperatura entre el 1 de junio y el 30 de septiembre · España, en el mismo periodo: 5.689",
     "contexto": [],
     "fuente": "MoMo · Centro Nacional de Epidemiología · Instituto de Salud Carlos III",
-    "metodo": "Estimación estadística del ISCIII del exceso de defunciones por temperatura (no muertes por golpe de calor).",
+    "metodo": "Estimación estadística del ISCIII del exceso de defunciones atribuible a la temperatura (no son muertes por golpe de calor).",
     "limites": [
-     "Se revisa a medida que entran datos: citar solo meses cerrados como definitivos."
+     "Estimación que el ISCIII revisa a medida que entran defunciones: citar como «según la estimación del sistema MoMo».",
+     "COMPROBAR: el generador de calor_mortalidad.json suma valores diarios ya redondeados y el total se aparta del de MoMo (hasta 8 defunciones por provincia). No se publica hasta corregirlo."
     ],
     "citabilidad": "alta",
-    "fecha_dato": "2026-10-16",
-    "edad_dias": 1,
+    "fecha_dato": "2026-09-30",
+    "edad_dias": 17,
     "provisional": false,
     "pagina": "https://calentamientoglobal.es/muertes-por-calor-espana/",
-    "fuerza": 35.0,
+    "fuerza": 14.0,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
-   },
-   {
-    "id": "03-impacto-alicante-suma-22-dias-de-mas-de-32-c-en-2026-4-5-veces-su-normal-2026-10-01",
-    "angulo": "impacto",
-    "clase": "comparacion",
-    "titular": "Alicante suma 22 días de más de 32 °C en 2026, 4,5 veces su normal",
-    "dato": "22 días · normal 1991-2020: 4,9 · media 1961-1990: 2,7",
-    "contexto": [],
-    "fuente": "ERA5 (Open-Meteo Archive) · Proyección: distribución 1991-2020 + calentamiento IPCC AR6 (Sur de Europa)",
-    "metodo": "Días con máxima ≥ 32 °C en el punto de referencia de la provincia, contados por año natural.",
-    "limites": [
-     "Un punto por provincia (reanálisis), no la red de AEMET."
-    ],
-    "citabilidad": "media",
-    "fecha_dato": "2026-10-01",
-    "edad_dias": 16,
-    "provisional": false,
-    "pagina": "https://calentamientoglobal.es/dias-de-mas-de-32-grados/",
-    "fuerza": 18.7,
-    "csv": null,
-    "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    }
   ]
  },
  "cifras": [
   {
-   "etiqueta": "Lluvia ayer (máximo provincial)",
+   "etiqueta": "Lluvia el 16 de octubre",
    "valor": "0 mm",
-   "nota": "Alacant/Alicante",
+   "nota": "en las 7 estaciones de AEMET de la provincia",
    "fuente": "AEMET"
   },
   {
-   "etiqueta": "Lluvia de la semana",
+   "etiqueta": "Lluvia de los últimos siete días",
    "valor": "0 mm",
-   "nota": "media de 14 estaciones",
-   "fuente": "AEMET"
-  },
-  {
-   "etiqueta": "Noches tropicales en 2026 · Alicante",
-   "valor": "89",
-   "nota": "0 en octubre",
+   "nota": "media de 7 estaciones de AEMET",
    "fuente": "AEMET"
   },
   {
@@ -268,39 +191,9 @@
    "valor": "+0,6 °C",
    "nota": "máximas frente a lo normal, media de los municipios",
    "fuente": "AEMET"
-  },
-  {
-   "etiqueta": "Otoño (lluvia frente a lo normal)",
-   "valor": "75 %",
-   "nota": "media de 53 municipios",
-   "fuente": "ERA5"
-  },
-  {
-   "etiqueta": "Avisos AEMET desde el 18 de julio",
-   "valor": "211",
-   "nota": "4 rojos · 37 naranjas · 170 amarillos",
-   "fuente": "AEMET/MeteoAlarm"
-  },
-  {
-   "etiqueta": "Muertes atribuibles al calor (verano 2026)",
-   "valor": "278",
-   "nota": "desde el 1 de junio · España: 5705",
-   "fuente": "ISCIII (MoMo)"
-  },
-  {
-   "etiqueta": "Coste de desastres (Consorcio)",
-   "valor": "475 M€",
-   "nota": "riesgos extraordinarios, acumulado",
-   "fuente": "Consorcio de Compensación de Seguros"
-  },
-  {
-   "etiqueta": "Días de más de 32 °C en 2026",
-   "valor": "22",
-   "nota": "normal 1991-2020: 4,9",
-   "fuente": "ERA5"
   }
  ],
- "n_items": 9,
+ "n_items": 6,
  "errores": [],
  "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · los datos de origen conservan la licencia de su organismo"
 }

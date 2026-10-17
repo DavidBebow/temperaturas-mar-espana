@@ -1,4 +1,4 @@
-# Melilla tuvo el 14 de octubre la noche más cálida para esa fecha desde 1940: mínima de 21,9 °C
+# Melilla tuvo el 14 de octubre la mínima más alta para esa fecha desde 1940: 21,9 °C
 
 **Dato:** mínima 21,9 °C (corregida a escala ERA5: 22,1 °C) · récord anterior para la fecha 21,4 °C (2019)  
 **Fecha del dato:** 14 de octubre de 2026  
@@ -15,8 +15,8 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
-- Reanálisis en una celda de ~10 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
-- Antes de publicarlo, cotejar con el resumen diario de AEMET; si AEMET no lo confirma, no es noticia.
+- Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
+- COMPROBAR: pendiente de que AEMET publique el dato de la estación de Melilla (llega con 2-4 días de retraso).
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-melilla/

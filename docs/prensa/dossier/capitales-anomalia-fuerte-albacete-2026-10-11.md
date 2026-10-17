@@ -14,8 +14,9 @@
 - **Método:** Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Albacete, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.
 
 ## Límites (decirlos antes de que los descubran)
-- Reanálisis en una celda de ~10 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
+- Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
 - ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.
+- COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad.
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-albacete/

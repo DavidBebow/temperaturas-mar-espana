@@ -1,5 +1,5 @@
 {
- "generado": "2026-10-17T12:59:38Z",
+ "generado": "2026-10-17T16:01:44Z",
  "fecha": "2026-10-17",
  "cod": "46",
  "provincia": "Valencia",
@@ -7,24 +7,24 @@
  "capital": "Valencia",
  "ccaa": "Comunitat Valenciana",
  "titular_del_dia": {
-  "id": "46-impacto-valencia-tendra-aviso-rojo-de-aemet-por-lluvias-desde-el-18-de-octubre-2026-10-17",
-  "angulo": "impacto",
-  "clase": "record",
-  "titular": "Valencia tendrá aviso rojo de AEMET por lluvias desde el 18 de octubre a las 10:00 (Litoral sur de Valencia)",
-  "dato": "2 rojos · 7 naranjas · 19 amarillos vigentes o anunciados · desde el 18 de julio: 414 avisos-zona",
+  "id": "46-semana-aemet-preve-solo-18-c-de-maxima-en-xativa-el-domingo-18-7-4-c-menos-2026-10-17",
+  "angulo": "semana",
+  "clase": "prevision",
+  "titular": "AEMET prevé solo 18 °C de máxima en Xàtiva el domingo 18, 7,4 °C menos de lo normal para la fecha",
+  "dato": "máxima prevista 18 °C · normal 1991-2020 de la estación de AEMET más cercana: 25,4 °C · 15 de las 70 localidades que sigue el observatorio quedan 5 °C o más por debajo algún día",
   "contexto": [],
-  "fuente": "AEMET vía MeteoAlarm",
-  "metodo": "Avisos vigentes o ya anunciados por AEMET en las zonas de la provincia; acumulado por fecha de inicio.",
+  "fuente": "AEMET OpenData · predicción específica por municipio",
+  "metodo": "Predicción oficial de AEMET para cada municipio, comparada con la máxima normal 1991-2020 de la estación AEMET de referencia (máxima y mínima diarias 1991-2020 de la estación AEMET indicada en norm).",
   "limites": [
-   "Nunca contradecir ni matizar un aviso de AEMET con otro dato.",
-   "Comprobar la hora de inicio y fin en aemet.es antes de publicar."
+   "Es una predicción: AEMET la actualiza dos veces al día y puede cambiar. Citar siempre como «AEMET prevé».",
+   "La normal es la de la estación AEMET más cercana, no la del municipio exacto."
   ],
   "citabilidad": "alta",
   "fecha_dato": "2026-10-17",
   "edad_dias": 0,
   "provisional": false,
-  "pagina": "https://calentamientoglobal.es/avisos-meteorologicos/",
-  "fuerza": 100.0,
+  "pagina": "https://calentamientoglobal.es/el-tiempo/valencia/",
+  "fuerza": 70.0,
   "csv": null,
   "grafico": null,
   "requiere_revision": false
@@ -32,16 +32,14 @@
  "angulos": {
   "ayer": [
    {
-    "id": "46-ayer-valencia-lleva-11-dias-sin-lluvia-apreciable-la-provincia-de-valencia-2026-10-16",
+    "id": "46-ayer-la-estacion-de-aemet-de-valencia-dt-lleva-11-dias-seguidos-sin-recoger-2026-10-16",
     "angulo": "ayer",
     "clase": "comparacion",
-    "titular": "València lleva 11 días sin lluvia apreciable; la provincia de Valencia suma 0 mm esta semana",
-    "dato": "11 días seguidos con menos de 1 mm en València · 63 municipios con 10 o más días secos · semana 0 mm (-95,2 % frente a lo normal)",
-    "contexto": [
-     "Acumulado de 2026 en la provincia: 362 mm, 14,6 % frente a lo normal hasta la fecha (315,8 mm)."
-    ],
+    "titular": "La estación de AEMET de Valencia Dt lleva 11 días seguidos sin recoger 1 mm de lluvia (hasta el 16 de octubre)",
+    "dato": "11 días seguidos con menos de 1 mm en la estación de Valencia Dt · media de las 10 estaciones de AEMET de la provincia en los últimos siete días: 0 mm",
+    "contexto": [],
     "fuente": "AEMET OpenData · observación convencional",
-    "metodo": "Suma de la precipitación horaria de la estación AEMET más próxima a cada municipio, de 0 a 24 h hora local.",
+    "metodo": "Días consecutivos, hasta el último día completo, en que la estación de AEMET recogió menos de 1 mm.",
     "limites": [],
     "citabilidad": "alta",
     "fecha_dato": "2026-10-16",
@@ -54,15 +52,17 @@
     "requiere_revision": false
    },
    {
-    "id": "46-ayer-valencia-respira-hoy-aire-buena-no2-por-encima-del-limite-de-la-oms-2026-10-16",
+    "id": "46-ayer-el-modelo-cams-de-copernicus-da-aire-buena-en-valencia-el-17-de-octu-2026-10-16",
     "angulo": "ayer",
     "clase": "comparacion",
-    "titular": "Valencia respira hoy aire «Buena»: NO₂ por encima del límite de la OMS",
+    "titular": "El modelo CAMS de Copernicus da aire «Buena» en Valencia el 17 de octubre: NO₂ por encima del límite de la OMS",
     "dato": "índice europeo 43 · PM2.5 5.7 µg/m³",
     "contexto": [],
     "fuente": "CAMS (Copernicus) vía Open-Meteo",
     "metodo": "Calidad del aire modelizada en la capital; límites OMS 2021.",
-    "limites": [],
+    "limites": [
+     "COMPROBAR: es un modelo (celda de unos 10 km), no una estación de la red de calidad del aire; la etiqueta no cuadraba con el índice (índice europeo 63 rotulado «Buena»). No se publica."
+    ],
     "citabilidad": "media",
     "fecha_dato": "2026-10-16",
     "edad_dias": 1,
@@ -71,16 +71,16 @@
     "fuerza": 46.8,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    }
   ],
   "semana": [
    {
-    "id": "46-semana-aemet-preve-18-c-en-canals-manana-7-4-c-por-debajo-de-lo-normal-par-2026-10-17",
+    "id": "46-semana-aemet-preve-solo-18-c-de-maxima-en-xativa-el-domingo-18-7-4-c-menos-2026-10-17",
     "angulo": "semana",
     "clase": "prevision",
-    "titular": "AEMET prevé 18 °C en Canals mañana, 7,4 °C por debajo de lo normal para un 18 de octubre",
-    "dato": "máxima prevista 18 °C · normal 1991-2020 25,4 °C · 11 municipios con algún día ≥ 5 °C bajo lo normal",
+    "titular": "AEMET prevé solo 18 °C de máxima en Xàtiva el domingo 18, 7,4 °C menos de lo normal para la fecha",
+    "dato": "máxima prevista 18 °C · normal 1991-2020 de la estación de AEMET más cercana: 25,4 °C · 15 de las 70 localidades que sigue el observatorio quedan 5 °C o más por debajo algún día",
     "contexto": [],
     "fuente": "AEMET OpenData · predicción específica por municipio",
     "metodo": "Predicción oficial de AEMET para cada municipio, comparada con la máxima normal 1991-2020 de la estación AEMET de referencia (máxima y mínima diarias 1991-2020 de la estación AEMET indicada en norm).",
@@ -99,11 +99,11 @@
     "requiere_revision": false
    },
    {
-    "id": "46-semana-aemet-da-lluvia-casi-segura-80-manana-en-70-de-70-municipios-de-2026-10-17",
+    "id": "46-semana-aemet-da-una-probabilidad-de-lluvia-del-80-o-mas-el-domingo-18-en-al-2026-10-17",
     "angulo": "semana",
     "clase": "prevision",
-    "titular": "AEMET da lluvia casi segura (≥ 80 %) mañana en 70 de 70 municipios de Valencia",
-    "dato": "70 municipios con probabilidad ≥ 80 % el 18 de octubre · días con lluvia probable: hoy, mañana, el lunes",
+    "titular": "AEMET da una probabilidad de lluvia del 80 % o más el domingo 18 en Alaquàs, Albal, Alberic y otras 67 localidades",
+    "dato": "70 de las 70 localidades de Valencia que sigue el observatorio con probabilidad ≥ 80 % el 18 de octubre · días con lluvia probable: el sábado 17, el domingo 18, el lunes 19",
     "contexto": [],
     "fuente": "AEMET OpenData · predicción específica por municipio",
     "metodo": "Probabilidad de precipitación diaria de la predicción municipal de AEMET.",
@@ -123,68 +123,17 @@
   ],
   "agua": [
    {
-    "id": "46-agua-el-embalse-de-buseo-esta-al-12-5-su-nivel-mas-bajo-para-esta-semana-2026-10-13",
-    "angulo": "agua",
-    "clase": "record",
-    "titular": "El embalse de Buseo está al 12,5 %, su nivel más bajo para esta semana desde 1988",
-    "dato": "12,5 % (1 de 8 hm³) · empata con el mínimo de 2025",
-    "contexto": [
-     "Hace un año: 12,5 %.",
-     "Media de diez años para esta semana: 27,5 %.",
-     "Variación semanal: +0 puntos."
-    ],
-    "fuente": "Boletín Hidrológico Semanal del MITECO (BD-Embalses)",
-    "metodo": "Porcentaje de llenado de cada embalse en el boletín semanal, comparado con la misma semana de cada año de su serie (desde 1988) y con su media de diez años.",
-    "limites": [
-     "Dato oficial del MITECO; el ángulo (su puesto en la serie) es cálculo propio."
-    ],
-    "citabilidad": "alta",
-    "fecha_dato": "2026-10-13",
-    "edad_dias": 4,
-    "provisional": false,
-    "pagina": "https://calentamientoglobal.es/embalse-de-buseo/",
-    "fuerza": 82.0,
-    "csv": null,
-    "grafico": null,
-    "requiere_revision": false
-   },
-   {
-    "id": "46-agua-el-embalse-de-algar-esta-al-0-su-nivel-mas-bajo-para-esta-semana-de-2026-10-13",
-    "angulo": "agua",
-    "clase": "record",
-    "titular": "El embalse de Algar está al 0 %, su nivel más bajo para esta semana desde 2010",
-    "dato": "0 % (0 de 6 hm³) · empata con el mínimo de 2025",
-    "contexto": [
-     "Hace un año: 0 %.",
-     "Media de diez años para esta semana: 0 %.",
-     "Variación semanal: +0 puntos."
-    ],
-    "fuente": "Boletín Hidrológico Semanal del MITECO (BD-Embalses)",
-    "metodo": "Porcentaje de llenado de cada embalse en el boletín semanal, comparado con la misma semana de cada año de su serie (desde 1988) y con su media de diez años.",
-    "limites": [
-     "Dato oficial del MITECO; el ángulo (su puesto en la serie) es cálculo propio."
-    ],
-    "citabilidad": "alta",
-    "fecha_dato": "2026-10-13",
-    "edad_dias": 4,
-    "provisional": false,
-    "pagina": "https://calentamientoglobal.es/embalse-de-algar/",
-    "fuerza": 82.0,
-    "csv": null,
-    "grafico": null,
-    "requiere_revision": false
-   },
-   {
-    "id": "46-agua-el-nivel-del-mar-en-valencia-lleva-156-dias-por-encima-de-la-media-1-2026-10-16",
+    "id": "46-agua-el-nivel-del-mar-frente-a-valencia-lleva-156-dias-por-encima-de-la-med-2026-10-16",
     "angulo": "agua",
     "clase": "comparacion",
-    "titular": "El nivel del mar en Valencia lleva 156 días por encima de la media: +12,8 cm",
+    "titular": "El nivel del mar frente a Valencia lleva 156 días por encima de la media 1993-2012: +12,8 cm",
     "dato": "+12,8 cm sobre la media 1993-2012 · 156 días consecutivos",
     "contexto": [],
     "fuente": "Copernicus Marine (altimetría)",
     "metodo": "Anomalía del nivel del mar en el punto de costa más próximo, frente a la media 1993-2012.",
     "limites": [
-     "Altimetría de satélite, no mareógrafo: incluye marea meteorológica y variación estacional."
+     "Altimetría de satélite, no mareógrafo: incluye marea meteorológica y variación estacional.",
+     "COMPROBAR: la referencia es la media anual 1993-2012, no lo normal para la estación del año; en otoño el mar está más alto por ciclo estacional. No se publica hasta usar una normal estacional."
     ],
     "citabilidad": "media",
     "fecha_dato": "2026-10-16",
@@ -194,21 +143,22 @@
     "fuerza": 46.8,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    }
   ],
   "municipios": [
    {
-    "id": "46-municipios-camporrobles-pasara-de-32-a-39-dias-de-calor-extremo-al-ano-en-2050-e-2026-10-17",
+    "id": "46-municipios-un-modelo-climatico-de-alta-resolucion-proyecta-para-camporrobles-de-3-2026-10-17",
     "angulo": "municipios",
     "clase": "cifra",
-    "titular": "Camporrobles pasará de 32 a 39 días de calor extremo al año en 2050, el mayor salto de la provincia de Valencia",
+    "titular": "Un modelo climático de alta resolución proyecta para Camporrobles de 32 a 39 días de más de 35 °C al año hacia 2035-2050, el mayor salto de la provincia de Valencia",
     "dato": "días con máxima ≥ 35 °C: 32 (2005-2020) → 39 (2035-2050) · noches tropicales: 24 → 42 · clima análogo en 2050: Parla",
     "contexto": [],
     "fuente": "Open-Meteo Climate API (CMIP6 HighResMIP, ~2050) · modelo MRI_AGCM3_2_S",
     "metodo": "Proyección climática CMIP6 de alta resolución, periodo 2035-2050 frente a 2005-2020, en el punto de cada municipio.",
     "limites": [
-     "Un solo modelo climático: la cifra exacta variará entre modelos; la dirección y el orden de magnitud son robustos."
+     "Un solo modelo climático: la cifra exacta variará entre modelos; la dirección y el orden de magnitud son robustos.",
+     "COMPROBAR: cifra de un municipio calculada con reanálisis o modelo, no medida por AEMET en él. No se publica sin revisión."
     ],
     "citabilidad": "media",
     "fecha_dato": "2026-10-17",
@@ -218,13 +168,13 @@
     "fuerza": 29.8,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    },
    {
-    "id": "46-municipios-alzira-vive-el-2-o-ano-mas-lluvioso-desde-1981-631-3-mm-frente-a-406-2026-08-31",
+    "id": "46-municipios-alzira-lleva-su-2-o-ano-mas-lluvioso-hasta-el-31-de-agosto-de-la-ser-2026-08-31",
     "angulo": "municipios",
     "clase": "extremo",
-    "titular": "Alzira vive el 2.º año más lluvioso desde 1981: 631,3 mm frente a 406,4 de mediana; otros 11 municipios de Valencia están entre los tres más lluviosos",
+    "titular": "Alzira lleva su 2.º año más lluvioso (hasta el 31 de agosto) de la serie del reanálisis ERA5, que empieza en 1981: 631,3 mm frente a 406,4 de mediana; otros 11 municipios de Valencia están entre los tres más lluviosos",
     "dato": "631,3 mm hasta el 31 de agosto · mediana 406,4 mm · puesto 2 de 45",
     "contexto": [
      "También entre los tres más lluviosos: Algemesí, Cullera, Gandia, l'Olleria, Sueca, Tavernes de la Valldigna, l'Alcúdia."
@@ -232,7 +182,8 @@
     "fuente": "ERA5 (Copernicus) vía Open-Meteo · cálculo propio",
     "metodo": "Lluvia acumulada de 2026 hasta el 31 de agosto en la celda ERA5 de cada municipio, ordenada frente al mismo periodo de cada año desde 1981.",
     "limites": [
-     "Reanálisis en una celda de unos 25 km, no el pluviómetro. Dato hasta el cierre del último mes consolidado."
+     "Reanálisis en una celda de unos 25 km, no el pluviómetro. Dato hasta el cierre del último mes consolidado.",
+     "COMPROBAR: cifra de un municipio calculada con reanálisis o modelo, no medida por AEMET en él. No se publica sin revisión."
     ],
     "citabilidad": "media",
     "fecha_dato": "2026-08-31",
@@ -242,19 +193,20 @@
     "fuerza": 27.2,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    },
    {
-    "id": "46-municipios-otono-al-118-de-lo-normal-en-valencia-de-oliva-60-a-sagunt-sagu-2026-10-10",
+    "id": "46-municipios-otono-al-118-de-la-lluvia-normal-en-valencia-segun-el-reanalisis-er-2026-10-10",
     "angulo": "municipios",
     "clase": "cifra",
-    "titular": "Otoño al 118 % de lo normal en Valencia: de Oliva (60 %) a Sagunt/Sagunto (136 %)",
+    "titular": "Otoño al 118 % de la lluvia normal en Valencia, según el reanálisis ERA5: de Oliva (60 %) a Sagunt/Sagunto (136 %)",
     "dato": "70 municipios · media 118 % · 0 por debajo del 50 % · 0 por encima del 150 %",
     "contexto": [],
     "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
     "metodo": "Lluvia acumulada del otoño (desde el 1 de septiembre hasta el 10 de octubre) en la celda ERA5 de cada municipio, frente a la normal 1991-2020 del mismo periodo.",
     "limites": [
-     "Reanálisis en una celda de unos 25 km, no el pluviómetro. ERA5 se consolida con unos seis días de retraso."
+     "Reanálisis en una celda de unos 25 km, no el pluviómetro. ERA5 se consolida con unos seis días de retraso.",
+     "COMPROBAR: cifra de un municipio calculada con reanálisis o modelo, no medida por AEMET en él. No se publica sin revisión."
     ],
     "citabilidad": "media",
     "fecha_dato": "2026-10-10",
@@ -264,96 +216,75 @@
     "fuerza": 19.0,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    }
   ],
   "impacto": [
    {
-    "id": "46-impacto-valencia-tendra-aviso-rojo-de-aemet-por-lluvias-desde-el-18-de-octubre-2026-10-17",
+    "id": "46-impacto-los-satelites-de-la-nasa-detectaron-5-focos-de-calor-en-comunidad-vale-2026-10-17",
     "angulo": "impacto",
-    "clase": "record",
-    "titular": "Valencia tendrá aviso rojo de AEMET por lluvias desde el 18 de octubre a las 10:00 (Litoral sur de Valencia)",
-    "dato": "2 rojos · 7 naranjas · 19 amarillos vigentes o anunciados · desde el 18 de julio: 414 avisos-zona",
-    "contexto": [],
-    "fuente": "AEMET vía MeteoAlarm",
-    "metodo": "Avisos vigentes o ya anunciados por AEMET en las zonas de la provincia; acumulado por fecha de inicio.",
-    "limites": [
-     "Nunca contradecir ni matizar un aviso de AEMET con otro dato.",
-     "Comprobar la hora de inicio y fin en aemet.es antes de publicar."
-    ],
-    "citabilidad": "alta",
-    "fecha_dato": "2026-10-17",
-    "edad_dias": 0,
-    "provisional": false,
-    "pagina": "https://calentamientoglobal.es/avisos-meteorologicos/",
-    "fuerza": 100.0,
-    "csv": null,
-    "grafico": null,
-    "requiere_revision": false
-   },
-   {
-    "id": "46-impacto-5-focos-de-calor-activos-en-comunidad-valenciana-en-las-ultimas-48-hor-2026-10-17",
-    "angulo": "impacto",
-    "clase": "extremo",
-    "titular": "5 focos de calor activos en Comunidad Valenciana en las últimas 48 horas (satélite)",
+    "clase": "cifra",
+    "titular": "Los satélites de la NASA detectaron 5 focos de calor en Comunidad Valenciana (toda la comunidad) en las 48 horas previas al 17 de octubre",
     "dato": "5 focos · 0 días seguidos con fuego · 14 días con fuego en 2026",
     "contexto": [],
     "fuente": "NASA FIRMS (VIIRS)",
     "metodo": "Detecciones de puntos calientes por satélite en la comunidad autónoma, ventana de 48 horas.",
     "limites": [
-     "Un foco satelital no equivale a un incendio declarado: contrastar con el servicio autonómico."
+     "Un foco satelital no equivale a un incendio declarado: contrastar con el servicio autonómico.",
+     "COMPROBAR: los focos incluyen quemas agrícolas y fuentes industriales fijas, y los «días con fuego» salen de un archivo propio sin auditar. No se publica."
     ],
     "citabilidad": "media",
     "fecha_dato": "2026-10-17",
     "edad_dias": 0,
     "provisional": false,
     "pagina": "https://calentamientoglobal.es/incendios-forestales-espana/",
-    "fuerza": 68.0,
+    "fuerza": 29.8,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    },
    {
-    "id": "46-impacto-187-muertes-atribuibles-al-calor-en-valencia-desde-el-1-de-junio-segu-2026-10-16",
+    "id": "46-impacto-187-muertes-atribuibles-al-calor-en-valencia-entre-el-1-de-junio-y-el-2026-09-30",
     "angulo": "impacto",
     "clase": "cifra",
-    "titular": "187 muertes atribuibles al calor en Valencia desde el 1 de junio, según el sistema MoMo",
-    "dato": "187 atribuibles · España: 5705 · dato hasta el 16 de octubre",
+    "titular": "187 muertes atribuibles al calor en Valencia entre el 1 de junio y el 30 de septiembre, según el sistema MoMo del Instituto de Salud Carlos III",
+    "dato": "187 defunciones atribuibles al exceso de temperatura entre el 1 de junio y el 30 de septiembre · España, en el mismo periodo: 5.689",
     "contexto": [],
     "fuente": "MoMo · Centro Nacional de Epidemiología · Instituto de Salud Carlos III",
-    "metodo": "Estimación estadística del ISCIII del exceso de defunciones por temperatura (no muertes por golpe de calor).",
+    "metodo": "Estimación estadística del ISCIII del exceso de defunciones atribuible a la temperatura (no son muertes por golpe de calor).",
     "limites": [
-     "Se revisa a medida que entran datos: citar solo meses cerrados como definitivos."
+     "Estimación que el ISCIII revisa a medida que entran defunciones: citar como «según la estimación del sistema MoMo».",
+     "COMPROBAR: el generador de calor_mortalidad.json suma valores diarios ya redondeados y el total se aparta del de MoMo (hasta 8 defunciones por provincia). No se publica hasta corregirlo."
     ],
     "citabilidad": "alta",
-    "fecha_dato": "2026-10-16",
-    "edad_dias": 1,
+    "fecha_dato": "2026-09-30",
+    "edad_dias": 17,
     "provisional": false,
     "pagina": "https://calentamientoglobal.es/muertes-por-calor-espana/",
-    "fuerza": 35.0,
+    "fuerza": 14.0,
     "csv": null,
     "grafico": null,
-    "requiere_revision": false
+    "requiere_revision": true
    }
   ]
  },
  "cifras": [
   {
-   "etiqueta": "Lluvia ayer (máximo provincial)",
+   "etiqueta": "Lluvia el 16 de octubre",
    "valor": "0 mm",
-   "nota": "València",
+   "nota": "en las 10 estaciones de AEMET de la provincia",
    "fuente": "AEMET"
   },
   {
-   "etiqueta": "Lluvia de la semana",
+   "etiqueta": "Lluvia de los últimos siete días",
    "valor": "0 mm",
-   "nota": "media de 11 estaciones",
+   "nota": "media de 10 estaciones de AEMET",
    "fuente": "AEMET"
   },
   {
-   "etiqueta": "Mar en Valencia",
+   "etiqueta": "Mar en la boya de Valencia",
    "valor": "24,3 °C",
-   "nota": "+0,6 °C frente a lo normal",
+   "nota": "dato del 17 de octubre",
    "fuente": "Puertos del Estado"
   },
   {
@@ -361,39 +292,9 @@
    "valor": "-0,5 °C",
    "nota": "máximas frente a lo normal, media de los municipios",
    "fuente": "AEMET"
-  },
-  {
-   "etiqueta": "Otoño (lluvia frente a lo normal)",
-   "valor": "118 %",
-   "nota": "media de 70 municipios",
-   "fuente": "ERA5"
-  },
-  {
-   "etiqueta": "Avisos AEMET desde el 18 de julio",
-   "valor": "414",
-   "nota": "7 rojos · 88 naranjas · 319 amarillos",
-   "fuente": "AEMET/MeteoAlarm"
-  },
-  {
-   "etiqueta": "Muertes atribuibles al calor (verano 2026)",
-   "valor": "187",
-   "nota": "desde el 1 de junio · España: 5705",
-   "fuente": "ISCIII (MoMo)"
-  },
-  {
-   "etiqueta": "Coste de desastres (Consorcio)",
-   "valor": "4423 M€",
-   "nota": "riesgos extraordinarios, acumulado",
-   "fuente": "Consorcio de Compensación de Seguros"
-  },
-  {
-   "etiqueta": "Días de más de 32 °C en 2026",
-   "valor": "22",
-   "nota": "normal 1991-2020: 18,5",
-   "fuente": "ERA5"
   }
  ],
- "n_items": 13,
+ "n_items": 10,
  "errores": [],
  "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · los datos de origen conservan la licencia de su organismo"
 }

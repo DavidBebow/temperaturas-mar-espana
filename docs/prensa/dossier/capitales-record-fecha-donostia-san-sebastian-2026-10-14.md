@@ -15,8 +15,8 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
-- Reanálisis en una celda de ~10 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
-- Antes de publicarlo, cotejar con el resumen diario de AEMET; si AEMET no lo confirma, no es noticia.
+- Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
+- COMPROBAR: pendiente de que AEMET publique el dato de la estación de San Sebastián (llega con 2-4 días de retraso).
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-gipuzkoa/
