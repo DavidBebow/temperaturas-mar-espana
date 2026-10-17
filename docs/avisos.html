@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Avisos meteorológicos activos en España · calentamientoglobal.es</title>
+<title>Avisos meteorológicos activos y previstos en España · calentamientoglobal.es</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -23,6 +23,12 @@
   .chip.sel{border-color:var(--tinta)}
   .chip .dot{width:9px;height:9px;border-radius:50%}
   .chip .n{font-weight:700}
+  .dias{display:inline-flex;background:#eef0ef;border-radius:980px;padding:3px;gap:2px}
+  .dia{border:0;background:transparent;border-radius:980px;padding:7px 13px;font:inherit;font-size:.82rem;
+       font-weight:600;color:var(--gris);cursor:pointer;display:flex;align-items:center;gap:6px}
+  .dia.sel{background:#fff;color:var(--tinta);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+  .dia .dot{width:8px;height:8px;border-radius:50%}
+  .sep{width:1px;height:22px;background:var(--borde)}
   select{padding:8px 30px 8px 12px;font-size:.86rem;font-weight:600;color:var(--tinta);background:#fff;
          border:1.5px solid var(--borde);border-radius:980px;-webkit-appearance:none;appearance:none;cursor:pointer;
          background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236e6e73' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
@@ -34,6 +40,8 @@
   .aviso-vacio{position:absolute;z-index:800;top:14px;left:50%;transform:translateX(-50%);
      background:#e8f5ee;color:#0d5c36;font-weight:600;font-size:.85rem;border-radius:980px;padding:8px 18px;
      box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  .aviso-vacio button{border:0;background:none;font:inherit;font-weight:700;color:inherit;text-decoration:underline;cursor:pointer;padding:0;margin-left:4px}
+  .aviso-prox{background:#fff4e8;color:#8a3d00}
   /* panel de detalle */
   .panel{position:absolute;z-index:900;top:12px;right:12px;bottom:12px;width:min(330px,88vw);
      background:#fff;border-radius:16px;box-shadow:0 10px 34px rgba(0,0,0,.18);
@@ -55,6 +63,8 @@
   .card .zona{font-size:.82rem;margin:5px 0 2px}
   .card .vig{font-size:.74rem;color:var(--gris)}
   .panel-vacio{padding:26px 16px;text-align:center;color:#0d5c36;font-weight:600;font-size:.9rem}
+  .panel-sec{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);margin:8px 2px 0}
+  .card.futura{opacity:.8;background:#fbfbfd}
   /* leyenda */
   .leyenda{position:absolute;z-index:800;left:12px;bottom:12px;background:#fff;border-radius:12px;
      box-shadow:0 2px 12px rgba(0,0,0,.14);padding:10px 13px;font-size:.75rem;display:flex;gap:12px}
@@ -64,22 +74,26 @@
   .pie a{color:var(--gris)}
   @media(max-width:640px){
     .panel{top:auto;left:8px;right:8px;bottom:8px;max-height:55%;width:auto}
-    .leyenda{bottom:auto;top:12px;left:12px;flex-direction:column;gap:5px}
+    .leyenda{bottom:auto;top:12px;left:auto;right:12px;flex-direction:column;gap:5px}
+    .aviso-vacio{top:auto;bottom:12px;left:12px;right:12px;transform:none;border-radius:14px;text-align:center;font-size:.8rem}
+    .sep{display:none}
   }
 </style>
 </head>
 <body>
 <div class="cab">
-  <h1>⚠️ Avisos meteorológicos activos en España</h1>
+  <h1>⚠️ Avisos meteorológicos en España</h1>
   <div class="act" id="actualizado">Cargando avisos oficiales de AEMET…</div>
   <div class="controles">
+    <span class="dias" id="dias" role="tablist" aria-label="Día"></span>
+    <span class="sep" aria-hidden="true"></span>
     <select id="selCom"><option value="">Todas las comunidades</option></select>
     <span id="chips" style="display:contents"></span>
   </div>
 </div>
 <div class="mapa-zona">
   <div id="mapa"></div>
-  <div class="aviso-vacio" id="vacio" hidden>✓ Sin avisos meteorológicos activos en España</div>
+  <div class="aviso-vacio" id="vacio" hidden></div>
   <div class="panel" id="panel">
     <div class="panel-cab">
       <div><h2 id="panelTitulo"></h2><div class="sub" id="panelSub"></div></div>
@@ -94,7 +108,7 @@
     <span><i style="background:var(--sin)"></i>Sin avisos</span>
   </div>
 </div>
-<div class="pie">Avisos oficiales de <strong>AEMET</strong> vía <strong>MeteoAlarm</strong> (EUMETNET) · Actualización horaria · Los avisos finalizados se retiran automáticamente ·
+<div class="pie">Avisos oficiales de <strong>AEMET</strong> vía <strong>MeteoAlarm</strong> (EUMETNET) · Se actualiza cada 30 minutos · Muestra hoy y los avisos que AEMET ya ha anunciado para mañana y pasado mañana ·
   <a href="https://calentamientoglobal.es/observatorio-climatico/" target="_top">Observatorio Climático de calentamientoglobal.es</a></div>
 
 <script>
@@ -125,7 +139,8 @@
            String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   };
 
-  let datos, capa, filtro = 'todos', seleccion = '', todosLosAvisos = [];
+  let datos, capa, filtro = 'todos', seleccion = '', todosLosAvisos = [], dia = 0;
+  const NOMBRE_DIA = ['Hoy', 'Mañana', 'Pasado mañana'];
   const porCom = {};      // slug -> [avisos] (según filtro)
   const nombreCom = {};   // slug -> nombre bonito del geojson
 
@@ -141,24 +156,74 @@
     return a;
   };
 
-  // Vigencia comprobada en el navegador: se ocultan los avisos ya finalizados y los que
-  // empiezan después de hoy. Así la página es veraz aunque el JSON lleve horas sin refrescarse.
-  function vigentesAhora(){
+  // Vigencia comprobada en el navegador: se ocultan los avisos ya finalizados. Cada aviso se
+  // reparte en los días que toca (hoy, mañana, pasado mañana) según su inicio y su fin, así que
+  // un aviso anunciado el miércoles para el sábado ya se ve desde el miércoles en su día.
+  const limitesDia = k => {
+    const ini = new Date(); ini.setHours(0, 0, 0, 0); ini.setDate(ini.getDate() + k);
+    const fin = new Date(ini); fin.setHours(23, 59, 59, 999);
+    return [ini.getTime(), fin.getTime()];
+  };
+  function avisosDelDia(k){
     const ahora = Date.now();
-    const finHoy = new Date(); finHoy.setHours(23, 59, 59, 999);
+    const [ini, fin] = limitesDia(k);
     return todosLosAvisos
       .map(corregirZona)
-      .filter(a => new Date(a.fin).getTime() > ahora && new Date(a.inicio).getTime() <= finHoy.getTime())
+      .filter(a => {
+        const ai = new Date(a.inicio).getTime(), af = new Date(a.fin).getTime();
+        return af > ahora && af > ini && ai <= fin;
+      })
       .map(a => Object.assign({}, a, {activo_ya: new Date(a.inicio).getTime() <= ahora}));
   }
+  // Lo que empieza después del día elegido (hasta pasado mañana), para el «Próximamente» del panel.
+  function avisosPosteriores(k){
+    const [, fin] = limitesDia(k), [, finUlt] = limitesDia(2);
+    return todosLosAvisos.map(corregirZona).filter(a => {
+      const ai = new Date(a.inicio).getTime();
+      return ai > fin && ai <= finUlt;
+    }).map(a => Object.assign({}, a, {activo_ya: false}));
+  }
+  const resumenNiveles = lst => {
+    const n = {rojo:0, naranja:0, amarillo:0}; lst.forEach(a => n[a.nivel]++);
+    return [n.rojo && n.rojo + ' rojo' + (n.rojo>1?'s':''), n.naranja && n.naranja + ' naranja' + (n.naranja>1?'s':''),
+            n.amarillo && n.amarillo + ' amarillo' + (n.amarillo>1?'s':'')].filter(Boolean).join(', ');
+  };
   function refrescarVigencia(){
-    datos.avisos = vigentesAhora();
+    datos.avisos = avisosDelDia(dia);
     const gen = new Date(datos.generado);
     const fmt = d => d.toLocaleString('es-ES', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'});
     const fmtH = d => d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
     $('actualizado').textContent = 'Datos oficiales AEMET · actualizado ' + fmt(gen) +
       ' · vigencia comprobada a las ' + fmtH(new Date());
-    $('vacio').hidden = datos.avisos.length > 0;
+    pintarAvisoVacio();
+  }
+  // Píldora sobre el mapa: si el día elegido está tranquilo, lo dice; y si estamos en «Hoy» y
+  // AEMET ya ha anunciado naranjas o rojos para los próximos días, lo avisa con un enlace.
+  function pintarAvisoVacio(){
+    const el = $('vacio'); el.className = 'aviso-vacio'; el.innerHTML = '';
+    let prox = -1, lstProx = [];
+    if (dia === 0) for (const k of [1, 2]) {
+      const l = avisosDelDia(k).filter(a => !a.activo_ya && (a.nivel === 'rojo' || a.nivel === 'naranja'));
+      if (l.length) { prox = k; lstProx = l; break; }
+    }
+    const vacio = datos.avisos.length === 0;
+    if (!vacio && prox < 0) { el.hidden = true; return; }
+    el.hidden = false;
+    let txt = vacio ? '✓ Sin avisos meteorológicos ' + (dia === 0 ? 'hoy' : NOMBRE_DIA[dia].toLowerCase()) + ' en España' : '';
+    if (prox > 0) {
+      el.classList.add('aviso-prox');
+      txt += (txt ? ' · ' : '⚠️ ') + NOMBRE_DIA[prox] + ': ' + resumenNiveles(lstProx) + ' anunciados';
+    }
+    el.textContent = txt;
+    if (prox > 0) {
+      const b = document.createElement('button'); b.textContent = 'Ver';
+      b.onclick = () => cambiarDia(prox);
+      el.appendChild(b);
+    }
+  }
+  function cambiarDia(k){
+    dia = k; refrescarVigencia(); recalcular(); pintarControles();
+    capa.setStyle(estilo); if (seleccion) abrirPanel(seleccion);
   }
 
   function avisosFiltrados(){ return datos.avisos.filter(a => filtro==='todos' || a.nivel===filtro); }
@@ -186,15 +251,14 @@
     seleccion = slug; capa.setStyle(estilo);
     const lst = (porCom[slug] || []).slice().sort((a,b) => ORDEN[b.nivel]-ORDEN[a.nivel]);
     $('panelTitulo').textContent = nombreCom[slug] || slug;
+    const etiquetaDia = NOMBRE_DIA[dia].toLowerCase();
     $('panelSub').textContent = lst.length
-      ? lst.length + ' aviso' + (lst.length>1?'s':'') + ' activo' + (lst.length>1?'s':'')
-      : 'Sin avisos con el filtro actual';
+      ? lst.length + ' aviso' + (lst.length>1?'s':'') + ' ' + etiquetaDia
+      : 'Sin avisos ' + etiquetaDia + (filtro !== 'todos' ? ' con el filtro actual' : '');
     const cont = $('panelLista'); cont.innerHTML = '';
-    if (!lst.length){
-      cont.innerHTML = '<div class="panel-vacio">✓ Sin avisos meteorológicos activos<br>en esta comunidad</div>';
-    } else lst.forEach(a => {
+    const tarjeta = (a, futura) => {
       const c = document.createElement('div');
-      c.className = 'card ' + a.nivel;
+      c.className = 'card ' + a.nivel + (futura ? ' futura' : '');
       c.innerHTML = '<div class="tipo">' + a.icono + ' ' + a.tipo +
         '<span class="nivel ' + a.nivel + '">' + a.nivel + '</span></div>' +
         '<div class="zona"><strong>' + a.zona + '</strong>' +
@@ -202,7 +266,20 @@
         '<div class="vig">' + (a.activo_ya ? 'En vigor' : 'Desde ' + hora(a.inicio)) +
         ' · hasta ' + hora(a.fin) + '</div>';
       cont.appendChild(c);
-    });
+    };
+    if (!lst.length){
+      cont.innerHTML = '<div class="panel-vacio">✓ Sin avisos meteorológicos ' + etiquetaDia + '<br>en esta comunidad</div>';
+    } else lst.forEach(a => tarjeta(a, false));
+    // Próximamente: lo que AEMET ya ha anunciado para después del día elegido.
+    const prox = avisosPosteriores(dia)
+      .filter(a => (slugDe(a.comunidad) || slugDe(a.provincia)) === slug && (filtro === 'todos' || a.nivel === filtro))
+      .sort((a,b) => new Date(a.inicio) - new Date(b.inicio) || ORDEN[b.nivel] - ORDEN[a.nivel]);
+    if (prox.length){
+      const h = document.createElement('div'); h.className = 'panel-sec';
+      h.textContent = 'Próximamente · ' + prox.length + ' aviso' + (prox.length>1?'s':'') + ' anunciado' + (prox.length>1?'s':'');
+      cont.appendChild(h);
+      prox.forEach(a => tarjeta(a, true));
+    }
     $('panel').classList.add('abierto');
     $('selCom').value = slug;
   }
@@ -212,6 +289,18 @@
   }
 
   function pintarControles(){
+    const dias = $('dias'); dias.innerHTML = '';
+    NOMBRE_DIA.forEach((nom, k) => {
+      const lst = avisosDelDia(k);
+      const max = lst.reduce((m,a) => ORDEN[a.nivel] > (ORDEN[m]||0) ? a.nivel : m, '');
+      const b = document.createElement('button');
+      b.className = 'dia' + (k === dia ? ' sel' : ''); b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', k === dia ? 'true' : 'false');
+      b.innerHTML = (max ? '<span class="dot" style="background:' + COLOR[max] + '"></span>' : '') + nom +
+        (lst.length ? ' <span class="n">' + lst.length + '</span>' : '');
+      b.onclick = () => cambiarDia(k);
+      dias.appendChild(b);
+    });
     const n = {rojo:0, naranja:0, amarillo:0};
     datos.avisos.forEach(a => n[a.nivel]++);
     const chips = $('chips'); chips.innerHTML = '';
@@ -265,7 +354,8 @@
         l.on('mouseout', () => capa.resetStyle(l) || capa.setStyle(estilo));
         const cnt = () => (porCom[slug]||[]).length;
         l.bindTooltip(() => '<strong>' + nombre + '</strong><br>' +
-          (cnt() ? cnt() + ' aviso' + (cnt()>1?'s':'') + ' · nivel máx. ' + nivelMax(slug) : 'Sin avisos activos'),
+          (cnt() ? cnt() + ' aviso' + (cnt()>1?'s':'') + ' ' + NOMBRE_DIA[dia].toLowerCase() + ' · nivel máx. ' + nivelMax(slug)
+                 : 'Sin avisos ' + NOMBRE_DIA[dia].toLowerCase()),
           {sticky:true});
       }
     }).addTo(mapa);
