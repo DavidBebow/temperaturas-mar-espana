@@ -7,8 +7,9 @@ sobre la temporada en curso, listo para que un medio lo publique con su ciudad:
 titulares, cifras, gráfico por capital, CSV, texto de método y límites.
 
 Series: ERA5 (Copernicus/ECMWF) vía Open-Meteo Archive, celda de cada capital, diario
-desde 1940 (las mismas coordenadas y modelo que docs/archivo/NN.json). Se descarga en
-cada ejecución (13 peticiones de 4 capitales) y se reduce a agregados anuales que sí se guardan.
+desde 1940. No descarga nada: lee la serie que el workflow «Actualizar archivo de las
+capitales» mantiene en archivo/era5/NN/ (hasta_2025_era5.csv.gz + AAAA.csv), la misma
+que alimenta docs/archivo/NN.json, y la reduce a agregados anuales.
 
 Escribe (docs/prensa/paquetes/):
   series/NN.json            agregados por año y capital (estaciones, noches, días de calor, heladas, lluvia)
@@ -22,13 +23,11 @@ from __future__ import annotations
 
 import argparse
 import csv
+import glob
+import gzip
 import json
 import math
 import sys
-import time
-import urllib.error
-import urllib.parse
-import urllib.request
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -42,13 +41,14 @@ AHORA = datetime.now(timezone.utc).replace(microsecond=0)
 sys.path.insert(0, str(RAIZ / "scripts"))
 from hallazgos_prensa import PROVINCIAS, MESES, f1, fecha_larga, fecha_dia  # noqa: E402
 
-OPEN_METEO = "https://archive-api.open-meteo.com/v1/archive"
+ERA5_DIR = RAIZ / "archivo" / "era5"
 DESDE = 1940
 INICIO_TENDENCIA = 1970          # las tendencias se calculan 1970-último año completo (como Climate Central)
 NORMAL = (1991, 2020)
 FUENTE = "ERA5 (Copernicus/ECMWF) vía Open-Meteo Archive, CC BY 4.0 · cálculo propio de calentamientoglobal.es"
 LIMITES_BASE = [
     "Reanálisis ERA5 en la celda (~25 km) de cada capital, no la estación de AEMET: los valores absolutos pueden diferir unas décimas; la tendencia es la robusta.",
+    "ERA5 se consolida con unos seis días de retraso: el dato «en curso» llega hasta el último día disponible, no hasta ayer.",
     f"Tendencia lineal {INICIO_TENDENCIA}-{HOY.year - 1}; el año en curso no entra en la tendencia.",
 ]
 
@@ -97,34 +97,33 @@ def ordinal(n: int) -> str:
 # ----------------------------------------------------------------------------
 # descarga y agregados por año
 # ----------------------------------------------------------------------------
-LOTE = 4   # capitales por petición: menos peticiones = menos 429 (la API acepta listas de coordenadas)
+def cargar_serie(cod: str) -> dict | None:
+    """Serie diaria de la capital desde archivo/era5/NN/: el histórico comprimido (modelo era5)
+    más los CSV anuales posteriores. Devuelve el mismo formato que el 'daily' de Open-Meteo."""
+    d = ERA5_DIR / cod
+    hist = d / "hasta_2025_era5.csv.gz"
+    if not hist.exists():
+        hist = d / "hasta_2025.csv.gz"
+    if not hist.exists():
+        return None
+    filas = {}
+    with gzip.open(hist, "rt", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            filas[r["fecha"]] = r
+    for p in sorted(glob.glob(str(d / "[12][0-9][0-9][0-9].csv"))):
+        with open(p, encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                filas[r["fecha"]] = r
 
-
-def descargar_lote(coords, reintentos=8):
-    """Descarga las series diarias de varias capitales en una sola petición. Devuelve una lista de 'daily'."""
-    q = urllib.parse.urlencode({
-        "latitude": ",".join(f"{la:.4f}" for la, _ in coords), "longitude": ",".join(f"{lo:.4f}" for _, lo in coords),
-        "start_date": f"{DESDE}-01-01", "end_date": AYER.isoformat(),
-        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum", "timezone": "Europe/Madrid", "models": "era5",
-    })
-    for i in range(reintentos):
+    def num(v):
         try:
-            with urllib.request.urlopen(f"{OPEN_METEO}?{q}", timeout=180) as r:
-                datos = json.load(r)
-            if isinstance(datos, dict):
-                datos = [datos]
-            return [d["daily"] for d in datos]
-        except urllib.error.HTTPError as e:
-            if i == reintentos - 1:
-                raise
-            espera = min(600, 30 * (2 ** i)) if e.code == 429 else 15
-            print(f"    · reintento {i + 1} (HTTP {e.code}) — espero {espera} s", flush=True)
-            time.sleep(espera)
-        except Exception as e:  # noqa: BLE001
-            if i == reintentos - 1:
-                raise
-            print(f"    · reintento {i + 1} ({type(e).__name__}) — espero 15 s", flush=True)
-            time.sleep(15)
+            return float(v) if v not in ("", None) else None
+        except ValueError:
+            return None
+
+    fechas = sorted(filas)
+    return {"time": fechas, "temperature_2m_max": [num(filas[f]["tmax"]) for f in fechas],
+            "temperature_2m_min": [num(filas[f]["tmin"]) for f in fechas], "precipitation_sum": [num(filas[f]["lluvia"]) for f in fechas]}
 
 
 def normales_doy(fechas, tmed):
@@ -155,7 +154,7 @@ def agregar(d: dict) -> dict:
     def A(y):
         if y not in anios:
             anios[y] = {"dias": 0, "t": 0.0, "nt20": 0, "nt25": 0, "d30": 0, "d35": 0, "helada": 0, "ll": 0.0, "ll20": 0, "llmax": 0.0,
-                        "primera_helada": None, "ultima_helada": None, "primer_30": None, "ultimo_30": None,
+                        "primera_helada": None, "ultima_helada": None, "primer_30": None, "ultimo_30": None, "hasta": None,
                         "est": {k: {"dias": 0, "t": 0.0, "sobre_normal": 0, "ll": 0.0} for k in ESTACIONES}}
         return anios[y]
 
@@ -165,6 +164,7 @@ def agregar(d: dict) -> dict:
         y, m = int(f[:4]), int(f[5:7])
         a = A(y)
         a["dias"] += 1
+        a["hasta"] = f
         a["t"] += tmed[i]
         p = pp[i] or 0.0
         a["ll"] += p
@@ -208,7 +208,7 @@ def agregar(d: dict) -> dict:
             completo = e["dias"] >= 85
             est[k] = {"t": round(e["t"] / e["dias"], 2) if e["dias"] else None, "sobre_normal": e["sobre_normal"], "ll": round(e["ll"], 1),
                       "dias": e["dias"], "completo": completo}
-        out[y] = {"dias": a["dias"], "completo": a["dias"] >= 360, "t": round(a["t"] / a["dias"], 2) if a["dias"] else None,
+        out[y] = {"dias": a["dias"], "completo": a["dias"] >= 360, "hasta": a["hasta"], "t": round(a["t"] / a["dias"], 2) if a["dias"] else None,
                   "nt20": a["nt20"], "nt25": a["nt25"], "d30": a["d30"], "d35": a["d35"], "helada": a["helada"],
                   "ll": round(a["ll"], 1), "ll20": a["ll20"], "llmax": round(a["llmax"], 1),
                   "primera_helada": a["primera_helada"], "ultima_helada": a["ultima_helada"],
@@ -271,6 +271,7 @@ def paquete_estacion(nombre_est: str):
         delta_sn = t2["pendiente"] * n_anios if t2 else None
         # el año en curso, si la estación ya ha empezado
         actual = (agg.get(HOY.year) or {}).get("est", {}).get(nombre_est)
+        ult_dato = (agg.get(HOY.year) or {}).get("hasta")
         ultimos = [y for y, v in zip(xs, ys) if v is not None][-10:]
         media_ult10 = sum(v for y, v in zip(xs, ys) if y in ultimos) / max(1, len(ultimos))
         ini = [v for y, v in zip(xs, ys) if INICIO_TENDENCIA <= y < INICIO_TENDENCIA + 10 and v is not None]
@@ -284,7 +285,7 @@ def paquete_estacion(nombre_est: str):
                 "mas_calido": {"anio": orden[0][1], "t": round(orden[0][0], 2)} if orden else None,
                 "mas_frio": {"anio": orden[-1][1], "t": round(orden[-1][0], 2)} if orden else None,
                 "ultimo": {"anio": ult, "t": (agg.get(ult) or {}).get("est", {}).get(nombre_est, {}).get("t"), "puesto": puesto_ult, "de": len(orden)},
-                "en_curso": {"anio": HOY.year, "t": actual.get("t"), "dias": actual.get("dias"), "sobre_normal": actual.get("sobre_normal")} if actual and actual.get("dias") else None,
+                "en_curso": {"anio": HOY.year, "t": actual.get("t"), "dias": actual.get("dias"), "sobre_normal": actual.get("sobre_normal"), "hasta": ult_dato} if actual and actual.get("dias") else None,
                 "serie": [(y, v, sn) for y, v, sn in zip(xs, ys, ys2)]}
 
     def textos(cap, prov, r):
@@ -301,7 +302,7 @@ def paquete_estacion(nombre_est: str):
         if r["ultimo"]["puesto"]:
             ctx.append(f"{art} {etiqueta} de {ult} fue {'la' if fem else 'el'} {ordinal(r['ultimo']['puesto'])} más cálid{'a' if fem else 'o'} de {r['ultimo']['de']} desde {INICIO_TENDENCIA}.")
         if r["en_curso"] and r["en_curso"]["t"] is not None:
-            ctx.append(f"{art} {etiqueta} de {HOY.year}, hasta ayer ({r['en_curso']['dias']} días): {f1(r['en_curso']['t'])} °C de media, con {r['en_curso']['sobre_normal']} días por encima de lo normal.")
+            ctx.append(f"{art} {etiqueta} de {HOY.year}, hasta el {fecha_dia(r['en_curso']['hasta']) if r['en_curso'].get('hasta') else 'último dato'} ({r['en_curso']['dias']} días): {f1(r['en_curso']['t'])} °C de media, con {r['en_curso']['sobre_normal']} días por encima de lo normal.")
         return tit, dato, ctx
 
     return {"id": nombre_est, "titulo": f"{ARTICULO[nombre_est]} {etiqueta} se calienta", "ventana": ventana, "unidad": "°C", "etiqueta_serie": f"temperatura media del {etiqueta} (°C)",
@@ -332,16 +333,18 @@ def paquete_contador(id_, titulo, clave, etiqueta_serie, unidad, ventana, titula
         return {"delta": round(t["pendiente"] * n_anios, 1), "pendiente_decada": round(t["pendiente"] * 10, 2), "r2": round(t["r2"], 2),
                 "media_1970s": round(m_ini, 1), "media_ult10": round(m_fin, 1),
                 "max": {"anio": orden[0][1], "v": orden[0][0]} if orden else None,
-                "en_curso": {"anio": HOY.year, "v": act.get(clave), "dias": act.get("dias")} if act else None,
+                "en_curso": {"anio": HOY.year, "v": act.get(clave), "dias": act.get("dias"), "hasta": act.get("hasta")} if act else None,
                 "serie": [(y, v, None) for y, v in zip(xs, ys)]}
 
     def textos(cap, prov, r):
         tit, dato = titular_fn(cap, r)
+        if abs(r["delta"]) < 1:
+            tit = f"{cap}: sin cambio apreciable en {etiqueta_serie} desde {INICIO_TENDENCIA}"
         ctx = []
         if r["max"]:
             ctx.append(f"El año con más: {r['max']['anio']} ({int(r['max']['v'])}).")
         if r["en_curso"] and r["en_curso"]["v"] is not None:
-            ctx.append(f"En {HOY.year}, hasta ayer: {int(r['en_curso']['v'])}.")
+            ctx.append(f"En {HOY.year}, hasta el {fecha_dia(r['en_curso']['hasta']) if r['en_curso'].get('hasta') else 'último dato'}: {int(r['en_curso']['v'])}.")
         ctx.append(f"Media {INICIO_TENDENCIA}-{INICIO_TENDENCIA + 9}: {f1(r['media_1970s'])} al año; últimos diez años: {f1(r['media_ult10'])}.")
         return tit, dato, ctx
 
@@ -372,6 +375,8 @@ def paquete_fecha(id_, titulo, clave, etiqueta_serie, ventana, titular_fn, metod
 
     def textos(cap, prov, r):
         tit, dato = titular_fn(cap, r)
+        if abs(r["delta"]) < 3:
+            tit = f"{titulo.split(' llega')[0]} en {cap} llega en fechas parecidas a las de {INICIO_TENDENCIA} ({signo(r['delta'], 0)} días)"
         ctx = []
         if r["anios_sin"]:
             ctx.append(f"Años sin el fenómeno: {', '.join(str(y) for y in r['anios_sin'][-8:])}.")
@@ -390,7 +395,7 @@ def fecha_desde_doy(d, anio=2025):
 PAQUETES = [
     paquete_estacion("otono"),
     paquete_fecha("primera_helada", "La primera helada llega más tarde", "primera_helada", "día de la primera helada (mínima ≤ 0 °C)", [10, 11, 12],
-                  lambda cap, r: (f"La primera helada llega en {cap} {int(abs(r['delta']))} días {'más tarde' if r['delta'] > 0 else 'antes'} que en {INICIO_TENDENCIA}",
+                  lambda cap, r: (f"La primera helada llega en {cap} {int(round(abs(r['delta'])))} días {'más tarde' if r['delta'] > 0 else 'antes'} que en {INICIO_TENDENCIA}",
                                   f"de media, hacia el {fecha_desde_doy(r['media_1970s'])} en los años 70 y hacia el {fecha_desde_doy(r['media_ult10'])} en los últimos diez · tendencia {signo(r['delta'], 0)} días ({signo(r['pendiente_decada'])} por década)"),
                   "Primer día a partir del 1 de julio con mínima ≤ 0 °C en la celda ERA5 de la capital; tendencia lineal sobre el día del año. Solo capitales con helada en al menos el 80 % de los años.",
                   "Una primera helada más tardía alarga la temporada de cultivo y de plagas, retrasa el fin del polen y desplaza el calendario agrícola."),
@@ -410,7 +415,7 @@ PAQUETES = [
                      "Días con mínima ≤ 0 °C por año natural en la celda ERA5 de la capital; tendencia lineal.",
                      "Menos heladas alteran el reposo invernal de los frutales, favorecen plagas y reducen la reserva de nieve.", ranking_desc=False, minimo_media=5),
     paquete_contador("lluvia_extrema", "Lluvia más concentrada", "ll20", "días con 20 mm o más al año", "días", [9, 10, 11, 12, 1, 2, 3, 4],
-                     lambda cap, r: (f"{cap} tiene {f1(abs(r['delta']))} días de lluvia intensa (≥ 20 mm) {'más' if r['delta'] > 0 else 'menos'} al año que en {INICIO_TENDENCIA}",
+                     lambda cap, r: (f"{cap} tiene {f1(abs(r['delta']))} {'día' if abs(r['delta']) == 1 else 'días'} de lluvia intensa (≥ 20 mm) {'más' if r['delta'] > 0 else 'menos'} al año que en {INICIO_TENDENCIA}",
                                      f"de {f1(r['media_1970s'])} días al año en los 70 a {f1(r['media_ult10'])} en los últimos diez · tendencia {signo(r['delta'])} ({signo(r['pendiente_decada'])} por década)"),
                      "Días con precipitación ≥ 20 mm por año natural en la celda ERA5 de la capital; tendencia lineal. La lluvia de ERA5 es una media de celda: subestima los chubascos locales.",
                      "La lluvia que cae en pocos días intensos erosiona, inunda y se aprovecha peor que la misma cantidad repartida.", minimo_media=1),
@@ -478,7 +483,6 @@ def csv_capital(out: Path, paq: dict, r: dict):
 # ----------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--sin-descarga", action="store_true", help="usar los agregados ya guardados en series/")
     ap.add_argument("--solo", help="código de provincia para probar")
     ap.add_argument("--sin-graficos", action="store_true")
     ap.add_argument("--todos", action="store_true", help="gráficos de todos los paquetes, no solo los de temporada")
@@ -497,46 +501,29 @@ def main():
             cap = prov
         capitales[cod] = (cap, prov, slug)
 
-    # 1 · series → agregados (por lotes de LOTE capitales por petición)
+    # 1 · series → agregados
     series = {}
+    hasta = {}
     errores = []
-    pendientes = []
     for cod, (cap, prov, slug) in capitales.items():
         p = PAQ / "series" / f"{cod}.json"
-        if args.sin_descarga and p.exists():
-            series[cod] = {int(k): v for k, v in leer(p)["anios"].items()}
-            continue
-        c = coords.get(prov)
-        if not c:
-            errores.append(f"{cod} {prov}: sin coordenadas")
-            continue
-        pendientes.append((cod, c))
-    for i in range(0, len(pendientes), LOTE):
-        lote = pendientes[i:i + LOTE]
-        print(f"[lote {i // LOTE + 1}/{(len(pendientes) + LOTE - 1) // LOTE}] " + ", ".join(capitales[cod][0] for cod, _ in lote), flush=True)
         try:
-            diarios = descargar_lote([(c["lat"], c["lon"]) for _, c in lote])
-        except Exception as e:  # noqa: BLE001
-            diarios = [None] * len(lote)
-            errores.append(f"lote {i // LOTE + 1}: {type(e).__name__}: {e}")
-        for (cod, c), d in zip(lote, diarios):
-            cap, prov, slug = capitales[cod]
-            p = PAQ / "series" / f"{cod}.json"
+            d = cargar_serie(cod)
             if d is None:
-                if p.exists():
-                    series[cod] = {int(k): v for k, v in leer(p)["anios"].items()}
-                    print(f"    · {cap}: sin descarga, uso la serie guardada", flush=True)
-                continue
-            try:
-                agg = agregar(d)
-                series[cod] = agg
-                with open(p, "w", encoding="utf-8") as f:
-                    json.dump({"cod": cod, "capital": cap, "provincia": prov, "lat": c["lat"], "lon": c["lon"], "fuente": FUENTE, "desde": DESDE,
-                               "hasta": AYER.isoformat(), "generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "anios": agg}, f, ensure_ascii=False)
-                print(f"    · {cap}: {len(d['time'])} días → {len(agg)} años", flush=True)
-            except Exception as e:  # noqa: BLE001
-                errores.append(f"{cod} {cap}: {type(e).__name__}: {e}")
-        time.sleep(6)
+                raise FileNotFoundError(f"archivo/era5/{cod}: sin serie")
+            agg = agregar(d)
+            series[cod] = agg
+            hasta[cod] = d["time"][-1]
+            c = coords.get(prov, {})
+            with open(p, "w", encoding="utf-8") as f:
+                json.dump({"cod": cod, "capital": cap, "provincia": prov, "lat": c.get("lat"), "lon": c.get("lon"), "fuente": FUENTE, "desde": DESDE,
+                           "hasta": d["time"][-1], "generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "anios": agg}, f, ensure_ascii=False)
+            print(f"{cap}: {len(d['time'])} días ({d['time'][0]} → {d['time'][-1]}) → {len(agg)} años", flush=True)
+        except Exception as e:  # noqa: BLE001
+            errores.append(f"{cod} {cap}: {type(e).__name__}: {e}")
+            if p.exists():
+                series[cod] = {int(k): v for k, v in leer(p)["anios"].items()}
+                hasta[cod] = leer(p).get("hasta")
 
     # 2 · paquetes
     plt = None
@@ -577,8 +564,13 @@ def main():
         media = sum(deltas) / len(deltas)
         n_sube = sum(1 for d in deltas if d > 0)
         n_baja = sum(1 for d in deltas if d < 0)
-        top = filas[:5]
         u = paq["unidad"]
+        # capitales cuya celda ERA5 cambia mucho más que la mediana nacional: se marcan COMPROBAR y no encabezan el ranking
+        mediana = sorted(deltas)[len(deltas) // 2]
+        for x in filas:
+            x["revisar"] = bool(u == "°C" and mediana > 0 and x["delta"] > 1.6 * mediana)
+            x["limites"] = ([f"COMPROBAR con la estación de AEMET: la celda ERA5 de {x['capital']} muestra un cambio muy superior al del resto de capitales ({signo(x['delta'])} °C frente a una mediana de {signo(mediana)} °C); puede estar afectada por la orografía."] if x["revisar"] else [])
+        top = [x for x in filas if not x["revisar"]][:5]
         if paq["id"] in ESTACIONES:
             et = ESTACIONES[paq["id"]][1]
             hallazgos = [f"{ARTICULO[paq['id']]} {et} se ha calentado en {n_sube} de las {len(filas)} capitales desde {INICIO_TENDENCIA}: {signo(media)} °C de media.",
@@ -590,6 +582,9 @@ def main():
         elif u == "día del año":
             hallazgos = [f"La primera helada llega más tarde en {n_sube} de las {len(filas)} capitales con heladas: {int(round(media))} días de media desde {INICIO_TENDENCIA}.",
                          "Donde más se retrasa: " + ", ".join(f"{x['capital']} ({signo(x['delta'], 0)} días)" for x in top) + "."]
+        elif abs(media) < 0.5 and (n_sube < 0.7 * len(filas) and n_baja < 0.7 * len(filas)):
+            hallazgos = [f"{paq['titulo']}: sin tendencia clara en el conjunto de capitales; sube en {n_sube}, baja en {n_baja} y la media del cambio es {signo(media)} {u} al año desde {INICIO_TENDENCIA}.",
+                         "Donde más sube: " + ", ".join(f"{x['capital']} ({signo(x['delta'])})" for x in top) + "."]
         else:
             if paq["ranking_desc"]:
                 hallazgos = [f"{paq['titulo']}: suben en {n_sube} de {len(filas)} capitales; {signo(media, 0)} {u} al año de media desde {INICIO_TENDENCIA}.",
@@ -600,6 +595,7 @@ def main():
         salida = {"id": paq["id"], "titulo": paq["titulo"], "generado": AHORA.strftime("%Y-%m-%dT%H:%M:%SZ"), "de_temporada": de_temporada, "ventana": paq["ventana"],
                   "periodo": f"{INICIO_TENDENCIA}-{HOY.year - 1}", "fuente": FUENTE, "metodo": paq["metodo"], "limites": LIMITES_BASE,
                   "por_que_importa": paq["por_que_importa"], "hallazgos": hallazgos, "n_capitales": len(filas), "media_delta": round(media, 2),
+                  "mediana_delta": round(mediana, 2), "n_revisar": sum(1 for x in filas if x["revisar"]),
                   "unidad": u, "etiqueta_serie": paq["etiqueta_serie"], "capitales": filas,
                   "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · ERA5 conserva la licencia de Copernicus",
                   "contacto": "contacto@calentamientoglobal.es"}
