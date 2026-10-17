@@ -455,7 +455,8 @@ def calc_estacion_aemet(est: dict, nombre_est: str, ult: int):
     t = tendencia(xs, ys)
     if not t:
         return None
-    n_anios = ult - INICIO_TENDENCIA
+    # el cambio se mide en el periodo que de verdad cubre la serie (Ourense empieza en 1972: antes se extrapolaba a 1970)
+    n_anios = ult - xs[0]
     ini = [v for y, v in zip(xs, ys) if y < INICIO_TENDENCIA + 10]
     fin = [v for y, v in zip(xs, ys) if y > ult - 10]
     orden = sorted(zip(ys, xs), reverse=True)
@@ -516,8 +517,13 @@ def paquete_heladas_aemet():
             if not t:
                 continue
             cap, prov, slug = capitales[cod]
-            delta = round(t["pendiente"] * (ult - INICIO_TENDENCIA), 1)
+            delta = round(t["pendiente"] * (ult - xs[0]), 1)
             ne = nombre_estacion(est)
+            # Auditoría 17-10-2026 (verificación independiente): Córdoba salía con «7 días de helada menos» cuando
+            # la media de los setenta (14,1) y la de los últimos diez años (13,4) apenas cambian (r² = 0,04).
+            # La tendencia solo se publica si explica algo (r² ≥ 0,1) y cuadra con las medias por década.
+            dif_medias = m_fin - m_ini
+            solida = t["r2"] >= 0.1 and dif_medias * delta > 0 and abs(dif_medias) >= 0.5 * abs(delta)
             if delta <= -1:
                 n = int(round(abs(delta)))
                 tit = (f"{cap} tiene hoy {n} días de helada menos al año que a principios de los setenta, según AEMET" if int(cod) % 2 == 0 else
@@ -533,7 +539,8 @@ def paquete_heladas_aemet():
                                      f"{len(xs)} años con dato completo entre {xs[0]} y {xs[-1]}."],
                         "delta": delta, "pendiente_decada": round(t["pendiente"] * 10, 2), "r2": round(t["r2"], 2),
                         "media_1970s": round(m_ini, 1), "media_ult10": round(m_fin, 1), "fuente_fila": "AEMET", "estacion": ne,
-                        "indicativo": est.get("indicativo"), "serie": [(y, v, None) for y, v in zip(xs, ys)]})
+                        "indicativo": est.get("indicativo"), "serie": [(y, v, None) for y, v in zip(xs, ys)],
+                        **({} if solida else {"discrepa": f"La tendencia de {cap} no se sostiene: r² {t['r2']:.2f}, medias por década {f1(m_ini)} → {f1(m_fin)} días frente a una tendencia de {signo(delta, 0)}"})})
         return out
 
     return {"id": "heladas_aemet", "titulo": "La helada pierde terreno", "ventana": [10, 11, 12, 1, 2, 3], "unidad": "días",
@@ -778,6 +785,8 @@ def main():
                         ctx.append(f"En la celda del reanálisis ERA5 que cubre {cap} la tendencia es {signo(era5['delta'])} °C: la cifra de la estación es la que vale para la ciudad.")
                     fila = {"cod": cod, "capital": cap, "provincia": prov, "slug": slug, "titular": tit, "dato": dato, "contexto": ctx,
                             **{k: v for k, v in r.items() if k != "serie"}}
+                    if r["fuente_fila"] == "AEMET" and not (r.get("r2", 1) >= 0.1 and (r["media_ult10"] - r["media_1970s"]) * r["delta"] > 0):
+                        fila["discrepa"] = f"La tendencia de la estación no se sostiene (r² {r.get('r2', 0):.2f} o no cuadra con las medias por década)"
                     if r["fuente_fila"] == "AEMET" and (cod in no_homogeneas or abs(r["delta"] - era5["delta"]) > TOL_HOMOG):
                         fila["discrepa"] = (f"La estación de AEMET ({signo(r['delta'])} °C) y la celda del reanálisis ({signo(era5['delta'])} °C) "
                                             f"se separan {f1(abs(r['delta'] - era5['delta']))} °C" + (" y no cuadran en otras estaciones del año" if cod in no_homogeneas else "")

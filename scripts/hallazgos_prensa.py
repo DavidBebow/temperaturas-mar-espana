@@ -694,7 +694,8 @@ def mediterraneo():
                      f"otros {inciertos} días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).")
                   if inciertos else f"{len(en_record)} días de {anio} han sido récord para su fecha en la serie desde 1981."),
                  f"Máximo absoluto de la serie: {f2(maximo_abs[0])} °C el {fecha_larga(maximo_abs[1])}.",
-                 f"{f1(sst)} °C es lo normal en esta zona para un {_fecha_equivalente(m, sst)} (media 1991-2020)."]
+                 (f"{f1(sst)} °C es lo normal en esta zona para un {_fecha_equivalente(m, sst)} (media 1991-2020)." if _fecha_equivalente(m, sst) else "")]
+    ctx_comun = [c for c in ctx_comun if c]
     rec_prev = maximo_fecha.get(ultimo[5:])
     pv = _puesto_verificado(serie, ultimo, sst)
     if pv is None:
@@ -710,7 +711,7 @@ def mediterraneo():
             palabra = {2: "dos", 3: "tres"}[peor]
             x0, y0 = cerca[0]
             anadir({**base, "tipo": "puesto_extremo", "fecha_dato": ultimo, "indicador": "sst_puesto_fecha",
-                    "titular": f"El Mediterráneo español vive uno de sus {palabra} {fecha_dia(ultimo)} más cálidos desde 1981: {f1(sst)} °C, {f1(anom)} °C por encima de lo normal",
+                    "titular": f"El Mediterráneo español tuvo uno de sus {palabra} {fecha_dia(ultimo)} más cálidos desde 1981: {f1(sst)} °C, {f1(anom)} °C por encima de lo normal",
                     "dato": (f"{f2(sst)} °C · dato preliminar de NOAA: queda a {f2(abs(sst - x0))} °C del de {y0} ({f2(x0)} °C), menos de lo que puede corregirse, "
                              f"así que no se puede decir cuál es más alto · normal 1991-2020 {f2(normal)} °C (+{f2(anom)})"),
                     "contexto": ctx_comun, "puesto": None, "de": pv[1]})
@@ -718,7 +719,7 @@ def mediterraneo():
             return
         pv, rec_prev = None, None   # sin puesto certificable: solo cabe la anomalía
     if racha >= 1 and rec_prev:
-        titular = (f"El Mediterráneo español lleva {racha} días seguidos en récord de temperatura para la fecha: {f2(sst)} °C el {fecha_dia(ultimo)}"
+        titular = (f"El Mediterráneo español encadenaba el {fecha_dia(ultimo)} {racha} días seguidos en récord de temperatura para la fecha: {f2(sst)} °C"
                    if racha >= 3 else
                    f"El Mediterráneo español marcó el {fecha_dia(ultimo)} su temperatura más alta para esa fecha desde 1981: {f2(sst)} °C")
         anadir({**base, "tipo": "racha" if racha >= 3 else "record_fecha", "fecha_dato": ultimo, "indicador": "sst_record_fecha",
@@ -730,7 +731,7 @@ def mediterraneo():
         if 2 <= puesto <= 3 and de >= 30:
             ordinal = {2: "segundo", 3: "tercer"}[puesto]
             anadir({**base, "tipo": "puesto_extremo", "fecha_dato": ultimo, "indicador": "sst_puesto_fecha",
-                    "titular": f"El Mediterráneo español vive su {ordinal} {fecha_dia(ultimo)} más cálido desde 1981: {f1(sst)} °C, {f1(anom)} °C por encima de lo normal",
+                    "titular": f"El Mediterráneo español tuvo su {ordinal} {fecha_dia(ultimo)} más cálido desde 1981: {f1(sst)} °C, {f1(anom)} °C por encima de lo normal",
                     "dato": f"{f2(sst)} °C · puesto {puesto} de {de} años para la fecha · récord {f2(rec_prev[0])} °C ({rec_prev[1]}) · normal 1991-2020 {f2(normal)} °C (+{f2(anom)})",
                     "contexto": ctx_comun, "puesto": puesto, "de": de})
         else:
@@ -739,7 +740,7 @@ def mediterraneo():
     # anomalía fuerte sin récord ni puesto extremo
     if anom is not None and anom >= 1.5 and racha == 0 and not any(h["indicador"] == "sst_puesto_fecha" for h in hallazgos):
         anadir({**base, "tipo": "anomalia_fuerte", "fecha_dato": ultimo, "indicador": "sst_anomalia",
-                "titular": f"El Mediterráneo español está {f1(anom)} °C por encima de lo normal para un {fecha_dia(ultimo)}: {f1(sst)} °C",
+                "titular": f"El Mediterráneo español estaba el {fecha_dia(ultimo)} {f1(anom)} °C por encima de lo normal para la fecha: {f1(sst)} °C",
                 "dato": f"{f1(sst)} °C · normal {f1(normal)} °C · p90 para la fecha {f1(num(m['p90']))} °C",
                 "contexto": ([f"Puesto {pv[0]} de {pv[1]} años para la fecha."] if pv else [])})
     # cifra verificada para la franja «en vivo» de la sala de prensa
@@ -759,17 +760,28 @@ def _huecos_oisst(serie: dict) -> list[str]:
     return out
 
 
-def _fecha_equivalente(m: dict, sst: float) -> str:
-    """A qué día del año corresponde esta temperatura en la climatología (enfriamiento de otoño)."""
+def _fecha_equivalente(m: dict, sst: float):
+    """A qué día del año corresponde esta temperatura en la climatología, buscando solo en la misma fase del ciclo
+    (en otoño, entre el máximo de agosto y hoy). Antes elegía el primer día del año con ese valor: «un 14 de julio»
+    cuando el 21 de septiembre tiene la misma normal."""
     try:
         clim = m["clim"] if isinstance(m["clim"], list) else json.loads(m["clim"].replace("'", '"'))
-        mejor = min(((abs(c[1] - sst), c[0]) for c in clim if c[0] < date.fromisoformat(m["ultimo"]).strftime("%m-%d")), default=None)
-        if mejor:
+        hoy_md = date.fromisoformat(m["ultimo"]).strftime("%m-%d")
+        md_max = max(clim, key=lambda c: c[1])[0]
+        md_min = min(clim, key=lambda c: c[1])[0]
+        if hoy_md > md_max:                       # fase de enfriamiento: un valor alto es el normal de días anteriores
+            cand = [c for c in clim if md_max <= c[0] < hoy_md]
+        elif hoy_md > md_min:                     # fase de calentamiento: un valor alto es el normal de días posteriores
+            cand = [c for c in clim if hoy_md < c[0] <= md_max]
+        else:
+            return None
+        mejor = min(((abs(c[1] - sst), c[0]) for c in cand), default=None)
+        if mejor and mejor[0] <= 0.15:
             mm, dd = mejor[1].split("-")
             return f"{int(dd)} de {MESES[int(mm) - 1]}"
     except Exception:
         pass
-    return "día de finales de verano"
+    return None
 
 
 # ----------------------------------------------------------------------------
@@ -861,7 +873,7 @@ def embalses():
             "citabilidad": "alta", "exclusivo": False}
     if pct is not None and p10 is not None and abs(pct - p10) >= 10:
         anadir({**base, "tipo": "anomalia_fuerte", "fecha_dato": bol, "indicador": "reserva_nacional",
-                "titular": f"La reserva de agua de España está al {f1(pct)} %, {f1(abs(pct - p10))} puntos {'por encima' if pct > p10 else 'por debajo'} de su media de diez años para esta semana",
+                "titular": f"La reserva de agua de España estaba el {fecha_dia(bol)} al {f1(pct)} %, {f1(abs(pct - p10))} puntos {'por encima' if pct > p10 else 'por debajo'} de su media de diez años para esa semana",
                 "dato": f"{f1(pct)} % ({miles(nac['volumen_total_hm3'])} de {miles(nac['capacidad_total_hm3'])} hm³) · hace un año {f1(p1a)} % · media 10 años {f1(p10)} %",
                 "contexto": [f"Boletín del {fecha_larga(bol)}."]})
     ENVIVO["embalses"] = {"boletin": bol, "pct": pct, "pct_hace_1a": p1a, "pct_media_10a": p10,

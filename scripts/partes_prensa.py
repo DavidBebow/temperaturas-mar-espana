@@ -303,7 +303,7 @@ def sonda_ayer(P: Parte, D: Datos, pj: dict):
             if mm >= 10:
                 P.add("ayer", "extremo" if mm >= 30 else "comparacion",
                       f"La estación de AEMET de {e_top} recogió {f1(mm)} mm el {fecha_dia(fecha)}, la cifra más alta entre las estaciones de AEMET de la provincia de {P.nombre}",
-                      f"{f1(mm)} mm el {fecha_dia(fecha)} en la estación {e_top} · {con_lluvia} de {n_est} estaciones de la provincia recogieron 1 mm o más ese día",
+                      f"{f1(mm)} mm el {fecha_dia(fecha)} en la estación {e_top} · {con_lluvia} de las {n_est} estaciones de AEMET de la provincia que sigue el observatorio recogieron 1 mm o más ese día",
                       fuente, metodo, fecha_dato=fecha,
                       limites=["Lluvia de una estación de AEMET: en el resto del término municipal pudo llover más o menos."],
                       pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
@@ -315,15 +315,15 @@ def sonda_ayer(P: Parte, D: Datos, pj: dict):
                     al_menos = "al menos " if tope and r >= tope else ""
                     P.add("ayer", "comparacion",
                           f"La estación de AEMET de {e_seca} lleva {al_menos}{r} días seguidos sin recoger 1 mm de lluvia (hasta el {fecha_dia(fecha)})",
-                          f"{al_menos}{r} días seguidos con menos de 1 mm en la estación de {e_seca} · media de las {n_est} estaciones de AEMET de la provincia en los últimos siete días: {f1(sem_media)} mm",
+                          f"{al_menos}{r} días seguidos con menos de 1 mm en la estación de AEMET de {e_seca}, hasta el {fecha_dia(fecha)} incluido",
                           fuente, "Días consecutivos, hasta el último día completo, en que la estación de AEMET recogió menos de 1 mm.", fecha_dato=fecha, citabilidad="alta",
                           limites=([f"La ventana de cálculo es de {tope} días: la racha real puede ser más larga."] if al_menos else []),
                           pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
             if mm > 0:
                 P.cifra(f"Lluvia el {fecha_dia(fecha)} (máximo provincial)", f"{f1(mm)} mm", e_top, "AEMET")
             else:
-                P.cifra(f"Lluvia el {fecha_dia(fecha)}", "0 mm", f"en las {n_est} estaciones de AEMET de la provincia", "AEMET")
-            P.cifra("Lluvia de los últimos siete días", f"{f1(sem_media)} mm", f"media de {n_est} estaciones de AEMET", "AEMET")
+                P.cifra(f"Lluvia el {fecha_dia(fecha)}", "0 mm", ("en la estación de AEMET de la provincia que sigue el observatorio" if n_est == 1 else f"en las {n_est} estaciones de AEMET de la provincia que sigue el observatorio"), "AEMET")
+            P.cifra("Lluvia de los últimos siete días", f"{f1(sem_media)} mm", (f"estación de AEMET de {e_top}" if n_est == 1 else f"media de {n_est} estaciones de AEMET"), "AEMET")
 
     # --- noches tropicales (AEMET) --------------------------------------------------
     # Auditoría 17-10-2026: el recuento anual («81 noches tropicales en 2026») sale de un archivo diario con huecos
@@ -392,21 +392,33 @@ def sonda_semana(P: Parte, D: Datos, capital: str = ""):
     if not pr or not pr.get("municipios"):
         return
     fuente = pr.get("fuente", "AEMET OpenData · predicción por municipio")
-    bruto = []  # (anomalía, municipio, fecha, tx, nx, km)
+    bruto = []  # (anomalía, municipio, fecha, tx, nx, km, estación)
     lluvia = {}  # fecha → [municipios con pp ≥ 80]
     n_mun = 0
+    # Auditoría 17-10-2026 (verificación independiente): (1) solo cuenta la predicción elaborada hoy: en la pasada
+    # de la mañana 259 municipios seguían con la del día anterior, y AEMET ya había cambiado San Juan del Puerto
+    # (30 → 29 °C), Alfaro (13 → 15 °C) o León (lluvia del 80 % → 40 %); (2) nunca sobre el día en curso, solo días
+    # futuros; (3) la normal tiene que tener al menos 25 años del periodo 1991-2020.
+    hoy_iso = HOY.isoformat()
     for code, m in pr["municipios"].items():
-        dias = (m.get("d") or {}).get("dias") or []
+        dd = m.get("d") or {}
+        if not str(dd.get("elab", "")).startswith(hoy_iso):
+            continue
+        dias = dd.get("dias") or []
         n_mun += 1
-        km = num((m.get("norm") or {}).get("km"), 99)
-        for d in dias[1:7]:
-            if d["f"] < HOY.isoformat():
+        norm = m.get("norm") or {}
+        km = num(norm.get("km"), 99)
+        anios = num(norm.get("anios"), 0) or 0
+        for d in dias:
+            if d["f"] <= hoy_iso:
                 continue
-            # la normal es de una estación de AEMET: solo vale si está cerca del municipio
-            if d.get("tx") is not None and d.get("nx") is not None and km <= 25:
-                bruto.append((d["tx"] - d["nx"], m["n"], d["f"], d["tx"], d["nx"], km))
+            # la normal es de una estación de AEMET: solo vale si está cerca del municipio y tiene serie
+            if d.get("tx") is not None and d.get("nx") is not None and km <= 25 and anios >= 25:
+                bruto.append((d["tx"] - d["nx"], m["n"], d["f"], d["tx"], d["nx"], km, norm.get("nom") or ""))
             if (d.get("pp") or 0) >= 80:
                 lluvia.setdefault(d["f"], []).append(m["n"])
+    if not n_mun:
+        return
     # Auditoría 17-10-2026: la estación «más cercana» puede estar a otra altitud (Castellbisbal se comparaba con
     # Montserrat, a 1.000 m, y salía +9,4 °C). La predicción de AEMET es suave en el espacio: si la desviación de
     # un municipio se separa más de 3 °C de la mediana de la provincia ese día, el fallo es de la normal, no del
@@ -419,13 +431,12 @@ def sonda_semana(P: Parte, D: Datos, capital: str = ""):
         n = len(v)
         return v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2
     anom = []
+    est_de = {}
     for x in bruto:
         vals = por_fecha[x[2]]
-        if len(vals) >= 5:
-            if abs(x[0] - _mediana(vals)) <= 3:
-                anom.append(x[:5])
-        elif x[5] <= 10:
+        if (len(vals) >= 5 and abs(x[0] - _mediana(vals)) <= 3) or (len(vals) < 5 and x[5] <= 10):
             anom.append(x[:5])
+            est_de[x[1]] = x[6]
     frio = [x for x in anom if x[0] <= -5]
     if not anom:
         return
@@ -438,14 +449,14 @@ def sonda_semana(P: Parte, D: Datos, capital: str = ""):
         a, mun, f, tx, nx = calor[0]
         n_m = len({x[1] for x in calor})
         P.add("semana", "prevision", f"AEMET prevé {int(round(tx))} °C en {mun} {dia_semana(f)}, {f1(a)} °C más de lo normal para la fecha",
-              f"máxima prevista {tx} °C · normal 1991-2020 de la estación de AEMET más cercana: {f1(nx)} °C · {n_m} de las {n_mun} localidades de la provincia que sigue el observatorio {'supera' if n_m == 1 else 'superan'} lo normal en 5 °C algún día de la semana",
+              f"máxima prevista {tx} °C · normal 1991-2020 de la estación de AEMET de {est_de.get(mun, 'referencia')}: {f1(nx)} °C · {n_m} de las {n_mun} localidades de la provincia que sigue el observatorio {'supera' if n_m == 1 else 'superan'} lo normal en 5 °C algún día de los próximos seis · predicción de AEMET del {fecha_dia(hoy_iso)}",
               fuente, metodo, limites=limites, fecha_dato=HOY.isoformat(), citabilidad="alta",
               contexto=[f"Municipios con más de 5 °C de exceso: " + ", ".join(sorted({x[1] for x in calor})[:10]) + ("…" if n_m > 10 else "") + "."],
               pagina=f"https://calentamientoglobal.es/el-tiempo/{P.slug}/")
     if frio:
         a, mun, f, tx, nx = min(frio)
         P.add("semana", "prevision", f"AEMET prevé solo {int(round(tx))} °C de máxima en {mun} {dia_semana(f)}, {f1(abs(a))} °C menos de lo normal para la fecha",
-              f"máxima prevista {tx} °C · normal 1991-2020 de la estación de AEMET más cercana: {f1(nx)} °C · {len({x[1] for x in frio})} de las {n_mun} localidades que sigue el observatorio {'queda' if len({x[1] for x in frio}) == 1 else 'quedan'} 5 °C o más por debajo algún día",
+              f"máxima prevista {tx} °C · normal 1991-2020 de la estación de AEMET de {est_de.get(mun, 'referencia')}: {f1(nx)} °C · {len({x[1] for x in frio})} de las {n_mun} localidades que sigue el observatorio {'queda' if len({x[1] for x in frio}) == 1 else 'quedan'} 5 °C o más por debajo algún día · predicción de AEMET del {fecha_dia(hoy_iso)}",
               fuente, metodo, limites=limites, fecha_dato=HOY.isoformat(), pagina=f"https://calentamientoglobal.es/el-tiempo/{P.slug}/")
     if lluvia:
         f = max(lluvia, key=lambda k: len(lluvia[k]))
@@ -453,7 +464,10 @@ def sonda_semana(P: Parte, D: Datos, capital: str = ""):
         if n >= max(3, n_mun // 4):
             orden = sorted(lluvia[f], key=lambda n: (n != capital, 0))
             P.add("semana", "prevision", f"AEMET da una probabilidad de lluvia del 80 % o más {dia_semana(f)} en {lista_nombres(orden)}",
-                  f"{n} de las {n_mun} localidades de {P.nombre} que sigue el observatorio con probabilidad ≥ 80 % el {fecha_dia(f)} · días con lluvia probable: " + ", ".join(dia_semana(k) for k in sorted(lluvia)),
+                  f"{n} de las {n_mun} localidades de {P.nombre} que sigue el observatorio con probabilidad ≥ 80 % el {fecha_dia(f)}"
+                  + (" · otros días con la misma probabilidad en al menos " + str(max(3, n_mun // 4)) + " localidades: " + ", ".join(dia_semana(k) for k in sorted(lluvia) if k != f and len(lluvia[k]) >= max(3, n_mun // 4))
+                     if any(k != f and len(lluvia[k]) >= max(3, n_mun // 4) for k in lluvia) else "")
+                  + f" · predicción de AEMET del {fecha_dia(hoy_iso)}",
                   fuente, "Probabilidad de precipitación diaria de la predicción municipal de AEMET.", limites=limites[:1], fecha_dato=HOY.isoformat(),
                   pagina=f"https://calentamientoglobal.es/el-tiempo/{P.slug}/")
     # media de la semana frente a lo normal
@@ -485,7 +499,7 @@ def sonda_agua(P: Parte, D: Datos, pj: dict):
         h1a = (f.get("hace_1a") or {}).get("pct")
         sa = f.get("semana_anterior") or {}
         ctx = [f"Hace un año: {pct_txt(h1a)}." if h1a is not None else "",
-               f"Media de diez años para esta semana: {pct_txt(f['pct_media_10a'])}." if f.get("pct_media_10a") is not None else "",
+               f"Media de diez años para la misma semana: {pct_txt(f['pct_media_10a'])}." if f.get("pct_media_10a") is not None else "",
                f"Variación semanal: {'+' if (sa.get('dif_pts') or 0) >= 0 else ''}{f1(sa.get('dif_pts', 0))} puntos." if sa else ""]
         ctx = [c for c in ctx if c]
         lim = ["Dato oficial del MITECO; el ángulo (su puesto en la serie) es cálculo propio."]
@@ -497,24 +511,42 @@ def sonda_agua(P: Parte, D: Datos, pj: dict):
                     pagina=f.get("url_web"), limites=lim)
         nombre = nombre_embalse(f)
         desde = rk.get("desde", 1988)
-        alto, bajo = rk.get("anio_mas_alto") or {}, rk.get("anio_mas_bajo") or {}
-        vol_alto, vol_bajo = num(alto.get("vol_hm3")), num(bajo.get("vol_hm3"))
-        serie_txt = f"en los {de} años de su serie, que empieza en {desde}"
-        if pos == 1 and vol_alto is not None and vol > vol_alto:
-            P.add("agua", "record", f"El embalse {nombre} está al {pct_txt(pct)}: nunca había tenido tanta agua en esta semana {serie_txt}",
-                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · anterior máximo para la semana: {pct_txt(alto.get('pct'))} ({alto.get('anio')})", **base)
-        elif pos == de and vol_bajo is not None and vol < vol_bajo:
-            P.add("agua", "record", f"El embalse {nombre} está al {pct_txt(pct)}: nunca había tenido tan poca agua en esta semana {serie_txt}",
-                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · anterior mínimo para la semana: {pct_txt(bajo.get('pct'))} ({bajo.get('anio')})", **base)
-        elif cap >= 100 and 2 <= pos <= 3 and vol_alto is not None and vol < vol_alto:
-            P.add("agua", "extremo", f"El embalse {nombre}, al {pct_txt(pct)}: su {pos}.º nivel más alto para esta semana {serie_txt}",
-                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · máximo para la semana {pct_txt(alto.get('pct'))} ({alto.get('anio')}) · puesto {pos} de {de}", **base)
-        elif cap >= 100 and de - 2 <= pos <= de - 1 and vol_bajo is not None and vol > vol_bajo:
-            P.add("agua", "extremo", f"El embalse {nombre}, al {pct_txt(pct)}: su {de - pos + 1}.º nivel más bajo para esta semana {serie_txt}",
-                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · mínimo para la semana {pct_txt(bajo.get('pct'))} ({bajo.get('anio')}) · puesto {pos} de {de}", **base)
+        # Auditoría 17-10-2026 (verificación independiente): el puesto se calcula por VOLUMEN (hm³) sobre la serie
+        # de la misma semana de cada año, con empates. Por porcentaje engañaba cuando la capacidad cambió
+        # (Vadomojón pasó de 163 a 146 hm³: era 1.º por % y 6.º por volumen) y contaba los empates como superados
+        # (Rules «3.º» empatado con 2019).
+        anio_act = int(bol[:4])
+        otros = [x for x in (f.get("anual_semana") or []) if x.get("anio") != anio_act and num(x.get("vol_hm3")) is not None]
+        if len(otros) + 1 != de:
+            continue
+        vols = [num(x["vol_hm3"]) for x in otros]
+        n_mas = sum(1 for v in vols if v > vol)
+        n_menos = sum(1 for v in vols if v < vol)
+        empate = any(v == vol for v in vols)
+        top = max(otros, key=lambda x: num(x["vol_hm3"]))
+        bot = min(otros, key=lambda x: num(x["vol_hm3"]))
+        serie_txt = f"en la misma semana del año en los {de} años de su serie, que empieza en {desde}"
+        bol_txt = f"boletín del MITECO del {fecha_dia(bol)}"
+        if n_mas == 0 and not empate:
+            P.add("agua", "record", f"El embalse {nombre} está al {pct_txt(pct)}: nunca había tenido tanta agua {serie_txt}",
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · anterior máximo para esa semana: {miles(top['vol_hm3'])} hm³ ({top['anio']}) · {bol_txt}", **base)
+        elif n_menos == 0 and not empate:
+            P.add("agua", "record", f"El embalse {nombre} está al {pct_txt(pct)}: nunca había tenido tan poca agua {serie_txt}",
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · anterior mínimo para esa semana: {miles(bot['vol_hm3'])} hm³ ({bot['anio']}) · {bol_txt}", **base)
+        elif cap >= 100 and 1 <= n_mas <= 2 and not empate:
+            P.add("agua", "extremo", f"El embalse {nombre}, al {pct_txt(pct)}: su {n_mas + 1}.º mayor volumen de agua {serie_txt}",
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · máximo para esa semana: {miles(top['vol_hm3'])} hm³ ({top['anio']}) · {bol_txt}", **base)
+        elif cap >= 100 and 1 <= n_menos <= 2 and not empate:
+            P.add("agua", "extremo", f"El embalse {nombre}, al {pct_txt(pct)}: su {n_menos + 1}.º menor volumen de agua {serie_txt}",
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · mínimo para esa semana: {miles(bot['vol_hm3'])} hm³ ({bot['anio']}) · {bol_txt}", **base)
         elif h1a is not None and abs(pct - h1a) >= 25:
+            # la comparación en puntos solo vale si la capacidad no cambió en el año
+            h1 = f.get("hace_1a") or {}
+            v1 = num(h1.get("vol_hm3"))
+            if not v1 or not h1a or abs(v1 / h1a * 100 - cap) > max(2.0, 0.02 * cap):
+                continue
             P.add("agua", "comparacion", f"El embalse {nombre} tiene {f1(abs(pct - h1a))} puntos {'más' if pct > h1a else 'menos'} de agua que hace un año: {pct_txt(pct)} frente a {pct_txt(h1a)}",
-                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · hace un año {pct_txt(h1a)} · puesto {pos} de {de} para la semana", **base)
+                  f"{pct_txt(pct)} ({miles(vol)} de {miles(cap)} hm³) · hace un año {pct_txt(h1a)} ({miles(v1)} hm³) · {bol_txt}", **base)
     # provincia entera
     emb = None
     for fp in glob.glob(str(DOCS / "embalses" / "*.json")):
@@ -764,23 +796,29 @@ def parte_provincia(cod: str, D: Datos) -> dict:
 def coincidencias(partes: list[dict]) -> list[dict]:
     """Lo que se repite en muchas provincias es noticia nacional."""
     out = []
+    def territorios(ps):
+        # Ceuta y Melilla son ciudades autónomas, no provincias
+        ciu = [p["provincia"] for p in ps if p["cod"] in ("51", "52")]
+        n_prov = len(ps) - len(ciu)
+        txt = f"{n_prov} provincia{'s' if n_prov != 1 else ''}"
+        if ciu:
+            txt += " y en " + " y ".join(ciu)
+        return txt
     def cuenta(pred, titulo, dato_fn):
         # solo cuenta lo que la sala de prensa publica (nada en revisión)
         provs = [p for p in partes if any(pred(h) and not h.get("requiere_revision") for h in sum(p["angulos"].values(), []))]
         if len(provs) >= 8:
-            out.append({"titular": titulo.format(n=len(provs)), "provincias": [p["provincia"] for p in provs], "n": len(provs), "dato": dato_fn(provs)})
-    cuenta(lambda h: h["angulo"] == "municipios" and "menos de la mitad de la lluvia normal de otoño" in h["titular"],
-           "{n} provincias tienen a un tercio o más de sus municipios con menos de la mitad de la lluvia normal de otoño, según el reanálisis ERA5", lambda ps: "; ".join(p["provincia"] for p in ps))
+            out.append({"titular": titulo.format(t=territorios(provs)), "provincias": [p["provincia"] for p in provs], "n": len(provs), "dato": dato_fn(provs)})
+    lista = lambda ps: "; ".join(p["provincia"] for p in ps)
     cuenta(lambda h: h["angulo"] == "semana" and "más de lo normal" in h["titular"] and h["clase"] == "prevision",
-           "AEMET prevé esta semana máximas al menos 5 °C por encima de lo normal en localidades de {n} provincias", lambda ps: "; ".join(p["provincia"] for p in ps))
+           f"AEMET prevé máximas al menos 5 °C por encima de lo normal en localidades de {{t}} en los próximos seis días (predicción del {fecha_dia(HOY.isoformat())})", lista)
     cuenta(lambda h: h["angulo"] == "agua" and h["clase"] == "record" and "tan poca agua" in h["titular"],
-           "{n} provincias tienen algún embalse con el nivel más bajo de toda su serie para esta semana del año", lambda ps: "; ".join(p["provincia"] for p in ps))
+           "En {t} hay algún embalse con el menor volumen de toda su serie para la misma semana del año", lista)
     cuenta(lambda h: h["angulo"] == "agua" and h["clase"] == "record" and "tanta agua" in h["titular"],
-           "{n} provincias tienen algún embalse con el nivel más alto de toda su serie para esta semana del año", lambda ps: "; ".join(p["provincia"] for p in ps))
-    cuenta(lambda h: h["angulo"] == "municipios" and "año más seco" in h["titular"],
-           "{n} provincias tienen algún municipio con uno de sus tres años más secos de la serie del reanálisis ERA5, que empieza en 1981", lambda ps: "; ".join(p["provincia"] for p in ps))
+           "En {t} hay algún embalse con el mayor volumen de toda su serie para la misma semana del año", lista)
+    # la estación tiene que constar en la provincia (inventario de AEMET), así que el recuento es un mínimo
     cuenta(lambda h: h["angulo"] == "ayer" and "sin recoger 1 mm de lluvia" in h["titular"],
-           "En {n} provincias hay al menos una estación de AEMET que lleva 10 días o más seguidos sin recoger 1 mm de lluvia", lambda ps: "; ".join(p["provincia"] for p in ps))
+           f"En al menos {{t}} hay alguna estación de AEMET que lleva 10 días o más seguidos sin recoger 1 mm de lluvia (hasta el {fecha_dia(AYER.isoformat())})", lista)
     return out
 
 
