@@ -3,7 +3,7 @@ name: Paquetes de temporada
 # El «Climate Matters» español: cada lunes, paquetes de datos por capital desde 1940
 # sobre la temporada en curso (el otoño se calienta, la primera helada llega más
 # tarde, noches tropicales…) con titulares, gráfico por capital, CSV y método.
-# Descarga ERA5 (Open-Meteo) para las 52 capitales y guarda solo agregados anuales.
+# Descarga ERA5 (Open-Meteo, 13 peticiones de 4 capitales) y guarda solo agregados anuales.
 
 on:
   workflow_dispatch:
@@ -19,6 +19,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
 
 jobs:
   paquetes:
