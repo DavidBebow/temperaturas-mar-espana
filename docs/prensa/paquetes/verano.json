@@ -1,7 +1,7 @@
 {
  "id": "verano",
  "titulo": "El verano se calienta",
- "generado": "2026-10-17T12:21:29Z",
+ "generado": "2026-10-17T15:58:16Z",
  "de_temporada": false,
  "ventana": [
   6,
@@ -9,9 +9,11 @@
   8,
   9
  ],
+ "publicable": true,
+ "motivo_no_publicable": null,
  "periodo": "1970-2025",
- "fuente": "ERA5 (Copernicus/ECMWF) vía Open-Meteo Archive, CC BY 4.0 · cálculo propio de calentamientoglobal.es",
- "metodo": "Temperatura media diaria ((máxima + mínima)/2) de ERA5 en la celda de cada capital, promediada por verano meteorológico (junio, julio, agosto); tendencia lineal 1970-2026. «Días por encima de lo normal»: días con media superior a la normal 1991-2020 de ese día del año (suavizada ±7 días).",
+ "fuente": "AEMET (estaciones de serie larga, valores mensuales) y ERA5 (Copernicus/ECMWF) vía Open-Meteo, CC BY 4.0 · cálculo propio de calentamientoglobal.es",
+ "metodo": "Temperatura media diaria ((máxima + mínima)/2) de ERA5 en la celda de cada capital, promediada por verano meteorológico (junio, julio, agosto); tendencia lineal 1970-2026. «Días por encima de lo normal»: días con media superior a la normal 1991-2020 de ese día del año (suavizada ±7 días). Las capitales con estación de AEMET de serie larga (al menos 40 veranos completos desde 1970) usan la media estacional de los valores mensuales oficiales de AEMET; el resto, el reanálisis.",
  "limites": [
   "Reanálisis ERA5 en la celda (~25 km) de cada capital, no la estación de AEMET: los valores absolutos pueden diferir unas décimas; la tendencia es la robusta.",
   "ERA5 se consolida con unos seis días de retraso: el dato «en curso» llega hasta el último día disponible, no hasta ayer.",
@@ -19,30 +21,122 @@
  ],
  "por_que_importa": "Veranos más cálidos elevan la mortalidad por calor, la demanda eléctrica, el estrés hídrico y el riesgo de incendio.",
  "hallazgos": [
-  "El verano se ha calentado en 52 de las 52 capitales desde 1970: +3,1 °C de media.",
-  "Donde más: Jaén (+4,9 °C), Huesca (+4,6 °C), Cuenca (+4,5 °C), Ciudad Real (+4,3 °C), Albacete (+4,3 °C).",
-  "46 capitales se han calentado 2 °C o más.",
-  "De media, cada verano tiene hoy 45 días más por encima de lo normal que en 1970; en 52 capitales son dos semanas o más."
+  "El verano es hoy 3,1 °C más cálido que a principios de los setenta en las capitales de provincia españolas, según el reanálisis ERA5",
+  "Las 14 capitales con estación de AEMET de serie larga y coherente con el reanálisis: +3,1 °C de media; las 52 en el reanálisis ERA5: +3,1 °C. Sube en 52 de las 52 capitales.",
+  "En el reanálisis, cada verano tiene hoy 45 días más por encima de lo normal que a principios de los setenta."
  ],
  "n_capitales": 52,
+ "n_aemet": 14,
  "media_delta": 3.08,
- "mediana_delta": 3.12,
- "n_revisar": 1,
+ "mediana_delta": 3.15,
+ "n_revisar": 8,
+ "donde_mas": [
+  {
+   "cod": "16",
+   "capital": "Cuenca",
+   "slug": "cuenca",
+   "delta": 4.71,
+   "estacion": "Cuenca"
+  },
+  {
+   "cod": "50",
+   "capital": "Zaragoza",
+   "slug": "zaragoza",
+   "delta": 4.19,
+   "estacion": "Zaragoza aeropuerto"
+  },
+  {
+   "cod": "09",
+   "capital": "Burgos",
+   "slug": "burgos",
+   "delta": 3.53,
+   "estacion": "Burgos aeropuerto"
+  },
+  {
+   "cod": "14",
+   "capital": "Córdoba",
+   "slug": "cordoba",
+   "delta": 3.32,
+   "estacion": "Córdoba aeropuerto"
+  },
+  {
+   "cod": "32",
+   "capital": "Ourense",
+   "slug": "ourense",
+   "delta": 3.24,
+   "estacion": "Ourense"
+  }
+ ],
  "unidad": "°C",
  "etiqueta_serie": "temperatura media del verano (°C)",
  "capitales": [
+  {
+   "cod": "13",
+   "capital": "Ciudad Real",
+   "provincia": "Ciudad Real",
+   "slug": "ciudad-real",
+   "titular": "Ciudad Real tiene veranos 5,6 °C más cálidos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +5,6 °C entre 1971 y 2026 (+1 °C por década) · media de los años setenta 21,8 °C · últimos diez 27,2 °C · estación de AEMET Ciudad Real",
+   "contexto": [
+    "El verano más cálido de la serie: 2025 (28,5 °C); el más frío: 1977 (19,5 °C).",
+    "El verano de 2026 fue el 2.º más cálido de los 56 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Ciudad Real la tendencia es +4,3 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 5.56,
+   "pendiente_decada": 0.99,
+   "r2": 0.71,
+   "media_1970s": 21.84,
+   "media_ult10": 27.21,
+   "mas_calido": {
+    "anio": 2025,
+    "t": 28.53
+   },
+   "mas_frio": {
+    "anio": 1977,
+    "t": 19.53
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 28.43,
+    "puesto": 2,
+    "de": 56
+   },
+   "anios_con_dato": 56,
+   "primer_anio": 1971,
+   "en_curso": {
+    "anio": 2026,
+    "t": 27.91,
+    "dias": 92,
+    "sobre_normal": 76,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 52.6,
+   "fuente_fila": "AEMET",
+   "estacion": "Ciudad Real",
+   "indicativo": "4121",
+   "era5": {
+    "delta": 4.29,
+    "pendiente_decada": 0.77,
+    "media_1970s": 23.1,
+    "media_ult10": 26.98,
+    "dias_sobre_normal_delta": 52.6
+   },
+   "discrepa": "La estación de AEMET (+5,6 °C) y la celda del reanálisis (+4,3 °C) se separan 1,3 °C y no cuadran en otras estaciones del año: posible cambio de emplazamiento de la estación",
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La estación de AEMET (+5,6 °C) y la celda del reanálisis (+4,3 °C) se separan 1,3 °C y no cuadran en otras estaciones del año: posible cambio de emplazamiento de la estación. No se publica hasta revisar el historial de la estación."
+   ]
+  },
   {
    "cod": "18",
    "capital": "Granada",
    "provincia": "Granada",
    "slug": "granada",
-   "titular": "El verano se ha calentado 5,5 °C en Granada desde 1970",
-   "dato": "tendencia +5,5 °C entre 1970 y 2026 (+1 °C por década) · media 1970-1979: 22,7 °C · últimos diez: 27,6 °C",
+   "titular": "El verano es hoy 5,5 °C más cálido en Granada que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +5,5 °C entre 1970 y 2026 (+1 °C por década) · media de los años setenta 22,7 °C · últimos diez 27,6 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 76 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2025 (28,9 °C); el más frío: 1977 (20,8 °C).",
-    "El verano de 2026 fue el 2.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 28,6 °C de media, con 82 días por encima de lo normal."
+    "El verano de 2026 fue el 2.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 5.52,
    "pendiente_decada": 0.98,
@@ -71,6 +165,14 @@
     "sobre_normal": 82,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 5.52,
+    "pendiente_decada": 0.98,
+    "media_1970s": 22.74,
+    "media_ult10": 27.61,
+    "dias_sobre_normal_delta": 76.1
+   },
    "revisar": true,
    "limites": [
     "COMPROBAR con la estación de AEMET: la celda ERA5 de Granada muestra un cambio muy superior al del resto de capitales (+5,5 °C frente a una mediana de +3,1 °C); puede estar afectada por la orografía."
@@ -81,13 +183,11 @@
    "capital": "Jaén",
    "provincia": "Jaén",
    "slug": "jaen",
-   "titular": "El verano se ha calentado 4,9 °C en Jaén desde 1970",
-   "dato": "tendencia +4,9 °C entre 1970 y 2026 (+0,9 °C por década) · media 1970-1979: 22,6 °C · últimos diez: 27 °C",
+   "titular": "Veranos 4,9 °C más cálidos: así ha cambiado el verano en Jaén en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +4,9 °C entre 1970 y 2026 (+0,9 °C por década) · media de los años setenta 22,6 °C · últimos diez 27 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 68 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2025 (28,3 °C); el más frío: 1977 (20,6 °C).",
-    "El verano de 2026 fue el 3.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 28 °C de media, con 81 días por encima de lo normal."
+    "El verano de 2026 fue el 3.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 4.93,
    "pendiente_decada": 0.88,
@@ -116,48 +216,13 @@
     "sobre_normal": 81,
     "hasta": "2026-10-11"
    },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "22",
-   "capital": "Huesca",
-   "provincia": "Huesca",
-   "slug": "huesca",
-   "titular": "El verano se ha calentado 4,6 °C en Huesca desde 1970",
-   "dato": "tendencia +4,6 °C entre 1970 y 2026 (+0,8 °C por década) · media 1970-1979: 20,5 °C · últimos diez: 24,5 °C",
-   "contexto": [
-    "Hoy hay 54 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (26,6 °C); el más frío: 1977 (18,5 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 26,6 °C de media, con 81 días por encima de lo normal."
-   ],
-   "delta": 4.56,
-   "pendiente_decada": 0.81,
-   "r2": 0.66,
-   "dias_sobre_normal_delta": 54.1,
-   "media_1970s": 20.5,
-   "media_ult10": 24.52,
-   "mas_calido": {
-    "anio": 2026,
-    "t": 26.63
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 18.46
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 26.63,
-    "puesto": 1,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 26.63,
-    "dias": 92,
-    "sobre_normal": 81,
-    "hasta": "2026-10-11"
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 4.93,
+    "pendiente_decada": 0.88,
+    "media_1970s": 22.58,
+    "media_ult10": 26.97,
+    "dias_sobre_normal_delta": 68.3
    },
    "revisar": false,
    "limites": []
@@ -167,34 +232,34 @@
    "capital": "Cuenca",
    "provincia": "Cuenca",
    "slug": "cuenca",
-   "titular": "El verano se ha calentado 4,5 °C en Cuenca desde 1970",
-   "dato": "tendencia +4,5 °C entre 1970 y 2026 (+0,8 °C por década) · media 1970-1979: 20 °C · últimos diez: 24 °C",
+   "titular": "Cuenca tiene veranos 4,7 °C más cálidos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +4,7 °C entre 1970 y 2026 (+0,8 °C por década) · media de los años setenta 20,4 °C · últimos diez 24,6 °C · estación de AEMET Cuenca",
    "contexto": [
-    "Hoy hay 62 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (25,2 °C); el más frío: 1977 (17,8 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 25,2 °C de media, con 82 días por encima de lo normal."
+    "El verano más cálido de la serie: 2026 (26 °C); el más frío: 1977 (18 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 56 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Cuenca la tendencia es +4,5 °C: la cifra de la estación es la que vale para la ciudad."
    ],
-   "delta": 4.54,
-   "pendiente_decada": 0.81,
-   "r2": 0.69,
-   "dias_sobre_normal_delta": 62.3,
-   "media_1970s": 20.01,
-   "media_ult10": 23.97,
+   "delta": 4.71,
+   "pendiente_decada": 0.84,
+   "r2": 0.71,
+   "media_1970s": 20.43,
+   "media_ult10": 24.61,
    "mas_calido": {
     "anio": 2026,
-    "t": 25.22
+    "t": 26.0
    },
    "mas_frio": {
     "anio": 1977,
-    "t": 17.78
+    "t": 18.0
    },
    "ultimo": {
     "anio": 2026,
-    "t": 25.22,
+    "t": 26.0,
     "puesto": 1,
-    "de": 57
+    "de": 56
    },
+   "anios_con_dato": 56,
+   "primer_anio": 1970,
    "en_curso": {
     "anio": 2026,
     "t": 25.22,
@@ -202,64 +267,87 @@
     "sobre_normal": 82,
     "hasta": "2026-10-11"
    },
+   "dias_sobre_normal_delta": 62.3,
+   "fuente_fila": "AEMET",
+   "estacion": "Cuenca",
+   "indicativo": "8096",
+   "era5": {
+    "delta": 4.54,
+    "pendiente_decada": 0.81,
+    "media_1970s": 20.01,
+    "media_ult10": 23.97,
+    "dias_sobre_normal_delta": 62.3
+   },
    "revisar": false,
    "limites": []
   },
   {
-   "cod": "13",
-   "capital": "Ciudad Real",
-   "provincia": "Ciudad Real",
-   "slug": "ciudad-real",
-   "titular": "El verano se ha calentado 4,3 °C en Ciudad Real desde 1970",
-   "dato": "tendencia +4,3 °C entre 1970 y 2026 (+0,8 °C por década) · media 1970-1979: 23,1 °C · últimos diez: 27 °C",
+   "cod": "28",
+   "capital": "Madrid",
+   "provincia": "Madrid",
+   "slug": "madrid",
+   "titular": "Madrid tiene veranos 4,5 °C más cálidos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +4,5 °C entre 1970 y 2026 (+0,8 °C por década) · media de los años setenta 22,2 °C · últimos diez 26,4 °C · estación de AEMET Madrid-Retiro",
    "contexto": [
-    "Hoy hay 53 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2025 (28,1 °C); el más frío: 1977 (20,8 °C).",
-    "El verano de 2026 fue el 2.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 27,9 °C de media, con 76 días por encima de lo normal."
+    "El verano más cálido de la serie: 2026 (27,7 °C); el más frío: 1977 (19,9 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Madrid la tendencia es +2,9 °C: la cifra de la estación es la que vale para la ciudad."
    ],
-   "delta": 4.29,
-   "pendiente_decada": 0.77,
+   "delta": 4.51,
+   "pendiente_decada": 0.81,
    "r2": 0.67,
-   "dias_sobre_normal_delta": 52.6,
-   "media_1970s": 23.1,
-   "media_ult10": 26.98,
+   "media_1970s": 22.23,
+   "media_ult10": 26.39,
    "mas_calido": {
-    "anio": 2025,
-    "t": 28.06
+    "anio": 2026,
+    "t": 27.67
    },
    "mas_frio": {
     "anio": 1977,
-    "t": 20.75
+    "t": 19.9
    },
    "ultimo": {
     "anio": 2026,
-    "t": 27.91,
-    "puesto": 2,
+    "t": 27.67,
+    "puesto": 1,
     "de": 57
    },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
    "en_curso": {
     "anio": 2026,
-    "t": 27.91,
+    "t": 26.3,
     "dias": 92,
-    "sobre_normal": 76,
+    "sobre_normal": 72,
     "hasta": "2026-10-11"
    },
-   "revisar": false,
-   "limites": []
+   "dias_sobre_normal_delta": 34.0,
+   "fuente_fila": "AEMET",
+   "estacion": "Madrid-Retiro",
+   "indicativo": "3195",
+   "era5": {
+    "delta": 2.87,
+    "pendiente_decada": 0.51,
+    "media_1970s": 22.68,
+    "media_ult10": 25.44,
+    "dias_sobre_normal_delta": 34.0
+   },
+   "discrepa": "La estación de AEMET (+4,5 °C) y la celda del reanálisis (+2,9 °C) se separan 1,6 °C: posible cambio de emplazamiento de la estación",
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La estación de AEMET (+4,5 °C) y la celda del reanálisis (+2,9 °C) se separan 1,6 °C: posible cambio de emplazamiento de la estación. No se publica hasta revisar el historial de la estación."
+   ]
   },
   {
    "cod": "02",
    "capital": "Albacete",
    "provincia": "Albacete",
    "slug": "albacete",
-   "titular": "El verano se ha calentado 4,3 °C en Albacete desde 1970",
-   "dato": "tendencia +4,3 °C entre 1970 y 2026 (+0,8 °C por década) · media 1970-1979: 22,7 °C · últimos diez: 26,2 °C",
+   "titular": "Veranos 4,3 °C más cálidos: así ha cambiado el verano en Albacete en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +4,3 °C entre 1970 y 2026 (+0,8 °C por década) · media de los años setenta 22,7 °C · últimos diez 26,2 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 66 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (27,6 °C); el más frío: 1977 (20,6 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 27,6 °C de media, con 85 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 4.28,
    "pendiente_decada": 0.76,
@@ -288,21 +376,138 @@
     "sobre_normal": 85,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 4.28,
+    "pendiente_decada": 0.76,
+    "media_1970s": 22.7,
+    "media_ult10": 26.25,
+    "dias_sobre_normal_delta": 65.7
+   },
    "revisar": false,
    "limites": []
+  },
+  {
+   "cod": "50",
+   "capital": "Zaragoza",
+   "provincia": "Zaragoza",
+   "slug": "zaragoza",
+   "titular": "Veranos 4,2 °C más cálidos: así ha cambiado el verano en Zaragoza en medio siglo, según AEMET",
+   "dato": "tendencia +4,2 °C entre 1970 y 2026 (+0,8 °C por década) · media de los años setenta 22,5 °C · últimos diez 26,3 °C · estación de AEMET Zaragoza aeropuerto",
+   "contexto": [
+    "El verano más cálido de la serie: 2026 (28,5 °C); el más frío: 1977 (20,5 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Zaragoza la tendencia es +3,7 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 4.19,
+   "pendiente_decada": 0.75,
+   "r2": 0.65,
+   "media_1970s": 22.51,
+   "media_ult10": 26.28,
+   "mas_calido": {
+    "anio": 2026,
+    "t": 28.5
+   },
+   "mas_frio": {
+    "anio": 1977,
+    "t": 20.53
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 28.5,
+    "puesto": 1,
+    "de": 57
+   },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 29.18,
+    "dias": 92,
+    "sobre_normal": 80,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 37.9,
+   "fuente_fila": "AEMET",
+   "estacion": "Zaragoza aeropuerto",
+   "indicativo": "9434",
+   "era5": {
+    "delta": 3.74,
+    "pendiente_decada": 0.67,
+    "media_1970s": 23.67,
+    "media_ult10": 27.06,
+    "dias_sobre_normal_delta": 37.9
+   },
+   "revisar": false,
+   "limites": []
+  },
+  {
+   "cod": "49",
+   "capital": "Zamora",
+   "provincia": "Zamora",
+   "slug": "zamora",
+   "titular": "Zamora tiene veranos 4 °C más cálidos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +4 °C entre 1970 y 2026 (+0,7 °C por década) · media de los años setenta 19,8 °C · últimos diez 23,6 °C · estación de AEMET Zamora",
+   "contexto": [
+    "El verano más cálido de la serie: 2026 (25 °C); el más frío: 1977 (17,6 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Zamora la tendencia es +3 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 4.03,
+   "pendiente_decada": 0.72,
+   "r2": 0.62,
+   "media_1970s": 19.83,
+   "media_ult10": 23.64,
+   "mas_calido": {
+    "anio": 2026,
+    "t": 25.03
+   },
+   "mas_frio": {
+    "anio": 1977,
+    "t": 17.6
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 25.03,
+    "puesto": 1,
+    "de": 57
+   },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 24.29,
+    "dias": 92,
+    "sobre_normal": 75,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 32.2,
+   "fuente_fila": "AEMET",
+   "estacion": "Zamora",
+   "indicativo": "2614",
+   "era5": {
+    "delta": 3.01,
+    "pendiente_decada": 0.54,
+    "media_1970s": 19.96,
+    "media_ult10": 22.98,
+    "dias_sobre_normal_delta": 32.2
+   },
+   "discrepa": "La estación de AEMET (+4 °C) y la celda del reanálisis (+3 °C) se separan 1 °C: posible cambio de emplazamiento de la estación",
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La estación de AEMET (+4 °C) y la celda del reanálisis (+3 °C) se separan 1 °C: posible cambio de emplazamiento de la estación. No se publica hasta revisar el historial de la estación."
+   ]
   },
   {
    "cod": "44",
    "capital": "Teruel",
    "provincia": "Teruel",
    "slug": "teruel",
-   "titular": "El verano se ha calentado 4 °C en Teruel desde 1970",
-   "dato": "tendencia +4 °C entre 1970 y 2026 (+0,7 °C por década) · media 1970-1979: 19,6 °C · últimos diez: 23,1 °C",
+   "titular": "Veranos 4 °C más cálidos: así ha cambiado el verano en Teruel en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +4 °C entre 1970 y 2026 (+0,7 °C por década) · media de los años setenta 19,6 °C · últimos diez 23,1 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 58 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (24,6 °C); el más frío: 1977 (17,4 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 24,6 °C de media, con 82 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 4.02,
    "pendiente_decada": 0.72,
@@ -331,6 +536,14 @@
     "sobre_normal": 82,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 4.02,
+    "pendiente_decada": 0.72,
+    "media_1970s": 19.6,
+    "media_ult10": 23.11,
+    "dias_sobre_normal_delta": 57.7
+   },
    "revisar": false,
    "limites": []
   },
@@ -339,13 +552,11 @@
    "capital": "Lleida",
    "provincia": "Lleida",
    "slug": "lleida",
-   "titular": "El verano se ha calentado 4 °C en Lleida desde 1970",
-   "dato": "tendencia +4 °C entre 1970 y 2026 (+0,7 °C por década) · media 1970-1979: 23,9 °C · últimos diez: 27,4 °C",
+   "titular": "Lleida tiene veranos 4 °C más cálidos que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +4 °C entre 1970 y 2026 (+0,7 °C por década) · media de los años setenta 23,9 °C · últimos diez 27,4 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 58 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (29,3 °C); el más frío: 1977 (21,9 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 29,3 °C de media, con 85 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.98,
    "pendiente_decada": 0.71,
@@ -374,177 +585,13 @@
     "sobre_normal": 85,
     "hasta": "2026-10-11"
    },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "42",
-   "capital": "Soria",
-   "provincia": "Soria",
-   "slug": "soria",
-   "titular": "El verano se ha calentado 4 °C en Soria desde 1970",
-   "dato": "tendencia +4 °C entre 1970 y 2026 (+0,7 °C por década) · media 1970-1979: 18,3 °C · últimos diez: 21,9 °C",
-   "contexto": [
-    "Hoy hay 43 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (23,7 °C); el más frío: 1977 (16 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 23,7 °C de media, con 80 días por encima de lo normal."
-   ],
-   "delta": 3.97,
-   "pendiente_decada": 0.71,
-   "r2": 0.61,
-   "dias_sobre_normal_delta": 43.4,
-   "media_1970s": 18.3,
-   "media_ult10": 21.93,
-   "mas_calido": {
-    "anio": 2026,
-    "t": 23.7
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 16.0
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 23.7,
-    "puesto": 1,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 23.7,
-    "dias": 92,
-    "sobre_normal": 80,
-    "hasta": "2026-10-11"
-   },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "14",
-   "capital": "Córdoba",
-   "provincia": "Córdoba",
-   "slug": "cordoba",
-   "titular": "El verano se ha calentado 3,8 °C en Córdoba desde 1970",
-   "dato": "tendencia +3,8 °C entre 1970 y 2026 (+0,7 °C por década) · media 1970-1979: 26,3 °C · últimos diez: 29,6 °C",
-   "contexto": [
-    "Hoy hay 52 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2025 (30,7 °C); el más frío: 1977 (24,4 °C).",
-    "El verano de 2026 fue el 6.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 30 °C de media, con 68 días por encima de lo normal."
-   ],
-   "delta": 3.83,
-   "pendiente_decada": 0.68,
-   "r2": 0.66,
-   "dias_sobre_normal_delta": 52.4,
-   "media_1970s": 26.31,
-   "media_ult10": 29.57,
-   "mas_calido": {
-    "anio": 2025,
-    "t": 30.69
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 24.42
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 30.01,
-    "puesto": 6,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 30.01,
-    "dias": 92,
-    "sobre_normal": 68,
-    "hasta": "2026-10-11"
-   },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "50",
-   "capital": "Zaragoza",
-   "provincia": "Zaragoza",
-   "slug": "zaragoza",
-   "titular": "El verano se ha calentado 3,7 °C en Zaragoza desde 1970",
-   "dato": "tendencia +3,7 °C entre 1970 y 2026 (+0,7 °C por década) · media 1970-1979: 23,7 °C · últimos diez: 27,1 °C",
-   "contexto": [
-    "Hoy hay 38 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (29,2 °C); el más frío: 1977 (21,6 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 29,2 °C de media, con 80 días por encima de lo normal."
-   ],
-   "delta": 3.74,
-   "pendiente_decada": 0.67,
-   "r2": 0.58,
-   "dias_sobre_normal_delta": 37.9,
-   "media_1970s": 23.67,
-   "media_ult10": 27.06,
-   "mas_calido": {
-    "anio": 2026,
-    "t": 29.18
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 21.61
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 29.18,
-    "puesto": 1,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 29.18,
-    "dias": 92,
-    "sobre_normal": 80,
-    "hasta": "2026-10-11"
-   },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "26",
-   "capital": "Logroño",
-   "provincia": "La Rioja",
-   "slug": "la-rioja",
-   "titular": "El verano se ha calentado 3,7 °C en Logroño desde 1970",
-   "dato": "tendencia +3,7 °C entre 1970 y 2026 (+0,7 °C por década) · media 1970-1979: 19,6 °C · últimos diez: 23,1 °C",
-   "contexto": [
-    "Hoy hay 39 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (25,2 °C); el más frío: 1977 (17,7 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 25,2 °C de media, con 81 días por encima de lo normal."
-   ],
-   "delta": 3.68,
-   "pendiente_decada": 0.66,
-   "r2": 0.6,
-   "dias_sobre_normal_delta": 39.3,
-   "media_1970s": 19.59,
-   "media_ult10": 23.06,
-   "mas_calido": {
-    "anio": 2026,
-    "t": 25.17
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 17.66
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 25.17,
-    "puesto": 1,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 25.17,
-    "dias": 92,
-    "sobre_normal": 81,
-    "hasta": "2026-10-11"
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.98,
+    "pendiente_decada": 0.71,
+    "media_1970s": 23.9,
+    "media_ult10": 27.43,
+    "dias_sobre_normal_delta": 57.6
    },
    "revisar": false,
    "limites": []
@@ -554,13 +601,11 @@
    "capital": "Toledo",
    "provincia": "Toledo",
    "slug": "toledo",
-   "titular": "El verano se ha calentado 3,6 °C en Toledo desde 1970",
-   "dato": "tendencia +3,6 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 23,5 °C · últimos diez: 26,9 °C",
+   "titular": "El verano es hoy 3,6 °C más cálido en Toledo que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3,6 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 23,5 °C · últimos diez 26,9 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 42 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (28,1 °C); el más frío: 1977 (21,3 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 28,1 °C de media, con 79 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.6,
    "pendiente_decada": 0.64,
@@ -589,6 +634,14 @@
     "sobre_normal": 79,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.6,
+    "pendiente_decada": 0.64,
+    "media_1970s": 23.49,
+    "media_ult10": 26.89,
+    "dias_sobre_normal_delta": 42.1
+   },
    "revisar": false,
    "limites": []
   },
@@ -597,40 +650,51 @@
    "capital": "Burgos",
    "provincia": "Burgos",
    "slug": "burgos",
-   "titular": "El verano se ha calentado 3,6 °C en Burgos desde 1970",
-   "dato": "tendencia +3,6 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 17,7 °C · últimos diez: 21,1 °C",
+   "titular": "El verano es hoy 3,5 °C más cálido en Burgos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +3,5 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 16,8 °C · últimos diez 19,9 °C · estación de AEMET Burgos aeropuerto",
    "contexto": [
-    "Hoy hay 36 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (22,6 °C); el más frío: 1977 (15,4 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 22,6 °C de media, con 76 días por encima de lo normal."
+    "El verano más cálido de la serie: 2003 (21,8 °C); el más frío: 1977 (14,6 °C).",
+    "El verano de 2026 fue el 2.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Burgos la tendencia es +3,6 °C: la cifra de la estación es la que vale para la ciudad."
    ],
-   "delta": 3.56,
-   "pendiente_decada": 0.64,
-   "r2": 0.59,
-   "dias_sobre_normal_delta": 36.5,
-   "media_1970s": 17.7,
-   "media_ult10": 21.08,
+   "delta": 3.53,
+   "pendiente_decada": 0.63,
+   "r2": 0.54,
+   "media_1970s": 16.77,
+   "media_ult10": 19.95,
    "mas_calido": {
-    "anio": 2026,
-    "t": 22.64
+    "anio": 2003,
+    "t": 21.8
    },
    "mas_frio": {
     "anio": 1977,
-    "t": 15.36
+    "t": 14.63
    },
    "ultimo": {
     "anio": 2026,
-    "t": 22.64,
-    "puesto": 1,
+    "t": 21.73,
+    "puesto": 2,
     "de": 57
    },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
    "en_curso": {
     "anio": 2026,
     "t": 22.64,
     "dias": 92,
     "sobre_normal": 76,
     "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 36.5,
+   "fuente_fila": "AEMET",
+   "estacion": "Burgos aeropuerto",
+   "indicativo": "2331",
+   "era5": {
+    "delta": 3.56,
+    "pendiente_decada": 0.64,
+    "media_1970s": 17.7,
+    "media_ult10": 21.08,
+    "dias_sobre_normal_delta": 36.5
    },
    "revisar": false,
    "limites": []
@@ -640,13 +704,11 @@
    "capital": "Cáceres",
    "provincia": "Cáceres",
    "slug": "caceres",
-   "titular": "El verano se ha calentado 3,5 °C en Cáceres desde 1970",
-   "dato": "tendencia +3,5 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 22,4 °C · últimos diez: 25,9 °C",
+   "titular": "Cáceres tiene veranos 3,5 °C más cálidos que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3,5 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 22,4 °C · últimos diez 25,9 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 34 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2025 (27,1 °C); el más frío: 1978 (18,1 °C).",
-    "El verano de 2026 fue el 3.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 26,7 °C de media, con 62 días por encima de lo normal."
+    "El verano de 2026 fue el 3.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.53,
    "pendiente_decada": 0.63,
@@ -675,6 +737,14 @@
     "sobre_normal": 62,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.53,
+    "pendiente_decada": 0.63,
+    "media_1970s": 22.45,
+    "media_ult10": 25.95,
+    "dias_sobre_normal_delta": 33.9
+   },
    "revisar": false,
    "limites": []
   },
@@ -683,13 +753,11 @@
    "capital": "Ávila",
    "provincia": "Ávila",
    "slug": "avila",
-   "titular": "El verano se ha calentado 3,5 °C en Ávila desde 1970",
-   "dato": "tendencia +3,5 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 17,8 °C · últimos diez: 21,1 °C",
+   "titular": "Veranos 3,5 °C más cálidos: así ha cambiado el verano en Ávila en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +3,5 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 17,8 °C · últimos diez 21,1 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 41 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (22,5 °C); el más frío: 1977 (15,1 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 22,5 °C de media, con 79 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.47,
    "pendiente_decada": 0.62,
@@ -718,6 +786,14 @@
     "sobre_normal": 79,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.47,
+    "pendiente_decada": 0.62,
+    "media_1970s": 17.77,
+    "media_ult10": 21.15,
+    "dias_sobre_normal_delta": 40.9
+   },
    "revisar": false,
    "limites": []
   },
@@ -726,13 +802,11 @@
    "capital": "Tarragona",
    "provincia": "Tarragona",
    "slug": "tarragona",
-   "titular": "El verano se ha calentado 3,4 °C en Tarragona desde 1970",
-   "dato": "tendencia +3,4 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 23,7 °C · últimos diez: 26,8 °C",
+   "titular": "Tarragona tiene veranos 3,4 °C más cálidos que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3,4 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 23,7 °C · últimos diez 26,8 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 57 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (28,4 °C); el más frío: 1977 (22 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 28,4 °C de media, con 89 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.43,
    "pendiente_decada": 0.61,
@@ -761,21 +835,84 @@
     "sobre_normal": 89,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.43,
+    "pendiente_decada": 0.61,
+    "media_1970s": 23.73,
+    "media_ult10": 26.79,
+    "dias_sobre_normal_delta": 57.2
+   },
    "revisar": false,
    "limites": []
+  },
+  {
+   "cod": "22",
+   "capital": "Huesca",
+   "provincia": "Huesca",
+   "slug": "huesca",
+   "titular": "Huesca tiene veranos 3,4 °C más cálidos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +3,4 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 21,3 °C · últimos diez 24,5 °C · estación de AEMET Huesca aeropuerto",
+   "contexto": [
+    "El verano más cálido de la serie: 2026 (26,8 °C); el más frío: 1977 (19,2 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 53 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Huesca la tendencia es +4,6 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 3.42,
+   "pendiente_decada": 0.61,
+   "r2": 0.5,
+   "media_1970s": 21.29,
+   "media_ult10": 24.53,
+   "mas_calido": {
+    "anio": 2026,
+    "t": 26.77
+   },
+   "mas_frio": {
+    "anio": 1977,
+    "t": 19.17
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 26.77,
+    "puesto": 1,
+    "de": 53
+   },
+   "anios_con_dato": 53,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 26.63,
+    "dias": 92,
+    "sobre_normal": 81,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 54.1,
+   "fuente_fila": "AEMET",
+   "estacion": "Huesca aeropuerto",
+   "indicativo": "9898",
+   "era5": {
+    "delta": 4.56,
+    "pendiente_decada": 0.81,
+    "media_1970s": 20.5,
+    "media_ult10": 24.52,
+    "dias_sobre_normal_delta": 54.1
+   },
+   "discrepa": "La estación de AEMET (+3,4 °C) y la celda del reanálisis (+4,6 °C) se separan 1,1 °C y no cuadran en otras estaciones del año: posible cambio de emplazamiento de la estación",
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La estación de AEMET (+3,4 °C) y la celda del reanálisis (+4,6 °C) se separan 1,1 °C y no cuadran en otras estaciones del año: posible cambio de emplazamiento de la estación. No se publica hasta revisar el historial de la estación."
+   ]
   },
   {
    "cod": "06",
    "capital": "Badajoz",
    "provincia": "Badajoz",
    "slug": "badajoz",
-   "titular": "El verano se ha calentado 3,4 °C en Badajoz desde 1970",
-   "dato": "tendencia +3,4 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 23,1 °C · últimos diez: 26,4 °C",
+   "titular": "El verano es hoy 3,4 °C más cálido en Badajoz que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3,4 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 23,1 °C · últimos diez 26,4 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 33 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2025 (27,6 °C); el más frío: 1978 (19,2 °C).",
-    "El verano de 2026 fue el 4.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 27 °C de media, con 58 días por encima de lo normal."
+    "El verano de 2026 fue el 4.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.41,
    "pendiente_decada": 0.61,
@@ -804,6 +941,14 @@
     "sobre_normal": 58,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.41,
+    "pendiente_decada": 0.61,
+    "media_1970s": 23.11,
+    "media_ult10": 26.36,
+    "dias_sobre_normal_delta": 32.7
+   },
    "revisar": false,
    "limites": []
   },
@@ -812,13 +957,11 @@
    "capital": "Girona",
    "provincia": "Girona",
    "slug": "girona",
-   "titular": "El verano se ha calentado 3,4 °C en Girona desde 1970",
-   "dato": "tendencia +3,4 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 22,1 °C · últimos diez: 25,2 °C",
+   "titular": "Veranos 3,4 °C más cálidos: así ha cambiado el verano en Girona en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +3,4 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 22,1 °C · últimos diez 25,2 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 49 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (27,2 °C); el más frío: 1977 (20,2 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 27,2 °C de media, con 85 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.39,
    "pendiente_decada": 0.61,
@@ -847,48 +990,67 @@
     "sobre_normal": 85,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.39,
+    "pendiente_decada": 0.61,
+    "media_1970s": 22.14,
+    "media_ult10": 25.24,
+    "dias_sobre_normal_delta": 49.0
+   },
    "revisar": false,
    "limites": []
   },
   {
-   "cod": "03",
-   "capital": "Alacant/Alicante",
-   "provincia": "Alicante",
-   "slug": "alicante",
-   "titular": "El verano se ha calentado 3,4 °C en Alacant/Alicante desde 1970",
-   "dato": "tendencia +3,4 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 25,3 °C · últimos diez: 28,3 °C",
+   "cod": "14",
+   "capital": "Córdoba",
+   "provincia": "Córdoba",
+   "slug": "cordoba",
+   "titular": "Veranos 3,3 °C más cálidos: así ha cambiado el verano en Córdoba en medio siglo, según AEMET",
+   "dato": "tendencia +3,3 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 25 °C · últimos diez 28 °C · estación de AEMET Córdoba aeropuerto",
    "contexto": [
-    "Hoy hay 62 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (29,7 °C); el más frío: 1977 (23,7 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 29,7 °C de media, con 85 días por encima de lo normal."
+    "El verano más cálido de la serie: 2017 (28,9 °C); el más frío: 1977 (23,3 °C).",
+    "El verano de 2026 fue el 8.º más cálido de los 52 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Córdoba la tendencia es +3,8 °C: la cifra de la estación es la que vale para la ciudad."
    ],
-   "delta": 3.36,
-   "pendiente_decada": 0.6,
-   "r2": 0.67,
-   "dias_sobre_normal_delta": 62.4,
-   "media_1970s": 25.28,
-   "media_ult10": 28.28,
+   "delta": 3.32,
+   "pendiente_decada": 0.59,
+   "r2": 0.6,
+   "media_1970s": 25.04,
+   "media_ult10": 27.98,
    "mas_calido": {
-    "anio": 2026,
-    "t": 29.7
+    "anio": 2017,
+    "t": 28.9
    },
    "mas_frio": {
     "anio": 1977,
-    "t": 23.69
+    "t": 23.27
    },
    "ultimo": {
     "anio": 2026,
-    "t": 29.7,
-    "puesto": 1,
-    "de": 57
+    "t": 28.07,
+    "puesto": 8,
+    "de": 52
    },
+   "anios_con_dato": 52,
+   "primer_anio": 1970,
    "en_curso": {
     "anio": 2026,
-    "t": 29.7,
+    "t": 30.01,
     "dias": 92,
-    "sobre_normal": 85,
+    "sobre_normal": 68,
     "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 52.4,
+   "fuente_fila": "AEMET",
+   "estacion": "Córdoba aeropuerto",
+   "indicativo": "5402",
+   "era5": {
+    "delta": 3.83,
+    "pendiente_decada": 0.68,
+    "media_1970s": 26.31,
+    "media_ult10": 29.57,
+    "dias_sobre_normal_delta": 52.4
    },
    "revisar": false,
    "limites": []
@@ -898,13 +1060,11 @@
    "capital": "Pamplona/Iruña",
    "provincia": "Navarra",
    "slug": "navarra",
-   "titular": "El verano se ha calentado 3,3 °C en Pamplona/Iruña desde 1970",
-   "dato": "tendencia +3,3 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 19 °C · últimos diez: 22,1 °C",
+   "titular": "Pamplona/Iruña tiene veranos 3,3 °C más cálidos que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3,3 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 19 °C · últimos diez 22,1 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 34 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (24,8 °C); el más frío: 1977 (17,3 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 24,8 °C de media, con 82 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.32,
    "pendiente_decada": 0.59,
@@ -933,6 +1093,14 @@
     "sobre_normal": 82,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.32,
+    "pendiente_decada": 0.59,
+    "media_1970s": 19.03,
+    "media_ult10": 22.09,
+    "dias_sobre_normal_delta": 33.9
+   },
    "revisar": false,
    "limites": []
   },
@@ -941,13 +1109,11 @@
    "capital": "Segovia",
    "provincia": "Segovia",
    "slug": "segovia",
-   "titular": "El verano se ha calentado 3,3 °C en Segovia desde 1970",
-   "dato": "tendencia +3,3 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 18,9 °C · últimos diez: 22 °C",
+   "titular": "Segovia tiene veranos 3,3 °C más cálidos que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3,3 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 18,9 °C · últimos diez 22 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 39 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (23,3 °C); el más frío: 1977 (16,3 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 23,3 °C de media, con 80 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.31,
    "pendiente_decada": 0.59,
@@ -976,48 +1142,67 @@
     "sobre_normal": 80,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.31,
+    "pendiente_decada": 0.59,
+    "media_1970s": 18.89,
+    "media_ult10": 22.03,
+    "dias_sobre_normal_delta": 38.8
+   },
    "revisar": false,
    "limites": []
   },
   {
-   "cod": "24",
-   "capital": "León",
-   "provincia": "León",
-   "slug": "leon",
-   "titular": "El verano se ha calentado 3,3 °C en León desde 1970",
-   "dato": "tendencia +3,3 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 18,4 °C · últimos diez: 21,5 °C",
+   "cod": "32",
+   "capital": "Ourense",
+   "provincia": "Ourense",
+   "slug": "ourense",
+   "titular": "Veranos 3,2 °C más cálidos: así ha cambiado el verano en Ourense en medio siglo, según AEMET",
+   "dato": "tendencia +3,2 °C entre 1973 y 2026 (+0,6 °C por década) · media de los años setenta 20,6 °C · últimos diez 23,4 °C · estación de AEMET Ourense",
    "contexto": [
-    "Hoy hay 38 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (22,6 °C); el más frío: 1977 (15,8 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 22,6 °C de media, con 72 días por encima de lo normal."
+    "El verano más cálido de la serie: 2026 (25 °C); el más frío: 1977 (18,1 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 53 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Ourense la tendencia es +2,8 °C: la cifra de la estación es la que vale para la ciudad."
    ],
-   "delta": 3.3,
-   "pendiente_decada": 0.59,
-   "r2": 0.51,
-   "dias_sobre_normal_delta": 38.3,
-   "media_1970s": 18.45,
-   "media_ult10": 21.46,
+   "delta": 3.24,
+   "pendiente_decada": 0.58,
+   "r2": 0.45,
+   "media_1970s": 20.59,
+   "media_ult10": 23.37,
    "mas_calido": {
     "anio": 2026,
-    "t": 22.56
+    "t": 25.03
    },
    "mas_frio": {
     "anio": 1977,
-    "t": 15.81
+    "t": 18.1
    },
    "ultimo": {
     "anio": 2026,
-    "t": 22.56,
+    "t": 25.03,
     "puesto": 1,
-    "de": 57
+    "de": 53
    },
+   "anios_con_dato": 53,
+   "primer_anio": 1973,
    "en_curso": {
     "anio": 2026,
-    "t": 22.56,
+    "t": 23.66,
     "dias": 92,
-    "sobre_normal": 72,
+    "sobre_normal": 70,
     "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 30.9,
+   "fuente_fila": "AEMET",
+   "estacion": "Ourense",
+   "indicativo": "1690A",
+   "era5": {
+    "delta": 2.79,
+    "pendiente_decada": 0.5,
+    "media_1970s": 19.22,
+    "media_ult10": 22.28,
+    "dias_sobre_normal_delta": 30.9
    },
    "revisar": false,
    "limites": []
@@ -1027,13 +1212,11 @@
    "capital": "Barcelona",
    "provincia": "Barcelona",
    "slug": "barcelona",
-   "titular": "El verano se ha calentado 3,2 °C en Barcelona desde 1970",
-   "dato": "tendencia +3,2 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 22,1 °C · últimos diez: 25,1 °C",
+   "titular": "Veranos 3,2 °C más cálidos: así ha cambiado el verano en Barcelona en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +3,2 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 22,1 °C · últimos diez 25,1 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 62 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (26,6 °C); el más frío: 1977 (20,7 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 26,6 °C de media, con 87 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.23,
    "pendiente_decada": 0.58,
@@ -1062,21 +1245,249 @@
     "sobre_normal": 87,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.23,
+    "pendiente_decada": 0.58,
+    "media_1970s": 22.08,
+    "media_ult10": 25.06,
+    "dias_sobre_normal_delta": 62.1
+   },
    "revisar": false,
    "limites": []
+  },
+  {
+   "cod": "42",
+   "capital": "Soria",
+   "provincia": "Soria",
+   "slug": "soria",
+   "titular": "El verano es hoy 3,2 °C más cálido en Soria que a principios de los setenta, según AEMET",
+   "dato": "tendencia +3,2 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 18 °C · últimos diez 21,2 °C · estación de AEMET Soria",
+   "contexto": [
+    "El verano más cálido de la serie: 2026 (23 °C); el más frío: 1977 (15,4 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 56 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Soria la tendencia es +4 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 3.23,
+   "pendiente_decada": 0.58,
+   "r2": 0.49,
+   "media_1970s": 17.96,
+   "media_ult10": 21.16,
+   "mas_calido": {
+    "anio": 2026,
+    "t": 22.97
+   },
+   "mas_frio": {
+    "anio": 1977,
+    "t": 15.37
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 22.97,
+    "puesto": 1,
+    "de": 56
+   },
+   "anios_con_dato": 56,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 23.7,
+    "dias": 92,
+    "sobre_normal": 80,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 43.4,
+   "fuente_fila": "AEMET",
+   "estacion": "Soria",
+   "indicativo": "2030",
+   "era5": {
+    "delta": 3.97,
+    "pendiente_decada": 0.71,
+    "media_1970s": 18.3,
+    "media_ult10": 21.93,
+    "dias_sobre_normal_delta": 43.4
+   },
+   "discrepa": "La estación de AEMET (+3,2 °C) y la celda del reanálisis (+4 °C) se separan 0,7 °C: posible cambio de emplazamiento de la estación",
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La estación de AEMET (+3,2 °C) y la celda del reanálisis (+4 °C) se separan 0,7 °C: posible cambio de emplazamiento de la estación. No se publica hasta revisar el historial de la estación."
+   ]
+  },
+  {
+   "cod": "03",
+   "capital": "Alacant/Alicante",
+   "provincia": "Alicante",
+   "slug": "alicante",
+   "titular": "El verano es hoy 3,2 °C más cálido en Alacant/Alicante que a principios de los setenta, según AEMET",
+   "dato": "tendencia +3,2 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 23,7 °C · últimos diez 26,4 °C · estación de AEMET Alicante",
+   "contexto": [
+    "El verano más cálido de la serie: 2026 (27,7 °C); el más frío: 1977 (22 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Alacant/Alicante la tendencia es +3,4 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 3.2,
+   "pendiente_decada": 0.57,
+   "r2": 0.65,
+   "media_1970s": 23.72,
+   "media_ult10": 26.42,
+   "mas_calido": {
+    "anio": 2026,
+    "t": 27.73
+   },
+   "mas_frio": {
+    "anio": 1977,
+    "t": 22.03
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 27.73,
+    "puesto": 1,
+    "de": 57
+   },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 29.7,
+    "dias": 92,
+    "sobre_normal": 85,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 62.4,
+   "fuente_fila": "AEMET",
+   "estacion": "Alicante",
+   "indicativo": "8025",
+   "era5": {
+    "delta": 3.36,
+    "pendiente_decada": 0.6,
+    "media_1970s": 25.28,
+    "media_ult10": 28.28,
+    "dias_sobre_normal_delta": 62.4
+   },
+   "revisar": false,
+   "limites": []
+  },
+  {
+   "cod": "46",
+   "capital": "València",
+   "provincia": "Valencia",
+   "slug": "valencia",
+   "titular": "València tiene veranos 3,1 °C más cálidos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +3,1 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 23,4 °C · últimos diez 26,2 °C · estación de AEMET València",
+   "contexto": [
+    "El verano más cálido de la serie: 2026 (27,5 °C); el más frío: 1977 (22,2 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre València la tendencia es +2,7 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 3.15,
+   "pendiente_decada": 0.56,
+   "r2": 0.64,
+   "media_1970s": 23.45,
+   "media_ult10": 26.24,
+   "mas_calido": {
+    "anio": 2026,
+    "t": 27.47
+   },
+   "mas_frio": {
+    "anio": 1977,
+    "t": 22.23
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 27.47,
+    "puesto": 1,
+    "de": 57
+   },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 28.17,
+    "dias": 92,
+    "sobre_normal": 85,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 60.2,
+   "fuente_fila": "AEMET",
+   "estacion": "València",
+   "indicativo": "8416",
+   "era5": {
+    "delta": 2.7,
+    "pendiente_decada": 0.48,
+    "media_1970s": 24.61,
+    "media_ult10": 26.97,
+    "dias_sobre_normal_delta": 60.2
+   },
+   "revisar": false,
+   "limites": []
+  },
+  {
+   "cod": "26",
+   "capital": "Logroño",
+   "provincia": "La Rioja",
+   "slug": "la-rioja",
+   "titular": "Veranos 3,1 °C más cálidos: así ha cambiado el verano en Logroño en medio siglo, según AEMET",
+   "dato": "tendencia +3,1 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 20,5 °C · últimos diez 23,4 °C · estación de AEMET Logroño aeropuerto",
+   "contexto": [
+    "El verano más cálido de la serie: 2026 (25,7 °C); el más frío: 1977 (18,5 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Logroño la tendencia es +3,7 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 3.14,
+   "pendiente_decada": 0.56,
+   "r2": 0.5,
+   "media_1970s": 20.48,
+   "media_ult10": 23.41,
+   "mas_calido": {
+    "anio": 2026,
+    "t": 25.67
+   },
+   "mas_frio": {
+    "anio": 1977,
+    "t": 18.53
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 25.67,
+    "puesto": 1,
+    "de": 57
+   },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 25.17,
+    "dias": 92,
+    "sobre_normal": 81,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 39.3,
+   "fuente_fila": "AEMET",
+   "estacion": "Logroño aeropuerto",
+   "indicativo": "9170",
+   "era5": {
+    "delta": 3.68,
+    "pendiente_decada": 0.66,
+    "media_1970s": 19.59,
+    "media_ult10": 23.06,
+    "dias_sobre_normal_delta": 39.3
+   },
+   "discrepa": "La estación de AEMET (+3,1 °C) y la celda del reanálisis (+3,7 °C) se separan 0,5 °C y no cuadran en otras estaciones del año: posible cambio de emplazamiento de la estación",
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La estación de AEMET (+3,1 °C) y la celda del reanálisis (+3,7 °C) se separan 0,5 °C y no cuadran en otras estaciones del año: posible cambio de emplazamiento de la estación. No se publica hasta revisar el historial de la estación."
+   ]
   },
   {
    "cod": "19",
    "capital": "Guadalajara",
    "provincia": "Guadalajara",
    "slug": "guadalajara",
-   "titular": "El verano se ha calentado 3,1 °C en Guadalajara desde 1970",
-   "dato": "tendencia +3,1 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 22,1 °C · últimos diez: 25,1 °C",
+   "titular": "Guadalajara tiene veranos 3,1 °C más cálidos que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3,1 °C entre 1970 y 2026 (+0,6 °C por década) · media de los años setenta 22,1 °C · últimos diez 25,1 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 40 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2017 (25,8 °C); el más frío: 1977 (19,6 °C).",
-    "El verano de 2026 fue el 2.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 25,8 °C de media, con 75 días por encima de lo normal."
+    "El verano de 2026 fue el 2.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 3.12,
    "pendiente_decada": 0.56,
@@ -1105,91 +1516,13 @@
     "sobre_normal": 75,
     "hasta": "2026-10-11"
    },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "37",
-   "capital": "Salamanca",
-   "provincia": "Salamanca",
-   "slug": "salamanca",
-   "titular": "El verano se ha calentado 3,1 °C en Salamanca desde 1970",
-   "dato": "tendencia +3,1 °C entre 1970 y 2026 (+0,6 °C por década) · media 1970-1979: 19,1 °C · últimos diez: 22,2 °C",
-   "contexto": [
-    "Hoy hay 33 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2025 (23,6 °C); el más frío: 1977 (16,4 °C).",
-    "El verano de 2026 fue el 3.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 23,2 °C de media, con 76 días por encima de lo normal."
-   ],
-   "delta": 3.12,
-   "pendiente_decada": 0.56,
-   "r2": 0.49,
-   "dias_sobre_normal_delta": 33.0,
-   "media_1970s": 19.05,
-   "media_ult10": 22.19,
-   "mas_calido": {
-    "anio": 2025,
-    "t": 23.61
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 16.35
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 23.24,
-    "puesto": 3,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 23.24,
-    "dias": 92,
-    "sobre_normal": 76,
-    "hasta": "2026-10-11"
-   },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "49",
-   "capital": "Zamora",
-   "provincia": "Zamora",
-   "slug": "zamora",
-   "titular": "El verano se ha calentado 3 °C en Zamora desde 1970",
-   "dato": "tendencia +3 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 20 °C · últimos diez: 23 °C",
-   "contexto": [
-    "Hoy hay 32 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (24,3 °C); el más frío: 1977 (17,2 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 24,3 °C de media, con 75 días por encima de lo normal."
-   ],
-   "delta": 3.01,
-   "pendiente_decada": 0.54,
-   "r2": 0.44,
-   "dias_sobre_normal_delta": 32.2,
-   "media_1970s": 19.96,
-   "media_ult10": 22.98,
-   "mas_calido": {
-    "anio": 2026,
-    "t": 24.29
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 17.25
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 24.29,
-    "puesto": 1,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 24.29,
-    "dias": 92,
-    "sobre_normal": 75,
-    "hasta": "2026-10-11"
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 3.12,
+    "pendiente_decada": 0.56,
+    "media_1970s": 22.14,
+    "media_ult10": 25.06,
+    "dias_sobre_normal_delta": 40.3
    },
    "revisar": false,
    "limites": []
@@ -1199,13 +1532,11 @@
    "capital": "Palma",
    "provincia": "Illes Balears",
    "slug": "baleares",
-   "titular": "El verano se ha calentado 3 °C en Palma desde 1970",
-   "dato": "tendencia +3 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 23,6 °C · últimos diez: 26,3 °C",
+   "titular": "Palma tiene veranos 3 °C más cálidos que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 23,6 °C · últimos diez 26,3 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 64 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (27,5 °C); el más frío: 1977 (22,5 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 27,5 °C de media, con 89 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.98,
    "pendiente_decada": 0.53,
@@ -1234,6 +1565,14 @@
     "sobre_normal": 89,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.98,
+    "pendiente_decada": 0.53,
+    "media_1970s": 23.63,
+    "media_ult10": 26.28,
+    "dias_sobre_normal_delta": 64.2
+   },
    "revisar": false,
    "limites": []
   },
@@ -1242,13 +1581,11 @@
    "capital": "Vitoria-Gasteiz",
    "provincia": "Álava",
    "slug": "alava",
-   "titular": "El verano se ha calentado 3 °C en Vitoria-Gasteiz desde 1970",
-   "dato": "tendencia +3 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 17,8 °C · últimos diez: 20,6 °C",
+   "titular": "Vitoria-Gasteiz tiene veranos 3 °C más cálidos que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 17,8 °C · últimos diez 20,6 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 34 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (22,7 °C); el más frío: 1977 (16,1 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 22,7 °C de media, con 78 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.97,
    "pendiente_decada": 0.53,
@@ -1277,6 +1614,14 @@
     "sobre_normal": 78,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.97,
+    "pendiente_decada": 0.53,
+    "media_1970s": 17.78,
+    "media_ult10": 20.6,
+    "dias_sobre_normal_delta": 33.8
+   },
    "revisar": false,
    "limites": []
   },
@@ -1285,13 +1630,11 @@
    "capital": "Palencia",
    "provincia": "Palencia",
    "slug": "palencia",
-   "titular": "El verano se ha calentado 3 °C en Palencia desde 1970",
-   "dato": "tendencia +3 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 19,4 °C · últimos diez: 22,2 °C",
+   "titular": "Palencia tiene veranos 3 °C más cálidos que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +3 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 19,4 °C · últimos diez 22,2 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 33 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (23,4 °C); el más frío: 1977 (16,9 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 23,4 °C de media, con 70 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.97,
    "pendiente_decada": 0.53,
@@ -1320,6 +1663,14 @@
     "sobre_normal": 70,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.97,
+    "pendiente_decada": 0.53,
+    "media_1970s": 19.45,
+    "media_ult10": 22.24,
+    "dias_sobre_normal_delta": 32.7
+   },
    "revisar": false,
    "limites": []
   },
@@ -1328,13 +1679,11 @@
    "capital": "Murcia",
    "provincia": "Murcia",
    "slug": "murcia",
-   "titular": "El verano se ha calentado 2,9 °C en Murcia desde 1970",
-   "dato": "tendencia +2,9 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 25,8 °C · últimos diez: 28,3 °C",
+   "titular": "El verano es hoy 2,9 °C más cálido en Murcia que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +2,9 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 25,8 °C · últimos diez 28,3 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 56 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (29,3 °C); el más frío: 1977 (24,2 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 29,3 °C de media, con 84 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.93,
    "pendiente_decada": 0.52,
@@ -1363,48 +1712,67 @@
     "sobre_normal": 84,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.93,
+    "pendiente_decada": 0.52,
+    "media_1970s": 25.76,
+    "media_ult10": 28.28,
+    "dias_sobre_normal_delta": 56.2
+   },
    "revisar": false,
    "limites": []
   },
   {
-   "cod": "28",
-   "capital": "Madrid",
-   "provincia": "Madrid",
-   "slug": "madrid",
-   "titular": "El verano se ha calentado 2,9 °C en Madrid desde 1970",
-   "dato": "tendencia +2,9 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 22,7 °C · últimos diez: 25,4 °C",
+   "cod": "52",
+   "capital": "Melilla",
+   "provincia": "Melilla",
+   "slug": "melilla",
+   "titular": "Melilla tiene veranos 2,9 °C más cálidos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +2,9 °C entre 1971 y 2026 (+0,5 °C por década) · media de los años setenta 23,2 °C · últimos diez 25,8 °C · estación de AEMET Melilla",
    "contexto": [
-    "Hoy hay 34 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (26,3 °C); el más frío: 1977 (20,1 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 26,3 °C de media, con 72 días por encima de lo normal."
+    "El verano más cálido de la serie: 2026 (27 °C); el más frío: 1977 (22 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 56 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Melilla la tendencia es +2,5 °C: la cifra de la estación es la que vale para la ciudad."
    ],
-   "delta": 2.87,
-   "pendiente_decada": 0.51,
-   "r2": 0.49,
-   "dias_sobre_normal_delta": 34.0,
-   "media_1970s": 22.68,
-   "media_ult10": 25.44,
+   "delta": 2.89,
+   "pendiente_decada": 0.52,
+   "r2": 0.57,
+   "media_1970s": 23.25,
+   "media_ult10": 25.8,
    "mas_calido": {
     "anio": 2026,
-    "t": 26.3
+    "t": 26.97
    },
    "mas_frio": {
     "anio": 1977,
-    "t": 20.08
+    "t": 21.97
    },
    "ultimo": {
     "anio": 2026,
-    "t": 26.3,
+    "t": 26.97,
     "puesto": 1,
-    "de": 57
+    "de": 56
    },
+   "anios_con_dato": 56,
+   "primer_anio": 1971,
    "en_curso": {
     "anio": 2026,
-    "t": 26.3,
+    "t": 27.71,
     "dias": 92,
-    "sobre_normal": 72,
+    "sobre_normal": 81,
     "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 56.4,
+   "fuente_fila": "AEMET",
+   "estacion": "Melilla",
+   "indicativo": "6000A",
+   "era5": {
+    "delta": 2.48,
+    "pendiente_decada": 0.44,
+    "media_1970s": 24.72,
+    "media_ult10": 26.7,
+    "dias_sobre_normal_delta": 56.4
    },
    "revisar": false,
    "limites": []
@@ -1414,13 +1782,11 @@
    "capital": "Málaga",
    "provincia": "Málaga",
    "slug": "malaga",
-   "titular": "El verano se ha calentado 2,8 °C en Málaga desde 1970",
-   "dato": "tendencia +2,8 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 24 °C · últimos diez: 26,4 °C",
+   "titular": "Veranos 2,8 °C más cálidos: así ha cambiado el verano en Málaga en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +2,8 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 24 °C · últimos diez 26,4 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 57 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2023 (27,4 °C); el más frío: 1977 (22,6 °C).",
-    "El verano de 2026 fue el 2.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 27,1 °C de media, con 77 días por encima de lo normal."
+    "El verano de 2026 fue el 2.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.83,
    "pendiente_decada": 0.5,
@@ -1449,48 +1815,67 @@
     "sobre_normal": 77,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.83,
+    "pendiente_decada": 0.5,
+    "media_1970s": 23.96,
+    "media_ult10": 26.39,
+    "dias_sobre_normal_delta": 56.7
+   },
    "revisar": false,
    "limites": []
   },
   {
-   "cod": "32",
-   "capital": "Ourense",
-   "provincia": "Ourense",
-   "slug": "ourense",
-   "titular": "El verano se ha calentado 2,8 °C en Ourense desde 1970",
-   "dato": "tendencia +2,8 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 19,2 °C · últimos diez: 22,3 °C",
+   "cod": "04",
+   "capital": "Almería",
+   "provincia": "Almería",
+   "slug": "almeria",
+   "titular": "Almería tiene veranos 2,8 °C más cálidos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +2,8 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 24,2 °C · últimos diez 26,7 °C · estación de AEMET Almería aeropuerto",
    "contexto": [
-    "Hoy hay 31 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (23,7 °C); el más frío: 1978 (10,8 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 23,7 °C de media, con 70 días por encima de lo normal."
+    "El verano más cálido de la serie: 2025 (27,9 °C); el más frío: 1977 (22,2 °C).",
+    "El verano de 2026 fue el 2.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Almería la tendencia es +2,4 °C: la cifra de la estación es la que vale para la ciudad."
    ],
    "delta": 2.79,
    "pendiente_decada": 0.5,
-   "r2": 0.22,
-   "dias_sobre_normal_delta": 30.9,
-   "media_1970s": 19.22,
-   "media_ult10": 22.28,
+   "r2": 0.57,
+   "media_1970s": 24.18,
+   "media_ult10": 26.69,
    "mas_calido": {
-    "anio": 2026,
-    "t": 23.66
+    "anio": 2025,
+    "t": 27.93
    },
    "mas_frio": {
-    "anio": 1978,
-    "t": 10.79
+    "anio": 1977,
+    "t": 22.23
    },
    "ultimo": {
     "anio": 2026,
-    "t": 23.66,
-    "puesto": 1,
+    "t": 27.83,
+    "puesto": 2,
     "de": 57
    },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
    "en_curso": {
     "anio": 2026,
-    "t": 23.66,
+    "t": 25.95,
     "dias": 92,
-    "sobre_normal": 70,
+    "sobre_normal": 86,
     "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 57.5,
+   "fuente_fila": "AEMET",
+   "estacion": "Almería aeropuerto",
+   "indicativo": "6325O",
+   "era5": {
+    "delta": 2.38,
+    "pendiente_decada": 0.43,
+    "media_1970s": 22.62,
+    "media_ult10": 24.71,
+    "dias_sobre_normal_delta": 57.5
    },
    "revisar": false,
    "limites": []
@@ -1500,13 +1885,11 @@
    "capital": "Valladolid",
    "provincia": "Valladolid",
    "slug": "valladolid",
-   "titular": "El verano se ha calentado 2,8 °C en Valladolid desde 1970",
-   "dato": "tendencia +2,8 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 20,2 °C · últimos diez: 22,9 °C",
+   "titular": "Veranos 2,8 °C más cálidos: así ha cambiado el verano en Valladolid en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +2,8 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 20,2 °C · últimos diez 22,9 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 30 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (24,1 °C); el más frío: 1977 (17,5 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 24,1 °C de media, con 69 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.77,
    "pendiente_decada": 0.5,
@@ -1535,6 +1918,68 @@
     "sobre_normal": 69,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.77,
+    "pendiente_decada": 0.5,
+    "media_1970s": 20.17,
+    "media_ult10": 22.85,
+    "dias_sobre_normal_delta": 30.1
+   },
+   "revisar": false,
+   "limites": []
+  },
+  {
+   "cod": "48",
+   "capital": "Bilbao",
+   "provincia": "Bizkaia",
+   "slug": "bizkaia",
+   "titular": "El verano es hoy 2,8 °C más cálido en Bilbao que a principios de los setenta, según AEMET",
+   "dato": "tendencia +2,8 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 18,7 °C · últimos diez 21,2 °C · estación de AEMET Bilbao aeropuerto",
+   "contexto": [
+    "El verano más cálido de la serie: 2026 (23,2 °C); el más frío: 1972 (17,2 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Bilbao la tendencia es +2,1 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 2.75,
+   "pendiente_decada": 0.49,
+   "r2": 0.49,
+   "media_1970s": 18.68,
+   "media_ult10": 21.24,
+   "mas_calido": {
+    "anio": 2026,
+    "t": 23.2
+   },
+   "mas_frio": {
+    "anio": 1972,
+    "t": 17.23
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 23.2,
+    "puesto": 1,
+    "de": 57
+   },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 23.13,
+    "dias": 92,
+    "sobre_normal": 79,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 35.3,
+   "fuente_fila": "AEMET",
+   "estacion": "Bilbao aeropuerto",
+   "indicativo": "1082",
+   "era5": {
+    "delta": 2.11,
+    "pendiente_decada": 0.38,
+    "media_1970s": 18.95,
+    "media_ult10": 20.89,
+    "dias_sobre_normal_delta": 35.3
+   },
    "revisar": false,
    "limites": []
   },
@@ -1543,13 +1988,11 @@
    "capital": "Sevilla",
    "provincia": "Sevilla",
    "slug": "sevilla",
-   "titular": "El verano se ha calentado 2,7 °C en Sevilla desde 1970",
-   "dato": "tendencia +2,7 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 25,2 °C · últimos diez: 27,2 °C",
+   "titular": "Veranos 2,7 °C más cálidos: así ha cambiado el verano en Sevilla en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +2,7 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 25,2 °C · últimos diez 27,2 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 37 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2016 (28,8 °C); el más frío: 1977 (23,7 °C).",
-    "El verano de 2026 fue el 20.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 27,5 °C de media, con 49 días por encima de lo normal."
+    "El verano de 2026 fue el 20.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.71,
    "pendiente_decada": 0.48,
@@ -1578,48 +2021,67 @@
     "sobre_normal": 49,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.71,
+    "pendiente_decada": 0.48,
+    "media_1970s": 25.22,
+    "media_ult10": 27.25,
+    "dias_sobre_normal_delta": 37.0
+   },
    "revisar": false,
    "limites": []
   },
   {
-   "cod": "46",
-   "capital": "València",
-   "provincia": "Valencia",
-   "slug": "valencia",
-   "titular": "El verano se ha calentado 2,7 °C en València desde 1970",
-   "dato": "tendencia +2,7 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 24,6 °C · últimos diez: 27 °C",
+   "cod": "37",
+   "capital": "Salamanca",
+   "provincia": "Salamanca",
+   "slug": "salamanca",
+   "titular": "Salamanca tiene veranos 2,5 °C más cálidos que a principios de los setenta, según AEMET",
+   "dato": "tendencia +2,5 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 18,9 °C · últimos diez 21,4 °C · estación de AEMET Salamanca aeropuerto",
    "contexto": [
-    "Hoy hay 60 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (28,2 °C); el más frío: 1977 (22,8 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 28,2 °C de media, con 85 días por encima de lo normal."
+    "El verano más cálido de la serie: 2022 (22,5 °C); el más frío: 1977 (16,7 °C).",
+    "El verano de 2026 fue el 3.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Salamanca la tendencia es +3,1 °C: la cifra de la estación es la que vale para la ciudad."
    ],
-   "delta": 2.7,
-   "pendiente_decada": 0.48,
-   "r2": 0.62,
-   "dias_sobre_normal_delta": 60.2,
-   "media_1970s": 24.61,
-   "media_ult10": 26.97,
+   "delta": 2.54,
+   "pendiente_decada": 0.45,
+   "r2": 0.44,
+   "media_1970s": 18.94,
+   "media_ult10": 21.43,
    "mas_calido": {
-    "anio": 2026,
-    "t": 28.17
+    "anio": 2022,
+    "t": 22.53
    },
    "mas_frio": {
     "anio": 1977,
-    "t": 22.84
+    "t": 16.67
    },
    "ultimo": {
     "anio": 2026,
-    "t": 28.17,
-    "puesto": 1,
+    "t": 22.37,
+    "puesto": 3,
     "de": 57
    },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
    "en_curso": {
     "anio": 2026,
-    "t": 28.17,
+    "t": 23.24,
     "dias": 92,
-    "sobre_normal": 85,
+    "sobre_normal": 76,
     "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 33.0,
+   "fuente_fila": "AEMET",
+   "estacion": "Salamanca aeropuerto",
+   "indicativo": "2867",
+   "era5": {
+    "delta": 3.12,
+    "pendiente_decada": 0.56,
+    "media_1970s": 19.05,
+    "media_ult10": 22.19,
+    "dias_sobre_normal_delta": 33.0
    },
    "revisar": false,
    "limites": []
@@ -1629,13 +2091,11 @@
    "capital": "Castelló de la Plana/Castellón de la Plana",
    "provincia": "Castellón",
    "slug": "castellon",
-   "titular": "El verano se ha calentado 2,5 °C en Castelló de la Plana/Castellón de la Plana desde 1970",
-   "dato": "tendencia +2,5 °C entre 1970 y 2026 (+0,5 °C por década) · media 1970-1979: 23,3 °C · últimos diez: 25,4 °C",
+   "titular": "El verano es hoy 2,5 °C más cálido en Castelló de la Plana/Castellón de la Plana que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +2,5 °C entre 1970 y 2026 (+0,5 °C por década) · media de los años setenta 23,3 °C · últimos diez 25,4 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 60 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (26,5 °C); el más frío: 1977 (21,7 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 26,5 °C de media, con 85 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.53,
    "pendiente_decada": 0.45,
@@ -1664,91 +2124,67 @@
     "sobre_normal": 85,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.53,
+    "pendiente_decada": 0.45,
+    "media_1970s": 23.26,
+    "media_ult10": 25.42,
+    "dias_sobre_normal_delta": 59.8
+   },
    "revisar": false,
    "limites": []
   },
   {
-   "cod": "52",
-   "capital": "Melilla",
-   "provincia": "Melilla",
-   "slug": "melilla",
-   "titular": "El verano se ha calentado 2,5 °C en Melilla desde 1970",
-   "dato": "tendencia +2,5 °C entre 1970 y 2026 (+0,4 °C por década) · media 1970-1979: 24,7 °C · últimos diez: 26,7 °C",
+   "cod": "27",
+   "capital": "Lugo",
+   "provincia": "Lugo",
+   "slug": "lugo",
+   "titular": "El verano es hoy 2,5 °C más cálido en Lugo que a principios de los setenta, según AEMET",
+   "dato": "tendencia +2,5 °C entre 1970 y 2026 (+0,4 °C por década) · media de los años setenta 18,2 °C · últimos diez 20,1 °C · estación de AEMET Lugo",
    "contexto": [
-    "Hoy hay 56 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (27,7 °C); el más frío: 1977 (23,3 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 27,7 °C de media, con 81 días por encima de lo normal."
+    "El verano más cálido de la serie: 2026 (21,5 °C); el más frío: 1972 (16,4 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 50 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Lugo la tendencia es +2,1 °C: la cifra de la estación es la que vale para la ciudad."
    ],
-   "delta": 2.48,
+   "delta": 2.47,
    "pendiente_decada": 0.44,
-   "r2": 0.61,
-   "dias_sobre_normal_delta": 56.4,
-   "media_1970s": 24.72,
-   "media_ult10": 26.7,
+   "r2": 0.41,
+   "media_1970s": 18.18,
+   "media_ult10": 20.05,
    "mas_calido": {
     "anio": 2026,
-    "t": 27.71
+    "t": 21.53
    },
    "mas_frio": {
-    "anio": 1977,
-    "t": 23.3
+    "anio": 1972,
+    "t": 16.4
    },
    "ultimo": {
     "anio": 2026,
-    "t": 27.71,
+    "t": 21.53,
     "puesto": 1,
-    "de": 57
+    "de": 50
    },
+   "anios_con_dato": 50,
+   "primer_anio": 1970,
    "en_curso": {
     "anio": 2026,
-    "t": 27.71,
+    "t": 20.65,
     "dias": 92,
-    "sobre_normal": 81,
+    "sobre_normal": 80,
     "hasta": "2026-10-11"
    },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "04",
-   "capital": "Almería",
-   "provincia": "Almería",
-   "slug": "almeria",
-   "titular": "El verano se ha calentado 2,4 °C en Almería desde 1970",
-   "dato": "tendencia +2,4 °C entre 1970 y 2026 (+0,4 °C por década) · media 1970-1979: 22,6 °C · últimos diez: 24,7 °C",
-   "contexto": [
-    "Hoy hay 58 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (25,9 °C); el más frío: 1977 (21,1 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 25,9 °C de media, con 86 días por encima de lo normal."
-   ],
-   "delta": 2.38,
-   "pendiente_decada": 0.43,
-   "r2": 0.59,
-   "dias_sobre_normal_delta": 57.5,
-   "media_1970s": 22.62,
-   "media_ult10": 24.71,
-   "mas_calido": {
-    "anio": 2026,
-    "t": 25.95
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 21.12
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 25.95,
-    "puesto": 1,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 25.95,
-    "dias": 92,
-    "sobre_normal": 86,
-    "hasta": "2026-10-11"
+   "dias_sobre_normal_delta": 31.1,
+   "fuente_fila": "AEMET",
+   "estacion": "Lugo",
+   "indicativo": "1518A",
+   "era5": {
+    "delta": 2.12,
+    "pendiente_decada": 0.38,
+    "media_1970s": 16.82,
+    "media_ult10": 18.98,
+    "dias_sobre_normal_delta": 31.1
    },
    "revisar": false,
    "limites": []
@@ -1758,13 +2194,11 @@
    "capital": "Donostia/San Sebastián",
    "provincia": "Gipuzkoa",
    "slug": "gipuzkoa",
-   "titular": "El verano se ha calentado 2,4 °C en Donostia/San Sebastián desde 1970",
-   "dato": "tendencia +2,4 °C entre 1970 y 2026 (+0,4 °C por década) · media 1970-1979: 19,2 °C · últimos diez: 21,4 °C",
+   "titular": "Veranos 2,4 °C más cálidos: así ha cambiado el verano en Donostia/San Sebastián en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +2,4 °C entre 1970 y 2026 (+0,4 °C por década) · media de los años setenta 19,2 °C · últimos diez 21,4 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 37 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (23,3 °C); el más frío: 1977 (17,9 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 23,3 °C de media, con 82 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.36,
    "pendiente_decada": 0.42,
@@ -1793,107 +2227,138 @@
     "sobre_normal": 82,
     "hasta": "2026-10-11"
    },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "27",
-   "capital": "Lugo",
-   "provincia": "Lugo",
-   "slug": "lugo",
-   "titular": "El verano se ha calentado 2,1 °C en Lugo desde 1970",
-   "dato": "tendencia +2,1 °C entre 1970 y 2026 (+0,4 °C por década) · media 1970-1979: 16,8 °C · últimos diez: 19 °C",
-   "contexto": [
-    "Hoy hay 31 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (20,6 °C); el más frío: 1977 (15,2 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 20,6 °C de media, con 80 días por encima de lo normal."
-   ],
-   "delta": 2.12,
-   "pendiente_decada": 0.38,
-   "r2": 0.37,
-   "dias_sobre_normal_delta": 31.1,
-   "media_1970s": 16.82,
-   "media_ult10": 18.98,
-   "mas_calido": {
-    "anio": 2026,
-    "t": 20.65
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 15.18
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 20.65,
-    "puesto": 1,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 20.65,
-    "dias": 92,
-    "sobre_normal": 80,
-    "hasta": "2026-10-11"
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.36,
+    "pendiente_decada": 0.42,
+    "media_1970s": 19.18,
+    "media_ult10": 21.36,
+    "dias_sobre_normal_delta": 36.9
    },
    "revisar": false,
    "limites": []
   },
   {
-   "cod": "48",
-   "capital": "Bilbao",
-   "provincia": "Bizkaia",
-   "slug": "bizkaia",
-   "titular": "El verano se ha calentado 2,1 °C en Bilbao desde 1970",
-   "dato": "tendencia +2,1 °C entre 1970 y 2026 (+0,4 °C por década) · media 1970-1979: 18,9 °C · últimos diez: 20,9 °C",
+   "cod": "15",
+   "capital": "A Coruña",
+   "provincia": "A Coruña",
+   "slug": "a-coruna",
+   "titular": "El verano es hoy 2,2 °C más cálido en A Coruña que a principios de los setenta, según AEMET",
+   "dato": "tendencia +2,2 °C entre 1970 y 2026 (+0,4 °C por década) · media de los años setenta 17,7 °C · últimos diez 19,6 °C · estación de AEMET A Coruña",
    "contexto": [
-    "Hoy hay 35 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (23,1 °C); el más frío: 1977 (17,6 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 23,1 °C de media, con 79 días por encima de lo normal."
+    "El verano más cálido de la serie: 2026 (21,1 °C); el más frío: 1977 (16,6 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre A Coruña la tendencia es +1,6 °C: la cifra de la estación es la que vale para la ciudad."
    ],
-   "delta": 2.11,
-   "pendiente_decada": 0.38,
-   "r2": 0.43,
-   "dias_sobre_normal_delta": 35.3,
-   "media_1970s": 18.95,
-   "media_ult10": 20.89,
+   "delta": 2.21,
+   "pendiente_decada": 0.4,
+   "r2": 0.56,
+   "media_1970s": 17.74,
+   "media_ult10": 19.57,
    "mas_calido": {
     "anio": 2026,
-    "t": 23.13
+    "t": 21.07
    },
    "mas_frio": {
     "anio": 1977,
-    "t": 17.63
+    "t": 16.63
    },
    "ultimo": {
     "anio": 2026,
-    "t": 23.13,
+    "t": 21.07,
     "puesto": 1,
     "de": 57
    },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
    "en_curso": {
     "anio": 2026,
-    "t": 23.13,
+    "t": 21.38,
     "dias": 92,
     "sobre_normal": 79,
     "hasta": "2026-10-11"
    },
+   "dias_sobre_normal_delta": 34.1,
+   "fuente_fila": "AEMET",
+   "estacion": "A Coruña",
+   "indicativo": "1387",
+   "era5": {
+    "delta": 1.61,
+    "pendiente_decada": 0.29,
+    "media_1970s": 18.23,
+    "media_ult10": 19.77,
+    "dias_sobre_normal_delta": 34.1
+   },
    "revisar": false,
    "limites": []
+  },
+  {
+   "cod": "24",
+   "capital": "León",
+   "provincia": "León",
+   "slug": "leon",
+   "titular": "El verano es hoy 2,2 °C más cálido en León que a principios de los setenta, según AEMET",
+   "dato": "tendencia +2,2 °C entre 1970 y 2026 (+0,4 °C por década) · media de los años setenta 17,9 °C · últimos diez 20,2 °C · estación de AEMET León-Virgen del Camino",
+   "contexto": [
+    "El verano más cálido de la serie: 2026 (21,5 °C); el más frío: 1977 (15,7 °C).",
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre León la tendencia es +3,3 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 2.21,
+   "pendiente_decada": 0.39,
+   "r2": 0.34,
+   "media_1970s": 17.85,
+   "media_ult10": 20.16,
+   "mas_calido": {
+    "anio": 2026,
+    "t": 21.53
+   },
+   "mas_frio": {
+    "anio": 1977,
+    "t": 15.73
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 21.53,
+    "puesto": 1,
+    "de": 57
+   },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 22.56,
+    "dias": 92,
+    "sobre_normal": 72,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 38.3,
+   "fuente_fila": "AEMET",
+   "estacion": "León-Virgen del Camino",
+   "indicativo": "2661",
+   "era5": {
+    "delta": 3.3,
+    "pendiente_decada": 0.59,
+    "media_1970s": 18.45,
+    "media_ult10": 21.46,
+    "dias_sobre_normal_delta": 38.3
+   },
+   "discrepa": "La estación de AEMET (+2,2 °C) y la celda del reanálisis (+3,3 °C) se separan 1,1 °C y no cuadran en otras estaciones del año: posible cambio de emplazamiento de la estación",
+   "revisar": true,
+   "limites": [
+    "COMPROBAR: La estación de AEMET (+2,2 °C) y la celda del reanálisis (+3,3 °C) se separan 1,1 °C y no cuadran en otras estaciones del año: posible cambio de emplazamiento de la estación. No se publica hasta revisar el historial de la estación."
+   ]
   },
   {
    "cod": "11",
    "capital": "Cádiz",
    "provincia": "Cádiz",
    "slug": "cadiz",
-   "titular": "El verano se ha calentado 2,1 °C en Cádiz desde 1970",
-   "dato": "tendencia +2,1 °C entre 1970 y 2026 (+0,4 °C por década) · media 1970-1979: 24,4 °C · últimos diez: 26,1 °C",
+   "titular": "Veranos 2,1 °C más cálidos: así ha cambiado el verano en Cádiz en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +2,1 °C entre 1970 y 2026 (+0,4 °C por década) · media de los años setenta 24,4 °C · últimos diez 26,1 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 24 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2025 (27,1 °C); el más frío: 1977 (22,4 °C).",
-    "El verano de 2026 fue el 10.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 26,6 °C de media, con 55 días por encima de lo normal."
+    "El verano de 2026 fue el 10.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.1,
    "pendiente_decada": 0.37,
@@ -1922,6 +2387,68 @@
     "sobre_normal": 55,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.1,
+    "pendiente_decada": 0.37,
+    "media_1970s": 24.35,
+    "media_ult10": 26.05,
+    "dias_sobre_normal_delta": 23.6
+   },
+   "revisar": false,
+   "limites": []
+  },
+  {
+   "cod": "38",
+   "capital": "Santa Cruz de Tenerife",
+   "provincia": "Santa Cruz de Tenerife",
+   "slug": "santa-cruz-de-tenerife",
+   "titular": "Veranos 2,1 °C más cálidos: así ha cambiado el verano en Santa Cruz de Tenerife en medio siglo, según AEMET",
+   "dato": "tendencia +2,1 °C entre 1970 y 2026 (+0,4 °C por década) · media de los años setenta 23,6 °C · últimos diez 25,4 °C · estación de AEMET Santa Cruz de Tenerife",
+   "contexto": [
+    "El verano más cálido de la serie: 2004 (26,5 °C); el más frío: 1972 (22,7 °C).",
+    "El verano de 2026 fue el 3.º más cálido de los 57 con dato desde 1970.",
+    "En la celda del reanálisis ERA5 que cubre Santa Cruz de Tenerife la tendencia es +1,4 °C: la cifra de la estación es la que vale para la ciudad."
+   ],
+   "delta": 2.1,
+   "pendiente_decada": 0.38,
+   "r2": 0.52,
+   "media_1970s": 23.59,
+   "media_ult10": 25.37,
+   "mas_calido": {
+    "anio": 2004,
+    "t": 26.47
+   },
+   "mas_frio": {
+    "anio": 1972,
+    "t": 22.67
+   },
+   "ultimo": {
+    "anio": 2026,
+    "t": 25.9,
+    "puesto": 3,
+    "de": 57
+   },
+   "anios_con_dato": 57,
+   "primer_anio": 1970,
+   "en_curso": {
+    "anio": 2026,
+    "t": 21.08,
+    "dias": 92,
+    "sobre_normal": 77,
+    "hasta": "2026-10-11"
+   },
+   "dias_sobre_normal_delta": 53.0,
+   "fuente_fila": "AEMET",
+   "estacion": "Santa Cruz de Tenerife",
+   "indicativo": "C449C",
+   "era5": {
+    "delta": 1.41,
+    "pendiente_decada": 0.25,
+    "media_1970s": 19.31,
+    "media_ult10": 20.54,
+    "dias_sobre_normal_delta": 53.0
+   },
    "revisar": false,
    "limites": []
   },
@@ -1930,13 +2457,11 @@
    "capital": "Ceuta",
    "provincia": "Ceuta",
    "slug": "ceuta",
-   "titular": "El verano se ha calentado 2,1 °C en Ceuta desde 1970",
-   "dato": "tendencia +2,1 °C entre 1970 y 2026 (+0,4 °C por década) · media 1970-1979: 22,4 °C · últimos diez: 24,2 °C",
+   "titular": "El verano es hoy 2,1 °C más cálido en Ceuta que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +2,1 °C entre 1970 y 2026 (+0,4 °C por década) · media de los años setenta 22,4 °C · últimos diez 24,2 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 55 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2023 (25,1 °C); el más frío: 1977 (20,9 °C).",
-    "El verano de 2026 fue el 3.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 24,8 °C de media, con 79 días por encima de lo normal."
+    "El verano de 2026 fue el 3.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.08,
    "pendiente_decada": 0.37,
@@ -1965,6 +2490,14 @@
     "sobre_normal": 79,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.08,
+    "pendiente_decada": 0.37,
+    "media_1970s": 22.41,
+    "media_ult10": 24.16,
+    "dias_sobre_normal_delta": 54.7
+   },
    "revisar": false,
    "limites": []
   },
@@ -1973,13 +2506,11 @@
    "capital": "Huelva",
    "provincia": "Huelva",
    "slug": "huelva",
-   "titular": "El verano se ha calentado 2,1 °C en Huelva desde 1970",
-   "dato": "tendencia +2,1 °C entre 1970 y 2026 (+0,4 °C por década) · media 1970-1979: 24,5 °C · últimos diez: 26,2 °C",
+   "titular": "El verano es hoy 2,1 °C más cálido en Huelva que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +2,1 °C entre 1970 y 2026 (+0,4 °C por década) · media de los años setenta 24,5 °C · últimos diez 26,2 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 26 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2023 (27,6 °C); el más frío: 1977 (23 °C).",
-    "El verano de 2026 fue el 10.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 26,6 °C de media, con 59 días por encima de lo normal."
+    "El verano de 2026 fue el 10.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 2.07,
    "pendiente_decada": 0.37,
@@ -2008,6 +2539,14 @@
     "sobre_normal": 59,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 2.07,
+    "pendiente_decada": 0.37,
+    "media_1970s": 24.54,
+    "media_ult10": 26.19,
+    "dias_sobre_normal_delta": 25.8
+   },
    "revisar": false,
    "limites": []
   },
@@ -2016,13 +2555,11 @@
    "capital": "Santander",
    "provincia": "Cantabria",
    "slug": "cantabria",
-   "titular": "El verano se ha calentado 1,9 °C en Santander desde 1970",
-   "dato": "tendencia +1,9 °C entre 1970 y 2026 (+0,3 °C por década) · media 1970-1979: 19 °C · últimos diez: 20,7 °C",
+   "titular": "El verano es hoy 1,9 °C más cálido en Santander que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +1,9 °C entre 1970 y 2026 (+0,3 °C por década) · media de los años setenta 19 °C · últimos diez 20,7 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 39 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (22,3 °C); el más frío: 1977 (17,6 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 22,3 °C de media, con 83 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 1.88,
    "pendiente_decada": 0.34,
@@ -2051,6 +2588,14 @@
     "sobre_normal": 83,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 1.88,
+    "pendiente_decada": 0.34,
+    "media_1970s": 18.96,
+    "media_ult10": 20.69,
+    "dias_sobre_normal_delta": 38.8
+   },
    "revisar": false,
    "limites": []
   },
@@ -2059,13 +2604,11 @@
    "capital": "Oviedo",
    "provincia": "Asturias",
    "slug": "asturias",
-   "titular": "El verano se ha calentado 1,7 °C en Oviedo desde 1970",
-   "dato": "tendencia +1,7 °C entre 1970 y 2026 (+0,3 °C por década) · media 1970-1979: 18,4 °C · últimos diez: 20,1 °C",
+   "titular": "El verano es hoy 1,7 °C más cálido en Oviedo que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +1,7 °C entre 1970 y 2026 (+0,3 °C por década) · media de los años setenta 18,4 °C · últimos diez 20,1 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 27 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (21,3 °C); el más frío: 1977 (16,9 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 21,3 °C de media, con 76 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 1.7,
    "pendiente_decada": 0.3,
@@ -2094,6 +2637,14 @@
     "sobre_normal": 76,
     "hasta": "2026-10-11"
    },
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 1.7,
+    "pendiente_decada": 0.3,
+    "media_1970s": 18.39,
+    "media_ult10": 20.05,
+    "dias_sobre_normal_delta": 27.2
+   },
    "revisar": false,
    "limites": []
   },
@@ -2102,13 +2653,11 @@
    "capital": "Las Palmas de Gran Canaria",
    "provincia": "Las Palmas",
    "slug": "las-palmas",
-   "titular": "El verano se ha calentado 1,7 °C en Las Palmas de Gran Canaria desde 1970",
-   "dato": "tendencia +1,7 °C entre 1970 y 2026 (+0,3 °C por década) · media 1970-1979: 22 °C · últimos diez: 23,6 °C",
+   "titular": "Veranos 1,7 °C más cálidos: así ha cambiado el verano en Las Palmas de Gran Canaria en medio siglo, según el reanálisis ERA5",
+   "dato": "tendencia +1,7 °C entre 1970 y 2026 (+0,3 °C por década) · media de los años setenta 22 °C · últimos diez 23,6 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 40 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2023 (24,9 °C); el más frío: 1977 (21,1 °C).",
-    "El verano de 2026 fue el 3.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 24 °C de media, con 81 días por encima de lo normal."
+    "El verano de 2026 fue el 3.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 1.68,
    "pendiente_decada": 0.3,
@@ -2137,48 +2686,13 @@
     "sobre_normal": 81,
     "hasta": "2026-10-11"
    },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "15",
-   "capital": "A Coruña",
-   "provincia": "A Coruña",
-   "slug": "a-coruna",
-   "titular": "El verano se ha calentado 1,6 °C en A Coruña desde 1970",
-   "dato": "tendencia +1,6 °C entre 1970 y 2026 (+0,3 °C por década) · media 1970-1979: 18,2 °C · últimos diez: 19,8 °C",
-   "contexto": [
-    "Hoy hay 34 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2026 (21,4 °C); el más frío: 1977 (16,9 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 21,4 °C de media, con 79 días por encima de lo normal."
-   ],
-   "delta": 1.61,
-   "pendiente_decada": 0.29,
-   "r2": 0.33,
-   "dias_sobre_normal_delta": 34.1,
-   "media_1970s": 18.23,
-   "media_ult10": 19.77,
-   "mas_calido": {
-    "anio": 2026,
-    "t": 21.38
-   },
-   "mas_frio": {
-    "anio": 1977,
-    "t": 16.92
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 21.38,
-    "puesto": 1,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 21.38,
-    "dias": 92,
-    "sobre_normal": 79,
-    "hasta": "2026-10-11"
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 1.68,
+    "pendiente_decada": 0.3,
+    "media_1970s": 22.03,
+    "media_ult10": 23.56,
+    "dias_sobre_normal_delta": 40.0
    },
    "revisar": false,
    "limites": []
@@ -2188,13 +2702,11 @@
    "capital": "Pontevedra",
    "provincia": "Pontevedra",
    "slug": "pontevedra",
-   "titular": "El verano se ha calentado 1,5 °C en Pontevedra desde 1970",
-   "dato": "tendencia +1,5 °C entre 1970 y 2026 (+0,3 °C por década) · media 1970-1979: 19,1 °C · últimos diez: 20,6 °C",
+   "titular": "El verano es hoy 1,5 °C más cálido en Pontevedra que a principios de los setenta, según el reanálisis ERA5",
+   "dato": "tendencia +1,5 °C entre 1970 y 2026 (+0,3 °C por década) · media de los años setenta 19,1 °C · últimos diez 20,6 °C · reanálisis ERA5 en la celda de la capital",
    "contexto": [
-    "Hoy hay 25 días más de verano por encima de lo normal que en 1970.",
     "El verano más cálido de la serie: 2026 (21,8 °C); el más frío: 1977 (17,7 °C).",
-    "El verano de 2026 fue el 1.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 21,8 °C de media, con 75 días por encima de lo normal."
+    "El verano de 2026 fue el 1.º más cálido de los 57 con dato desde 1970."
    ],
    "delta": 1.48,
    "pendiente_decada": 0.26,
@@ -2223,53 +2735,18 @@
     "sobre_normal": 75,
     "hasta": "2026-10-11"
    },
-   "revisar": false,
-   "limites": []
-  },
-  {
-   "cod": "38",
-   "capital": "Santa Cruz de Tenerife",
-   "provincia": "Santa Cruz de Tenerife",
-   "slug": "santa-cruz-de-tenerife",
-   "titular": "El verano se ha calentado 1,4 °C en Santa Cruz de Tenerife desde 1970",
-   "dato": "tendencia +1,4 °C entre 1970 y 2026 (+0,2 °C por década) · media 1970-1979: 19,3 °C · últimos diez: 20,5 °C",
-   "contexto": [
-    "Hoy hay 53 días más de verano por encima de lo normal que en 1970.",
-    "El verano más cálido de la serie: 2023 (21,8 °C); el más frío: 1972 (18,6 °C).",
-    "El verano de 2026 fue el 3.º más cálido de 57 desde 1970.",
-    "El verano de 2026, hasta el 11 de octubre (92 días): 21,1 °C de media, con 77 días por encima de lo normal."
-   ],
-   "delta": 1.41,
-   "pendiente_decada": 0.25,
-   "r2": 0.43,
-   "dias_sobre_normal_delta": 53.0,
-   "media_1970s": 19.31,
-   "media_ult10": 20.54,
-   "mas_calido": {
-    "anio": 2023,
-    "t": 21.77
-   },
-   "mas_frio": {
-    "anio": 1972,
-    "t": 18.59
-   },
-   "ultimo": {
-    "anio": 2026,
-    "t": 21.08,
-    "puesto": 3,
-    "de": 57
-   },
-   "en_curso": {
-    "anio": 2026,
-    "t": 21.08,
-    "dias": 92,
-    "sobre_normal": 77,
-    "hasta": "2026-10-11"
+   "fuente_fila": "ERA5",
+   "era5": {
+    "delta": 1.48,
+    "pendiente_decada": 0.26,
+    "media_1970s": 19.09,
+    "media_ult10": 20.56,
+    "dias_sobre_normal_delta": 24.8
    },
    "revisar": false,
    "limites": []
   }
  ],
- "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · ERA5 conserva la licencia de Copernicus",
+ "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · los datos de origen (AEMET, Copernicus) conservan su licencia",
  "contacto": "contacto@calentamientoglobal.es"
 }

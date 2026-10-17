@@ -1,13 +1,15 @@
 {
  "id": "primera_helada",
  "titulo": "La primera helada llega más tarde",
- "generado": "2026-10-17T12:21:29Z",
+ "generado": "2026-10-17T15:58:16Z",
  "de_temporada": true,
  "ventana": [
   10,
   11,
   12
  ],
+ "publicable": false,
+ "motivo_no_publicable": "Fecha de la primera helada en la celda del reanálisis: la celda hiela mucho menos que la estación de AEMET (Burgos: 33 días de helada al año frente a 69). Pendiente de rehacer con datos diarios de AEMET.",
  "periodo": "1970-2025",
  "fuente": "ERA5 (Copernicus/ECMWF) vía Open-Meteo Archive, CC BY 4.0 · cálculo propio de calentamientoglobal.es",
  "metodo": "Primer día a partir del 1 de julio con mínima ≤ 0 °C en la celda ERA5 de la capital; tendencia lineal sobre el día del año. Solo capitales con helada en al menos el 80 % de los años.",
@@ -18,13 +20,14 @@
  ],
  "por_que_importa": "Una primera helada más tardía alarga la temporada de cultivo y de plagas, retrasa el fin del polen y desplaza el calendario agrícola.",
  "hallazgos": [
-  "La primera helada llega más tarde en 23 de las 24 capitales con heladas: 12 días de media desde 1970.",
-  "Donde más se retrasa: León (+23 días), Huesca (+21 días), Salamanca (+20 días), Madrid (+19 días), Albacete (+17 días)."
+  "La primera helada llega 12 días más tarde de media en 23 de las 24 capitales con heladas (reanálisis)."
  ],
  "n_capitales": 24,
+ "n_aemet": 0,
  "media_delta": 12.44,
  "mediana_delta": 13.5,
  "n_revisar": 0,
+ "donde_mas": [],
  "unidad": "día del año",
  "etiqueta_serie": "día de la primera helada (mínima ≤ 0 °C)",
  "capitales": [
@@ -38,6 +41,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 2002."
    ],
+   "fuente_fila": "ERA5",
    "delta": 22.6,
    "pendiente_decada": 4.1,
    "r2": 0.23,
@@ -48,8 +52,6 @@
     2002
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/24.png",
-   "csv": "prensa/paquetes/primera_helada/24.csv",
    "revisar": false,
    "limites": []
   },
@@ -61,6 +63,7 @@
    "titular": "La primera helada llega en Huesca 21 días más tarde que en 1970",
    "dato": "de media, hacia el 13 de noviembre en los años 70 y hacia el 2 de diciembre en los últimos diez · tendencia +21 días (+3,9 por década)",
    "contexto": [],
+   "fuente_fila": "ERA5",
    "delta": 21.2,
    "pendiente_decada": 3.9,
    "r2": 0.14,
@@ -68,8 +71,6 @@
    "media_ult10": 336,
    "anios_sin": [],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/22.png",
-   "csv": "prensa/paquetes/primera_helada/22.csv",
    "revisar": false,
    "limites": []
   },
@@ -83,6 +84,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989."
    ],
+   "fuente_fila": "ERA5",
    "delta": 19.8,
    "pendiente_decada": 3.6,
    "r2": 0.19,
@@ -92,8 +94,6 @@
     1989
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/37.png",
-   "csv": "prensa/paquetes/primera_helada/37.csv",
    "revisar": false,
    "limites": []
   },
@@ -107,6 +107,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989."
    ],
+   "fuente_fila": "ERA5",
    "delta": 19.4,
    "pendiente_decada": 3.5,
    "r2": 0.21,
@@ -116,8 +117,6 @@
     1989
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/28.png",
-   "csv": "prensa/paquetes/primera_helada/28.csv",
    "revisar": false,
    "limites": []
   },
@@ -131,6 +130,7 @@
    "contexto": [
     "Años sin el fenómeno: 2021, 2022."
    ],
+   "fuente_fila": "ERA5",
    "delta": 16.9,
    "pendiente_decada": 3.1,
    "r2": 0.11,
@@ -141,8 +141,6 @@
     2022
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/02.png",
-   "csv": "prensa/paquetes/primera_helada/02.csv",
    "revisar": false,
    "limites": []
   },
@@ -156,6 +154,7 @@
    "contexto": [
     "Años sin el fenómeno: 1994, 2002, 2004, 2018, 2019, 2022, 2024, 2025."
    ],
+   "fuente_fila": "ERA5",
    "delta": 16.9,
    "pendiente_decada": 3.1,
    "r2": 0.09,
@@ -174,8 +173,6 @@
     2025
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/26.png",
-   "csv": "prensa/paquetes/primera_helada/26.csv",
    "revisar": false,
    "limites": []
   },
@@ -189,6 +186,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989."
    ],
+   "fuente_fila": "ERA5",
    "delta": 14.8,
    "pendiente_decada": 2.7,
    "r2": 0.07,
@@ -198,8 +196,6 @@
     1989
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/40.png",
-   "csv": "prensa/paquetes/primera_helada/40.csv",
    "revisar": false,
    "limites": []
   },
@@ -213,6 +209,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 2022."
    ],
+   "fuente_fila": "ERA5",
    "delta": 14.5,
    "pendiente_decada": 2.6,
    "r2": 0.09,
@@ -223,8 +220,6 @@
     2022
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/19.png",
-   "csv": "prensa/paquetes/primera_helada/19.csv",
    "revisar": false,
    "limites": []
   },
@@ -236,6 +231,7 @@
    "titular": "La primera helada llega en Teruel 14 días más tarde que en 1970",
    "dato": "de media, hacia el 8 de noviembre en los años 70 y hacia el 23 de noviembre en los últimos diez · tendencia +14 días (+2,6 por década)",
    "contexto": [],
+   "fuente_fila": "ERA5",
    "delta": 14.5,
    "pendiente_decada": 2.6,
    "r2": 0.08,
@@ -243,8 +239,6 @@
    "media_ult10": 327,
    "anios_sin": [],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/44.png",
-   "csv": "prensa/paquetes/primera_helada/44.csv",
    "revisar": false,
    "limites": []
   },
@@ -258,6 +252,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 1992, 2000, 2002, 2003, 2015, 2018, 2021."
    ],
+   "fuente_fila": "ERA5",
    "delta": 14.4,
    "pendiente_decada": 2.6,
    "r2": 0.12,
@@ -275,8 +270,6 @@
     2021
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/27.png",
-   "csv": "prensa/paquetes/primera_helada/27.csv",
    "revisar": false,
    "limites": []
   },
@@ -290,6 +283,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 2002."
    ],
+   "fuente_fila": "ERA5",
    "delta": 13.5,
    "pendiente_decada": 2.5,
    "r2": 0.08,
@@ -300,8 +294,6 @@
     2002
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/34.png",
-   "csv": "prensa/paquetes/primera_helada/34.csv",
    "revisar": false,
    "limites": []
   },
@@ -315,6 +307,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 2002."
    ],
+   "fuente_fila": "ERA5",
    "delta": 13.5,
    "pendiente_decada": 2.5,
    "r2": 0.1,
@@ -325,8 +318,6 @@
     2002
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/49.png",
-   "csv": "prensa/paquetes/primera_helada/49.csv",
    "revisar": false,
    "limites": []
   },
@@ -340,6 +331,7 @@
    "contexto": [
     "Años sin el fenómeno: 2022."
    ],
+   "fuente_fila": "ERA5",
    "delta": 12.7,
    "pendiente_decada": 2.3,
    "r2": 0.07,
@@ -349,8 +341,6 @@
     2022
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/16.png",
-   "csv": "prensa/paquetes/primera_helada/16.csv",
    "revisar": false,
    "limites": []
   },
@@ -364,6 +354,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 2002."
    ],
+   "fuente_fila": "ERA5",
    "delta": 12.6,
    "pendiente_decada": 2.3,
    "r2": 0.05,
@@ -374,8 +365,6 @@
     2002
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/01.png",
-   "csv": "prensa/paquetes/primera_helada/01.csv",
    "revisar": false,
    "limites": []
   },
@@ -389,6 +378,7 @@
    "contexto": [
     "Años sin el fenómeno: 1995, 1997, 2000, 2002, 2016, 2018, 2019, 2022."
    ],
+   "fuente_fila": "ERA5",
    "delta": 11.2,
    "pendiente_decada": 2.0,
    "r2": 0.04,
@@ -408,8 +398,6 @@
     2022
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/23.png",
-   "csv": "prensa/paquetes/primera_helada/23.csv",
    "revisar": false,
    "limites": []
   },
@@ -423,6 +411,7 @@
    "contexto": [
     "Años sin el fenómeno: 1977, 1989, 1995, 2002, 2015, 2019, 2021, 2022."
    ],
+   "fuente_fila": "ERA5",
    "delta": 10.5,
    "pendiente_decada": 1.9,
    "r2": 0.05,
@@ -439,8 +428,6 @@
     2022
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/45.png",
-   "csv": "prensa/paquetes/primera_helada/45.csv",
    "revisar": false,
    "limites": []
   },
@@ -454,6 +441,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 2002."
    ],
+   "fuente_fila": "ERA5",
    "delta": 10.0,
    "pendiente_decada": 1.8,
    "r2": 0.04,
@@ -464,8 +452,6 @@
     2002
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/47.png",
-   "csv": "prensa/paquetes/primera_helada/47.csv",
    "revisar": false,
    "limites": []
   },
@@ -479,6 +465,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 2000, 2002, 2003, 2014, 2018, 2022, 2025."
    ],
+   "fuente_fila": "ERA5",
    "delta": 9.3,
    "pendiente_decada": 1.7,
    "r2": 0.04,
@@ -496,8 +483,6 @@
     2025
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/50.png",
-   "csv": "prensa/paquetes/primera_helada/50.csv",
    "revisar": false,
    "limites": []
   },
@@ -509,6 +494,7 @@
    "titular": "La primera helada llega en Ávila 8 días más tarde que en 1970",
    "dato": "de media, hacia el 2 de noviembre en los años 70 y hacia el 6 de noviembre en los últimos diez · tendencia +8 días (+1,5 por década)",
    "contexto": [],
+   "fuente_fila": "ERA5",
    "delta": 8.3,
    "pendiente_decada": 1.5,
    "r2": 0.03,
@@ -516,8 +502,6 @@
    "media_ult10": 310,
    "anios_sin": [],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/05.png",
-   "csv": "prensa/paquetes/primera_helada/05.csv",
    "revisar": false,
    "limites": []
   },
@@ -531,6 +515,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 2002."
    ],
+   "fuente_fila": "ERA5",
    "delta": 7.7,
    "pendiente_decada": 1.4,
    "r2": 0.02,
@@ -541,8 +526,6 @@
     2002
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/31.png",
-   "csv": "prensa/paquetes/primera_helada/31.csv",
    "revisar": false,
    "limites": []
   },
@@ -556,6 +539,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 1995, 2002, 2018, 2022."
    ],
+   "fuente_fila": "ERA5",
    "delta": 6.6,
    "pendiente_decada": 1.2,
    "r2": 0.03,
@@ -569,8 +553,6 @@
     2022
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/13.png",
-   "csv": "prensa/paquetes/primera_helada/13.csv",
    "revisar": false,
    "limites": []
   },
@@ -584,6 +566,7 @@
    "contexto": [
     "Años sin el fenómeno: 1989, 2002."
    ],
+   "fuente_fila": "ERA5",
    "delta": 5.8,
    "pendiente_decada": 1.1,
    "r2": 0.01,
@@ -594,8 +577,6 @@
     2002
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/09.png",
-   "csv": "prensa/paquetes/primera_helada/09.csv",
    "revisar": false,
    "limites": []
   },
@@ -609,6 +590,7 @@
    "contexto": [
     "Años sin el fenómeno: 2002, 2003, 2018, 2019, 2021, 2022, 2024, 2025."
    ],
+   "fuente_fila": "ERA5",
    "delta": 3.6,
    "pendiente_decada": 0.7,
    "r2": 0.0,
@@ -626,8 +608,6 @@
     2025
    ],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/25.png",
-   "csv": "prensa/paquetes/primera_helada/25.csv",
    "revisar": false,
    "limites": []
   },
@@ -639,6 +619,7 @@
    "titular": "La primera helada en Soria llega en fechas parecidas a las de 1970 (−2 días)",
    "dato": "de media, hacia el 2 de noviembre en los años 70 y hacia el 4 de noviembre en los últimos diez · tendencia −2 días (−0,3 por década)",
    "contexto": [],
+   "fuente_fila": "ERA5",
    "delta": -1.7,
    "pendiente_decada": -0.3,
    "r2": 0.0,
@@ -646,12 +627,10 @@
    "media_ult10": 308,
    "anios_sin": [],
    "en_curso": null,
-   "grafico": "prensa/paquetes/primera_helada/42.png",
-   "csv": "prensa/paquetes/primera_helada/42.csv",
    "revisar": false,
    "limites": []
   }
  ],
- "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · ERA5 conserva la licencia de Copernicus",
+ "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · los datos de origen (AEMET, Copernicus) conservan su licencia",
  "contacto": "contacto@calentamientoglobal.es"
 }
