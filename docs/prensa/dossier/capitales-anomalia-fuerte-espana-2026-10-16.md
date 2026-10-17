@@ -1,12 +1,12 @@
-# 17 capitales españolas tuvieron ayer máximas de al menos 5 °C por encima de lo normal para un 16 de octubre
+# 21 capitales españolas tuvieron ayer máximas de al menos 5 °C por encima de lo normal para un 16 de octubre
 
-**Dato:** 17 de 50 capitales · las más extremas: Soria 23,7 °C (+7); Badajoz 29,6 °C (+6,4); León 23,2 °C (+6,3); Ávila 22,1 °C (+6,1); Jaén 27 °C (+5,7); Cádiz 29 °C (+5,6); Cuenca 24,2 °C (+5,6); Salamanca 23,6 °C (+5,6)  
+**Dato:** 21 de 50 capitales · las más extremas: Soria 23,7 °C (+7); Badajoz 29,6 °C (+6,7); León 23,2 °C (+6,5); Ávila 22,1 °C (+6,2); Jaén 27 °C (+5,9); Cuenca 24,2 °C (+5,8); Cádiz 29 °C (+5,7); Salamanca 23,6 °C (+5,6)  
 **Fecha del dato:** 16 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Media de la desviación en esas 17 capitales: +5,6 °C.
+- Media de la desviación en esas 21 capitales: +5,6 °C.
 - Normal de referencia: 1991-2020, día a día, en la celda de cada capital.
 
 ## Fuente y método

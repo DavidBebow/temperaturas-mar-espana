@@ -14,13 +14,13 @@
 | Territorio | Dato | Dossier local |
 |---|---|---|
 | Bilbao | 28,7 °C (corregido a escala ERA5: 27,3 °C) · récord anterior para la fecha 26,2 °C (1949) | [capitales-record-fecha-bilbao-2026-10-14](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-bilbao-2026-10-14.md) |
-| Donostia/San Sebastián | 27,3 °C (corregido a escala ERA5: 27 °C) · récord anterior para la fecha 25,8 °C (2017) | [capitales-record-fecha-donostia-san-sebastian-2026-10-14](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-donostia-san-sebastian-2026-10-14.md) |
+| Donostia/San Sebastián | 27,3 °C (corregido a escala ERA5: 26,9 °C) · récord anterior para la fecha 25,8 °C (2017) | [capitales-record-fecha-donostia-san-sebastian-2026-10-14](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-donostia-san-sebastian-2026-10-14.md) |
 | Santander | 25,2 °C (corregido a escala ERA5: 24,5 °C) · récord anterior para la fecha 23,7 °C (1977) | [capitales-record-fecha-santander-2026-10-14](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-santander-2026-10-14.md) |
 
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026
 - **Serie desde:** 1940
-- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Bilbao, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +1,4 °C, mínimas -1,7 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
+- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Bilbao, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +1,4 °C, mínimas -1,8 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
