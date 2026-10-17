@@ -650,7 +650,7 @@ def mediterraneo():
         "ambito": "nacional", "pagina": "https://calentamientoglobal.es/dana/",
         "metodo": "Temperatura superficial del mar NOAA OISST v2.1 (0,25°), media diaria de la caja 36,5-41,5° N / 1,5° O-5° E "
                   "(de Alborán oriental al mar Balear). Normal 1991-2020 por día del año; puesto para la fecha sobre todos los años desde 1981.",
-        "limites": ["Los últimos ~14 días de OISST son la versión preliminar (NRT); la final puede variar unas décimas.",
+        "limites": ["Los últimos ~14 días de OISST son la versión preliminar (NRT) y la final puede corregirlos: en esos días un récord o un puesto por menos de 0,1 °C no se da por cierto.",
                     "Media de una caja de mar abierto, no la temperatura de una playa concreta."] + lim_huecos,
         "citabilidad": "alta",
     }
@@ -669,8 +669,15 @@ def mediterraneo():
     # días del año en curso en récord (verificados contra los huecos de la fuente) y racha final
     actual = sorted((f, v) for f, v in serie.items() if int(f[:4]) == anio)
 
+    # Los últimos ~14 días son la versión preliminar de OISST: la final puede corregirlos. Un récord por menos de
+    # MARGEN_NRT en esos días no se da como récord (17-10-2026: 24,28 °C frente a 24,25 °C de 2023 salía «récord»).
+    MARGEN_NRT = 0.1
+    fin_final = (date.fromisoformat(ultimo) - timedelta(days=14)).isoformat()
+
     def es_record(f, v):
         if f[5:] not in maximo_fecha or v <= maximo_fecha[f[5:]][0]:
+            return False
+        if f > fin_final and v - maximo_fecha[f[5:]][0] < MARGEN_NRT:
             return False
         pv = _puesto_verificado(serie, f, v, margen=0.5)
         return bool(pv and pv[0] == 1)
@@ -682,7 +689,9 @@ def mediterraneo():
         else:
             break
     inciertos = sum(1 for f, v in actual if f[5:] in maximo_fecha and v > maximo_fecha[f[5:]][0] and not es_record(f, v))
-    ctx_comun = [(f"Al menos {len(en_record)} días de {anio} han sido récord para su fecha en la serie desde 1981 (otros {inciertos} no se pueden certificar por los huecos de la fuente)."
+    ctx_comun = [(f"Al menos {len(en_record)} días de {anio} han sido récord para su fecha en la serie desde 1981; "
+                  + (f"otro día supera el récord por un margen que no se puede certificar (dato preliminar o hueco en la fuente)." if inciertos == 1 else
+                     f"otros {inciertos} días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).")
                   if inciertos else f"{len(en_record)} días de {anio} han sido récord para su fecha en la serie desde 1981."),
                  f"Máximo absoluto de la serie: {f2(maximo_abs[0])} °C el {fecha_larga(maximo_abs[1])}.",
                  f"{f1(sst)} °C es lo normal en esta zona para un {_fecha_equivalente(m, sst)} (media 1991-2020)."]
@@ -691,6 +700,23 @@ def mediterraneo():
     if pv is None:
         descartar("mediterraneo", "Mediterráneo occidental", "un año con hueco en la fuente podría superar el valor de hoy: no se publica el puesto", f"{f1(sst)} °C")
         rec_prev = None
+    # puesto que no se puede separar de otro año por el margen del dato preliminar
+    otros = sorted(((serie[f"{y}{ultimo[4:]}"], y) for y in range(1981, anio) if f"{y}{ultimo[4:]}" in serie), reverse=True)
+    peor = 1 + sum(1 for x, _ in otros if x > sst - MARGEN_NRT)
+    mejor = 1 + sum(1 for x, _ in otros if x > sst + MARGEN_NRT)
+    cerca = [(x, y) for x, y in otros if abs(x - sst) < MARGEN_NRT]
+    if rec_prev and pv and mejor != peor:
+        if peor <= 3 and pv[1] >= 30:
+            palabra = {2: "dos", 3: "tres"}[peor]
+            x0, y0 = cerca[0]
+            anadir({**base, "tipo": "puesto_extremo", "fecha_dato": ultimo, "indicador": "sst_puesto_fecha",
+                    "titular": f"El Mediterráneo español vive uno de sus {palabra} {fecha_dia(ultimo)} más cálidos desde 1981: {f1(sst)} °C, {f1(anom)} °C por encima de lo normal",
+                    "dato": (f"{f2(sst)} °C · dato preliminar de NOAA: queda a {f2(abs(sst - x0))} °C del de {y0} ({f2(x0)} °C), menos de lo que puede corregirse, "
+                             f"así que no se puede decir cuál es más alto · normal 1991-2020 {f2(normal)} °C (+{f2(anom)})"),
+                    "contexto": ctx_comun, "puesto": None, "de": pv[1]})
+            ENVIVO["mediterraneo"] = {"ultimo": ultimo, "sst": sst, "normal": normal, "anomalia": anom, "puesto": None, "de": None, "fuente": "NOAA OISST v2.1"}
+            return
+        pv, rec_prev = None, None   # sin puesto certificable: solo cabe la anomalía
     if racha >= 1 and rec_prev:
         titular = (f"El Mediterráneo español lleva {racha} días seguidos en récord de temperatura para la fecha: {f2(sst)} °C el {fecha_dia(ultimo)}"
                    if racha >= 3 else
