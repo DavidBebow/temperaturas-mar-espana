@@ -49,7 +49,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/dossier docs/prensa/partes
+          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes
           if git diff --cached --quiet; then
             echo "Sin cambios."
             exit 0
