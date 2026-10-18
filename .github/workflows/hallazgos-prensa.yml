@@ -47,11 +47,20 @@ jobs:
       - name: Partes de prensa provinciales (5 ángulos × 52 provincias)
         run: python scripts/partes_prensa.py
 
+      # Redacción (18-10-2026): convierte los datos en historias con versión nacional y provincial. Claude redacta a
+      # partir de hechos ya comprobados y un verificador rechaza cualquier cifra, hora o nombre que no esté en ellos;
+      # si no pasa, sale el texto de plantilla. Sin la clave, todo sale de plantilla.
+      - name: Redacción de la sala de prensa (historias del día)
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/redaccion_prensa.py
+
       - name: Guardar
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes
+          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes docs/prensa/noticias
           if git diff --cached --quiet; then
             echo "Sin cambios."
             exit 0
