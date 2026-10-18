@@ -270,6 +270,8 @@ def main():
                 "color": color,
                 "etiqueta_anomalia": etiqueta,
                 "dias_consecutivos": dias_c,
+                # la racha ocupa toda la ventana de 365 días: es de «más de» esos días
+                "racha_tope": dias_c >= len(anoms),
                 "signo_consecutivo": sig_c,
                 "max_dias_positiva": max_pos,
                 "max_dias_negativa": max_neg,
