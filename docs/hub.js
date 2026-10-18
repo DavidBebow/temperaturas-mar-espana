@@ -184,9 +184,9 @@
     val:function(d){ var m=maxMar(d); return m?m.anomalia:null; },
     cifra:function(d,v){ return sig(v,1)+" °C"; },
     desc:function(d){ var m=maxMar(d);
-      return m.nombre+", a "+num(m.temperatura_actual,1)+" °C, frente a su media histórica para estas fechas."; },
+      return m.nombre+", a "+num(m.temperatura_actual,1)+" °C"+(m.fecha_dato? " el "+(+m.fecha_dato.slice(8,10))+"/"+(+m.fecha_dato.slice(5,7)) : "")+", frente a su media 1991-2020 de ese día (NOAA OISST)."; },
     frase:function(d,v){ var m=maxMar(d);
-      return "El mar en "+loc(d,m.nombre)+" está a "+num(m.temperatura_actual,1)+" °C, "+sig(v,1)+" °C por encima de su media histórica."; },
+      return "El mar frente a "+loc(d,m.nombre)+" estaba a "+num(m.temperatura_actual,1)+" °C"+(m.fecha_dato? " el "+(+m.fecha_dato.slice(8,10))+"/"+(+m.fecha_dato.slice(5,7)) : "")+", "+sig(v,1)+" °C por encima de su media 1991-2020 para esa fecha."; },
     amb:"Entre las provincias costeras con punto de medición." },
 
   { id:"mar_tend", t:"El mar que más rápido se calienta", calor:true, url:U.mar,
