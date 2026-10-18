@@ -75,13 +75,15 @@ PROVINCIAS = {
 FUERZA = {
     "record_absoluto": 100, "primera_vez_desde": 90, "record_fecha": 80, "puesto_extremo": 75,
     "racha": 65, "anomalia_fuerte": 55, "percentil_extremo": 50, "contexto": 30,
+    # lluvia medida por AEMET: la del día anterior completo y la del día en curso hasta la última hora cerrada
+    "lluvia_dia": 85, "lluvia_en_curso": 90,
 }
 AMBITO_F = {"nacional": 1.0, "regional": 0.9, "provincial": 0.8, "local": 0.7, "global": 0.85}
 
 # Vida útil de un hallazgo según la cadencia de su serie (días desde fecha_dato).
 # Pasado ese plazo ya no es noticia: no entra en la cola, solo queda en el historial.
 VIDA = {"capitales": 9, "mediterraneo": 7, "danas": 30, "dias32": 45, "embalses": 10, "caudal": 4,
-        "oceano": 10, "temperatura_global": 20}
+        "oceano": 10, "temperatura_global": 20, "lluvia": 1}
 
 hallazgos: list[dict] = []
 descartes: list[dict] = []
@@ -787,6 +789,303 @@ def _fecha_equivalente(m: dict, sst: float):
 # ----------------------------------------------------------------------------
 # 3 · Temporada de DANAs · desde 1958
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Lluvia medida por AEMET (estaciones) · ayer completo y hoy hasta la última hora
+# ----------------------------------------------------------------------------
+# 18-10-2026: la portada abría con datos de hace dos días (el Mediterráneo llega con 1-2 días de retraso y el
+# boletín de embalses es semanal). La lluvia de las estaciones de AEMET es lo más fresco y medido que tenemos:
+# el día anterior completo y el día en curso hasta la última hora cerrada.
+def _norm(s) -> str:
+    s = unicodedata.normalize("NFKD", str(s or "")).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]", "", s)
+
+
+_ALIAS_PROV = {"araba": "01", "arabaalava": "01", "alava": "01", "baleares": "07", "illesbalears": "07",
+               "stacruzdetenerife": "38", "santacruzdetenerife": "38", "acoruna": "15", "coruna": "15", "lacoruna": "15",
+               "castellon": "12", "castello": "12", "laspalmas": "35", "larioja": "26", "ciudadreal": "13"}
+
+
+def cod_provincia(nombre) -> str | None:
+    n = _norm(nombre)
+    for cod, (nom, slug) in PROVINCIAS.items():
+        if n in (_norm(nom), slug.replace("-", "")):
+            return cod
+    return _ALIAS_PROV.get(n)
+
+
+def _km(a, b) -> float:
+    import math
+    la1, lo1, la2, lo2 = map(math.radians, (a[0], a[1], b[0], b[1]))
+    h = math.sin((la2 - la1) / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2
+    return 12742 * math.asin(math.sqrt(h))
+
+
+_MUNI_IDX = None
+_ARTICULO = re.compile(r"(.+),\s*(El|La|Los|Las|L'|Lo|Es|Sa|Ses|Els|Les|O|A|Os|As)$")
+
+
+def _municipios_ine():
+    """(nombre normalizado → [(provincia, lat, lon)], código INE → (lat, lon)) de los ~8.100 municipios."""
+    global _MUNI_IDX
+    if _MUNI_IDX is None:
+        idx, pos = {}, {}
+        try:
+            items = leer(DOCS / "municipios.json")["items"]
+        except Exception:
+            items = []
+        for m in items:
+            code = str(m.get("code") or "")
+            if len(code) != 5 or m.get("lat") is None:
+                continue
+            pos[code] = (m["lat"], m["lon"])
+            for v in str(m.get("n") or "").split("/"):
+                v = v.strip()
+                a = _ARTICULO.fullmatch(v)
+                if a:
+                    v = a.group(2) + ("" if a.group(2).endswith("'") else " ") + a.group(1)
+                    idx.setdefault(_norm(a.group(1)), []).append((code[:2], m["lat"], m["lon"]))  # sin artículo
+                if v:
+                    idx.setdefault(_norm(v), []).append((code[:2], m["lat"], m["lon"]))
+        _MUNI_IDX = (idx, pos)
+    return _MUNI_IDX
+
+
+def _palabras(est: str) -> list:
+    return [w for w in re.split(r"[\s/\-,.]+", re.sub(r"\s*\([^)]*\)", " ", est)) if w]
+
+
+def _provincia_por_toponimo(est: str, cerca_de: list, provs_ref: set) -> str | None:
+    """Provincia del municipio cuyo nombre abre el de la estación («Jávea Ayuntamiento» → Xàbia/Jávea), solo si ese
+    municipio está a menos de 40 km de los que usan la estación de referencia (descarta homónimos lejanos). Si ningún
+    municipio abre el nombre, vale uno que aparezca dentro («Castellón-Almassora» → Almassora), pero entonces la
+    provincia tiene que ser también la de alguno de los municipios que usan la estación."""
+    idx, _ = _municipios_ine()
+    pal = _palabras(est)
+
+    def cercanos(clave):
+        cands = idx.get(clave) if len(clave) >= 4 else None
+        if not cands:
+            return None
+        return {c for c, la, lo in cands if any(_km((la, lo), q) <= 40 for q in cerca_de)}
+
+    for n in range(len(pal), 0, -1):
+        cerca = cercanos(_norm(" ".join(pal[:n])))
+        if cerca is not None:
+            return next(iter(cerca)) if len(cerca) == 1 else None
+    hallados = set()
+    for n in range(len(pal) - 1, 0, -1):
+        for i in range(1, len(pal) - n + 1):
+            cerca = cercanos(_norm(" ".join(pal[i:i + n])))
+            if cerca:
+                hallados |= cerca
+        if hallados:
+            break
+    if not hallados and pal and len(_norm(pal[0])) >= 5:
+        # «Caravaca Fuentes del Marqués» → Caravaca de la Cruz; «Alhama (comarza)» → Alhama de Murcia
+        ini = _norm(pal[0])
+        hallados = {c for clave, cands in idx.items() if clave.startswith(ini)
+                    for c, la, lo in cands if any(_km((la, lo), q) <= 40 for q in cerca_de)}
+    hallados &= provs_ref
+    return next(iter(hallados)) if len(hallados) == 1 else None
+
+
+_GENERICAS = {"aeropuerto", "automatica", "ayuntamiento", "deposito", "observatorio", "centro", "base", "aerea", "puerto",
+              "embalse", "presa", "faro", "santa", "maria", "san", "villa", "casa", "obs", "aut", "escuela", "instituto"}
+
+
+def _provincia_por_inventario(est: str, inv_tokens: list, provs_ref: set) -> str | None:
+    """Inventario de AEMET con nombre distinto («Tablada» → «SEVILLA, TABLADA»): las palabras significativas de la
+    estación (o, si no, la primera) tienen que estar en el nombre del inventario, y la provincia tiene que ser única y
+    la de alguno de los municipios que usan la estación."""
+    sig = {_norm(w) for w in _palabras(est)} - {""}
+    sig = {w for w in sig if len(w) >= 4 and w not in _GENERICAS}
+    if not sig:
+        return None
+    provs = {c for toks, c in inv_tokens if sig <= toks} & provs_ref
+    if not provs:
+        prim = next((_norm(w) for w in _palabras(est) if _norm(w) in sig), None)
+        provs = {c for toks, c in inv_tokens if prim in toks} & provs_ref
+    return next(iter(provs)) if len(provs) == 1 else None
+
+
+def estaciones_lluvia(L: dict) -> dict:
+    """Lluvia por estación de AEMET, con solo los valores que ha medido cada una.
+
+    lluvias_municipios.json va por municipio: cada uno lleva su estación de referencia (est) y, si a esa estación le
+    faltan horas, el dato de otra cercana (dia_est, hoy_est) o de la vecina más lluviosa (cerca). El 18-10-2026 el
+    registro de Pego traía 26,9 mm «de hoy» que eran de Oliva (Pego solo tenía 5 horas). Aquí se rehace por estación.
+
+    estación → {dia, racha, sem (solo si el día anterior está completo, 24 h; si no, dia_min y dia_h), hoy, hoy_h,
+    prov (código INE o None)}.
+    La provincia sale del inventario de AEMET (nombre exacto) o del municipio que abre el nombre de la estación; si
+    las dos fuentes no coinciden, o no hay ninguna, queda None y la estación no se atribuye a ninguna provincia."""
+    try:
+        inv = leer(PRENSA / "aemet_inventario.json")
+    except Exception:
+        inv = {}
+    por_nombre: dict = {}
+    inv_tokens = []
+    for _c, (nom, prov, _alt) in inv.items():
+        c = cod_provincia(prov)
+        if c:
+            por_nombre.setdefault(_norm(nom), set()).add(c)
+            inv_tokens.append(({_norm(w) for w in _palabras(nom)}, c))
+    _idx, pos = _municipios_ine()
+    T: dict = {}
+
+    def reg(e):
+        return T.setdefault(e.strip(), {"refs": set()})
+
+    for k, m in (L.get("municipios") or {}).items():
+        e = (m.get("est") or "").strip()
+        completo = m.get("dia_h") == 24
+        if e and not m.get("dia_est") and completo:
+            reg(e).update(dia=num(m.get("dia")), racha=m.get("racha"), sem=num(m.get("sem")), sem_dias=m.get("sem_dias"))
+        elif e and not m.get("dia_est") and m.get("dia") is not None and m.get("dia_h"):
+            reg(e).update(dia_min=num(m.get("dia")), dia_h=m.get("dia_h"))  # le faltan horas: es un mínimo
+        if m.get("dia_est") and completo:
+            reg(m["dia_est"]).setdefault("dia", num(m.get("dia")))
+        he = (m.get("hoy_est") or e).strip()
+        if he and m.get("hoy") is not None:
+            reg(he).update(hoy=num(m.get("hoy")), hoy_h=m.get("hoy_h"))
+        c = m.get("cerca") or {}
+        if c.get("est") and c.get("mm") is not None:
+            r = reg(c["est"])
+            r.setdefault("hoy", num(c["mm"]))
+            r.setdefault("hoy_h", c.get("h"))
+        for x in (e, m.get("dia_est"), m.get("hoy_est"), c.get("est")):
+            if x:
+                reg(x)["refs"].add(k)
+    out = {}
+    for e, r in T.items():
+        if not e or re.fullmatch(r"[0-9A-Z]{4,6}", e) or "?" in e:
+            continue  # sin nombre (solo indicativo) o nombre dañado: no se puede citar
+        cerca_de = [pos[k] for k in r["refs"] if k in pos]
+        provs_ref = {k[:2] for k in r["refs"]}
+        pi = por_nombre.get(_norm(e))
+        p_inv = (next(iter(pi)) if len(pi) == 1 else None) if pi else _provincia_por_inventario(e, inv_tokens, provs_ref)
+        p_top = _provincia_por_toponimo(e, cerca_de, provs_ref)
+        if p_inv and p_top and p_inv != p_top:
+            r["prov"] = None
+        else:
+            r["prov"] = p_inv or p_top
+        out[e] = r
+    return out
+
+
+def _nombre_corto(est: str) -> str:
+    return re.sub(r"\s*\([^)]*\)\s*$", "", est).strip()
+
+
+def lluvia_aemet():
+    try:
+        L = leer(DOCS / "lluvias_municipios.json")
+    except Exception as e:
+        errores.append(f"lluvia_aemet: {e}")
+        return
+    est = estaciones_lluvia(L)
+    if not est:
+        return
+    n_mun = len(L.get("municipios") or {})
+    fuente = L.get("fuente", "AEMET OpenData · observación convencional")
+    base = {"serie": "lluvia", "fuente": fuente, "serie_desde": "", "territorio": "España", "ambito": "nacional",
+            "pagina": "https://calentamientoglobal.es/lluvia-hoy-espana/", "citabilidad": "alta", "exclusivo": True}
+
+    def donde(e):
+        p = est[e].get("prov")
+        return f"{_nombre_corto(e)} ({PROVINCIAS[p][0]})" if p in PROVINCIAS else _nombre_corto(e)
+
+    def alcance(n):
+        # Las estaciones del fichero son las de referencia de los municipios del mapa, no toda la red de AEMET.
+        return (f"La comparación es entre las {n} estaciones de AEMET que usa de referencia el mapa de lluvia de "
+                f"calentamientoglobal.es ({n_mun} municipios); AEMET tiene más estaciones y en alguna pudo llover más.")
+
+    def oficial(e):
+        return "" if _nombre_corto(e) == e else f" · nombre en AEMET: «{e}»"
+
+    def lider(filas, mm):
+        empate = [x for x in filas[1:] if x[0] == mm]
+        return "la cifra más alta" + (f" (empatada con {', '.join(donde(x[1]) for x in empate)})" if empate else "")
+
+    # --- ayer, día completo (24 horas) ---------------------------------------------------
+    fecha = L.get("fecha")
+    filas = sorted(((r["dia"], e) for e, r in est.items() if r.get("dia") is not None), key=lambda x: (-x[0], x[1]))
+    parciales = sorted(((e, r) for e, r in est.items() if (r.get("dia_min") or 0) >= 30), key=lambda kv: -kv[1]["dia_min"])
+    if fecha and filas and filas[0][0] >= 30:
+        mm, e = filas[0]
+        n30 = sum(1 for x in filas if x[0] >= 30)
+        tit = f"La estación de AEMET de {donde(e)} recogió {f1(mm)} mm el {fecha_dia(fecha)}"
+        if len(filas) > 1 and filas[1][0] >= 30:
+            tit += f"; la de {donde(filas[1][1])}, {f1(filas[1][0])} mm"
+        anadir({**base, "tipo": "lluvia_dia", "fecha_dato": fecha, "indicador": "lluvia_dia_max",
+                "titular": tit,
+                "dato": (f"{f1(mm)} mm de 0 a 24 h (hora local) del {fecha_dia(fecha)}, {lider(filas, mm)} de las {len(filas)} "
+                         f"estaciones de AEMET con las 24 horas que sigue el mapa · {('1 superó' if n30 == 1 else f'{n30} superaron')} los 30 mm{oficial(e)}"),
+                "contexto": ["Las que más: " + " · ".join(f"{donde(x[1])}: {f1(x[0])} mm" for x in filas[:5]) + "."]
+                + (["Con horas sin dato en AEMET (la cifra es un mínimo): " + " · ".join(
+                    f"{donde(e2)}: al menos {f1(r2['dia_min'])} mm ({r2['dia_h']} de 24 horas)" for e2, r2 in parciales) + "."] if parciales else []),
+                "metodo": "Suma de la precipitación horaria que publica AEMET OpenData en cada estación de observación convencional, de 0 a 24 h en hora local. Solo estaciones con las 24 horas.",
+                "limites": [alcance(len(filas)),
+                            "Lluvia de cada estación: en el resto del término municipal pudo llover más o menos.",
+                            "Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo."]})
+    # --- hoy, hasta la última hora cerrada en toda la red ----------------------------------
+    hoy, corte = L.get("hoy_fecha"), L.get("corte_red")
+    if hoy and corte:
+        filas_h = sorted(((r["hoy"], e) for e, r in est.items() if r.get("hoy") is not None and r.get("hoy_h") == corte),
+                         key=lambda x: (-x[0], x[1]))
+        if filas_h and filas_h[0][0] >= 20:
+            mm, e = filas_h[0]
+            tit = f"La estación de AEMET de {donde(e)} lleva {f1(mm)} mm el {fecha_dia(hoy)} hasta las {int(corte)}:00"
+            if len(filas_h) > 1 and filas_h[1][0] >= 20:
+                tit += f"; la de {donde(filas_h[1][1])}, {f1(filas_h[1][0])} mm"
+            anadir({**base, "tipo": "lluvia_en_curso", "fecha_dato": hoy, "indicador": "lluvia_hoy_max",
+                    "titular": tit,
+                    "dato": (f"{f1(mm)} mm de 0:00 a {int(corte)}:00 (hora local) del {fecha_dia(hoy)}, {lider(filas_h, mm)} "
+                             f"de las {len(filas_h)} estaciones de AEMET que sigue el mapa con todas esas horas{oficial(e)}"),
+                    "contexto": ["Las que más: " + " · ".join(f"{donde(x[1])}: {f1(x[0])} mm" for x in filas_h[:5]) + "."],
+                    "metodo": "Suma de la precipitación horaria que publica AEMET OpenData en cada estación, desde las 0:00 hasta la última hora cerrada en toda la red. Solo estaciones con todas esas horas.",
+                    "limites": ["Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las "
+                                f"{int(corte)}:00»).", alcance(len(filas_h)),
+                                "Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo."]})
+            p = est[e].get("prov")
+            ENVIVO["lluvia_hoy"] = {"fecha": hoy, "hasta": int(corte), "estacion": _nombre_corto(e),
+                                    "provincia": PROVINCIAS[p][0] if p in PROVINCIAS else None, "mm": mm}
+    if fecha and filas:
+        mm, e = filas[0]
+        p = est[e].get("prov")
+        ENVIVO["lluvia_ayer"] = {"fecha": fecha, "estacion": _nombre_corto(e),
+                                 "provincia": PROVINCIAS[p][0] if p in PROVINCIAS else None, "mm": mm}
+
+
+
+def avisos_envivo():
+    """Franja «en vivo»: cuántas zonas tenían aviso rojo o naranja de AEMET a la hora de la consulta (avisos.json se
+    rehace cada 30 minutos). Cada zona cuenta una vez, con su nivel más alto entre los avisos vigentes o anunciados."""
+    try:
+        A = leer(DOCS / "avisos.json")
+    except Exception as e:
+        errores.append(f"avisos_envivo: {e}")
+        return
+    if not A.get("generado"):
+        return
+    orden = {"amarillo": 1, "naranja": 2, "rojo": 3}
+    zonas = {}
+    for a in A.get("avisos") or []:
+        n = a.get("nivel")
+        if n not in orden or not a.get("zona"):
+            continue
+        k = (a.get("cod"), a["zona"])
+        if orden[n] > orden.get(zonas.get(k, {}).get("nivel"), 0):
+            zonas[k] = {"zona": a["zona"], "provincia": a.get("provincia"), "nivel": n}
+    rojas = sorted((z for z in zonas.values() if z["nivel"] == "rojo"), key=lambda z: (z["provincia"] or "", z["zona"]))
+    naranjas = sorted((z for z in zonas.values() if z["nivel"] == "naranja"), key=lambda z: (z["provincia"] or "", z["zona"]))
+    ENVIVO["avisos"] = {"consulta": A["generado"], "rojo": len(rojas), "naranja": len(naranjas),
+                        "zonas_rojo": [f"{z['zona']} ({z['provincia']})" for z in rojas],
+                        "provincias_rojo": sorted({z["provincia"] for z in rojas if z["provincia"]}),
+                        "provincias_naranja": sorted({z["provincia"] for z in naranjas if z["provincia"]}),
+                        "fuente": A.get("fuente", "AEMET vía MeteoAlarm")}
+
+
 def danas():
     try:
         t = leer(DOCS / "dana" / "temporada.json")
@@ -1222,7 +1521,7 @@ def main():
     ap.add_argument("--salida", default=str(PRENSA / "hallazgos.json"))
     args = ap.parse_args()
 
-    for fn in (capitales, capitales_ayer, mediterraneo, danas, dias32, embalses, caudal, planeta):
+    for fn in (capitales, capitales_ayer, lluvia_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta):
         try:
             fn()
         except Exception as e:
@@ -1298,7 +1597,7 @@ def main():
     limite = (HOY - timedelta(days=60)).isoformat()
 
     def sigue_valiendo(x):
-        if x.get("requiere_revision") or x.get("serie") == "dias32":
+        if x.get("requiere_revision") or x.get("serie") == "dias32" or x.get("tipo") == "lluvia_en_curso":
             return False
         if x.get("serie") == "capitales" and not x.get("aemet"):
             return False

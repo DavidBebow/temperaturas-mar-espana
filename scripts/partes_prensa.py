@@ -61,7 +61,7 @@ AYER = HOY - timedelta(days=1)
 AHORA = datetime.now(timezone.utc).replace(microsecond=0)
 
 sys.path.insert(0, str(RAIZ / "scripts"))
-from hallazgos_prensa import PROVINCIAS, MESES, f1, fecha_larga, fecha_dia, num  # noqa: E402
+from hallazgos_prensa import PROVINCIAS, MESES, f1, fecha_larga, fecha_dia, num, estaciones_lluvia, _nombre_corto  # noqa: E402
 
 DIAS_SEMANA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 
@@ -153,6 +153,15 @@ def plural(n, uno: str, varios: str) -> str:
     return f"{n} {uno if n == 1 else varios}"
 
 
+def cuenta_avisos(avs) -> str:
+    """«2 avisos rojos y 4 naranjas», «4 avisos naranjas» (sin «0 avisos rojos»)."""
+    r = sum(1 for a in avs if a.get("nivel") == "rojo")
+    n = sum(1 for a in avs if a.get("nivel") == "naranja")
+    if r and n:
+        return f"{plural(r, 'aviso rojo', 'avisos rojos')} y {plural(n, 'naranja', 'naranjas')}"
+    return plural(r, "aviso rojo", "avisos rojos") if r else plural(n, "aviso naranja", "avisos naranjas")
+
+
 def _norm_nombre(s) -> str:
     s = unicodedata.normalize("NFKD", str(s or "")).encode("ascii", "ignore").decode().lower()
     return re.sub(r"[^a-z0-9]", "", s)
@@ -235,11 +244,13 @@ class Datos:
     def __init__(self):
         self.capitales = {c["provincia"]: c for c in leer_o(DOCS / "viento.json", {"capitales": []})["capitales"]}
         self.lluvias = leer_o(DOCS / "lluvias_municipios.json", {})
+        self.est_lluvia = None  # estaciones_lluvia(self.lluvias), se calcula al primer uso
         self.nocturnas = leer_o(DOCS / "temperaturas_nocturnas.json", {})
         self.otonio = leer_o(DOCS / "otonio_municipios.json", {})
         self.mun_mapa = leer_o(DOCS / "municipios_mapa.json", {})
         self.mun2050 = leer_o(DOCS / "municipios.json", {"items": []})
         self.avisos_h = leer_o(DOCS / "avisos_historico.json", {"dias": {}})
+        self.avisos = leer_o(DOCS / "avisos.json", {})
         self.calor = leer_o(DOCS / "calor_mortalidad.json", {})
         self.dias32 = leer_o(DOCS / "dias32.json", {"provincias": []})
         self.embalses_nac = leer_o(DOCS / "embalses.json", {})
@@ -280,50 +291,120 @@ class Datos:
 def sonda_ayer(P: Parte, D: Datos, pj: dict):
     cod = P.cod
     # --- lluvia por estación (AEMET observación) -----------------------------------
-    # Solo estaciones que constan en la provincia, y todas las cifras del mismo fichero: antes se mezclaba la
-    # media de las estaciones con el «% frente a lo normal» de otro cálculo y no cuadraban (0 mm y «−54 %»).
+    # Solo estaciones que constan en la provincia y solo valores medidos por cada una (estaciones_lluvia): el
+    # 18-10-2026 «Pego lleva 26,9 mm» era el dato de Oliva, que el fichero por municipios usa de relevo.
+    # Sin superlativo en el titular: el fichero no tiene toda la red de AEMET, solo las estaciones de referencia
+    # de los municipios del mapa. El «más alta de las N» va en el dato, con su alcance.
     L = D.lluvias
     if L.get("municipios"):
         fecha = L.get("fecha", AYER.isoformat())
-        mios = {k: v for k, v in L["municipios"].items() if k.startswith(cod)}
-        refs: dict[str, list] = {}
-        for m in mios.values():
-            if m.get("est"):
-                refs.setdefault(m["est"], []).append(m)
-        estaciones = {e: ms[0] for e, ms in refs.items() if estacion_en_provincia(e, P.slug, [x["n"] for x in ms])}
+        if D.est_lluvia is None:
+            D.est_lluvia = estaciones_lluvia(L)
+        estaciones = {e: r for e, r in D.est_lluvia.items() if r.get("prov") == cod}
         fuente = L.get("fuente", "AEMET OpenData · observación convencional")
-        metodo = "Precipitación de 0 a 24 h (hora local) de las estaciones de AEMET de la provincia, sumada a partir del dato horario de AEMET OpenData."
+        metodo = "Precipitación de 0 a 24 h (hora local) de las estaciones de AEMET de la provincia, sumada a partir del dato horario de AEMET OpenData. Solo estaciones con las 24 horas."
+        alcance = ("El observatorio sigue las estaciones de AEMET que sirven de referencia a los municipios de su mapa de lluvia, "
+                   "no toda la red: en otra estación de AEMET pudo llover más.")
         tope = max((int(num(m.get("racha"), 0) or 0) for m in L["municipios"].values()), default=0)
-        if estaciones:
-            n_est = len(estaciones)
-            con_lluvia = sum(1 for m in estaciones.values() if (num(m.get("dia"), 0) or 0) >= 1)
-            sem_media = sum(num(m.get("sem"), 0) or 0 for m in estaciones.values()) / n_est
-            e_top, top = max(estaciones.items(), key=lambda kv: num(kv[1].get("dia"), 0) or 0)
-            mm = num(top.get("dia"), 0) or 0
-            if mm >= 10:
+        con_dia = {e: r for e, r in estaciones.items() if r.get("dia") is not None}
+
+        def oficial(e):
+            corto = _nombre_corto(e)
+            return corto, ("" if corto == e else f" · nombre en AEMET: «{e}»")
+
+        def lider(filas, campo, conjunto):
+            """«la cifra más alta de las 12 estaciones …» o, si solo hay una, «única estación …»."""
+            if len(filas) == 1:
+                return f"única estación de AEMET de la provincia {conjunto}"
+            mm = filas[0][1][campo]
+            emp = [_nombre_corto(e) for e, r in filas[1:] if r[campo] == mm]
+            return ("la cifra más alta" + (f" (empatada con {', '.join(emp)})" if emp else "")
+                    + f" de las {len(filas)} estaciones de AEMET de la provincia {conjunto}")
+
+        if con_dia:
+            n_est = len(con_dia)
+            con_lluvia = sum(1 for r in con_dia.values() if r["dia"] >= 1)
+            filas = sorted(con_dia.items(), key=lambda kv: (-kv[1]["dia"], kv[0]))
+            e_top, top = filas[0]
+            mm = top["dia"]
+            corto, of = oficial(e_top)
+            # estaciones a las que les falta alguna hora del día: su cifra es un mínimo y no entra en la comparación
+            parc = sorted(((e, r) for e, r in estaciones.items() if r.get("dia_min") is not None and (r.get("dia_h") or 0) >= 20),
+                          key=lambda kv: (-kv[1]["dia_min"], kv[0]))
+            nota_parc = (["Con horas sin dato en AEMET (la cifra es un mínimo): " + " · ".join(
+                f"{_nombre_corto(e)}: al menos {f1(r['dia_min'])} mm ({r['dia_h']} de 24 horas)" for e, r in parc[:3] if r["dia_min"] >= 1) + "."]
+                if parc and parc[0][1]["dia_min"] >= 1 else [])
+            if parc and parc[0][1]["dia_min"] > mm and parc[0][1]["dia_min"] >= 10:
+                # «Hellín recogió al menos 46,3 mm»: con una hora sin dato ya supera a todas las de día completo
+                e_p, r_p = parc[0]
+                corto_p, of_p = oficial(e_p)
+                falta = 24 - int(r_p["dia_h"])
+                P.add("ayer", "extremo" if r_p["dia_min"] >= 30 else "comparacion",
+                      f"La estación de AEMET de {corto_p} recogió al menos {f1(r_p['dia_min'])} mm el {fecha_dia(fecha)}",
+                      f"{f1(r_p['dia_min'])} mm en las {r_p['dia_h']} horas del {fecha_dia(fecha)} con dato en AEMET ({plural(falta, 'hora', 'horas')} sin dato: la cifra real puede ser mayor)"
+                      + f" · más que cualquiera de {('la estación' if n_est == 1 else f'las {n_est} estaciones')} de AEMET de la provincia con las 24 horas que sigue el observatorio (la que más, {corto}: {f1(mm)} mm){of_p}",
+                      fuente, metodo.replace(" Solo estaciones con las 24 horas.", ""), fecha_dato=fecha,
+                      limites=[f"A la estación le {'falta una hora' if falta == 1 else f'faltan {falta} horas'} de ese día en AEMET OpenData: citar como «al menos».",
+                               "Lluvia de una estación de AEMET: en el resto del término municipal pudo llover más o menos.", alcance],
+                      pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
+            elif mm >= 10:
                 P.add("ayer", "extremo" if mm >= 30 else "comparacion",
-                      f"La estación de AEMET de {e_top} recogió {f1(mm)} mm el {fecha_dia(fecha)}, la cifra más alta entre las estaciones de AEMET de la provincia de {P.nombre}",
-                      f"{f1(mm)} mm el {fecha_dia(fecha)} en la estación {e_top} · {con_lluvia} de las {n_est} estaciones de AEMET de la provincia que sigue el observatorio recogieron 1 mm o más ese día",
+                      f"La estación de AEMET de {corto} recogió {f1(mm)} mm el {fecha_dia(fecha)}",
+                      f"{f1(mm)} mm de 0 a 24 h (hora local) del {fecha_dia(fecha)}, {lider(filas, 'dia', 'con las 24 horas que sigue el observatorio')}"
+                      + (f" · {plural(con_lluvia, 'recogió', 'recogieron')} 1 mm o más" if n_est > 1 else "") + of,
                       fuente, metodo, fecha_dato=fecha,
-                      limites=["Lluvia de una estación de AEMET: en el resto del término municipal pudo llover más o menos."],
+                      contexto=(["Las que más: " + " · ".join(f"{_nombre_corto(e)}: {f1(r['dia'])} mm" for e, r in filas[:5]) + "."] if n_est > 1 else []) + nota_parc,
+                      limites=["Lluvia de una estación de AEMET: en el resto del término municipal pudo llover más o menos.", alcance],
                       pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
             else:
-                e_seca, racha_max = max(estaciones.items(), key=lambda kv: num(kv[1].get("racha"), 0) or 0)
-                r = int(num(racha_max.get("racha"), 0) or 0)
-                if r >= 10:
+                # una racha seca solo se publica si la estación tiene dato de hoy y aún no llega a 1 mm (si hoy no
+                # hay dato de la estación, puede estar lloviendo: el 18-10 Ontinyent «10 días sin lluvia» con aviso rojo)
+                secas = sorted(((int(r["racha"]), e) for e, r in con_dia.items()
+                                if r.get("racha") is not None and r.get("hoy") is not None and r["hoy"] < 1), key=lambda x: (-x[0], x[1]))
+                if secas and secas[0][0] >= 10:
+                    r_, e_seca = secas[0]
+                    corto_s, of_s = oficial(e_seca)
                     # la ventana del cálculo tiene tope: si la racha llega a él, la real puede ser más larga
-                    al_menos = "al menos " if tope and r >= tope else ""
+                    al_menos = "al menos " if tope and r_ >= tope else ""
+                    hoy_s = D.est_lluvia[e_seca]
                     P.add("ayer", "comparacion",
-                          f"La estación de AEMET de {e_seca} lleva {al_menos}{r} días seguidos sin recoger 1 mm de lluvia (hasta el {fecha_dia(fecha)})",
-                          f"{al_menos}{r} días seguidos con menos de 1 mm en la estación de AEMET de {e_seca}, hasta el {fecha_dia(fecha)} incluido",
+                          f"La estación de AEMET de {corto_s} lleva {al_menos}{r_} días seguidos sin recoger 1 mm de lluvia (hasta el {fecha_dia(fecha)})",
+                          f"{al_menos}{r_} días seguidos con menos de 1 mm en la estación de AEMET de {corto_s}{of_s}, hasta el {fecha_dia(fecha)} incluido"
+                          + (f" · el {fecha_dia(L.get('hoy_fecha'))} lleva {f1(hoy_s['hoy'])} mm hasta las {int(hoy_s['hoy_h'])}:00" if hoy_s.get("hoy") is not None and hoy_s.get("hoy_h") and L.get("hoy_fecha") else ""),
                           fuente, "Días consecutivos, hasta el último día completo, en que la estación de AEMET recogió menos de 1 mm.", fecha_dato=fecha, citabilidad="alta",
                           limites=([f"La ventana de cálculo es de {tope} días: la racha real puede ser más larga."] if al_menos else []),
                           pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
             if mm > 0:
-                P.cifra(f"Lluvia el {fecha_dia(fecha)} (máximo provincial)", f"{f1(mm)} mm", e_top, "AEMET")
+                P.cifra(f"Lluvia el {fecha_dia(fecha)}", f"{f1(mm)} mm", f"{corto}, la que más de las que sigue el observatorio", "AEMET")
             else:
                 P.cifra(f"Lluvia el {fecha_dia(fecha)}", "0 mm", ("en la estación de AEMET de la provincia que sigue el observatorio" if n_est == 1 else f"en las {n_est} estaciones de AEMET de la provincia que sigue el observatorio"), "AEMET")
-            P.cifra("Lluvia de los últimos siete días", f"{f1(sem_media)} mm", (f"estación de AEMET de {e_top}" if n_est == 1 else f"media de {n_est} estaciones de AEMET"), "AEMET")
+            sem = [r["sem"] for r in con_dia.values() if r.get("sem") is not None and r.get("sem_dias") == 7]
+            if sem:
+                P.cifra("Lluvia de los últimos siete días", f"{f1(sum(sem) / len(sem))} mm",
+                        (f"estación de AEMET de {corto}" if len(sem) == 1 else f"media de {len(sem)} estaciones de AEMET"), "AEMET")
+        # --- hoy, hasta la última hora cerrada de la red (18-10-2026: lo más fresco que hay) ---
+        hoy_f, corte = L.get("hoy_fecha"), L.get("corte_red")
+        if hoy_f and corte:
+            completas = {e: r for e, r in estaciones.items() if r.get("hoy") is not None and r.get("hoy_h") == corte}
+            if completas:
+                filas_h = sorted(completas.items(), key=lambda kv: (-kv[1]["hoy"], kv[0]))
+                e_h, r_h = filas_h[0]
+                mm_h = r_h["hoy"]
+                corto_h, of_h = oficial(e_h)
+                if mm_h >= 10:
+                    con_h = sum(1 for r in completas.values() if r["hoy"] >= 1)
+                    n_h = len(completas)
+                    P.add("ayer", "extremo" if mm_h >= 30 else "comparacion",
+                          f"La estación de AEMET de {corto_h} lleva {f1(mm_h)} mm el {fecha_dia(hoy_f)} hasta las {int(corte)}:00",
+                          f"{f1(mm_h)} mm de 0:00 a {int(corte)}:00 (hora local) del {fecha_dia(hoy_f)}, {lider(filas_h, 'hoy', 'que sigue el observatorio con todas esas horas')}"
+                          + (f" · {plural(con_h, 'lleva', 'llevan')} 1 mm o más" if n_h > 1 else "") + of_h,
+                          fuente, "Suma de la precipitación horaria de AEMET OpenData desde las 0:00 hasta la última hora cerrada en toda la red. Solo estaciones con todas esas horas.",
+                          fecha_dato=hoy_f, pagina="https://calentamientoglobal.es/lluvia-hoy-espana/",
+                          contexto=(["Las que más: " + " · ".join(f"{_nombre_corto(e)}: {f1(r['hoy'])} mm" for e, r in filas_h[:5]) + "."] if n_h > 1 else []),
+                          limites=[f"Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las {int(corte)}:00»).", alcance])
+                    # lo de hoy, primero entre las cifras
+                    P.cifras.insert(0, {"etiqueta": f"Lluvia el {fecha_dia(hoy_f)} hasta las {int(corte)}:00", "valor": f"{f1(mm_h)} mm",
+                                        "nota": f"{corto_h}, la que más de las que sigue el observatorio", "fuente": "AEMET"})
 
     # --- noches tropicales (AEMET) --------------------------------------------------
     # Auditoría 17-10-2026: el recuento anual («81 noches tropicales en 2026») sale de un archivo diario con huecos
@@ -713,10 +794,63 @@ def sonda_impacto(P: Parte, D: Datos, pj: dict):
         except Exception:
             huecos = [None]
         hoy_av = pj.get("indicadores", {}).get("avisos") or {}
-        # Auditoría 17-10-2026: el aviso vigente ya no sale como noticia del parte. El parte se genera dos veces al día
-        # y AEMET cambia los avisos cada pocas horas: el 17-10 a las 13:11 Almería estaba en naranja y a las 14:44 AEMET
-        # lo subió a rojo; el parte habría seguido diciendo «naranja» hasta la noche, contradiciendo a AEMET. Los avisos
-        # se consultan en directo en /avisos-meteorologicos/ (enlace fijo en la sala de prensa).
+        # Aviso vigente (18-10-2026): AEMET cambia los avisos cada pocas horas (el 17-10 Almería pasó de naranja a rojo
+        # a las 14:44), así que el titular lleva la hora de la consulta: «A las 8:30 del 18 de octubre, AEMET tenía…».
+        # Así es cierto aunque AEMET lo cambie después. El parte se rehace cada hora.
+        AV = D.avisos or {}
+        graves_todos = [a for a in AV.get("avisos", []) if a.get("cod") == P.cod and a.get("nivel") in ("rojo", "naranja")]
+        if graves_todos and AV.get("generado"):
+            try:
+                g = datetime.fromisoformat(AV["generado"])
+                cuando_txt = f"A las {g.hour}:{g.minute:02d} del {fecha_dia(g.date().isoformat())}"
+            except Exception:
+                g, cuando_txt = datetime.now(timezone.utc), ""  # sin hora de consulta no se publica
+            nivel = "rojo" if any(a["nivel"] == "rojo" for a in graves_todos) else "naranja"
+            graves = [a for a in graves_todos if a["nivel"] == nivel]
+            tipos = sorted({(a.get("tipo") or "").lower() for a in graves if a.get("tipo")})
+            zonas = sorted({a.get("zona") for a in graves if a.get("zona")})
+            zonas_txt = (", ".join(zonas[:-1]) + " y " + zonas[-1]) if 1 < len(zonas) <= 3 else (zonas[0] if len(zonas) == 1 else ", ".join(zonas[:3]) + f" y {len(zonas) - 3} zona{'s' if len(zonas) - 3 > 1 else ''} más")
+
+            def _hh(iso):
+                return f"{int(iso[11:13])}:{iso[14:16]} del {fecha_dia(iso[:10])}"
+
+            def tramos(avs):
+                """Ventanas de aviso de una zona, uniendo las que empalman (23:59 → 0:00 del día siguiente)."""
+                xs = sorted((datetime.fromisoformat(a["inicio"]), datetime.fromisoformat(a["fin"]), a["inicio"], a["fin"])
+                            for a in avs if a.get("inicio") and a.get("fin"))
+                out = []
+                for i, f, i_s, f_s in xs:
+                    if out and (i - out[-1][1]).total_seconds() <= 60:
+                        if f > out[-1][1]:
+                            out[-1][1], out[-1][3] = f, f_s
+                    else:
+                        out.append([i, f, i_s, f_s])
+                return out
+
+            por_zona = {z: tramos([a for a in graves if a.get("zona") == z]) for z in zonas}
+            firmas = {tuple((t[2], t[3]) for t in tr) for tr in por_zona.values()}
+            intervalo = ""
+            if len(firmas) == 1:
+                tr = next(iter(por_zona.values()))
+                if len(tr) == 1:
+                    i_dt, f_dt, i_s, f_s = tr[0]
+                    intervalo = (f", vigente hasta las {_hh(f_s)}" if i_dt <= g else f", de las {_hh(i_s)} a las {_hh(f_s)}")
+            detalle = " · ".join(f"{z}: " + "; ".join(("hasta las " + _hh(t[3])) if t[0] <= g else (f"de las {_hh(t[2])} a las {_hh(t[3])}") for t in tr)
+                                 for z, tr in por_zona.items() if tr)
+            fines = [t[1] for tr in por_zona.values() for t in tr]
+            if cuando_txt:
+                it = P.add("impacto", "record" if nivel == "rojo" else "extremo",
+                           f"{cuando_txt}, AEMET tenía aviso {nivel} por {' y '.join(tipos)} en {zonas_txt} ({P.nombre}){intervalo}",
+                           cuenta_avisos(graves_todos) + " por zona, fenómeno y tramo horario a esa hora"
+                           + (f" · {nivel}: {detalle}" if detalle else ""),
+                           AV.get("fuente", "AEMET vía MeteoAlarm"), "Avisos de AEMET (vía MeteoAlarm) vigentes o anunciados en las zonas de la provincia a la hora de la consulta.",
+                           fecha_dato=g.date().isoformat(),
+                           limites=["Nunca contradecir ni matizar un aviso de AEMET con otro dato.",
+                                    "AEMET actualiza los avisos varias veces al día: el titular dice la hora de la consulta; comprobar el estado actual en aemet.es."],
+                           pagina="https://calentamientoglobal.es/avisos-meteorologicos/")
+                # la web deja de enseñarlo cuando acaba el último tramo (aunque la pasada siguiente no haya llegado)
+                if fines:
+                    it["caduca"] = max(fines).isoformat()
         if suma >= 10 and not (hoy_av.get("naranjas") or hoy_av.get("rojos")):
             P.add("impacto", "cifra", f"{P.nombre} suma {suma} avisos de AEMET por zona desde el {fecha_dia(A['desde'])}, {tot['naranja'] + tot['rojo']} de ellos naranjas o rojos",
                   f"{plural(tot['rojo'], 'rojo', 'rojos')} · {plural(tot['naranja'], 'naranja', 'naranjas')} · {plural(tot['amarillo'], 'amarillo', 'amarillos')} · {dias_con} días con algún aviso", "AEMET vía MeteoAlarm",
@@ -840,7 +974,8 @@ def destacados(p: dict, n: int = 5) -> list[dict]:
         if h not in elegidos:
             elegidos.append(h)
     elegidos = sorted(elegidos[:n], key=lambda h: -h["fuerza"])
-    return [{k: h.get(k) for k in ("id", "angulo", "clase", "titular", "dato", "fuente", "fecha_dato", "provisional", "pagina", "citabilidad")} for h in elegidos]
+    return [{k: h.get(k) for k in ("id", "angulo", "clase", "titular", "dato", "contexto", "fuente", "metodo", "limites", "fecha_dato",
+                                   "provisional", "pagina", "citabilidad", "fuerza", "caduca")} for h in elegidos]
 
 
 def main():
