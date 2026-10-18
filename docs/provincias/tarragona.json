@@ -3,8 +3,8 @@
  "provincia": "Tarragona",
  "ccaa": "Cataluña",
  "capital": "Tarragona",
- "generado": "2026-10-18T13:44+02:00",
- "fecha_legible": "18/10/2026 a las 13:44",
+ "generado": "2026-10-18T19:34+02:00",
+ "fecha_legible": "18/10/2026 a las 19:34",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -23,8 +23,8 @@
  "indicadores": {
   "canicula": {
    "ref_p90": 31.7,
-   "tmax_hoy": 26.1,
-   "tmin_hoy": 15.2,
+   "tmax_hoy": 20.1,
+   "tmin_hoy": 14.9,
    "dias_consecutivos": 0,
    "noche_tropical": false,
    "icc": 0,
@@ -46,11 +46,29 @@
    "racha_sin_precedente": 0
   },
   "avisos": {
-   "total": 26,
+   "total": 28,
    "rojos": 0,
-   "naranjas": 0,
+   "naranjas": 2,
    "amarillos": 26,
    "items": [
+    {
+     "zona": "Litoral norte de Tarragona",
+     "nivel": "naranja",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-10-19T16:00+02:00",
+     "fin": "2026-10-19T23:59+02:00",
+     "activo_ya": false
+    },
+    {
+     "zona": "Prelitoral norte de Tarragona",
+     "nivel": "naranja",
+     "tipo": "Lluvias",
+     "icono": "🌧️",
+     "inicio": "2026-10-19T16:00+02:00",
+     "fin": "2026-10-19T23:59+02:00",
+     "activo_ya": false
+    },
     {
      "zona": "Costa - Litoral norte de Tarragona",
      "nivel": "amarillo",
@@ -67,7 +85,7 @@
      "icono": "🌊",
      "inicio": "2026-10-18T17:00+02:00",
      "fin": "2026-10-19T11:59+02:00",
-     "activo_ya": false
+     "activo_ya": true
     },
     {
      "zona": "Depresión central de Tarragona",
@@ -126,15 +144,6 @@
     {
      "zona": "Litoral norte de Tarragona",
      "nivel": "amarillo",
-     "tipo": "Lluvias",
-     "icono": "🌧️",
-     "inicio": "2026-10-19T16:00+02:00",
-     "fin": "2026-10-19T23:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Litoral norte de Tarragona",
-     "nivel": "amarillo",
      "tipo": "Tormentas",
      "icono": "⛈️",
      "inicio": "2026-10-19T16:00+02:00",
@@ -146,15 +155,6 @@
      "nivel": "amarillo",
      "tipo": "Tormentas",
      "icono": "⛈️",
-     "inicio": "2026-10-20T00:00+02:00",
-     "fin": "2026-10-20T03:59+02:00",
-     "activo_ya": false
-    },
-    {
-     "zona": "Litoral norte de Tarragona",
-     "nivel": "amarillo",
-     "tipo": "Lluvias",
-     "icono": "🌧️",
      "inicio": "2026-10-20T00:00+02:00",
      "fin": "2026-10-20T03:59+02:00",
      "activo_ya": false
@@ -203,22 +203,34 @@
     "id": "tarragona",
     "nombre": "Tarragona",
     "t_min_anoche": null,
-    "nt_mes": 0,
-    "nt_anyo": 82,
-    "etiqueta": "Sin datos"
+    "nt_mes": 1,
+    "nt_anyo": 80,
+    "etiqueta": "Sin datos",
+    "estacion": "Tarragona",
+    "cobertura_anyo": 0.993
    }
   ],
   "calidad_aire": [
    {
     "nombre": "Tarragona",
-    "etiqueta": "Buena",
-    "aqi_europeo": 26,
-    "pm25": 5.0,
+    "etiqueta": "Excelente",
+    "aqi_europeo": 18,
+    "pm25": 2.1,
     "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
    }
   ],
+  "dias32": {
+   "actual": 31,
+   "anio": 2026,
+   "hasta": "2026-10-15",
+   "media_1991_2020": null,
+   "media_1961_1990": null,
+   "fuente": "AEMET",
+   "estacion": "Tarragona",
+   "indicativo": "0042Y"
+  },
   "capital_2050": {
    "municipio": "Tarragona",
    "analogo_climatico": "Sitges",
@@ -233,7 +245,7 @@
    {
     "id": "tarragona",
     "nombre": "Tarragona",
-    "temp": 24.2,
+    "temp": 24.1,
     "fecha": "2026-10-18",
     "max_anio": {
      "valor": 30.05,
@@ -252,10 +264,20 @@
  },
  "destacados": [
   {
+   "tipo": "aviso_naranja",
+   "icono": "🟠",
+   "nivel": "alto",
+   "texto": "Aviso naranja de AEMET en Tarragona por Lluvias (2 zona(s)) · 2.º día consecutivo",
+   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "prioridad": 80,
+   "racha_dias": 2,
+   "nuevo": false
+  },
+  {
    "tipo": "boya_anomalia_tarragona",
    "icono": "🌡️",
    "nivel": "medio",
-   "texto": "La boya de Tarragona está +2.5 °C sobre lo normal para la época (24.2 °C) · 59.º día consecutivo",
+   "texto": "La boya de Tarragona está +2.5 °C sobre lo normal para la época (24.1 °C) · 59.º día consecutivo",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 69,
    "racha_dias": 59,
@@ -282,5 +304,5 @@
    "nuevo": true
   }
  ],
- "texto_seo": "Situación climática en Tarragona a 18/10/2026: La boya de Tarragona está +2.5 °C sobre lo normal para la época (24.2 °C). Nivel del mar muy elevado en Tarragona: +16.6 cm sobre la media 1993-2012. 3 foco(s) de calor activos detectados por satélite en Cataluña (últimas 48 h). Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Tarragona a 18/10/2026: Aviso naranja de AEMET en Tarragona por Lluvias (2 zona(s)). La boya de Tarragona está +2.5 °C sobre lo normal para la época (24.1 °C). Nivel del mar muy elevado en Tarragona: +16.6 cm sobre la media 1993-2012. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
