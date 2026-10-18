@@ -8,6 +8,12 @@ name: Hallazgos de prensa
 
 on:
   workflow_dispatch:
+  # El cron de GitHub no sale en este repo (18-10-2026: ni una pasada a :47 en dos horas; lo mismo vio el de
+  # lluvia el 2-10). Lo puntual es la cadena avisos (disparo externo a :00 y :30) → lluvia por municipio
+  # (:01 y :31): este flujo sale al terminar ese, con la lluvia recién contada. El cron queda de red.
+  workflow_run:
+    workflows: ["Actualizar lluvia diaria por municipio"]
+    types: [completed]
   schedule:
     # Cada hora (18-10-2026): la lluvia de AEMET por estación y los avisos se rehacen a :01 y :31; a :47 el
     # parte ya lleva la hora cerrada más reciente. Las series lentas (capitales, Mediterráneo, embalses) entran
