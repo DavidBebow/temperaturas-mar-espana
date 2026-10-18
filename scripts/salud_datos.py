@@ -8,7 +8,10 @@ Lee docs/salud/herramientas.json (manifiesto), comprueba cada herramienta:
     o el último commit del archivo),
   - si está dentro de su ventana de frescura,
   - sus guardas de contenido (número de elementos, claves, booleanos),
-  - cómo acabó el último run de su workflow (API de GitHub Actions).
+  - cómo acabó el último run de su workflow (API de GitHub Actions),
+  - y, si la entrada lleva «contraste», que lo publicado sea cierto según su
+    propia regla (sumas que cuadran, fuente y método declarados, años con
+    huecos que no se dan por completos). Ver CONTRASTES más abajo.
 
 Escribe:
   docs/salud/estado.json        estado actual de todas las herramientas
@@ -225,6 +228,223 @@ def guardas(data, reglas: dict | None) -> list[str]:
     return fallos
 
 
+# ----------------------------------------------------------------------------
+# contrastes de veracidad (18-10-2026)
+# ----------------------------------------------------------------------------
+# Las guardas miran que el archivo tenga la forma esperada. Los contrastes miran
+# que lo que se publica sea cierto según su propia regla: que el total sea la
+# suma de sus días, que el dato salga de la estación o del producto que dice la
+# página, que no se dé por completo un año con huecos. Cada contraste devuelve
+# una lista de (nivel, texto): «error» si una cifra publicada no cuadra, «aviso»
+# si el dato está incompleto o el método no es el acordado, «info» solo se anota.
+HOY = AHORA.astimezone(MADRID).date()
+
+
+def _edad(fecha) -> int | None:
+    dt = parsear_fecha(fecha)
+    return (HOY - dt.date()).days if dt else None
+
+
+def _entero(x: float) -> int:
+    """Redondeo comercial, el mismo que usa calor_mortalidad_generar.py."""
+    import math
+    return int(math.floor(float(x) + 0.5))
+
+
+def _lista(nombres: list[str], n: int = 6) -> str:
+    return ", ".join(nombres[:n]) + (f" y {len(nombres) - n} más" if len(nombres) > n else "")
+
+
+def c_calor_mortalidad(d: dict) -> list:
+    out = []
+    if d.get("metodo_suma") != "diaria_sin_redondear":
+        out.append(("aviso", "los totales aún se suman con los valores diarios ya redondeados"))
+    dias = d.get("dias") or []
+    va = d.get("verano_actual") or {}
+    if dias and all("exacto" in x for x in dias) and va.get("atribuibles_calor") is not None:
+        suma = _entero(sum(x["exacto"] for x in dias))
+        if va["atribuibles_calor"] != suma:
+            out.append(("error", f"el total nacional del verano ({va['atribuibles_calor']}) no es la suma "
+                                  f"de sus días ({suma})"))
+    malas = []
+    for slug, p in (d.get("provincias") or {}).items():
+        vals = p.get("valores_exactos")
+        if vals and p.get("verano") is not None and p["verano"] != _entero(sum(vals)):
+            malas.append(f"{p.get('nombre', slug)} ({p['verano']} frente a {_entero(sum(vals))})")
+    if malas:
+        out.append(("error", "el total del verano no es la suma de sus días en " + _lista(malas)))
+    return out
+
+
+def c_temperaturas_mar(d: dict) -> list:
+    out = []
+    if d.get("metodo") != "oisst_v21_normal_1991_2020":
+        out.append(("aviso", "el dato no sale del método acordado (NOAA OISST v2.1 con normal 1991-2020 de la misma celda)"))
+    e = _edad(d.get("fecha_dato"))
+    if e is not None and e > 5:
+        out.append(("aviso", f"el dato más reciente es de hace {e} días ({d.get('fecha_dato')})"))
+    pts = d.get("puntos") or []
+    sin = [p.get("nombre", p.get("id")) for p in pts if p.get("temperatura_actual") is None]
+    if sin:
+        out.append(("aviso", f"{len(sin)} de {len(pts)} puntos sin dato: " + _lista(sin)))
+    malas = []
+    for p in pts:
+        t, n, a = p.get("temperatura_actual"), p.get("media_1991_2020_dia"), p.get("anomalia")
+        if None not in (t, n, a) and abs((t - n) - a) > 0.151:
+            malas.append(f"{p.get('nombre')} ({t} − {n} ≠ {a})")
+    if malas:
+        out.append(("error", "la anomalía no es la temperatura menos su normal en " + _lista(malas)))
+    prov = sum(1 for p in pts if p.get("provisional"))
+    if prov:
+        out.append(("info", f"{prov} punto{'s' if prov > 1 else ''} con el dato preliminar de la NOAA"))
+    return out
+
+
+def c_noches_tropicales(d: dict) -> list:
+    out = []
+    cs = d.get("ciudades") or []
+    if d.get("total_ciudades") is not None and d["total_ciudades"] != len(cs):
+        out.append(("error", f"dice {d['total_ciudades']} ciudades y publica {len(cs)}"))
+    e = _edad(d.get("fecha_anoche"))
+    if e is not None and e > 3:
+        out.append(("aviso", f"la última noche publicada es de hace {e} días ({d.get('fecha_anoche')})"))
+    sin_est = [c.get("nombre", c.get("id")) for c in cs if not c.get("idema") or "cobertura_anyo" not in c]
+    if sin_est:
+        out.append(("aviso", f"{len(sin_est)} ciudades sin estación o cobertura declarada: " + _lista(sin_est)))
+    baja = [f"{c.get('nombre')} ({round(100 * c['cobertura_anyo'])} %)" for c in cs
+            if isinstance(c.get("cobertura_anyo"), (int, float)) and c["cobertura_anyo"] < 0.9]
+    if baja:
+        out.append(("info", "con menos del 90 % de los días del año (la página lo advierte): " + _lista(baja)))
+    paradas = [c.get("nombre") for c in cs if c.get("ultimo_dato") and (_edad(c["ultimo_dato"]) or 0) > 10]
+    if paradas:
+        out.append(("info", "estaciones sin dato en más de 10 días (salen en gris): " + _lista(paradas)))
+    return out
+
+
+def c_dias32_estaciones(d: dict) -> list:
+    out = []
+    est = d.get("estaciones") or {}
+    malas, fuera = [], []
+    for slug, s in est.items():
+        a = s.get("actual") or {}
+        if a.get("dias") is not None and a.get("dias_con_dato") is not None and a["dias"] > a["dias_con_dato"]:
+            malas.append(slug)
+        if a.get("estacion_parada") or (a.get("cobertura") or 0) < 0.95:
+            fuera.append(f"{s.get('estacion', slug)}")
+    if malas:
+        out.append(("error", "más días de calor que días con dato en " + _lista(malas)))
+    if fuera:
+        out.append(("info", "sin cifra de estación este año (cobertura < 95 % o parada): " + _lista(fuera)))
+    if d.get("archivo_pendiente_anios"):
+        out.append(("info", f"quedan {d['archivo_pendiente_anios']} años de archivo por descargar (las medias se completan solas)"))
+    return out
+
+
+def c_dias32_era5(d: dict) -> list:
+    out = []
+    if "ERA5" not in str(d.get("fuente", "")):
+        out.append(("aviso", "la fuente no dice que es reanálisis ERA5"))
+    if not d.get("aviso"):
+        # el JSON se rehace cada mes; hasta entonces la página ya lo rotula como ERA5
+        out.append(("info", "el JSON aún no lleva el aviso de que es la celda ERA5 y no la estación"))
+    return out
+
+
+def c_grados_dia(d: dict) -> list:
+    out = []
+    provs = d.get("provincias") or {}
+    if len(provs) < 50:
+        out.append(("aviso", f"solo {len(provs)} de 52 provincias"))
+    fin = parsear_fecha(d.get("fin"))
+    esperado = HOY.year - 1 if (HOY.month, HOY.day) >= (1, 19) else HOY.year - 2
+    if fin and fin.year < esperado:
+        out.append(("aviso", f"el último año calculado es {fin.year}; debería estar {esperado}"))
+    descuadre = [n for n, p in provs.items()
+                 if len({len(p.get(k) or []) for k in ("years", "hdd", "cdd21", "cdd24")}) != 1]
+    if descuadre:
+        out.append(("error", "series de distinta longitud en " + _lista(descuadre)))
+    if "ERA5" not in str(d.get("fuente", "")):
+        out.append(("aviso", "la fuente no dice que es reanálisis ERA5 de modelo fijo"))
+    return out
+
+
+def c_mediterraneo(d: dict) -> list:
+    out = []
+    h = leer_json(RAIZ / "docs" / "dana" / "mediterraneo_historico.json", None)
+    v = (h or {}).get("v") or {}
+    if not v:
+        return [("aviso", "no se puede leer la serie histórica del Mediterráneo")]
+    ini = datetime.fromisoformat("1981-09-01").date()
+    fin = datetime.fromisoformat(max(v)).date()
+    faltan = (fin - ini).days + 1 - sum(1 for k in v if k >= "1981-09-01")
+    if faltan > 10:
+        out.append(("aviso", f"a la serie diaria desde 1981 le faltan {faltan} días (se rellenan desde el ERDDAP de upwell)"))
+    elif faltan:
+        out.append(("info", f"a la serie diaria desde 1981 le falta{'n' if faltan > 1 else ''} {faltan} día{'s' if faltan > 1 else ''}"))
+    return out
+
+
+def c_provincias(d: dict) -> list:
+    """Recorre las 52 fichas: la cifra de días > 32 °C, si sale, tiene que ser la de la
+    estación de AEMET y coincidir con dias32_estaciones.json cuando ambos van a la misma fecha."""
+    out = []
+    est = (leer_json(RAIZ / "docs" / "dias32_estaciones.json", {}) or {}).get("estaciones", {})
+    no_aemet, distinta, con = [], [], 0
+    for f in sorted((RAIZ / "docs" / "provincias").glob("*.json")):
+        p = leer_json(f, None)
+        if not isinstance(p, dict):
+            continue
+        d32 = (p.get("indicadores") or {}).get("dias32")
+        if not d32:
+            continue
+        con += 1
+        if d32.get("fuente") != "AEMET":
+            no_aemet.append(p.get("provincia", f.stem))
+        s = (est.get(p.get("slug") or f.stem) or {}).get("actual") or {}
+        if s.get("hasta") and s.get("hasta") == d32.get("hasta") and s.get("dias") != d32.get("actual"):
+            distinta.append(f"{p.get('provincia', f.stem)} ({d32.get('actual')} frente a {s.get('dias')})")
+    if no_aemet:
+        out.append(("error", "días de más de 32 °C publicados sin ser de estación en " + _lista(no_aemet)))
+    if distinta:
+        out.append(("error", "la ficha no da la misma cifra que la estación en " + _lista(distinta)))
+    out.append(("info", f"{con} fichas con días de más de 32 °C medidos en estación"))
+    return out
+
+
+CONTRASTES = {
+    "calor_mortalidad": c_calor_mortalidad,
+    "temperaturas_mar": c_temperaturas_mar,
+    "noches_tropicales": c_noches_tropicales,
+    "dias32_estaciones": c_dias32_estaciones,
+    "dias32_era5": c_dias32_era5,
+    "grados_dia": c_grados_dia,
+    "mediterraneo": c_mediterraneo,
+    "provincias": c_provincias,
+}
+
+
+def contrastar(h: dict, datos, res: dict) -> None:
+    nombre = h.get("contraste")
+    if not nombre or nombre not in CONTRASTES or not isinstance(datos, dict):
+        return
+    try:
+        hallazgos = CONTRASTES[nombre](datos)
+    except Exception as e:  # un contraste roto no tumba la comprobación
+        hallazgos = [("aviso", f"el contraste de veracidad no se pudo hacer: {str(e)[:120]}")]
+    res["contraste"] = {
+        "nombre": nombre,
+        "superado": not any(n in ("aviso", "error") for n, _ in hallazgos),
+        "hallazgos": [{"nivel": n, "texto": t} for n, t in hallazgos],
+    }
+    for nivel, texto in hallazgos:
+        res["detalles"].append(("veracidad: " if nivel != "info" else "") + texto)
+        if nivel == "info":
+            continue
+        if PESO[nivel] > PESO.get(res["estado"], 0):
+            res["estado"] = nivel
+            res["motivo"] = "contraste de veracidad: " + texto
+
+
 def comprobar(h: dict) -> dict:
     res = {
         "id": h["id"],
@@ -334,6 +554,9 @@ def comprobar(h: dict) -> dict:
             if res["estado"] in ("ok", "estatico", "aviso"):
                 res["estado"] = "error"
                 res["motivo"] = "el contenido no pasa las guardas: " + "; ".join(f)
+
+    # --- contrastes de veracidad ----------------------------------------------------
+    contrastar(h, datos, res)
 
     # --- último run fallido con dato fresco → aviso leve -----------------------
     if run and run.get("ultimo") and run["ultimo"].get("conclusion") in ("failure", "timed_out"):
