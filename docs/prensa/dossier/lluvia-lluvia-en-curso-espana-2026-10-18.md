@@ -1,6 +1,6 @@
 # La estación de AEMET de Miramar (Valencia) lleva 140,8 mm el 18 de octubre hasta las 16:00; la de Oliva (Valencia), 124,4 mm
 
-**Dato:** 140,8 mm de 0:00 a 16:00 (hora local) del 18 de octubre, la cifra más alta de las 236 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 140,8 mm de 0:00 a 16:00 (hora local) del 18 de octubre, la cifra más alta de las 243 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 18 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -15,7 +15,7 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 16:00»).
-- La comparación es entre las 236 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (997 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 243 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (997 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
