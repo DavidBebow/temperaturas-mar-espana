@@ -62,7 +62,7 @@ details{margin-top:8px}summary{font-size:12.5px;color:var(--acc);cursor:pointer;
 const BASE='https://davidbebow.github.io/temperaturas-mar-espana/';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const TIPO={record_absoluto:'récord absoluto',record_fecha:'récord para la fecha',primera_vez_desde:'primera vez desde',puesto_extremo:'puesto extremo',racha:'racha',anomalia_fuerte:'anomalía fuerte',percentil_extremo:'percentil extremo',contexto:'contexto'};
+const TIPO={record_absoluto:'récord absoluto',record_mes:'récord del mes',record_fecha:'récord para la fecha',primera_vez_desde:'primera vez desde',puesto_extremo:'puesto extremo',racha:'racha',anomalia_fuerte:'anomalía fuerte',percentil_extremo:'percentil extremo',contexto:'contexto'};
 function fecha(s){const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('es-ES',{day:'numeric',month:'long'});}
 function copiar(txt,btn){navigator.clipboard.writeText(txt).then(()=>{btn.textContent='copiado';setTimeout(()=>btn.textContent='copiar',1200)});}
 function card(h){
