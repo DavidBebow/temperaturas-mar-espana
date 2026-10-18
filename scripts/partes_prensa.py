@@ -731,18 +731,22 @@ def sonda_impacto(P: Parte, D: Datos, pj: dict):
         # Auditoría 17-10-2026: el dato provincial acaba el 30 de septiembre y el nacional sigue hasta octubre; antes se
         # daban juntos «hasta el 16 de octubre». Ahora el periodo es el del dato provincial y España, el mismo periodo.
         desde_p, hasta_p = pc["desde"], pc["hasta"]
-        nac = sum(int(d.get("atribuibles") or 0) for d in (C.get("dias") or []) if desde_p <= d.get("fecha", "") <= hasta_p)
+        # Desde el 18-10-2026 el generador guarda el valor diario sin redondear («exacto»): se suma ese y se redondea al final.
+        nac_x = sum(float(d.get("exacto", d.get("atribuibles")) or 0) for d in (C.get("dias") or []) if desde_p <= d.get("fecha", "") <= hasta_p)
+        nac = int(nac_x + 0.5)
         periodo = f"entre el {fecha_dia(desde_p)} y el {fecha_dia(hasta_p)}"
         # Auditoría 17-10-2026: contrastado con el fichero de datos de MoMo (momo.isciii.es/public/momo/data). El
         # generador redondea cada día antes de sumar, y el total se desvía: Ciudad Real 18 frente a 25,6 de MoMo,
         # Castellón 124 frente a 128,7, España 5.689 frente a 5.684. No se publica hasta que el generador sume los
         # valores sin redondear.
-        redondeo = "COMPROBAR: el generador de calor_mortalidad.json suma valores diarios ya redondeados y el total se aparta del de MoMo (hasta 8 defunciones por provincia). No se publica hasta corregirlo."
+        # Corregido el 18-10-2026 (calor_mortalidad_generar.py suma sin redondear). El aviso solo sigue si el JSON aún
+        # no lleva la marca de la suma nueva (la primera pasada del generador corregido rehace todo el histórico).
+        redondeo = None if C.get("metodo_suma") == "diaria_sin_redondear" else "COMPROBAR: el generador de calor_mortalidad.json suma valores diarios ya redondeados y el total se aparta del de MoMo (hasta 8 defunciones por provincia). No se publica hasta corregirlo."
         if pc["verano"] >= 20:
             P.add("impacto", "cifra", f"{pc['verano']} muertes atribuibles al calor en {P.nombre} {periodo}, según el sistema MoMo del Instituto de Salud Carlos III",
                   f"{pc['verano']} defunciones atribuibles al exceso de temperatura {periodo}" + (f" · España, en el mismo periodo: {miles(nac)}" if nac else ""),
                   C.get("fuente", "ISCIII · MoMo"), "Estimación estadística del ISCIII del exceso de defunciones atribuible a la temperatura (no son muertes por golpe de calor).",
-                  fecha_dato=hasta_p, limites=["Estimación que el ISCIII revisa a medida que entran defunciones: citar como «según la estimación del sistema MoMo».", redondeo],
+                  fecha_dato=hasta_p, limites=["Estimación que el ISCIII revisa a medida que entran defunciones: citar como «según la estimación del sistema MoMo»."] + ([redondeo] if redondeo else []),
                   pagina="https://calentamientoglobal.es/muertes-por-calor-espana/")
     # --- incendios -----------------------------------------------------------------
     inc = pj.get("indicadores", {}).get("incendios_ccaa") or {}
