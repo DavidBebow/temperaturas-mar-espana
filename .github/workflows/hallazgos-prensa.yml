@@ -47,13 +47,14 @@ jobs:
       - name: Partes de prensa provinciales (5 ángulos × 52 provincias)
         run: python scripts/partes_prensa.py
 
-      # Redacción (18-10-2026): convierte los datos en historias con versión nacional y provincial. Claude redacta a
-      # partir de hechos ya comprobados y un verificador rechaza cualquier cifra, hora o nombre que no esté en ellos;
-      # si no pasa, sale el texto de plantilla. Sin la clave, todo sale de plantilla.
+      # Redacción (18-10-2026): convierte los datos en historias con versión nacional y provincial. Coste cero: solo IA
+      # con capa gratuita y sin tarjeta (Gemini de Google AI Studio y/o Groq); un verificador rechaza cualquier cifra,
+      # hora o nombre que no esté en los hechos comprobados y, si no pasa o no hay clave, sale el texto de plantilla.
       - name: Redacción de la sala de prensa (historias del día)
         continue-on-error: true
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: python scripts/redaccion_prensa.py
 
       - name: Guardar
