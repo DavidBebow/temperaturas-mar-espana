@@ -1,0 +1,86 @@
+name: Récords · línea base de AEMET (valores extremos por estación)
+
+# Construye y refresca docs/records/baseline.json: la tabla oficial de valores
+# climatológicos extremos de cada estación de AEMET (récord de máxima y de mínima
+# de cada mes y absoluto, con su fecha) más el inventario de estaciones. Es la
+# referencia contra la que records_detectar.py (en hallazgos-prensa.yml) compara
+# la observación de cada día.
+#
+# Una pasada completa son ~900 estaciones a una petición cada 1,6 s (AEMET limita
+# por minuto): unos 30 minutos. Cada 25 estaciones guarda el progreso, y el commit
+# sale siempre (`if: always()`), así que una pasada cortada no pierde lo bajado.
+# Los días entre semana el detector refresca por su cuenta las estaciones con
+# récord reciente (confirmación), así que aquí basta con el lunes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      completa:
+        description: "Refrescar todas las estaciones aunque la base sea reciente (si/no)"
+        required: false
+        default: "si"
+  schedule:
+    - cron: "40 4 * * 1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: records-baseline
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Línea base de valores extremos
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          CG_DOCS: docs
+        run: |
+          if [ "${{ github.event.inputs.completa }}" = "no" ]; then
+            python privado/records_baseline.py --si-caducada 6
+          else
+            python privado/records_baseline.py
+          fi
+
+      - name: Guardar
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs/records/baseline.json docs/records/baseline_diagnostico.json
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "records: línea base de AEMET $(date -u +'%Y-%m-%d %H:%M UTC')"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash -X theirs && git push && exit 0
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
