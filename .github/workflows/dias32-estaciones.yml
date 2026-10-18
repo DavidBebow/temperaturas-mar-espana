@@ -2,8 +2,10 @@ name: Actualizar días de más de 32 grados (estaciones AEMET)
 # Va en el repo PUBLICO (temperaturas-mar-espana). El script vive en clima-scripts.
 # Cuenta los días de más de 32 °C en la estación de AEMET de cada capital, año a
 # año desde 1961, y escribe docs/dias32_estaciones.json, que lee el agregador
-# provincial. Las primeras pasadas completan el archivo histórico por partes
-# (presupuesto de 40 minutos por pasada); después solo rehace el año en curso.
+# provincial. Cada pasada rehace primero el año en curso de las 52 estaciones y
+# después completa el archivo histórico por partes: la pasada de día tiene 15
+# minutos (no compite por el cupo de AEMET con las demás herramientas) y la de
+# la noche, 150. Con el archivo completo, las dos solo rehacen el año en curso.
 
 on:
   schedule:
@@ -18,7 +20,7 @@ concurrency:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 180
     permissions:
       contents: write
     steps:
@@ -40,7 +42,7 @@ jobs:
       - name: Generar dias32_estaciones.json
         env:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
-          CG_MINUTOS: "40"
+          CG_MINUTOS: ${{ github.event.schedule == '40 12 * * *' && '15' || '150' }}
         run: python clima-scripts/dias32_estaciones.py
 
       - name: Guardar cambios
