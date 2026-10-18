@@ -221,12 +221,13 @@
   </div>
 
   <p class="gd-foot">
-    <strong>Metodología.</strong> Grados-día anuales calculados sobre la temperatura media diaria.
+    <strong>Metodología.</strong> Grados-día anuales calculados sobre la temperatura media diaria, T<sub>media</sub> = (máxima + mínima) / 2.
     Calefacción (HDD) con base 18 °C: suma anual de máx(0, 18 − T<sub>media</sub>).
     Refrigeración (CDD) con la base seleccionada: suma anual de máx(0, T<sub>media</sub> − base).
-    Datos de reanálisis ERA5 (1960–último año completo) para la capital de cada provincia.
+    Reanálisis ERA5 de Copernicus (modelo fijo en toda la serie, 1960–último año completo) en la celda de la capital de cada provincia:
+    sirve para ver la tendencia, no es la medida de una estación.
     El año en curso se excluye por estar incompleto.
-    Fuente de datos: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo (archivo ERA5)</a>.
+    Fuente de datos: <a href="https://cds.climate.copernicus.eu/" target="_blank" rel="noopener noreferrer">ERA5 (Copernicus/ECMWF)</a> vía <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo Archive</a>.
     Elaboración: Calentamiento Global.
   </p>
 
@@ -287,25 +288,52 @@
     return now.getFullYear() - 1; // el año en curso está incompleto
   }
 
-  function fetchProvincia(lat, lon) {
+  // 18-10-2026: los datos salen de grados-dia.json (calculado cada mes con el archivo
+  // ERA5 de las capitales, modelo fijo). Antes se pedían en directo a Open-Meteo sin
+  // fijar el modelo, y la serie mezclaba ERA5 e IFS a partir de 2017. Si el JSON no
+  // está, se piden en directo con el mismo método (modelo ERA5, media de máx. y mín.).
+  var DATA_URL = "https://davidbebow.github.io/temperaturas-mar-espana/grados-dia.json";
+  var jsonPromise = null;
+  function cargarJSON() {
+    if (!jsonPromise) jsonPromise = fetch(DATA_URL + "?v=" + Date.now()).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).catch(function () { return null; });
+    return jsonPromise;
+  }
+
+  function fetchProvincia(prov) {
+    var lat = prov[1], lon = prov[2];
     var key = lat + "," + lon;
     if (cache[key]) return Promise.resolve(cache[key]);
+    return cargarJSON().then(function (J) {
+      var p = J && J.provincias && J.provincias[prov[0]];
+      if (p && p.years && p.years.length) {
+        var data = { years: p.years, hdd: p.hdd, cddPre: { 21: p.cdd21, 24: p.cdd24 } };
+        cache[key] = data;
+        return data;
+      }
+      return fetchDirecto(lat, lon, key);
+    });
+  }
+
+  function fetchDirecto(lat, lon, key) {
     var end = lastFullYear() + "-12-31";
     var url = "https://archive-api.open-meteo.com/v1/archive" +
       "?latitude=" + lat + "&longitude=" + lon +
       "&start_date=" + START_YEAR + "-01-01&end_date=" + end +
-      "&daily=temperature_2m_mean&timezone=Europe%2FMadrid";
+      "&daily=temperature_2m_max,temperature_2m_min&models=era5&timezone=Europe%2FMadrid";
 
     return fetch(url).then(function (r) {
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
     }).then(function (j) {
       if (!j.daily || !j.daily.time) throw new Error("Sin datos");
-      var times = j.daily.time, temps = j.daily.temperature_2m_mean;
+      var times = j.daily.time, tmax = j.daily.temperature_2m_max, tmin = j.daily.temperature_2m_min;
       var byYear = {}; // year -> { hdd, days, temps:[] }
       for (var i = 0; i < times.length; i++) {
-        var t = temps[i];
-        if (t === null || t === undefined) continue;
+        if (tmax[i] === null || tmax[i] === undefined || tmin[i] === null || tmin[i] === undefined) continue;
+        var t = (tmax[i] + tmin[i]) / 2;
         var y = +times[i].slice(0, 4);
         if (!byYear[y]) byYear[y] = { hdd: 0, days: 0, temps: [] };
         byYear[y].hdd += Math.max(0, HDD_BASE - t);
@@ -327,6 +355,7 @@
   }
 
   function cddFor(data, base) {
+    if (data.cddPre && data.cddPre[base]) return data.cddPre[base];
     return data.years.map(function (y) {
       var s = 0, arr = data.tempsByYear[y];
       for (var i = 0; i < arr.length; i++) s += Math.max(0, arr[i] - base);
@@ -348,7 +377,7 @@
     setStatus("Cargando datos climáticos…", true);
     elStats.style.visibility = "hidden";
 
-    fetchProvincia(prov[1], prov[2]).then(function (data) {
+    fetchProvincia(prov).then(function (data) {
       if (!data.years.length) { setStatus("No hay datos suficientes para esta provincia."); return; }
       var cdd = cddFor(data, base);
       setStatus(null);
