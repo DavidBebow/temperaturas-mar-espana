@@ -142,8 +142,11 @@
     var b=(d.i.boyas||[]).filter(function(x){ return x.tendencia_decada!=null; });
     if(!b.length) return null;
     return b.sort(function(a,c){ return c.tendencia_decada-a.tendencia_decada; })[0]; }
-  function maxMar(d){ var m=(d.i.mar||[]).filter(function(x){return x.anomalia!=null;});
+  /* 18-10-2026: solo el dato nuevo (NOAA OISST, lleva fecha_dato); el de antes tenía la normal sin base. */
+  function maxMar(d){ var m=(d.i.mar||[]).filter(function(x){return x.anomalia!=null && x.fecha_dato;});
     if(!m.length) return null; return m.sort(function(a,c){return c.anomalia-a.anomalia;})[0]; }
+  /* Días > 32 °C: solo la cifra de la estación de AEMET (fichas generadas desde el 18-10-2026). */
+  function d32ok(d){ var x=d.i.dias32; return (x && x.fuente==="AEMET")? x : null; }
   function maxNivel(d){ var n=(d.i.nivel_mar||[]).filter(function(x){return x.desviacion_cm!=null;});
     if(!n.length) return null; return n.sort(function(a,c){return c.desviacion_cm-a.desviacion_cm;})[0]; }
   function maxNoc(d){ var n=(d.i.noches_tropicales||[]).filter(function(x){return x.nt_anyo!=null;});
@@ -224,7 +227,7 @@
     amb:"Entre las provincias con estación de referencia nocturna." },
 
   { id:"d32", t:"Más días por encima de 32 °C", calor:true, url:U.obs,
-    val:function(d){ return d.i.dias32? d.i.dias32.actual : null; },
+    val:function(d){ var x=d32ok(d); return x? x.actual : null; },
     cifra:function(d,v){ return pl(v,"día","días"); },
     /* 18-10-2026: cifra de la estación de AEMET de la capital (agregador), no de la celda ERA5. */
     desc:function(d){ var x=d.i.dias32; return "Estación de AEMET de "+x.estacion+", "+x.anio+(x.hasta? " hasta el "+(+x.hasta.slice(8,10))+"/"+(+x.hasta.slice(5,7)) : "")+"."+(x.media_1991_2020!=null? " Media 1991-2020: "+num(x.media_1991_2020,0)+"." : "")+(x.media_1961_1990!=null? " Media 1961-1990: "+num(x.media_1961_1990,0)+"." : ""); },
@@ -232,7 +235,7 @@
     amb:"Entre las capitales con estación de AEMET con el año casi completo." },
 
   { id:"d32_salto", t:"El mayor salto frente al clima de 1961-1990", calor:true, url:U.obs,
-    val:function(d){ if(!d.i.dias32) return null;
+    val:function(d){ if(!d32ok(d)) return null;
       var b=d.i.dias32.media_1961_1990; if(b==null) return null;
       return +(d.i.dias32.actual-b).toFixed(1); },
     cifra:function(d,v){ return "+"+num(v,0)+(Math.round(v)===1?" día":" días"); },
@@ -677,7 +680,7 @@
       if(d.i.canicula) mets.push({v:num(d.i.canicula.tmax_hoy,1)+"°", l:"máx. hoy", c:1});
       if(b) mets.push({v:num(b.temp,1)+"°", l:"mar ahora", c:0});
       if(n) mets.push({v:n.nt_anyo, l:"noches trop.", c:0});
-      if(!b && d.i.dias32) mets.push({v:d.i.dias32.actual, l:"días >32°", c:1});
+      if(!b && d32ok(d)) mets.push({v:d32ok(d).actual, l:"días >32°", c:1});
       var mh = mets.slice(0,3).map(function(m){
         return '<div class="met"><div class="mv'+(m.c?" calor":"")+'">'+esc(m.v)+'</div><div class="ml">'+esc(m.l)+'</div></div>';
       }).join("");
@@ -702,7 +705,7 @@
       {k:"anom", t:"Anom. mar", f:function(d){ var m=maxMar(d); return m? m.anomalia : null; }},
       {k:"niv", t:"Nivel mar cm", f:function(d){ var n=maxNivel(d); return n? n.desviacion_cm : null; }},
       {k:"nt", t:"Noches trop.", f:function(d){ var n=maxNoc(d); return n? n.nt_anyo : null; }, dec:0},
-      {k:"d32", t:"Días >32 °C", f:function(d){ return d.i.dias32? d.i.dias32.actual : null; }, dec:0},
+      {k:"d32", t:"Días >32 °C", f:function(d){ var x=d32ok(d); return x? x.actual : null; }, dec:0},
       {k:"lluv", t:"Lluvia año %", f:function(d){ return d.i.lluvias? d.i.lluvias.anomalia_anual_pct : null; }},
       {k:"emb", t:"Embalses %", f:function(d){ return d.i.embalses? d.i.embalses.pct_media : null; }},
       /* Mortalidad: se muestra la TASA, nunca el absoluto. La columna aparece
