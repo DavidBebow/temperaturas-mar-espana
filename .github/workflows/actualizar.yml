@@ -11,6 +11,10 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+concurrency:
+  group: actualizar-temperaturas-mar
+  cancel-in-progress: false
+
 jobs:
   actualizar:
     runs-on: ubuntu-latest
@@ -25,9 +29,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalar dependencias
-        run: pip install requests
-
+      # 18-10-2026: el script ya no usa requests (NOAA OISST por ERDDAP con urllib).
       - name: Ejecutar script de temperaturas
         run: python scripts/obtener_temperaturas.py
 
@@ -36,4 +38,16 @@ jobs:
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
           git add docs/datos.json docs/historial_temperaturas.json
-          git diff --staged --quiet || (git commit -m "Temperaturas actualizadas: $(date +'%d/%m/%Y %H:%M')" && git pull --rebase && git push)
+          if [ -f docs/mar_climatologia.json ]; then git add docs/mar_climatologia.json; fi
+          if git diff --staged --quiet; then
+            echo "No hay cambios que guardar"
+            exit 0
+          fi
+          git commit -m "Temperaturas actualizadas: $(date +'%d/%m/%Y %H:%M')"
+          for intento in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push fallido. Reintento $intento/6 en 15 s..."
+            sleep 15
+          done
+          echo "No se pudo guardar tras 6 intentos"
+          exit 1
