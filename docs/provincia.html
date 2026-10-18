@@ -277,10 +277,13 @@ async function cargar() {
     fila("Nivel medio", e.pct_media+" %", e.pct_media<=35?"mal":e.pct_media>=60?"bien":"") +
     fila("Volumen", e.volumen_total_hm3+" / "+e.capacidad_total_hm3+" hm³") +
     fila("Situación", e.etiqueta)); }
-  if (i.dias32) t += tarjeta("🥵 Días por encima de 32 °C", U.observatorio,
-    fila("Este año", i.dias32.actual, "mal") +
-    fila("Media 1991-2020", i.dias32.media_1991_2020) +
-    fila("Media 1961-1990", i.dias32.media_1961_1990));
+  // Medido en la estación de AEMET de la capital (desde el 18-10-2026; antes era la celda ERA5).
+  if (i.dias32) { const d=i.dias32, h=d.hasta ? `${+d.hasta.slice(8,10)}/${+d.hasta.slice(5,7)}` : "";
+    t += tarjeta("🥵 Días de más de 32 °C", U.observatorio,
+    fila(d.anio ? `En ${d.anio}${h ? ", hasta el "+h : ""}` : "Este año", d.actual, "mal") +
+    fila("Media 1991-2020", d.media_1991_2020) +
+    fila("Media 1961-1990", d.media_1961_1990) +
+    fila("Estación de AEMET", d.estacion)); }
   if (i.coste_desastres) t += tarjeta("💶 Coste del clima extremo", U.desastres,
     fila("Acumulado (Consorcio)", i.coste_desastres.coste_millones_eur+" M€", "mal"));
   if (i.capital_2050) { const m=i.capital_2050;
