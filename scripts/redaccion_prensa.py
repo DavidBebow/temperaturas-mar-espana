@@ -730,6 +730,116 @@ def g_records_capitales(D: Datos):
     return out
 
 
+# ============================================================================ récords en las estaciones de AEMET
+# Vienen de records_detectar.py (clima-scripts) vía hallazgos_prensa.py: medidos por AEMET en la estación, el mismo
+# día, comparados con la tabla oficial de valores extremos de esa estación. Provisionales hasta que el valor diario
+# validado de AEMET los confirma (2-4 días); entonces cambia el kicker.
+def _hechos_record(x, prefijo="rec"):
+    hechos = [hecho(f"{prefijo}", x["titular"].rstrip(".") + ".", x.get("fuente", "AEMET"), lugar=x.get("territorio"), record=True, superlativo=True),
+              hecho(f"{prefijo}_dato", x["dato"].rstrip(".") + ".", x.get("fuente", "AEMET"), lugar=x.get("territorio"))]
+    hechos += [hecho(f"{prefijo}_c{i}", c.rstrip(".") + ".", x.get("fuente", "AEMET")) for i, c in enumerate(x.get("contexto", [])[:3])]
+    if x.get("provisional"):
+        hechos.append(hecho(f"{prefijo}_prov", "Es un dato de observación en tiempo real que AEMET valida en 2-4 días; el observatorio lo vuelve a "
+                            "comprobar entonces y lo confirma o lo retira.", x.get("fuente", "AEMET")))
+    else:
+        hechos.append(hecho(f"{prefijo}_conf", "El valor está confirmado con el dato climatológico diario validado por AEMET.", x.get("fuente", "AEMET")))
+    return hechos
+
+
+def _cifras_record(x, tono):
+    cif = [{"n": f"{f1(x['valor'])} °C", "l": f"en {x['territorio']} el {dia(x['fecha_dato'], semana=False)}", "tono": tono}]
+    ra = x.get("record_anterior") or {}
+    if ra.get("valor") is not None:
+        cif.append({"n": f"{f1(ra['valor'])} °C", "l": f"récord anterior de la estación{(' (' + str(ra['anio']) + ')') if ra.get('anio') else ''}", "tono": tono})
+    return cif
+
+
+def _version_record(x, nacional=None):
+    """Versión provincial: la estación de la provincia, con la noticia nacional como contexto."""
+    cod = H.cod_de_provincia(x.get("provincia", ""))
+    if not cod:
+        return None, None
+    tono = "calor" if (x.get("variable") or "tmax") == "tmax" else "lluvia"
+    hechos = _hechos_record(x)
+    if nacional:
+        hechos.append(hecho("rec_nac", nacional["titular"].rstrip(".") + ".", nacional.get("fuente", "AEMET"), record=True, superlativo=True))
+    pl = {"titular": x["titular"], "subtitulo": (x.get("contexto") or [x["dato"]])[0], "entradilla": hechos[0]["dice"],
+          "cuerpo": [h["dice"] for h in hechos[1:]], "claves": [h["dice"] for h in hechos[:2]]}
+    return cod, {"provincia": nprov(cod), "slug": PROV[cod][1], "hechos": hechos, "plantilla": pl,
+                 "puntos": 88 if x.get("tipo") == "record_absoluto" else 82, "cifras": _cifras_record(x, tono)}
+
+
+def g_records_estaciones(D: Datos):
+    out = []
+    locales = {x["id"]: x for x in (D.HALL.get("locales") or [])}
+    desde = (HOY - timedelta(days=2)).isoformat()
+    usados = set()
+    for x in (D.HALL.get("enviables") or []):
+        if x.get("serie") != "estaciones" or x.get("tipo") not in ("record_mes", "record_absoluto") or (x.get("fecha_dato") or "") < desde:
+            continue
+        prov = bool(x.get("provisional"))
+        tono = "calor" if "tmax" in (x.get("indicador") or "tmax") else "lluvia"
+        if x.get("ambito") == "nacional":
+            miembros = [locales[m] for m in x.get("miembros", []) if m in locales]
+            hechos = [hecho("rec", x["titular"].rstrip(".") + ".", x.get("fuente", "AEMET"), record=True, superlativo=True),
+                      hecho("rec_dato", x["dato"].rstrip(".") + ".", x.get("fuente", "AEMET"))]
+            for i, m in enumerate(miembros):
+                hechos.append(hecho(f"rec_m{i}", m["titular"].rstrip(".") + ".", m.get("fuente", "AEMET"), lugar=m.get("territorio"), record=True, superlativo=True))
+            hechos += [hecho(f"rec_c{i}", c.rstrip(".") + ".", x.get("fuente", "AEMET")) for i, c in enumerate(x.get("contexto", [])[:2])]
+            hechos.append(hecho("rec_prov", "Son datos de observación en tiempo real que AEMET valida en 2-4 días; el observatorio los vuelve a comprobar "
+                                "entonces y los confirma o los retira.", x.get("fuente", "AEMET")) if prov else
+                          hecho("rec_conf", "Los valores están confirmados con el dato climatológico diario validado por AEMET.", x.get("fuente", "AEMET")))
+            pl = {"titular": x["titular"], "subtitulo": x["dato"], "entradilla": hechos[0]["dice"], "cuerpo": [h["dice"] for h in hechos[1:]],
+                  "claves": [h["dice"] for h in hechos[:2]]}
+            cifras = [{"n": str(len(miembros) or x["titular"].split(" ")[0]), "l": f"estaciones de AEMET con récord el {dia(x['fecha_dato'], semana=False)}", "tono": tono}]
+            if miembros:
+                top = max(miembros, key=lambda m: m.get("valor", 0)) if tono == "calor" else min(miembros, key=lambda m: m.get("valor", 0))
+                cifras.append({"n": f"{f1(top['valor'])} °C", "l": f"en {top['territorio']}", "tono": tono})
+            h = historia("record", f"{x['fecha_dato']}-estaciones-{x['indicador']}", "Récords en las estaciones de AEMET" if prov else "Récords confirmados por AEMET",
+                         tono, 85 if prov else 97, hechos, pl, cifras, x.get("fuente", "AEMET"), x.get("metodo", ""), x.get("limites", []), x.get("pagina"))
+            for m in miembros:
+                cod, v = _version_record(m, x)
+                if cod and cod in h["provincias"]:
+                    # segunda estación de la misma provincia: se suma a la versión existente en vez de pisarla
+                    ya = h["provincias"][cod]
+                    extra = [f for f in v["hechos"] if f["id"].startswith("rec") and f["id"] not in {g["id"] for g in ya["hechos"]}]
+                    for i, f in enumerate(extra):
+                        f["id"] = f"{f['id']}_{slugify(m['territorio'])}"
+                    ya["hechos"] += extra
+                    ya["plantilla"]["cuerpo"] += [f["dice"] for f in extra]
+                    ya["cifras"] = (ya.get("cifras") or []) + v["cifras"][:1]
+                elif cod:
+                    h["provincias"][cod] = v
+                    v["grafico"] = grafico_records_estacion(m, f"{h['id']}-{cod}")
+                usados.add(m["id"])
+            if miembros:
+                top = max(miembros, key=lambda m: m.get("valor", 0)) if tono == "calor" else min(miembros, key=lambda m: m.get("valor", 0))
+                cod_top = H.cod_de_provincia(top.get("provincia", ""))
+                h["grafico"] = (h["provincias"].get(cod_top) or {}).get("grafico") or grafico_records_estacion(top, h["id"])
+            if x.get("cuando") == "HOY":
+                h["ultima_hora"] = [{"hora": hora(AHORA.astimezone(MADRID).isoformat()), "texto": x["titular"], "tono": tono}]
+            out.append(h)
+            continue
+        if x["id"] in usados:
+            continue
+        hechos = _hechos_record(x)
+        pl = {"titular": x["titular"], "subtitulo": (x.get("contexto") or [x["dato"]])[0], "entradilla": hechos[0]["dice"],
+              "cuerpo": [h["dice"] for h in hechos[1:]], "claves": [h["dice"] for h in hechos[:2]]}
+        kicker = ("Récord en una estación de AEMET" if prov else "Récord confirmado por AEMET") + (" · dato del día" if x.get("cuando") == "HOY" else "")
+        h = historia("record", f"{x['fecha_dato']}-{slugify(x['territorio'])}-{x['indicador']}", kicker, tono,
+                     (95 if x.get("tipo") == "record_absoluto" else 90) - (15 if prov else 0), hechos, pl, _cifras_record(x, tono),
+                     x.get("fuente", "AEMET"), x.get("metodo", ""), x.get("limites", []), x.get("pagina"))
+        h["grafico"] = grafico_records_estacion(x, h["id"])
+        cod, v = _version_record(x)
+        if cod:
+            v["grafico"] = h["grafico"]
+            h["provincias"][cod] = v
+        if x.get("cuando") == "HOY":
+            h["ultima_hora"] = [{"hora": hora(AHORA.astimezone(MADRID).isoformat()), "texto": x["titular"], "tono": tono}]
+        out.append(h)
+    return out
+
+
 def historia(tipo, id_, kicker, tono, puntos, hechos, plantilla, cifras, fuentes, metodo, limites, pagina):
     return {"id": id_, "tipo": tipo, "fecha": HOY.isoformat(), "kicker": kicker, "tono": tono, "puntos": round(puntos, 1), "hechos": hechos,
             "plantilla": plantilla, "cifras": cifras, "fuentes": fuentes, "metodo": metodo, "limites": limites, "pagina": pagina, "provincias": {}}
@@ -920,6 +1030,62 @@ def grafico_barras_temporada(filas, nombre, titulo):
     return guardar_grafico(nombre, svg, [(c["capital"], c["delta"], c.get("estacion")) for c in filas], ["capital", "subida_C", "estacion_AEMET"], titulo, [],
                            "Tendencia lineal de la media estacional en las capitales con estación de AEMET de al menos 40 temporadas completas y coherente con el reanálisis. "
                            "Fuente: AEMET. Cálculo: calentamientoglobal.es.")
+
+
+def grafico_records_estacion(x, nombre):
+    """Barras con el récord de cada mes en la estación (tabla de valores extremos de AEMET) y el valor del día."""
+    try:
+        base = leer(DOCS / "records" / "baseline.json", {}) or {}
+        e = (base.get("estaciones") or {}).get(((x.get("estacion") or {}).get("idema")) or "")
+        if not e:
+            return None
+        var = x.get("variable") or "tmax"
+        vals = [(e[var][i][0] if e[var][i][0] is not None else None) for i in range(12)]
+        if not any(v is not None for v in vals):
+            return None
+        mes = int(str(x["fecha_dato"])[5:7]) - 1
+        nuevo = float(x["valor"])
+        color = CALOR if var == "tmax" else LLUVIA
+        W, Hh, ml, mr, mt, mb = 640, 300, 44, 16, 16, 34
+        lo = min([v for v in vals if v is not None] + [nuevo]); hi = max([v for v in vals if v is not None] + [nuevo])
+        lo, hi = (math.floor(lo / 5) * 5 - (5 if var == "tmin" else 0)), math.ceil(hi / 5) * 5 + (2 if var == "tmax" else 0)
+        if hi - lo < 10:
+            hi = lo + 10
+        Y = lambda v: mt + (hi - v) / (hi - lo) * (Hh - mt - mb)
+        bw = (W - ml - mr) / 12
+        s = []
+        for t in range(int(lo), int(hi) + 1, 5):
+            s.append(f'<line x1="{ml}" x2="{W - mr}" y1="{Y(t):.1f}" y2="{Y(t):.1f}" stroke="{RAYA}" stroke-width="1"></line>')
+            s.append(_t(ml - 6, Y(t) + 4, f"{t}", 11, GRIS, "end"))
+        # las máximas crecen desde abajo; las mínimas cuelgan desde arriba, para que el frío más extremo sea la barra más larga
+        y0 = Y(lo) if var == "tmax" else Y(hi)
+        for i, v in enumerate(vals):
+            x0 = ml + i * bw + 4
+            s.append(_t(x0 + (bw - 8) / 2, Hh - mb + 16, MESES[i][:3], 11, GRIS, "middle"))
+            if v is None:
+                continue
+            if i == mes:
+                # el mes del récord: a la izquierda el récord anterior (gris), a la derecha el nuevo valor (color)
+                w2 = (bw - 8) / 2 - 1
+                s.append(f'<rect x="{x0:.1f}" y="{min(Y(v), y0):.1f}" width="{w2:.1f}" height="{abs(y0 - Y(v)):.1f}" fill="#D8D1C6"></rect>')
+                s.append(f'<rect x="{x0 + w2 + 2:.1f}" y="{min(Y(nuevo), y0):.1f}" width="{w2:.1f}" height="{abs(y0 - Y(nuevo)):.1f}" fill="{color}"></rect>')
+                s.append(_t(x0 + (bw - 8) / 2, Y(nuevo) - 6 if var == "tmax" else Y(nuevo) + 14, f"{f1(nuevo)} °C", 12, TINTA, "middle", 700))
+            else:
+                s.append(f'<rect x="{x0:.1f}" y="{min(Y(v), y0):.1f}" width="{bw - 8:.1f}" height="{abs(y0 - Y(v)):.1f}" fill="#D8D1C6"></rect>')
+        if vals[mes] is None:
+            x0 = ml + mes * bw + 4
+            s.append(f'<rect x="{x0:.1f}" y="{min(Y(nuevo), y0):.1f}" width="{bw - 8:.1f}" height="{abs(y0 - Y(nuevo)):.1f}" fill="{color}"></rect>')
+            s.append(_t(x0 + (bw - 8) / 2, Y(nuevo) - 6 if var == "tmax" else Y(nuevo) + 14, f"{f1(nuevo)} °C", 12, TINTA, "middle", 700))
+        titulo = f"Récord de {'temperatura máxima' if var == 'tmax' else 'temperatura mínima'} de cada mes en la estación de AEMET de {x.get('territorio', '')}"
+        svg = _svg(W, Hh, titulo, s)
+        filas = [(MESES[i], vals[i], f"{e[var][i][2]}-{i + 1:02d}-{e[var][i][1]:02d}" if vals[i] is not None and e[var][i][2] and e[var][i][1] else "") for i in range(12)]
+        filas.append((f"{MESES[mes]} ({str(x['fecha_dato'])[:4]}, nuevo)", nuevo, str(x["fecha_dato"])))
+        return guardar_grafico(nombre, svg, filas, ["mes", "record_C", "fecha_record"], titulo,
+                               [{"t": "banda", "c": "#D8D1C6", "l": "récord anterior de cada mes"}, {"t": "banda", "c": color, "l": f"{dia(x['fecha_dato'], semana=False)}"}],
+                               "Valores climatológicos extremos de la estación (AEMET OpenData) y observación del día. Cálculo: calentamientoglobal.es.")
+    except Exception as e:
+        LOG.append(f"grafico_records_estacion {nombre}: {e}")
+        return None
 
 
 def grafico_serie_capital(serie, nombre, titulo, fuente):
@@ -1276,6 +1442,7 @@ def main():
             hs.append(g)
     hs.extend(g_temporada(D))
     hs.extend(g_records_capitales(D))
+    hs.extend(g_records_estaciones(D))
     hs.sort(key=lambda h: -h["puntos"])
 
     cache = (leer(SALIDA / "cache_redaccion.json", {}) or {})
