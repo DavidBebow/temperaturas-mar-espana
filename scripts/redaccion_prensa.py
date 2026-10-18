@@ -1077,14 +1077,22 @@ Devuelve SOLO un JSON válido con estas claves:
 # Solo proveedores con capa gratuita y sin tarjeta: si se agota el cupo, la petición falla (no se cobra) y sale la plantilla.
 # Sin ninguna clave, todo sale de plantilla. Coste: cero.
 PROVEEDORES = (
+    # Gemini: cada modelo tiene su propio cupo gratuito diario (pequeño: unas 20 peticiones en Flash el 18-10-2026);
+    # cuando uno se agota se pasa al siguiente. Gemma va sin mensaje de sistema.
     ("Gemini", "GEMINI_API_KEY", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-     ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.5-flash-lite"]),
+     ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemma-4-31b-it", "gemma-4-26b-a4b-it"]),
     ("Groq", "GROQ_API_KEY", "https://api.groq.com/openai/v1/chat/completions",
      ["openai/gpt-oss-120b", "llama-3.3-70b-versatile"]),
 )
 
 
-MODELOS_NO_DISPONIBLES = set()
+MODELOS_NO_DISPONIBLES = set()  # en esta pasada (no existe, saturado o límite por minuto)
+AGOTADOS_HOY = set()            # cupo gratuito del día agotado; el día de Google acaba a medianoche de California
+CUPO_TZ = ZoneInfo("America/Los_Angeles")
+
+
+def dia_cupo():
+    return AHORA.astimezone(CUPO_TZ).date().isoformat()
 
 
 def proveedores_activos():
@@ -1092,19 +1100,22 @@ def proveedores_activos():
 
 
 def llamar_ia(sistema, usuario, vetados, max_tokens=6000):
-    """Devuelve (texto, 'Proveedor · modelo', error). Un proveedor con la clave mal o el cupo gratuito agotado se veta
-    para el resto de la pasada y se prueba el siguiente."""
+    """Devuelve (texto, 'Proveedor · modelo', error). Modelo sin cupo del día → el siguiente; clave mal → el siguiente
+    proveedor. Nunca hay cobro: son capas gratuitas sin tarjeta y, sin cupo, la petición simplemente falla."""
     ultimo = "sin clave de IA gratuita"
     for nombre, var, url, modelos in proveedores_activos():
         if nombre in vetados:
             continue
         key = os.getenv(var).strip()
         propio = (os.getenv(var.replace("_API_KEY", "_MODELO")) or "").strip()
-        for modelo in [m for m in ([propio] if propio else []) + modelos if m not in MODELOS_NO_DISPONIBLES]:
+        for modelo in [m for m in ([propio] if propio else []) + modelos if m not in MODELOS_NO_DISPONIBLES and m not in AGOTADOS_HOY]:
             razona = modelo.startswith(("gemini", "openai/gpt-oss"))
+            sin_sistema = modelo.startswith("gemma")
+            estado = "otro"
             for intento in range(3):
-                body = {"model": modelo, "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}],
-                        "max_tokens": max_tokens, "temperature": 0.3}
+                msgs = ([{"role": "user", "content": sistema + "\n\n" + usuario}] if sin_sistema else
+                        [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}])
+                body = {"model": modelo, "messages": msgs, "max_tokens": max_tokens, "temperature": 0.3}
                 if razona:
                     body["reasoning_effort"] = "low"
                 req = urllib.request.Request(url, data=json.dumps(body).encode(), method="POST",
@@ -1118,32 +1129,48 @@ def llamar_ia(sistema, usuario, vetados, max_tokens=6000):
                     ultimo = f"{nombre} {modelo}: respuesta vacía"
                     break
                 except urllib.error.HTTPError as e:
-                    cuerpo = e.read().decode("utf-8", "ignore")[:300]
-                    ultimo = f"{nombre} {e.code} {cuerpo}"
-                    if e.code == 400 and razona and "reasoning" in cuerpo.lower():
+                    cuerpo = e.read().decode("utf-8", "ignore")
+                    low = cuerpo.lower()
+                    ultimo = f"{nombre} {modelo} {e.code} {cuerpo[:200]}"
+                    if e.code == 400 and razona and "reasoning" in low:
                         razona = False
                         continue
-                    if e.code == 429 and intento == 0 and "per day" not in cuerpo.lower() and "daily" not in cuerpo.lower():
-                        time.sleep(min(int(e.headers.get("Retry-After") or 20), 40))
+                    if e.code == 400 and not sin_sistema and ("system" in low or "developer instruction" in low):
+                        sin_sistema = True
                         continue
+                    if e.code in (401, 403):
+                        estado = "clave"
+                        break
+                    if e.code == 429:
+                        if "perday" in low or "per_day" in low or "per day" in low or "daily" in low:
+                            estado = "dia"
+                            break
+                        if intento == 0:
+                            m = re.search(r'"retryDelay":\s*"(\d+)', cuerpo)
+                            time.sleep(min(int(m.group(1)) if m else int(e.headers.get("Retry-After") or 20), 45))
+                            continue
+                        estado = "minuto"
+                        break
+                    if e.code in (400, 404) and any(x in low for x in ("model", "not found", "not_found")):
+                        estado = "modelo"
+                        break
                     if e.code >= 500 and intento < 2:
-                        time.sleep(4 * (intento + 1))  # saturado un momento: reintento corto
+                        time.sleep(4 * (intento + 1))
                         continue
+                    estado = "saturado" if e.code >= 500 else "otro"
                     break
                 except Exception as e:
-                    ultimo = f"{nombre}: {e}"
+                    ultimo = f"{nombre} {modelo}: {e}"
                     break
-            if ultimo.startswith(f"{nombre} 4") and any(x in ultimo.lower() for x in ("model", "not found", "not_found")) \
-                    and not ultimo.startswith((f"{nombre} 401", f"{nombre} 403", f"{nombre} 429")):
-                MODELOS_NO_DISPONIBLES.add(modelo)
-                continue  # ese modelo no está: el siguiente del mismo proveedor
-            if ultimo.startswith(f"{nombre} 5"):
-                MODELOS_NO_DISPONIBLES.add(modelo)
-                continue  # ese modelo, saturado: el siguiente del mismo proveedor (y se salta el resto de la pasada)
-            if ultimo.startswith((f"{nombre} 401", f"{nombre} 403", f"{nombre} 429")):
+            if estado == "clave":
                 vetados.add(nombre)
-                LOG.append(f"{nombre} fuera en esta pasada (clave o cupo gratuito): {ultimo[:150]}")
-            break
+                LOG.append(f"{nombre}: la clave no vale ({ultimo[:120]})")
+                break
+            if estado == "dia":
+                AGOTADOS_HOY.add(modelo)
+                LOG.append(f"{nombre} · {modelo}: cupo gratuito del día agotado")
+            elif estado in ("modelo", "saturado", "minuto"):
+                MODELOS_NO_DISPONIBLES.add(modelo)
     return None, None, ultimo
 
 
@@ -1164,18 +1191,20 @@ class Redactor:
         self.max = max_llamadas
         self.vetados = set()
         self.uso = leer(SALIDA / "uso_ia.json", {}) or {}
-        if self.uso.get("fecha") != HOY.isoformat():
-            self.uso = {"fecha": HOY.isoformat(), "llamadas": 0, "por_modelo": {}}
+        if self.uso.get("fecha") != dia_cupo():  # el día del cupo de Google (medianoche de California)
+            self.uso = {"fecha": dia_cupo(), "llamadas": 0, "por_modelo": {}, "agotados": []}
+        AGOTADOS_HOY.update(self.uso.get("agotados") or [])
         self.max_dia = int(os.getenv("REDACCION_MAX_DIA", "150"))
-        # el cupo del día se reparte entre las pasadas que quedan hasta medianoche (dos por hora), para que no se
-        # gaste por la mañana: primero las nacionales, luego las provinciales con aviso
-        local = AHORA.astimezone(MADRID)
+        # lo que queda del día se reparte entre las pasadas que faltan (dos por hora), para que no se gaste todo por
+        # la mañana: primero las nacionales, luego las provinciales con aviso
+        local = AHORA.astimezone(CUPO_TZ)
         quedan = max(1, (24 * 60 - (local.hour * 60 + local.minute)) // 30)
         self.max = min(self.max, max(2, math.ceil((self.max_dia - self.uso["llamadas"]) / quedan)))
 
     def ia_disponible(self):
-        activos = {p[0] for p in proveedores_activos()}
-        return bool(activos - self.vetados) and self.llamadas < self.max and self.uso["llamadas"] < self.max_dia
+        modelos = [m for p in proveedores_activos() if p[0] not in self.vetados for m in p[3]
+                   if m not in MODELOS_NO_DISPONIBLES and m not in AGOTADOS_HOY]
+        return bool(modelos) and self.llamadas < self.max and self.uso["llamadas"] < self.max_dia
 
     def redactar(self, hechos, plantilla, encargo, provincial=False, permitir_ia=True):
         clave = hashlib.sha1(json.dumps([[h["id"], h["dice"]] for h in hechos] + [encargo], ensure_ascii=False).encode()).hexdigest()[:16]
@@ -1324,6 +1353,7 @@ def main():
         elif f.parent.name == "graficos" or f.stem not in vivos:
             f.unlink()  # nombres antiguos sin fecha
     # caché: solo lo que se ha usado en las últimas pasadas (tope 400)
+    R.uso["agotados"] = sorted(AGOTADOS_HOY)
     with open(SALIDA / "uso_ia.json", "w", encoding="utf-8") as f:
         json.dump(R.uso, f, ensure_ascii=False, indent=1)
     with open(SALIDA / "cache_redaccion.json", "w", encoding="utf-8") as f:
