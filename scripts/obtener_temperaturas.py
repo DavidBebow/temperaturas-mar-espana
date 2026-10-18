@@ -259,7 +259,8 @@ def main():
             resultados.append({
                 **base,
                 "fecha_dato": fecha,
-                "provisional": bool(fin_def and fecha > fin_def.isoformat()),
+                # sin la serie definitiva, todo lo que hay es la versión preliminar
+                "provisional": bool(fin_def is None or fecha > fin_def.isoformat()),
                 "temperatura_actual": actual,
                 "temperatura_anio_anterior": round(ant, 1) if ant is not None else None,
                 "fecha_anio_anterior": hace_un_anio if ant is not None else None,
