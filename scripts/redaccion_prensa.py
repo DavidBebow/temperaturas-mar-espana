@@ -11,14 +11,15 @@ Convierte los datos del observatorio en HISTORIAS publicables, no en cifras suel
      más. Un VERIFICADOR comprueba cada cifra, hora, nombre propio y palabra delicada contra los hechos. Si no
      pasa (dos intentos), se publica el texto de plantilla, que se construye con los propios hechos.
   4. Versiones por provincia de cada historia, con sus estaciones, sus avisos y su capital.
-  5. Gráfico SVG + PNG + CSV por historia.
+  5. Gráfico SVG + CSV por historia (el PNG lo compone el navegador).
 
 Salida en docs/prensa/noticias/: hoy.json (portada), historias/<id>.json (una por historia, URL fija),
-graficos/<id>*.svg|png|csv y archivo.json (60 días). La caché de textos evita llamar a la API si los
+graficos/<id>*.svg|csv y archivo.json (60 días). La caché de textos evita llamar a la API si los
 hechos no han cambiado.
 
-Variables: ANTHROPIC_API_KEY (sin ella, todo sale de plantilla), REDACCION_MODELO, REDACCION_MODELO_PROV,
-REDACCION_MAX_LLAMADAS (tope de llamadas por pasada, 30 por defecto).
+IA solo gratuita (sin tarjeta, coste cero): GEMINI_API_KEY (Google AI Studio) y/o GROQ_API_KEY. Si se agota el cupo
+gratuito, la petición falla y sale la plantilla; sin ninguna clave, todo sale de plantilla. GEMINI_MODELO / GROQ_MODELO
+fuerzan un modelo. Topes: REDACCION_MAX_LLAMADAS por pasada (8) y REDACCION_MAX_DIA por día (150), en uso_ia.json.
 """
 from __future__ import annotations
 
@@ -31,6 +32,7 @@ import math
 import os
 import re
 import statistics as st
+import time
 import sys
 import unicodedata
 import urllib.error
@@ -1067,26 +1069,70 @@ Devuelve SOLO un JSON válido con estas claves:
  "claves": ["3 frases cortas con los datos esenciales"]}"""
 
 
-def llamar_claude(sistema, usuario, modelos, max_tokens=1800):
-    key = os.getenv("ANTHROPIC_API_KEY")
-    if not key:
-        return None, None, "sin ANTHROPIC_API_KEY"
-    ultimo = ""
-    for modelo in modelos:
-        body = json.dumps({"model": modelo, "max_tokens": max_tokens, "system": sistema, "messages": [{"role": "user", "content": usuario}]}).encode()
-        req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=body, method="POST",
-                                     headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=120) as r:
-                d = json.load(r)
-            return "".join(c.get("text", "") for c in d.get("content", []) if c.get("type") == "text"), modelo, None
-        except urllib.error.HTTPError as e:
-            ultimo = f"{e.code} {e.read().decode('utf-8', 'ignore')[:300]}"
-            if e.code in (400, 404) and "model" in ultimo.lower():
-                continue
-            return None, modelo, ultimo
-        except Exception as e:
-            return None, modelo, str(e)
+# Solo proveedores con capa gratuita y sin tarjeta: si se agota el cupo, la petición falla (no se cobra) y sale la plantilla.
+# Sin ninguna clave, todo sale de plantilla. Coste: cero.
+PROVEEDORES = (
+    ("Gemini", "GEMINI_API_KEY", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+     ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.5-flash-lite"]),
+    ("Groq", "GROQ_API_KEY", "https://api.groq.com/openai/v1/chat/completions",
+     ["openai/gpt-oss-120b", "llama-3.3-70b-versatile"]),
+)
+
+
+MODELOS_NO_DISPONIBLES = set()
+
+
+def proveedores_activos():
+    return [p for p in PROVEEDORES if (os.getenv(p[1]) or "").strip()]
+
+
+def llamar_ia(sistema, usuario, vetados, max_tokens=6000):
+    """Devuelve (texto, 'Proveedor · modelo', error). Un proveedor con la clave mal o el cupo gratuito agotado se veta
+    para el resto de la pasada y se prueba el siguiente."""
+    ultimo = "sin clave de IA gratuita"
+    for nombre, var, url, modelos in proveedores_activos():
+        if nombre in vetados:
+            continue
+        key = os.getenv(var).strip()
+        propio = (os.getenv(var.replace("_API_KEY", "_MODELO")) or "").strip()
+        for modelo in [m for m in ([propio] if propio else []) + modelos if m not in MODELOS_NO_DISPONIBLES]:
+            razona = modelo.startswith(("gemini", "openai/gpt-oss"))
+            for intento in range(3):
+                body = {"model": modelo, "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}],
+                        "max_tokens": max_tokens, "temperature": 0.3}
+                if razona:
+                    body["reasoning_effort"] = "low"
+                req = urllib.request.Request(url, data=json.dumps(body).encode(), method="POST",
+                                             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
+                try:
+                    with urllib.request.urlopen(req, timeout=120) as r:
+                        d = json.load(r)
+                    txt = ((d.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+                    if txt.strip():
+                        return txt, f"{nombre} · {modelo}", None
+                    ultimo = f"{nombre} {modelo}: respuesta vacía"
+                    break
+                except urllib.error.HTTPError as e:
+                    cuerpo = e.read().decode("utf-8", "ignore")[:300]
+                    ultimo = f"{nombre} {e.code} {cuerpo}"
+                    if e.code == 400 and razona and "reasoning" in cuerpo.lower():
+                        razona = False
+                        continue
+                    if e.code == 429 and intento == 0 and "per day" not in cuerpo.lower() and "daily" not in cuerpo.lower():
+                        time.sleep(min(int(e.headers.get("Retry-After") or 20), 40))
+                        continue
+                    break
+                except Exception as e:
+                    ultimo = f"{nombre}: {e}"
+                    break
+            if ultimo.startswith(f"{nombre} 4") and any(x in ultimo.lower() for x in ("model", "not found", "not_found")) \
+                    and not ultimo.startswith((f"{nombre} 401", f"{nombre} 403", f"{nombre} 429")):
+                MODELOS_NO_DISPONIBLES.add(modelo)
+                continue  # ese modelo no está: el siguiente del mismo proveedor
+            if ultimo.startswith((f"{nombre} 401", f"{nombre} 403", f"{nombre} 429")):
+                vetados.add(nombre)
+                LOG.append(f"{nombre} fuera en esta pasada (clave o cupo gratuito): {ultimo[:150]}")
+            break
     return None, None, ultimo
 
 
@@ -1105,8 +1151,15 @@ class Redactor:
         self.cache = cache  # hash → texto ya verificado
         self.llamadas = 0
         self.max = max_llamadas
-        self.mod_nac = [os.getenv("REDACCION_MODELO") or "claude-sonnet-5-5", "claude-sonnet-4-5", "claude-haiku-4-5-20251001"]
-        self.mod_prov = [os.getenv("REDACCION_MODELO_PROV") or "claude-haiku-5-5", "claude-haiku-4-5-20251001"]
+        self.vetados = set()
+        self.uso = leer(SALIDA / "uso_ia.json", {}) or {}
+        if self.uso.get("fecha") != HOY.isoformat():
+            self.uso = {"fecha": HOY.isoformat(), "llamadas": 0, "por_modelo": {}}
+        self.max_dia = int(os.getenv("REDACCION_MAX_DIA", "150"))
+
+    def ia_disponible(self):
+        activos = {p[0] for p in proveedores_activos()}
+        return bool(activos - self.vetados) and self.llamadas < self.max and self.uso["llamadas"] < self.max_dia
 
     def redactar(self, hechos, plantilla, encargo, provincial=False, permitir_ia=True):
         clave = hashlib.sha1(json.dumps([[h["id"], h["dice"]] for h in hechos] + [encargo], ensure_ascii=False).encode()).hexdigest()[:16]
@@ -1114,18 +1167,20 @@ class Redactor:
         if c and not verificar(c["texto"], hechos):
             return c["texto"], {**c["meta"], "cache": True}
         rechazos = []
-        if permitir_ia and self.llamadas < self.max and os.getenv("ANTHROPIC_API_KEY"):
+        if permitir_ia and self.ia_disponible():
             usuario = json.dumps({"encargo": encargo, "fecha_de_publicacion": dia(HOY, anio=True),
                                   "hechos": [{"id": h["id"], "dice": h["dice"], "fuente": h["fuente"]} for h in hechos]}, ensure_ascii=False, indent=1)
             for intento in range(2):
+                if not self.ia_disponible():
+                    break
                 self.llamadas += 1
-                txt, modelo, err = llamar_claude(SISTEMA, usuario + (f"\n\nTu versión anterior no pasó la verificación por esto: {'; '.join(rechazos[-1])}. Corrígelo." if rechazos else ""),
-                                                 self.mod_prov if provincial else self.mod_nac)
+                self.uso["llamadas"] += 1
+                txt, modelo, err = llamar_ia(SISTEMA, usuario + (f"\n\nTu versión anterior no pasó la verificación por esto: {'; '.join(rechazos[-1])}. Corrígelo." if rechazos else ""),
+                                             self.vetados)
+                if modelo:
+                    self.uso["por_modelo"][modelo] = self.uso["por_modelo"].get(modelo, 0) + 1
                 if err:
-                    rechazos.append([f"API: {err}"])
-                    if err.startswith(("401", "403")) or "credit" in err.lower() or "sin ANTHROPIC" in err:
-                        self.max = 0  # clave mal o sin saldo: el resto de la pasada, plantilla
-                        LOG.append(f"API desactivada en esta pasada: {err[:160]}")
+                    rechazos.append([f"IA: {err[:200]}"])
                     break
                 t = json_de(txt)
                 if not t:
@@ -1179,7 +1234,7 @@ def main():
     hs.sort(key=lambda h: -h["puntos"])
 
     cache = (leer(SALIDA / "cache_redaccion.json", {}) or {})
-    R = Redactor(cache, int(os.getenv("REDACCION_MAX_LLAMADAS", "15")))
+    R = Redactor(cache, int(os.getenv("REDACCION_MAX_LLAMADAS", "8")))
     ia = not args.sin_ia
     for h in hs:
         h["texto"], h["redaccion"] = R.redactar(h["hechos"], h["plantilla"], f"Noticia nacional · tipo {h['tipo']} · {h['kicker']}", permitir_ia=ia)
@@ -1228,7 +1283,7 @@ def main():
         if 0 <= (cumple - HOY).days <= 30:
             agenda.append({"fecha": cumple.isoformat(), "cuando": dia(cumple).capitalize(), "texto": f"Aniversario de {largo}."})
     agenda.sort(key=lambda x: x["fecha"])
-    hoy = {"generado": ahora, "fecha": HOY.isoformat(), "consulta_avisos": D.consulta, "corte_lluvia": D.corte, "llamadas_ia": R.llamadas,
+    hoy = {"generado": ahora, "fecha": HOY.isoformat(), "consulta_avisos": D.consulta, "corte_lluvia": D.corte, "llamadas_ia": R.llamadas, "ia": [p[0] for p in proveedores_activos()],
            "portada": [h["id"] for h in hs[:4]], "historias": resumen, "provincias": {cod: {"nombre": nprov(cod), "slug": PROV[cod][1], "historias": v} for cod, v in por_prov.items()},
            "ultima_hora": ticker, "agenda": agenda, "log": LOG[-30:],
            "licencia": "Cálculo y redacción propios de calentamientoglobal.es · CC BY 4.0 · los datos de origen conservan la licencia de su organismo"}
@@ -1253,6 +1308,8 @@ def main():
         elif f.parent.name == "graficos" or f.stem not in vivos:
             f.unlink()  # nombres antiguos sin fecha
     # caché: solo lo que se ha usado en las últimas pasadas (tope 400)
+    with open(SALIDA / "uso_ia.json", "w", encoding="utf-8") as f:
+        json.dump(R.uso, f, ensure_ascii=False, indent=1)
     with open(SALIDA / "cache_redaccion.json", "w", encoding="utf-8") as f:
         json.dump(dict(list(R.cache.items())[-400:]), f, ensure_ascii=False)
     for h in hs:
