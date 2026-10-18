@@ -226,17 +226,18 @@
   { id:"d32", t:"Más días por encima de 32 °C", calor:true, url:U.obs,
     val:function(d){ return d.i.dias32? d.i.dias32.actual : null; },
     cifra:function(d,v){ return pl(v,"día","días"); },
-    desc:function(d){ return "Este año. Media 1991-2020: "+num(d.i.dias32.media_1991_2020,0)+" · Media 1961-1990: "+num(d.i.dias32.media_1961_1990,0)+"."; },
-    frase:function(d,v){ return d.provincia+" suma ya "+pl(v,"día","días")+" por encima de 32 °C este año, frente a una media de "+num(d.i.dias32.media_1991_2020,0)+" en el periodo 1991-2020 y de "+num(d.i.dias32.media_1961_1990,0)+" en 1961-1990."; },
-    amb:"Entre las provincias con serie de días cálidos." },
+    /* 18-10-2026: cifra de la estación de AEMET de la capital (agregador), no de la celda ERA5. */
+    desc:function(d){ var x=d.i.dias32; return "Estación de AEMET de "+x.estacion+", "+x.anio+(x.hasta? " hasta el "+(+x.hasta.slice(8,10))+"/"+(+x.hasta.slice(5,7)) : "")+"."+(x.media_1991_2020!=null? " Media 1991-2020: "+num(x.media_1991_2020,0)+"." : "")+(x.media_1961_1990!=null? " Media 1961-1990: "+num(x.media_1961_1990,0)+"." : ""); },
+    frase:function(d,v){ var x=d.i.dias32; return "La estación de AEMET de "+x.estacion+" suma "+pl(v,"día","días")+" de más de 32 °C en "+x.anio+(x.media_1991_2020!=null? ", frente a una media de "+num(x.media_1991_2020,0)+" en 1991-2020" : "")+(x.media_1961_1990!=null? " y de "+num(x.media_1961_1990,0)+" en 1961-1990" : "")+"."; },
+    amb:"Entre las capitales con estación de AEMET con el año casi completo." },
 
   { id:"d32_salto", t:"El mayor salto frente al clima de 1961-1990", calor:true, url:U.obs,
     val:function(d){ if(!d.i.dias32) return null;
       var b=d.i.dias32.media_1961_1990; if(b==null) return null;
       return +(d.i.dias32.actual-b).toFixed(1); },
     cifra:function(d,v){ return "+"+num(v,0)+(Math.round(v)===1?" día":" días"); },
-    desc:function(d){ return "De diferencia entre este año ("+d.i.dias32.actual+") y la media 1961-1990 ("+num(d.i.dias32.media_1961_1990,0)+")."; },
-    frase:function(d,v){ return d.provincia+" lleva "+num(v,0)+" días más por encima de 32 °C que la media de su periodo 1961-1990, el mayor salto de España: "+d.i.dias32.actual+" días este año frente a "+num(d.i.dias32.media_1961_1990,0)+" entonces."; },
+    desc:function(d){ return "De diferencia entre "+d.i.dias32.anio+" ("+d.i.dias32.actual+") y la media 1961-1990 ("+num(d.i.dias32.media_1961_1990,0)+") de la estación de AEMET de "+d.i.dias32.estacion+"."; },
+    frase:function(d,v){ return "La estación de AEMET de "+d.i.dias32.estacion+" lleva "+num(v,0)+" días más de 32 °C que su media de 1961-1990, el mayor salto de España: "+d.i.dias32.actual+" días en "+d.i.dias32.anio+" frente a "+num(d.i.dias32.media_1961_1990,0)+" entonces."; },
     amb:"Entre las provincias con serie histórica comparable." },
 
   { id:"tmax", t:"La máxima más alta prevista hoy", calor:true, url:U.canicula,
