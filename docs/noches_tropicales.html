@@ -247,6 +247,10 @@
       text-transform: uppercase;
     }
 
+    .card .aviso{margin:8px 0 2px;padding:7px 9px;border-radius:6px;background:rgba(217,130,26,.16);color:#f3c27a;font-size:11.5px;line-height:1.35}
+
+    .card .est{margin-top:10px;font-size:11px;opacity:.7}
+
     .row {
       display: flex;
       justify-content: space-between;
@@ -329,6 +333,9 @@
         .sort();
       if (!fechas.length) return null;
       const f = fechas[fechas.length - 1];
+      // Una mínima de hace más de 10 días no es «la última»: la estación ha
+      // dejado de publicar y el punto se pinta como sin datos.
+      if ((Date.now() - new Date(f + "T12:00:00").getTime()) / 864e5 > 10) return null;
       return { tmin: h[f].tmin, fecha: f, esAnoche: false };
     }
 
@@ -360,16 +367,34 @@
           <div class="section">📅 ${data.mes_actual} ${data.anyo_actual}</div>
           <div class="row"><span>Media de mínimas</span><strong>${fmtTemp(city.media_min_mes)}</strong></div>
           <div class="row"><span>Media de máximas</span><strong>${fmtTemp(city.media_max_mes)}</strong></div>
-          <div class="row"><span>🌙 Noches tropicales (mes)</span><strong>${city.nt_mes ?? 0}</strong></div>
-          <div class="row"><span>🌙 Noches tropicales (año)</span><strong>${city.nt_anyo ?? 0}</strong></div>
+          <div class="row"><span>🌙 Noches tropicales (mes)</span><strong>${city.nt_mes ?? "—"}</strong></div>
+          <div class="row"><span>🌙 Noches tropicales (año)</span><strong>${city.nt_anyo ?? "—"}</strong></div>
+          ${avisoCobertura(city, data)}
 
           <div class="section">📆 Comparado con ${data.mes_anterior_ref}</div>
           <div class="row"><span>Mínimas año anterior</span><strong>${fmtTemp(city.media_min_mes_ant)}</strong></div>
           <div class="row"><span>Máximas año anterior</span><strong>${fmtTemp(city.media_max_mes_ant)}</strong></div>
           <div class="row"><span>Diferencia mínimas</span><strong class="${clase(city.diff_min_vs_ant)}">${fmtDelta(city.diff_min_vs_ant)}</strong></div>
           <div class="row"><span>Diferencia máximas</span><strong class="${clase(city.diff_max_vs_ant)}">${fmtDelta(city.diff_max_vs_ant)}</strong></div>
+          ${city.estacion ? `<div class="est">Estación de AEMET: ${city.estacion} (${city.idema})</div>` : ""}
         </div>
       `;
+    }
+
+    // Recuento anual incompleto: se dice cuántos días faltan y desde cuándo no
+    // hay dato, para que nadie lea como completo un recuento que no lo es.
+    function avisoCobertura(city, data) {
+      const esp = city.dias_esperados_anyo, con = city.dias_con_dato_anyo;
+      if (!esp || con == null) return "";
+      const faltan = esp - con;
+      if (faltan <= 3) return "";
+      const masReciente = data.ciudades.map(c => c.ultimo_dato || "").sort().pop();
+      const parada = city.ultimo_dato && masReciente && city.ultimo_dato < masReciente &&
+        (new Date(masReciente) - new Date(city.ultimo_dato)) / 864e5 > 7;
+      const txt = parada
+        ? `AEMET no publica datos de esta estación desde el ${fmtFecha(city.ultimo_dato)}: el recuento del año se queda corto.`
+        : `Faltan ${faltan} días sin dato de AEMET en el año: el recuento puede quedarse corto.`;
+      return `<div class="aviso">${txt}</div>`;
     }
 
     function pintaLeyenda() {
