@@ -1,9 +1,18 @@
 name: Actualizar grados-día
 
+# 18-10-2026: el script ya no llama a ninguna API. Lee el archivo diario ERA5 de las
+# capitales que guarda este mismo repo (archivo/era5/, lo actualiza archivo_capitales.py)
+# y escribe docs/grados-dia.json. Antes solo corría el 15 de enero y el JSON nunca se
+# llegó a generar. Corre el día 18 de cada mes; el año en curso no entra hasta enero.
+
 on:
   workflow_dispatch:          # botón "Run workflow" manual
   schedule:
-    - cron: "0 6 15 1 *"      # cada 15 de enero (recalcula el año recién terminado)
+    - cron: "20 13 18 * *"    # día 18 de cada mes, 13:20 UTC
+
+concurrency:
+  group: actualizar-grados-dia
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -23,9 +32,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Instalar dependencias
-        run: pip install requests
-
       - name: Calcular grados-día
         run: python scripts/obtener_grados_dia.py
 
@@ -36,8 +42,13 @@ jobs:
           git add docs/grados-dia.json
           if git diff --cached --quiet; then
             echo "Sin cambios en los datos."
-          else
-            git pull --rebase
-            git commit -m "Actualiza grados-día ($(date +%Y-%m-%d))"
-            git push
+            exit 0
           fi
+          git commit -m "Actualiza grados-día ($(date +%Y-%m-%d))"
+          for intento in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push fallido. Reintento $intento/6 en 15 s..."
+            sleep 15
+          done
+          echo "No se pudo guardar tras 6 intentos"
+          exit 1
