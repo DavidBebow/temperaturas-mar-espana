@@ -4,13 +4,15 @@ name: Hallazgos de prensa
 # desde 1940, Mediterráneo desde 1981, días >32 °C desde 1961, embalses, caudal…)
 # y escribe docs/prensa/hallazgos.json + los dossiers (md, png, csv) de los más
 # fuertes; después, partes_prensa.py escribe el parte diario de cada provincia
-# (docs/prensa/partes/). Corre después de que se hayan actualizado las series que lee.
+# (docs/prensa/partes/). Corre cada hora para que la sala de prensa abra con lo de hoy.
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "15 9 * * *"    # tras archivo de capitales (07:41) y Mediterráneo (08:41)
-    - cron: "15 21 * * *"   # tras la pasada de la tarde
+    # Cada hora (18-10-2026): la lluvia de AEMET por estación y los avisos se rehacen a :01 y :31; a :47 el
+    # parte ya lleva la hora cerrada más reciente. Las series lentas (capitales, Mediterráneo, embalses) entran
+    # en la primera pasada después de actualizarse.
+    - cron: "47 * * * *"
 
 permissions:
   contents: write
