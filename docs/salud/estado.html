@@ -37,6 +37,7 @@ h1{margin:3px 0 0;font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:
 .nm{font-weight:800;font-size:15px;letter-spacing:-.01em}
 .nm a{color:inherit;text-decoration:none}.nm a:hover{color:var(--acc)}
 .meta{font-size:11.5px;color:var(--soft);margin-top:1px}
+.meta .ver{color:var(--ok);font-weight:700;white-space:nowrap}
 .when{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .when b{display:block;font-size:14px;font-weight:800}
 .when span{display:block;font-size:11px;color:var(--soft)}
@@ -100,7 +101,7 @@ async function cargar(){
     ['',r.total,'herramientas vigiladas','de las que se publica un dato propio'],
     ['ok',r.al_dia,'al día','dentro de su ventana y con el contenido esperado'],
     ['aviso',r.aviso,'con aviso','retraso leve o un run fallido con el dato aún al día'],
-    ['error',r.error,'con problema','sin actualizar, sin archivo o contenido incompleto']
+    ['error',r.error,'con problema','sin actualizar, sin archivo, contenido incompleto o una cifra que no cuadra']
   ].map(([c,n,l,d])=>`<div class="stat ${c}"><div class="n">${n}</div><div class="l"><b>${l}</b><br>${d}</div></div>`).join('');
   // sparkline apilada
   const H=hist.slice(-720), W=720, n=Math.max(H.length,1), w=W/n;
@@ -114,7 +115,9 @@ async function cargar(){
   $('#familias').innerHTML=ORDEN.filter(f=>fams[f]).map(f=>`<div class="fam"><h2>${f}</h2><div class="lista">`+
     fams[f].sort((a,b)=>peso[b.estado]-peso[a.estado]||a.nombre.localeCompare(b.nombre)).map(h=>{
       const nm=h.pagina?`<a href="${esc(h.pagina)}" target="_top">${esc(h.nombre)}</a>`:esc(h.nombre);
-      const meta=[h.fuente,h.cadencia].filter(Boolean).map(esc).join(' · ');
+      // contraste de veracidad superado: la cifra cuadra con sus propios datos y con su fuente
+      const ver=h.contraste&&h.contraste.superado?` · <span class="ver" title="${esc((h.contraste.hallazgos||[]).map(x=>x.texto).join(' · ')||'Sumas, fuente y método comprobados en cada pasada')}">✓ cifras contrastadas</span>`:'';
+      const meta=[h.fuente,h.cadencia].filter(Boolean).map(esc).join(' · ')+ver;
       const when=`<b>${hace(h.horas)}</b><span>${h.dato_del?'dato del '+esc(fechaCorta(h.dato_del)):(h.generado_origen?esc(h.generado_origen):'')}</span>`;
       let mot='';
       if(h.estado==='aviso'||h.estado==='error'){
