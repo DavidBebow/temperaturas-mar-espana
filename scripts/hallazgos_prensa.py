@@ -16,6 +16,8 @@ Series que lee (todas en docs/, generadas por otros workflows):
   docs/caudal/hoy.json          GloFAS · percentiles por tramo desde 1997
   docs/oceano.json              olas de calor marinas · NOAA CRW
   docs/temperatura_global.json  ERA5 · Climate Pulse
+  docs/records/hallazgos_estaciones.json  récords de temperatura en las estaciones de AEMET,
+                                el mismo día (records_detectar.py, clima-scripts): citabilidad alta
 
 Escribe:
   docs/prensa/hallazgos.json    la cola editorial: hallazgos ordenados por fuerza,
@@ -73,7 +75,7 @@ PROVINCIAS = {
 # Fuerza base por tipo de hallazgo (0-100). Después se modula por ámbito,
 # exclusividad y frescura.
 FUERZA = {
-    "record_absoluto": 100, "primera_vez_desde": 90, "record_fecha": 80, "puesto_extremo": 75,
+    "record_absoluto": 100, "record_mes": 92, "primera_vez_desde": 90, "record_fecha": 80, "puesto_extremo": 75,
     "racha": 65, "anomalia_fuerte": 55, "percentil_extremo": 50, "contexto": 30,
     # lluvia medida por AEMET: la del día anterior completo y la del día en curso hasta la última hora cerrada
     "lluvia_dia": 85, "lluvia_en_curso": 90,
@@ -83,12 +85,13 @@ AMBITO_F = {"nacional": 1.0, "regional": 0.9, "provincial": 0.8, "local": 0.7, "
 # Vida útil de un hallazgo según la cadencia de su serie (días desde fecha_dato).
 # Pasado ese plazo ya no es noticia: no entra en la cola, solo queda en el historial.
 VIDA = {"capitales": 9, "mediterraneo": 7, "danas": 30, "dias32": 45, "embalses": 10, "caudal": 4,
-        "oceano": 10, "temperatura_global": 20, "lluvia": 1}
+        "oceano": 10, "temperatura_global": 20, "lluvia": 1, "estaciones": 6}
 
 hallazgos: list[dict] = []
 descartes: list[dict] = []
 errores: list[str] = []
 ENVIVO: dict = {}   # cifras verificadas para la franja «en vivo» de /prensa/ (prensa/envivo.json)
+RETIRAR: set = set()  # ids que el verificador de récords de estaciones ha descartado: fuera del historial
 
 
 # ----------------------------------------------------------------------------
@@ -1058,6 +1061,35 @@ def lluvia_aemet():
 
 
 
+# ----------------------------------------------------------------------------
+# Récords de temperatura en las estaciones de AEMET · el mismo día
+# Los calcula records_detectar.py (clima-scripts) con la observación horaria de
+# toda la red contra la tabla oficial de valores extremos de cada estación, y
+# los deja ya redactados en docs/records/hallazgos_estaciones.json. Aquí solo
+# entran en la cola con su fuerza, su frescura y su revisión; los que el
+# verificador ha descartado (el valor validado por AEMET no bate el récord) se
+# retiran también del historial de la sala de prensa.
+# ----------------------------------------------------------------------------
+def estaciones_aemet():
+    try:
+        R = leer(DOCS / "records" / "hallazgos_estaciones.json")
+    except Exception as e:
+        errores.append(f"estaciones_aemet: {e}")
+        return
+    RETIRAR.update(R.get("retirar") or [])
+    for h in R.get("hallazgos") or []:
+        if h.get("serie") != "estaciones" or h.get("tipo") not in FUERZA or not h.get("fecha_dato"):
+            continue
+        anadir(dict(h))
+    if R.get("hallazgos"):
+        vivos = [h for h in R["hallazgos"] if not any("COMPROBAR" in l for l in h.get("limites", []))
+                 and h.get("estado") not in ("sin_validar", "descartado")]
+        if vivos:
+            ult = max(vivos, key=lambda h: (h.get("fecha_dato") or "", 0 if h.get("provisional") else 1))
+            ENVIVO["records_estaciones"] = {"n": len(vivos), "ultimo": ult.get("titular"), "fecha": ult.get("fecha_dato"),
+                                            "estado": ult.get("estado"), "pagina": R.get("pagina")}
+
+
 def avisos_envivo():
     """Franja «en vivo»: cuántas zonas tenían aviso rojo o naranja de AEMET a la hora de la consulta (avisos.json se
     rehace cada 30 minutos). Cada zona cuenta una vez, con su nivel más alto entre los avisos vigentes o anunciados."""
@@ -1293,6 +1325,8 @@ def agregar():
             clave = ("capitales_" + h["indicador"], h["fecha_dato"])
         elif h["serie"] == "capitales" and h["tipo"] in ("record_absoluto", "puesto_extremo"):
             clave = ("capitales_" + h["indicador"], h["fecha_dato"][:4])
+        elif h["serie"] == "estaciones" and h["tipo"] in ("record_absoluto", "record_mes"):
+            clave = ("estaciones_" + h["indicador"], h["fecha_dato"])
         if clave:
             grupos.setdefault(clave, []).append(h)
     for (clave, cuando), lista in grupos.items():
@@ -1318,6 +1352,23 @@ def agregar():
             titular = f"{n} capitales españolas registraron el {fecha_dia(cuando)} la mínima más baja para esa fecha en la serie que empieza en 1940"
             dato = "Medido por AEMET: " + "; ".join(f"{h['territorio']} {f1(h['valor'])} °C" for h in lista)
             tipo = "record_fecha"
+        elif clave.startswith("estaciones_"):
+            mes_txt = MESES[int(cuando[5:7]) - 1]
+            hoy_todos = all(h.get("cuando") == "HOY" for h in lista)
+            cuando_txt = f"hoy, {fecha_dia(cuando)}," if hoy_todos else f"el {fecha_dia(cuando)}"
+            if clave.startswith("estaciones_tmax_record_absoluto"):
+                titular = (f"{n} estaciones de AEMET {'ya superan' if hoy_todos else 'registraron'} {cuando_txt} la temperatura más alta de toda su serie")
+            elif clave.startswith("estaciones_tmax_record_mes"):
+                titular = (f"{n} estaciones de AEMET {'ya superan' if hoy_todos else 'batieron'} {cuando_txt} su récord de temperatura máxima para un mes de {mes_txt}")
+            elif clave.startswith("estaciones_tmin_record_absoluto"):
+                titular = (f"{n} estaciones de AEMET {'ya han bajado' if hoy_todos else 'registraron'} {cuando_txt} {'de' if hoy_todos else ''} la temperatura más baja de toda su serie").replace("  ", " ")
+            else:
+                titular = (f"{n} estaciones de AEMET {'ya han bajado' if hoy_todos else 'bajaron'} {cuando_txt} de su récord de temperatura mínima para un mes de {mes_txt}")
+            orden = sorted(lista, key=lambda h: (-h["valor"] if "tmax" in clave else h["valor"]))
+            dato = "Medido por AEMET: " + "; ".join(f"{h['territorio']} {f1(h['valor'])} °C"
+                                                     + (f" (anterior {f1(h['record_anterior']['valor'])} °C, {h['record_anterior'].get('anio')})"
+                                                        if h.get("record_anterior") and h["record_anterior"].get("valor") is not None else "") for h in orden)
+            tipo = p["tipo"]
         elif clave.startswith("capitales_lluvia_") and clave.endswith("_seco"):
             periodo = "año" if "anio" in clave else "otoño"
             titular = f"{n} capitales viven uno de los tres {periodo}s más secos desde 1940"
@@ -1331,15 +1382,18 @@ def agregar():
         else:
             continue
         anadir({"serie": p["serie"], "fuente": p["fuente"], "serie_desde": p["serie_desde"], "territorio": "España",
-                "ambito": "nacional", "pagina": p["pagina"] if p["serie"] == "dias32" else "https://calentamientoglobal.es/el-tiempo/",
-                "provisional": bool(p.get("provisional")),
+                "ambito": "nacional", "pagina": p["pagina"] if p["serie"] in ("dias32", "estaciones") else "https://calentamientoglobal.es/el-tiempo/",
+                "provisional": any(bool(h.get("provisional")) for h in lista) if p["serie"] == "estaciones" else bool(p.get("provisional")),
+                "cuando": ("HOY" if all(h.get("cuando") == "HOY" for h in lista) else "") if p["serie"] == "estaciones" else p.get("cuando"),
                 "tipo": tipo, "fecha_dato": p["fecha_dato"], "indicador": clave + "_nacional",
                 "titular": titular, "dato": dato,
                 "contexto": [f"Territorios: {nombres}.", f"Cada uno comparado contra su propia serie desde {p['serie_desde']}."],
                 "metodo": ("Valor del día medido por AEMET en la estación de cada capital; récord para la fecha según la serie diaria del "
                            "reanálisis ERA5 (Copernicus) en la celda de cada capital desde 1940, contrastada ese día con la estación."
                            if p["serie"] == "capitales" else re.sub(r"en la celda de [^,]+,", "en la celda de cada capital,", p["metodo"])),
-                "limites": p["limites"], "citabilidad": p["citabilidad"], "aemet": all(h.get("aemet") for h in lista),
+                "limites": p["limites"] if p["serie"] != "estaciones" else
+                [l for l in p["limites"] if not l.startswith("Récord de la estación")] + ["Cada estación se compara con su propia tabla de valores extremos; no es un recuento de toda la red: en otras estaciones de AEMET pudo haber más récords."],
+                "citabilidad": p["citabilidad"], "aemet": all(h.get("aemet") for h in lista),
                 "miembros": [h["id"] for h in lista]})
 
 
@@ -1483,6 +1537,32 @@ def _serie_para(h: dict) -> dict | None:
             fig.savefig(out, bbox_inches="tight"); plt.close(fig)
         return {"cabecera": ["anio", "dias_mas_32C"], "filas": filas, "plot": plot}
 
+    if h["serie"] == "estaciones" and h.get("estacion", {}).get("idema"):
+        base = leer(DOCS / "records" / "baseline.json")
+        e = (base.get("estaciones") or {}).get(h["estacion"]["idema"])
+        if not e:
+            return None
+        var = h.get("variable", "tmax")
+        filas = []
+        for i in range(12):
+            tx, tn = e["tmax"][i], e["tmin"][i]
+            filas.append((MESES[i], tx[0], f"{tx[2]}-{i + 1:02d}-{tx[1]:02d}" if tx[0] is not None and tx[2] and tx[1] else "",
+                          tn[0], f"{tn[2]}-{i + 1:02d}-{tn[1]:02d}" if tn[0] is not None and tn[2] and tn[1] else ""))
+
+        def plot(plt, out, h, e=e, var=var):
+            fig, ax = plt.subplots(figsize=(11, 5.2), dpi=150)
+            vals = [e[var][i][0] for i in range(12)]
+            mes_h = int(h["fecha_dato"][5:7]) - 1
+            colores = ["#c9c9cc"] * 12
+            ax.bar(range(12), [v if v is not None else 0 for v in vals], color=colores)
+            ax.bar([mes_h], [h["valor"]], color="#cc2200" if var == "tmax" else "#0066cc", width=0.5)
+            ax.set_xticks(range(12)); ax.set_xticklabels([m[:3] for m in MESES])
+            ax.axhline(h["valor"], color="#cc2200" if var == "tmax" else "#0066cc", lw=1, ls="--",
+                       label=f"{fecha_dia(h['fecha_dato'])}: {f1(h['valor'])} °C")
+            _estilo(ax, plt, f"{h['territorio']} · récord de {'máxima' if var == 'tmax' else 'mínima'} de cada mes en la estación de AEMET", h)
+            fig.savefig(out, bbox_inches="tight"); plt.close(fig)
+        return {"cabecera": ["mes", "record_tmax_C", "fecha_record_tmax", "record_tmin_C", "fecha_record_tmin"], "filas": filas, "plot": plot}
+
     if h["serie"] == "embalses" and h["ambito"] == "provincial":
         for fp in glob.glob(str(DOCS / "embalses" / "*.json")):
             try:
@@ -1521,7 +1601,7 @@ def main():
     ap.add_argument("--salida", default=str(PRENSA / "hallazgos.json"))
     args = ap.parse_args()
 
-    for fn in (capitales, capitales_ayer, lluvia_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta):
+    for fn in (capitales, capitales_ayer, lluvia_aemet, estaciones_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta):
         try:
             fn()
         except Exception as e:
@@ -1533,7 +1613,7 @@ def main():
         if confirmar_con_aemet(h):
             h["requiere_revision"] = any("COMPROBAR" in l for l in h["limites"])
             conservar.append(h)
-    hallazgos[:] = conservar
+    hallazgos[:] = [h for h in conservar if h["id"] not in RETIRAR]
     agregar()
     for h in hallazgos:
         if h.get("ambito") == "nacional" and h.get("serie") == "capitales" and not h.get("indicador", "").startswith("ayer_"):
@@ -1584,6 +1664,8 @@ def main():
     except Exception:
         pass
     hoy = HOY.isoformat()
+    for rid in RETIRAR:
+        hist.pop(rid, None)
     for h in salida["enviables"] + [l for l in locales if not l["requiere_revision"]]:
         x = hist.get(h["id"]) or {"id": h["id"], "primera_vez": hoy}
         x.update({"ultima_vez": hoy, "titular": h["titular"], "dato": h["dato"], "fecha_dato": h["fecha_dato"],
