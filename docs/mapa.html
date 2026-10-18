@@ -260,6 +260,13 @@ fetch(JSON_URL + '?t=' + Date.now())
     // 18-10-2026: el dato es de NOAA OISST (satélite) con uno o dos días de retraso;
     // se dice de qué día es, no solo cuándo se actualizó el archivo.
     const fd = data.fecha_dato ? fechaCorta(data.fecha_dato) : null;
+    // Un datos.json anterior al cambio (Open-Meteo, tabla manual) no lleva «metodo»:
+    // con él se mantienen los rótulos de antes y la atribución de antes.
+    const nuevo = data.metodo === 'oisst_v21_normal_1991_2020';
+    if (!nuevo && mapa.attributionControl) {
+      mapa.attributionControl.removeAttribution('© Esri | Datos: NOAA OISST v2.1');
+      mapa.attributionControl.addAttribution('© Esri | Datos: Open-Meteo Marine API');
+    }
     document.getElementById('ultima-actualizacion').textContent =
       (fd ? 'Temperatura del ' + fd + ' · ' : '') + 'Actualizado: ' + data.fecha_legible;
 
@@ -269,7 +276,7 @@ fetch(JSON_URL + '?t=' + Date.now())
       const icono = crearIconoEtiqueta(p);
 
       const diasActuales = p.dias_consecutivos !== null && p.dias_consecutivos !== undefined
-        ? p.dias_consecutivos + ' días seguidos'
+        ? (p.racha_tope ? 'más de ' + p.dias_consecutivos + ' días seguidos' : p.dias_consecutivos + ' días seguidos')
         : '—';
 
       const maxPos = p.max_dias_positiva !== null && p.max_dias_positiva !== undefined
@@ -285,7 +292,7 @@ fetch(JSON_URL + '?t=' + Date.now())
           <div class="popup-titulo">${p.nombre}</div>
           <div class="popup-zona">📍 ${p.zona}</div>
           <div class="popup-dato">
-            <span>Temperatura del ${p.fecha_dato ? fechaCorta(p.fecha_dato) : '—'}${p.provisional ? ' (provisional)' : ''}</span>
+            <span>${nuevo ? `Temperatura del ${p.fecha_dato ? fechaCorta(p.fecha_dato) : '—'}${p.provisional ? ' (provisional)' : ''}` : 'Temperatura actual'}</span>
             <span>${p.temperatura_actual}°C</span>
           </div>
           <div class="popup-dato">
@@ -297,14 +304,14 @@ fetch(JSON_URL + '?t=' + Date.now())
             <span>${formatDif(p.diferencia_anual)}</span>
           </div>
           <div class="popup-dato">
-            <span>Media 1991-2020 de ese día</span>
+            <span>${nuevo ? 'Media 1991-2020 de ese día' : 'Media histórica del mes'}</span>
             <span>${p.media_historica_mes !== null ? p.media_historica_mes + '°C' : '—'}</span>
           </div>
           <div class="popup-dato">
-            <span>Anomalía frente a 1991-2020</span>
+            <span>${nuevo ? 'Anomalía frente a 1991-2020' : 'Anomalía histórica'}</span>
             <span>${formatDif(p.anomalia)}</span>
           </div>
-          <div class="popup-separador">Rachas de anomalía (últimos 12 meses)</div>
+          <div class="popup-separador">${nuevo ? 'Rachas de anomalía (últimos 12 meses)' : 'Rachas de anomalía'}</div>
           <div class="popup-dato">
             <span>Días anomalía ${p.signo_consecutivo || '—'}</span>
             <span>${diasActuales}</span>
