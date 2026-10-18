@@ -1,12 +1,12 @@
-# La estación de AEMET de Miramar (Valencia) lleva 138 mm el 18 de octubre hasta las 15:00; la de Oliva (Valencia), 120,1 mm
+# La estación de AEMET de Miramar (Valencia) lleva 138 mm el 18 de octubre hasta las 15:00; la de Formentera (Illes Balears), 122,8 mm
 
-**Dato:** 138 mm de 0:00 a 15:00 (hora local) del 18 de octubre, la cifra más alta de las 190 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 138 mm de 0:00 a 15:00 (hora local) del 18 de octubre, la cifra más alta de las 243 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 18 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Las que más: Miramar (Valencia): 138 mm · Oliva (Valencia): 120,1 mm · Jávea Ayuntamiento (Alicante): 50 mm · Xátiva (Valencia): 45,8 mm · Castellón-Almassora (Castellón): 44,6 mm.
+- Las que más: Miramar (Valencia): 138 mm · Formentera (Illes Balears): 122,8 mm · Ibiza/Es Codolá (Illes Balears): 121,3 mm · Oliva (Valencia): 120,1 mm · Eivissa (Illes Balears): 65,8 mm.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData · observación convencional
@@ -15,7 +15,7 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 15:00»).
-- La comparación es entre las 190 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (997 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 243 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (997 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
