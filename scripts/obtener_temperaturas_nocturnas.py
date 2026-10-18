@@ -1,12 +1,31 @@
 """
-Script incremental: solo descarga los datos del día anterior y actualiza
-el JSON existente. Mucho más rápido que recalcular todo cada día.
+Script incremental: descarga de AEMET los días que faltan y actualiza el JSON
+existente.
 
 Lógica:
-- Lee el JSON anterior (si existe) y conserva el histórico
-- Para cada ciudad, pide a AEMET solo el dato de AYER
+- Lee el JSON anterior (si existe) y conserva el histórico del año en curso
+- Para cada ciudad, pide a AEMET TODOS los días del año que falten o vengan sin
+  mínima, no solo los posteriores al último guardado
 - Actualiza tmin_anoche, recalcula medias del mes y acumula noches tropicales
 - Las medias del año anterior se recalculan UNA VEZ AL MES (día 1)
+
+Revisión del 18-10-2026 (auditoría de veracidad):
+- Antes solo se pedían los días posteriores al último guardado. Un tramo de 15
+  días que fallaba en la descarga inicial no se volvía a pedir nunca: casi todas
+  las ciudades tenían un hueco de 15 a 45 días y el recuento anual de noches
+  tropicales salía corto. Ahora se rellenan todos los huecos del año.
+- Varias ciudades apuntaban a una estación que no es la de la ciudad o que ya
+  no publica: Las Palmas leía Lanzarote, Vigo leía Pontevedra, Santa Cruz leía
+  Tenerife Norte (632 m), Motril y Santander no existían, y Valencia (8416Y) y
+  Cartagena (7012C) dejaron de publicar en abril y julio. Se cambia a la
+  estación de la propia ciudad y, cuando cambia la estación, se descarga el año
+  entero con la nueva: el recuento de una ciudad sale siempre de una sola
+  estación.
+- Cada ciudad lleva su estación (`idema`, `estacion`) y su cobertura
+  (`dias_con_dato_anyo`, `dias_esperados_anyo`), para que nadie dé por completo
+  un recuento al que le faltan días.
+- En el cambio de año se descarta el histórico del año anterior (antes se
+  habría sumado a las noches tropicales del año nuevo).
 """
 import os
 import json
@@ -24,56 +43,61 @@ JSON_PATH = "docs/temperaturas_nocturnas.json"
 TZ = ZoneInfo("Europe/Madrid")
 
 CIUDADES = [
-    {"id": "sevilla",       "nombre": "Sevilla",       "ccaa": "Andalucía",          "idema": "5783",  "lat": 37.418, "lon": -5.881},
-    {"id": "malaga",        "nombre": "Málaga",        "ccaa": "Andalucía",          "idema": "6155A", "lat": 36.660, "lon": -4.499},
-    {"id": "granada",       "nombre": "Granada",       "ccaa": "Andalucía",          "idema": "5514",  "lat": 37.142, "lon": -3.631},
-    {"id": "cordoba",       "nombre": "Córdoba",       "ccaa": "Andalucía",          "idema": "5402",  "lat": 37.848, "lon": -4.848},
-    {"id": "almeria",       "nombre": "Almería",       "ccaa": "Andalucía",          "idema": "6325O", "lat": 36.847, "lon": -2.380},
-    {"id": "huelva",        "nombre": "Huelva",        "ccaa": "Andalucía",          "idema": "4642E", "lat": 37.282, "lon": -6.909},
-    {"id": "cadiz",         "nombre": "Cádiz",         "ccaa": "Andalucía",          "idema": "5973",  "lat": 36.500, "lon": -6.269},
-    {"id": "jaen",          "nombre": "Jaén",          "ccaa": "Andalucía",          "idema": "5270B", "lat": 37.784, "lon": -3.807},
-    {"id": "motril",        "nombre": "Motril",        "ccaa": "Andalucía",          "idema": "6172O", "lat": 36.731, "lon": -3.509},
-    {"id": "valencia",      "nombre": "Valencia",      "ccaa": "C. Valenciana",      "idema": "8416Y", "lat": 39.480, "lon": -0.366},
-    {"id": "alicante",      "nombre": "Alicante",      "ccaa": "C. Valenciana",      "idema": "8025",  "lat": 38.372, "lon": -0.493},
-    {"id": "castellon",     "nombre": "Castellón",     "ccaa": "C. Valenciana",      "idema": "8500A", "lat": 39.945, "lon": -0.026},
-    {"id": "murcia",        "nombre": "Murcia",        "ccaa": "Región de Murcia",   "idema": "7228",  "lat": 38.000, "lon": -1.170},
-    {"id": "cartagena",     "nombre": "Cartagena",     "ccaa": "Región de Murcia",   "idema": "7012C", "lat": 37.596, "lon": -0.983},
-    {"id": "lorca",         "nombre": "Lorca",         "ccaa": "Región de Murcia",   "idema": "7209",  "lat": 37.672, "lon": -1.701},
-    {"id": "barcelona",     "nombre": "Barcelona",     "ccaa": "Cataluña",           "idema": "0076",  "lat": 41.380, "lon":  2.148},
-    {"id": "tarragona",     "nombre": "Tarragona",     "ccaa": "Cataluña",           "idema": "0016A", "lat": 41.097, "lon":  1.237},
-    {"id": "lleida",        "nombre": "Lleida",        "ccaa": "Cataluña",           "idema": "9771C", "lat": 41.628, "lon":  0.595},
-    {"id": "girona",        "nombre": "Girona",        "ccaa": "Cataluña",           "idema": "0367",  "lat": 41.903, "lon":  2.760},
-    {"id": "madrid",        "nombre": "Madrid",        "ccaa": "Madrid",             "idema": "3195",  "lat": 40.411, "lon": -3.684},
-    {"id": "toledo",        "nombre": "Toledo",        "ccaa": "Castilla-La Mancha", "idema": "3260B", "lat": 39.882, "lon": -4.049},
-    {"id": "ciudad_real",   "nombre": "Ciudad Real",   "ccaa": "Castilla-La Mancha", "idema": "4121",  "lat": 38.990, "lon": -3.920},
-    {"id": "albacete",      "nombre": "Albacete",      "ccaa": "Castilla-La Mancha", "idema": "8175",  "lat": 38.945, "lon": -1.863},
-    {"id": "valladolid",    "nombre": "Valladolid",    "ccaa": "Castilla y León",    "idema": "2422",  "lat": 41.664, "lon": -4.767},
-    {"id": "salamanca",     "nombre": "Salamanca",     "ccaa": "Castilla y León",    "idema": "2867",  "lat": 40.960, "lon": -5.500},
-    {"id": "burgos",        "nombre": "Burgos",        "ccaa": "Castilla y León",    "idema": "2331",  "lat": 42.357, "lon": -3.621},
-    {"id": "leon",          "nombre": "León",          "ccaa": "Castilla y León",    "idema": "2661",  "lat": 42.589, "lon": -5.651},
-    {"id": "zaragoza",      "nombre": "Zaragoza",      "ccaa": "Aragón",             "idema": "9434",  "lat": 41.661, "lon": -1.004},
-    {"id": "huesca",        "nombre": "Huesca",        "ccaa": "Aragón",             "idema": "9898",  "lat": 42.082, "lon": -0.333},
-    {"id": "teruel",        "nombre": "Teruel",        "ccaa": "Aragón",             "idema": "8368U", "lat": 40.355, "lon": -1.130},
-    {"id": "bilbao",        "nombre": "Bilbao",        "ccaa": "País Vasco",         "idema": "1082",  "lat": 43.300, "lon": -2.906},
-    {"id": "san_sebastian", "nombre": "San Sebastián", "ccaa": "País Vasco",         "idema": "1024E", "lat": 43.308, "lon": -1.994},
-    {"id": "vitoria",       "nombre": "Vitoria",       "ccaa": "País Vasco",         "idema": "9091O", "lat": 42.882, "lon": -2.729},
-    {"id": "vigo",          "nombre": "Vigo",          "ccaa": "Galicia",            "idema": "1484C", "lat": 42.232, "lon": -8.718},
-    {"id": "coruna",        "nombre": "A Coruña",      "ccaa": "Galicia",            "idema": "1387",  "lat": 43.366, "lon": -8.422},
-    {"id": "santiago",      "nombre": "Santiago",      "ccaa": "Galicia",            "idema": "1428",  "lat": 42.896, "lon": -8.411},
-    {"id": "oviedo",        "nombre": "Oviedo",        "ccaa": "Asturias",           "idema": "1249X", "lat": 43.354, "lon": -5.873},
-    {"id": "santander",     "nombre": "Santander",     "ccaa": "Cantabria",          "idema": "1111",  "lat": 43.491, "lon": -3.800},
-    {"id": "pamplona",      "nombre": "Pamplona",      "ccaa": "Navarra",            "idema": "9263D", "lat": 42.769, "lon": -1.645},
-    {"id": "logrono",       "nombre": "Logroño",       "ccaa": "La Rioja",           "idema": "9170",  "lat": 42.451, "lon": -2.502},
-    {"id": "badajoz",       "nombre": "Badajoz",       "ccaa": "Extremadura",        "idema": "4452",  "lat": 38.881, "lon": -6.821},
-    {"id": "caceres",       "nombre": "Cáceres",       "ccaa": "Extremadura",        "idema": "3469A", "lat": 39.472, "lon": -6.337},
-    {"id": "palma",         "nombre": "Palma",         "ccaa": "Baleares",           "idema": "B228",  "lat": 39.551, "lon":  2.628},
-    {"id": "ibiza",         "nombre": "Ibiza",         "ccaa": "Baleares",           "idema": "B954",  "lat": 38.873, "lon":  1.398},
-    {"id": "mahon",         "nombre": "Mahón",         "ccaa": "Baleares",           "idema": "B893",  "lat": 39.862, "lon":  4.216},
-    {"id": "las_palmas",    "nombre": "Las Palmas",    "ccaa": "Canarias",           "idema": "C029O", "lat": 28.146, "lon": -15.415},
-    {"id": "santa_cruz_tf", "nombre": "Sta. Cruz TF",  "ccaa": "Canarias",           "idema": "C447A", "lat": 28.463, "lon": -16.259},
-    {"id": "ceuta",         "nombre": "Ceuta",         "ccaa": "Ceuta",              "idema": "5000C", "lat": 35.890, "lon": -5.316},
-    {"id": "melilla",       "nombre": "Melilla",       "ccaa": "Melilla",            "idema": "6000A", "lat": 35.279, "lon": -2.956},
+    {"id": "sevilla",       "nombre": "Sevilla",       "ccaa": "Andalucía",          "idema": "5783",  "estacion": "Sevilla Aeropuerto", "lat": 37.418, "lon": -5.881},
+    {"id": "malaga",        "nombre": "Málaga",        "ccaa": "Andalucía",          "idema": "6155A", "estacion": "Málaga Aeropuerto", "lat": 36.660, "lon": -4.499},
+    {"id": "granada",       "nombre": "Granada",       "ccaa": "Andalucía",          "idema": "5514",  "estacion": "Granada Base Aérea", "lat": 37.142, "lon": -3.631},
+    {"id": "cordoba",       "nombre": "Córdoba",       "ccaa": "Andalucía",          "idema": "5402",  "estacion": "Córdoba Aeropuerto", "lat": 37.848, "lon": -4.848},
+    {"id": "almeria",       "nombre": "Almería",       "ccaa": "Andalucía",          "idema": "6325O", "estacion": "Almería Aeropuerto", "lat": 36.847, "lon": -2.380},
+    {"id": "huelva",        "nombre": "Huelva",        "ccaa": "Andalucía",          "idema": "4642E", "estacion": "Huelva, Ronda Este", "lat": 37.282, "lon": -6.909},
+    {"id": "cadiz",         "nombre": "Cádiz",         "ccaa": "Andalucía",          "idema": "5973",  "estacion": "Cádiz", "lat": 36.500, "lon": -6.269},
+    {"id": "jaen",          "nombre": "Jaén",          "ccaa": "Andalucía",          "idema": "5270B", "estacion": "Jaén", "lat": 37.784, "lon": -3.807},
+    {"id": "motril",        "nombre": "Motril",        "ccaa": "Andalucía",          "idema": "6268Y", "estacion": "Motril, Puerto", "lat": 36.731, "lon": -3.509},
+    {"id": "valencia",      "nombre": "Valencia",      "ccaa": "C. Valenciana",      "idema": "8416", "estacion": "València", "lat": 39.480, "lon": -0.366},
+    {"id": "alicante",      "nombre": "Alicante",      "ccaa": "C. Valenciana",      "idema": "8025",  "estacion": "Alicante", "lat": 38.372, "lon": -0.493},
+    {"id": "castellon",     "nombre": "Castellón",     "ccaa": "C. Valenciana",      "idema": "8500A", "estacion": "Castelló - Almassora", "lat": 39.945, "lon": -0.026},
+    {"id": "murcia",        "nombre": "Murcia",        "ccaa": "Región de Murcia",   "idema": "7178I",  "estacion": "Murcia", "lat": 38.000, "lon": -1.170},
+    {"id": "cartagena",     "nombre": "Cartagena",     "ccaa": "Región de Murcia",   "idema": "7012D", "estacion": "Cartagena, Tentegorra", "lat": 37.596, "lon": -0.983},
+    {"id": "lorca",         "nombre": "Lorca",         "ccaa": "Región de Murcia",   "idema": "7209",  "estacion": "Lorca", "lat": 37.672, "lon": -1.701},
+    {"id": "barcelona",     "nombre": "Barcelona",     "ccaa": "Cataluña",           "idema": "0076",  "estacion": "Barcelona Aeropuerto", "lat": 41.380, "lon":  2.148},
+    {"id": "tarragona",     "nombre": "Tarragona",     "ccaa": "Cataluña",           "idema": "0042Y", "estacion": "Tarragona", "lat": 41.097, "lon":  1.237},
+    {"id": "lleida",        "nombre": "Lleida",        "ccaa": "Cataluña",           "idema": "9771C", "estacion": "Lleida", "lat": 41.628, "lon":  0.595},
+    {"id": "girona",        "nombre": "Girona",        "ccaa": "Cataluña",           "idema": "0367",  "estacion": "Girona Aeropuerto", "lat": 41.903, "lon":  2.760},
+    {"id": "madrid",        "nombre": "Madrid",        "ccaa": "Madrid",             "idema": "3195",  "estacion": "Madrid, Retiro", "lat": 40.411, "lon": -3.684},
+    {"id": "toledo",        "nombre": "Toledo",        "ccaa": "Castilla-La Mancha", "idema": "3260B", "estacion": "Toledo", "lat": 39.882, "lon": -4.049},
+    {"id": "ciudad_real",   "nombre": "Ciudad Real",   "ccaa": "Castilla-La Mancha", "idema": "4121",  "estacion": "Ciudad Real", "lat": 38.990, "lon": -3.920},
+    {"id": "albacete",      "nombre": "Albacete",      "ccaa": "Castilla-La Mancha", "idema": "8175",  "estacion": "Albacete Base Aérea", "lat": 38.945, "lon": -1.863},
+    {"id": "valladolid",    "nombre": "Valladolid",    "ccaa": "Castilla y León",    "idema": "2422",  "estacion": "Valladolid", "lat": 41.664, "lon": -4.767},
+    {"id": "salamanca",     "nombre": "Salamanca",     "ccaa": "Castilla y León",    "idema": "2867",  "estacion": "Salamanca Aeropuerto", "lat": 40.960, "lon": -5.500},
+    {"id": "burgos",        "nombre": "Burgos",        "ccaa": "Castilla y León",    "idema": "2331",  "estacion": "Burgos Aeropuerto", "lat": 42.357, "lon": -3.621},
+    {"id": "leon",          "nombre": "León",          "ccaa": "Castilla y León",    "idema": "2661",  "estacion": "León, Virgen del Camino", "lat": 42.589, "lon": -5.651},
+    {"id": "zaragoza",      "nombre": "Zaragoza",      "ccaa": "Aragón",             "idema": "9434",  "estacion": "Zaragoza Aeropuerto", "lat": 41.661, "lon": -1.004},
+    {"id": "huesca",        "nombre": "Huesca",        "ccaa": "Aragón",             "idema": "9898",  "estacion": "Huesca Aeropuerto", "lat": 42.082, "lon": -0.333},
+    {"id": "teruel",        "nombre": "Teruel",        "ccaa": "Aragón",             "idema": "8368U", "estacion": "Teruel", "lat": 40.355, "lon": -1.130},
+    {"id": "bilbao",        "nombre": "Bilbao",        "ccaa": "País Vasco",         "idema": "1082",  "estacion": "Bilbao Aeropuerto", "lat": 43.300, "lon": -2.906},
+    {"id": "san_sebastian", "nombre": "San Sebastián", "ccaa": "País Vasco",         "idema": "1024E", "estacion": "Donostia, Igeldo", "lat": 43.308, "lon": -1.994},
+    {"id": "vitoria",       "nombre": "Vitoria",       "ccaa": "País Vasco",         "idema": "9091O", "estacion": "Vitoria, Foronda", "lat": 42.882, "lon": -2.729},
+    {"id": "vigo",          "nombre": "Vigo",          "ccaa": "Galicia",            "idema": "1496X", "estacion": "Vigo", "lat": 42.232, "lon": -8.718},
+    {"id": "coruna",        "nombre": "A Coruña",      "ccaa": "Galicia",            "idema": "1387",  "estacion": "A Coruña", "lat": 43.366, "lon": -8.422},
+    {"id": "santiago",      "nombre": "Santiago",      "ccaa": "Galicia",            "idema": "1428",  "estacion": "Santiago Aeropuerto", "lat": 42.896, "lon": -8.411},
+    {"id": "oviedo",        "nombre": "Oviedo",        "ccaa": "Asturias",           "idema": "1249X", "estacion": "Oviedo", "lat": 43.354, "lon": -5.873},
+    {"id": "santander",     "nombre": "Santander",     "ccaa": "Cantabria",          "idema": "1111X",  "estacion": "Santander", "lat": 43.491, "lon": -3.800},
+    {"id": "pamplona",      "nombre": "Pamplona",      "ccaa": "Navarra",            "idema": "9263D", "estacion": "Pamplona Aeropuerto", "lat": 42.769, "lon": -1.645},
+    {"id": "logrono",       "nombre": "Logroño",       "ccaa": "La Rioja",           "idema": "9170",  "estacion": "Logroño Aeropuerto", "lat": 42.451, "lon": -2.502},
+    {"id": "badajoz",       "nombre": "Badajoz",       "ccaa": "Extremadura",        "idema": "4452",  "estacion": "Badajoz Aeropuerto", "lat": 38.881, "lon": -6.821},
+    {"id": "caceres",       "nombre": "Cáceres",       "ccaa": "Extremadura",        "idema": "3469A", "estacion": "Cáceres", "lat": 39.472, "lon": -6.337},
+    {"id": "palma",         "nombre": "Palma",         "ccaa": "Baleares",           "idema": "B228",  "estacion": "Palma, Puerto", "lat": 39.551, "lon":  2.628},
+    {"id": "ibiza",         "nombre": "Ibiza",         "ccaa": "Baleares",           "idema": "B954",  "estacion": "Ibiza Aeropuerto", "lat": 38.873, "lon":  1.398},
+    {"id": "mahon",         "nombre": "Mahón",         "ccaa": "Baleares",           "idema": "B893",  "estacion": "Menorca Aeropuerto", "lat": 39.862, "lon":  4.216},
+    {"id": "las_palmas",    "nombre": "Las Palmas",    "ccaa": "Canarias",           "idema": "C659M", "estacion": "Las Palmas de G. C., Pl. de la Feria", "lat": 28.146, "lon": -15.415},
+    {"id": "santa_cruz_tf", "nombre": "Sta. Cruz TF",  "ccaa": "Canarias",           "idema": "C449C", "estacion": "Santa Cruz de Tenerife", "lat": 28.463, "lon": -16.259},
+    {"id": "ceuta",         "nombre": "Ceuta",         "ccaa": "Ceuta",              "idema": "5000C", "estacion": "Ceuta", "lat": 35.890, "lon": -5.316},
+    {"id": "melilla",       "nombre": "Melilla",       "ccaa": "Melilla",            "idema": "6000A", "estacion": "Melilla", "lat": 35.279, "lon": -2.956},
 ]
+
+# Estación usada antes de la revisión del 18-10-2026. Si el JSON anterior no dice
+# con qué estación se calculó una ciudad, se toma esta; si no coincide con la de
+# CIUDADES, se descarga el año entero con la estación nueva.
+IDEMA_ANTERIOR = {'motril': '6172O', 'valencia': '8416Y', 'murcia': '7228', 'cartagena': '7012C', 'tarragona': '0016A', 'vigo': '1484C', 'santander': '1111', 'las_palmas': 'C029O', 'santa_cruz_tf': 'C447A'}
 
 ahora = datetime.now(TZ)
 hoy  = ahora.date()
@@ -93,7 +117,14 @@ def cargar_historico():
     try:
         with open(JSON_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
-        hist = {c["id"]: c.get("historico", {}) for c in data.get("ciudades", [])}
+        hist = {}
+        for c in data.get("ciudades", []):
+            h = dict(c.get("historico", {}))
+            # Estación con la que se calculó: la guardada o, en JSON anteriores a la
+            # revisión del 18-10-2026, la que había entonces en la tabla.
+            h["_idema"] = h.get("_idema") or c.get("idema") or IDEMA_ANTERIOR.get(c["id"]) \
+                or next((x["idema"] for x in CIUDADES if x["id"] == c["id"]), None)
+            hist[c["id"]] = h
         anyo_guardado = data.get("anyo_actual")
         mes_guardado  = data.get("_mes_calculado_ant")  # control para recalcular año anterior
         return hist, anyo_guardado, mes_guardado
@@ -107,7 +138,9 @@ def cargar_historico():
 def fmt(d):
     return d.strftime("%Y-%m-%dT00:00:00UTC")
 
-def aemet_tramo(idema, fecha_ini, fecha_fin, intentos=3):
+def aemet_tramo(idema, fecha_ini, fecha_fin, intentos=5):
+    """Lista de registros diarios. [] si AEMET responde que no hay datos para ese
+    tramo (estado 404); None si la petición falla (se reintentará otro día)."""
     url = (
         f"{BASE_URL}/valores/climatologicos/diarios/datos"
         f"/fechaini/{fmt(fecha_ini)}/fechafin/{fmt(fecha_fin)}"
@@ -117,29 +150,35 @@ def aemet_tramo(idema, fecha_ini, fecha_fin, intentos=3):
         try:
             r = requests.get(url, headers=HEADERS, timeout=20)
             if r.status_code == 429:
-                time.sleep(5 * (intento + 1))
+                time.sleep(10 * (intento + 1))
                 continue
             if r.status_code != 200:
                 if intento == intentos - 1:
                     print(f"      ❌ {idema}: status {r.status_code}")
-                time.sleep(2)
+                time.sleep(3)
                 continue
             body = r.json()
             if body.get("estado") == 404:
                 return []
+            if body.get("estado") == 429:
+                time.sleep(10 * (intento + 1))
+                continue
             if body.get("estado") != 200:
-                return []
+                time.sleep(3)
+                continue
             datos_url = body.get("datos")
             if not datos_url:
-                return []
-            r2 = requests.get(datos_url, timeout=20)
+                time.sleep(3)
+                continue
+            r2 = requests.get(datos_url, timeout=30)
             if r2.status_code == 200:
                 return r2.json()
+            time.sleep(3)
         except Exception as e:
             if intento == intentos - 1:
                 print(f"      ❌ {idema} excepción: {e}")
-            time.sleep(2)
-    return []
+            time.sleep(3)
+    return None
 
 def tramos_15dias(fecha_ini, fecha_fin):
     resultado = []
@@ -208,46 +247,70 @@ def procesar_ciudad(args):
     anyo_ant = anyo_act - 1
 
     # ── Histórico del año actual ──────────────────────────────────────────────
-    historico = dict(hist_previo)  # copiamos lo que ya teníamos
+    idema_previo = hist_previo.get("_idema")
+    cambio_estacion = idema_previo is not None and idema_previo != ciudad["idema"]
+    if cambio_estacion:
+        print(f"    {ciudad['nombre']}: cambio de estación {idema_previo} → {ciudad['idema']}, "
+              f"se descarga el año entero con la nueva")
+        historico = {}
+        mes_cambio = True
+    else:
+        # Solo el año en curso: en enero el del año anterior se descarta.
+        historico = {f: d for f, d in datos_historicos(hist_previo).items()
+                     if f.startswith(f"{anyo_act}-")}
+    ausentes = set(f for f in hist_previo.get("_ausentes", [])
+                   if f.startswith(f"{anyo_act}-")) if not cambio_estacion else set()
 
-    if anyo_cambio or not historico:
-        # Primera ejecución del año (o primer día absoluto) → descarga completa
-        print(f"    {ciudad['nombre']}: descargando año entero...")
-        inicio_anyo = date(anyo_act, 1, 1)
-        for ini, fin in tramos_15dias(inicio_anyo, ayer):
+    # Días del año (1 de enero → ayer) sin mínima guardada. AEMET publica con
+    # varios días de retraso: un día que AEMET ya dijo que no tiene se vuelve a
+    # pedir solo mientras sea reciente (10 días).
+    reciente = ayer - timedelta(days=10)
+    pendientes = []
+    d = date(anyo_act, 1, 1)
+    while d <= ayer:
+        f = d.isoformat()
+        sin_dato = f not in historico or historico[f].get("tmin") is None
+        if sin_dato and (f not in ausentes or d >= reciente):
+            pendientes.append(d)
+        d += timedelta(days=1)
+
+    if pendientes:
+        # Se agrupan en tramos de días seguidos de como mucho 15 (límite de AEMET)
+        tramos, ini, prev = [], pendientes[0], pendientes[0]
+        for d in pendientes[1:]:
+            if (d - prev).days > 1 or (d - ini).days >= 14:
+                tramos.append((ini, prev)); ini = d
+            prev = d
+        tramos.append((ini, prev))
+        print(f"    {ciudad['nombre']}: {len(pendientes)} días sin dato, {len(tramos)} peticiones")
+        for ini, fin in tramos:
             datos = aemet_tramo(ciudad["idema"], ini, fin)
+            if datos is None:
+                continue  # fallo de red o de AEMET: se reintenta en la próxima pasada
+            recibidos = set()
             for r in datos:
                 f = r.get("fecha")
-                if f:
+                if f and f.startswith(f"{anyo_act}-"):
                     historico[f] = {
                         "tmin": parse_float(r.get("tmin")),
                         "tmax": parse_float(r.get("tmax")),
                     }
-            time.sleep(0.4)
-    else:
-        # Solo pedimos los días que falten entre el último guardado y ayer
-        fechas_existentes = set(datos_historicos(historico).keys())
-        ayer_str = ayer.strftime("%Y-%m-%d")
-        if ayer_str not in fechas_existentes:
-            # Buscamos la última fecha guardada
-            fechas_ord = sorted(fechas_existentes)
-            ultima = date.fromisoformat(fechas_ord[-1]) if fechas_ord else date(anyo_act, 1, 1)
-            siguiente = ultima + timedelta(days=1)
-            if siguiente <= ayer:
-                for ini, fin in tramos_15dias(siguiente, ayer):
-                    datos = aemet_tramo(ciudad["idema"], ini, fin)
-                    for r in datos:
-                        f = r.get("fecha")
-                        if f:
-                            historico[f] = {
-                                "tmin": parse_float(r.get("tmin")),
-                                "tmax": parse_float(r.get("tmax")),
-                            }
-                    time.sleep(0.4)
+                    if historico[f]["tmin"] is not None:
+                        recibidos.add(f)
+            # AEMET respondió y estos días no vienen: se anotan para no pedirlos a diario
+            d = ini
+            while d <= fin:
+                if d.isoformat() not in recibidos:
+                    ausentes.add(d.isoformat())
+                else:
+                    ausentes.discard(d.isoformat())
+                d += timedelta(days=1)
+            time.sleep(1.0)
 
     # ── Histórico del mismo mes del año anterior (solo cuando cambia el mes) ──
     # Lo guardamos como datos resumidos directamente
-    hist_mes_ant = hist_previo.get("_resumen_mes_ant") if isinstance(hist_previo, dict) else None
+    hist_mes_ant = None if cambio_estacion else (
+        hist_previo.get("_resumen_mes_ant") if isinstance(hist_previo, dict) else None)
 
     if mes_cambio or hist_mes_ant is None or not isinstance(hist_mes_ant, dict):
         print(f"    {ciudad['nombre']}: recalculando mes año anterior...")
@@ -256,11 +319,11 @@ def procesar_ciudad(args):
                          if mes_act < 12 else date(anyo_ant, 12, 31)
         mins_ant, maxs_ant = [], []
         for ini, fin in tramos_15dias(inicio_mes_ant, fin_mes_ant):
-            datos = aemet_tramo(ciudad["idema"], ini, fin)
+            datos = aemet_tramo(ciudad["idema"], ini, fin) or []
             for r in datos:
                 mins_ant.append(parse_float(r.get("tmin")))
                 maxs_ant.append(parse_float(r.get("tmax")))
-            time.sleep(0.4)
+            time.sleep(1.0)
         hist_mes_ant = {
             "media_min": media(mins_ant),
             "media_max": media(maxs_ant),
@@ -290,8 +353,15 @@ def procesar_ciudad(args):
 
     color, etiqueta = calcular_color(t_min_anoche)
 
+    # Cobertura: días del año con mínima frente a días hasta el último publicado
+    con_dato = sorted(f for f, d in hist_diario.items() if d.get("tmin") is not None)
+    ultimo_dato = con_dato[-1] if con_dato else None
+    esperados = (date.fromisoformat(ultimo_dato) - date(anyo_act, 1, 1)).days + 1 if ultimo_dato else 0
+
     # Guardamos el resumen del mes anterior dentro del propio histórico
     historico["_resumen_mes_ant"] = hist_mes_ant
+    historico["_idema"] = ciudad["idema"]
+    historico["_ausentes"] = sorted(ausentes)
 
     return {
         "id":                ciudad["id"],
@@ -310,6 +380,11 @@ def procesar_ciudad(args):
         "diff_max_vs_ant":   diff_max,
         "nt_mes":            contar_nt(mins_mes),
         "nt_anyo":           contar_nt(mins_anyo),
+        "idema":             ciudad["idema"],
+        "estacion":          ciudad["estacion"],
+        "ultimo_dato":       ultimo_dato,
+        "dias_con_dato_anyo": len(con_dato),
+        "dias_esperados_anyo": esperados,
         "color":             color,
         "etiqueta":          etiqueta,
         "historico":         historico,
@@ -337,7 +412,7 @@ def procesar():
     if not anyo_cambio and not mes_cambio:
         print(f"⚡ Modo incremental: solo se descargarán los días nuevos.")
 
-    print(f"Procesando {len(CIUDADES)} ciudades (3 hilos paralelos)...")
+    print(f"Procesando {len(CIUDADES)} ciudades (2 hilos paralelos)...")
 
     resultado = [None] * len(CIUDADES)
 
@@ -346,7 +421,7 @@ def procesar():
         for c in CIUDADES
     ]
 
-    with ThreadPoolExecutor(max_workers=3) as ex:
+    with ThreadPoolExecutor(max_workers=2) as ex:
         futures = {ex.submit(procesar_ciudad, args_list[i]): i for i in range(len(CIUDADES))}
         completadas = 0
         for future in as_completed(futures):
@@ -370,10 +445,22 @@ def procesar():
                     "media_min_mes": None, "media_max_mes": None,
                     "media_min_mes_ant": None, "media_max_mes_ant": None,
                     "diff_min_vs_ant": None, "diff_max_vs_ant": None,
-                    "nt_mes": 0, "nt_anyo": 0,
+                    "nt_mes": None, "nt_anyo": None,
+                    "idema": c["idema"], "estacion": c["estacion"],
+                    "ultimo_dato": None, "dias_con_dato_anyo": 0, "dias_esperados_anyo": 0,
                     "color": "#888888", "etiqueta": "Sin datos",
                     "historico": historico_previo.get(c["id"], {}),
                 }
+
+    # Días esperados: del 1 de enero al último día que AEMET ya ha publicado para
+    # alguna ciudad. Así una estación que dejó de publicar en mayo no parece
+    # completa solo porque sus días hasta mayo estén todos.
+    ultimos = [r["ultimo_dato"] for r in resultado if r and r.get("ultimo_dato")]
+    if ultimos:
+        esperados = (date.fromisoformat(max(ultimos)) - date(hoy.year, 1, 1)).days + 1
+        for r in resultado:
+            r["dias_esperados_anyo"] = esperados
+            r["cobertura_anyo"] = round(r.get("dias_con_dato_anyo", 0) / esperados, 3) if esperados else None
 
     MESES = ["enero","febrero","marzo","abril","mayo","junio",
              "julio","agosto","septiembre","octubre","noviembre","diciembre"]
