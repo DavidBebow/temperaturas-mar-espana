@@ -7,9 +7,14 @@ on:
     - cron: "0 11 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: actualizar-temperaturas-nocturnas
+  cancel-in-progress: false
+
 jobs:
   actualizar:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: write
 
@@ -30,11 +35,22 @@ jobs:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
         run: python scripts/obtener_temperaturas_nocturnas.py
 
+      # 18-10-2026: antes era un único «pull --rebase» + «push» sin reintento; si
+      # otro workflow empujaba en ese momento, el run fallaba y el dato se perdía.
       - name: Guardar cambios
         run: |
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
-          git add docs/temperaturas_nocturnas.json docs/noches_tropicales.html
-          git diff --staged --quiet || git commit -m "Actualiza temperaturas nocturnas"
-          git pull --rebase
-          git push
+          git add docs/temperaturas_nocturnas.json
+          if git diff --staged --quiet; then
+            echo "No hay cambios que guardar"
+            exit 0
+          fi
+          git commit -m "Actualiza temperaturas nocturnas"
+          for intento in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push fallido. Reintento $intento/6 en 15 s..."
+            sleep 15
+          done
+          echo "No se pudo guardar tras 6 intentos"
+          exit 1
