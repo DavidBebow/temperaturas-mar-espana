@@ -195,7 +195,7 @@ const mapa = L.map('mapa', {
 });
 
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '© Esri | Datos: Open-Meteo Marine API',
+  attribution: '© Esri | Datos: NOAA OISST v2.1',
   maxZoom: 16
 }).addTo(mapa);
 
@@ -242,6 +242,12 @@ function crearIconoEtiqueta(punto) {
   });
 }
 
+function fechaCorta(iso) {
+  const M = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const [y, m, d] = iso.split('-').map(Number);
+  return d + ' de ' + M[m - 1];
+}
+
 function formatDif(valor) {
   if (valor === null || valor === undefined) return '—';
   const cls = valor > 0 ? 'pos' : valor < 0 ? 'neg' : '';
@@ -251,8 +257,11 @@ function formatDif(valor) {
 fetch(JSON_URL + '?t=' + Date.now())
   .then(r => r.json())
   .then(data => {
+    // 18-10-2026: el dato es de NOAA OISST (satélite) con uno o dos días de retraso;
+    // se dice de qué día es, no solo cuándo se actualizó el archivo.
+    const fd = data.fecha_dato ? fechaCorta(data.fecha_dato) : null;
     document.getElementById('ultima-actualizacion').textContent =
-      'Actualizado: ' + data.fecha_legible;
+      (fd ? 'Temperatura del ' + fd + ' · ' : '') + 'Actualizado: ' + data.fecha_legible;
 
     data.puntos.forEach(p => {
       if (p.temperatura_actual === null || p.temperatura_actual === undefined) return;
@@ -276,11 +285,11 @@ fetch(JSON_URL + '?t=' + Date.now())
           <div class="popup-titulo">${p.nombre}</div>
           <div class="popup-zona">📍 ${p.zona}</div>
           <div class="popup-dato">
-            <span>Temperatura actual</span>
+            <span>Temperatura del ${p.fecha_dato ? fechaCorta(p.fecha_dato) : '—'}${p.provisional ? ' (provisional)' : ''}</span>
             <span>${p.temperatura_actual}°C</span>
           </div>
           <div class="popup-dato">
-            <span>Mismo día año anterior</span>
+            <span>Mismo día del año anterior</span>
             <span>${p.temperatura_anio_anterior !== null ? p.temperatura_anio_anterior + '°C' : '—'}</span>
           </div>
           <div class="popup-dato">
@@ -288,24 +297,24 @@ fetch(JSON_URL + '?t=' + Date.now())
             <span>${formatDif(p.diferencia_anual)}</span>
           </div>
           <div class="popup-dato">
-            <span>Media histórica del mes</span>
+            <span>Media 1991-2020 de ese día</span>
             <span>${p.media_historica_mes !== null ? p.media_historica_mes + '°C' : '—'}</span>
           </div>
           <div class="popup-dato">
-            <span>Anomalía histórica</span>
+            <span>Anomalía frente a 1991-2020</span>
             <span>${formatDif(p.anomalia)}</span>
           </div>
-          <div class="popup-separador">Rachas de anomalía</div>
+          <div class="popup-separador">Rachas de anomalía (últimos 12 meses)</div>
           <div class="popup-dato">
             <span>Días anomalía ${p.signo_consecutivo || '—'}</span>
             <span>${diasActuales}</span>
           </div>
           <div class="popup-dato">
-            <span>Récord racha positiva</span>
+            <span>Racha cálida más larga</span>
             <span>${maxPos}</span>
           </div>
           <div class="popup-dato">
-            <span>Récord racha negativa</span>
+            <span>Racha fría más larga</span>
             <span>${maxNeg}</span>
           </div>
           <div>
@@ -313,6 +322,7 @@ fetch(JSON_URL + '?t=' + Date.now())
               ${p.etiqueta_anomalia}
             </span>
           </div>
+          ${p.distancia_km != null ? `<div class="popup-zona" style="margin-top:8px">Celda de satélite de 0,25° a ${p.distancia_km} km de la costa · NOAA OISST v2.1</div>` : ''}
         </div>`;
 
       const marker = L.marker([p.lat, p.lon], { icon: icono })
