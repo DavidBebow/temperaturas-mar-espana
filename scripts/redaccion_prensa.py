@@ -962,7 +962,7 @@ PALABRAS_NUM = {"dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nuev
                 "dieciséis", "diecisiete", "dieciocho", "diecinueve", "veinte", "treinta", "cuarenta", "cincuenta", "cien", "mil", "doble",
                 "triple", "mitad", "décima", "décimas", "centésima", "centésimas", "primer", "segundo", "tercer", "cuarto", "quinto"}
 VETADAS = ["nunca", "jamás", "histórico", "histórica", "sin precedentes", "inédito", "inédita", "catastróf", "alarmante", "apocalíp",
-           "por culpa", "culpa del cambio", "provocad", "causad", "mañana", "ayer", "anoche", "pasado mañana", "esta semana", "este mes", "hoy"]
+           "por culpa", "culpa del cambio", "provocad", "causad", "analizad", "elaborad", "calculad", "mañana", "ayer", "anoche", "pasado mañana", "esta semana", "este mes", "hoy"]
 SUPERLATIVOS = ["récord", "el más", "la más", "los más", "las más", "máximo", "mínimo", "la mayor", "el mayor", "la menor", "el menor", "más alta", "más alto"]
 NOMBRES_OK = {"AEMET", "NOAA", "MITECO", "ERA5", "Copernicus", "ECMWF", "OpenData", "MeteoAlarm", "DANA", "España", "Mediterráneo", "Observatorio",
               "Según", "Hasta", "Entre", "Desde", "Además", "Las", "Los", "La", "El", "En", "Un", "Una", "De", "Del", "Con", "Por", "Para", "A", "Al",
@@ -1063,7 +1063,8 @@ Reglas que no se rompen nunca:
 7. Organismos solo por su sigla, como en los hechos: AEMET, NOAA, MITECO (nunca «Agencia Estatal de Meteorología»). No escribas ningún nombre propio (lugar, estación, organismo, persona) que no aparezca en los hechos.
 8. No hagas cálculos ni crees números nuevos: nada de sumas, restas, medias, porcentajes ni redondeos propios. Todas las cantidades en cifras («6 provincias», no «seis provincias»), salvo que el hecho ya las escriba con letra.
 9. No escribas la fecha de publicación ni ningún año o día que no esté en los hechos.
-10. Palabras prohibidas (un verificador automático rechaza el texto si aparecen): nunca, jamás, histórico, histórica, sin precedentes, inédito, catastrófico, alarmante, apocalíptico, provocado, causado, culpa, hoy, ayer, mañana, anoche, esta semana, este mes.
+10. Palabras prohibidas (un verificador automático rechaza el texto si aparecen): nunca, jamás, histórico, histórica, sin precedentes, inédito, catastrófico, alarmante, apocalíptico, provocado, causado, culpa, analizado, elaborado, calculado, hoy, ayer, mañana, anoche, esta semana, este mes.
+11. Los recuentos, rachas, tendencias y medias los calcula el Observatorio climático de calentamientoglobal.es con datos de AEMET, NOAA o MITECO: escribe «con datos de AEMET» o «según los datos de AEMET». Nunca digas que AEMET (u otro organismo) los ha analizado, elaborado o calculado. No cuentes tú elementos de una lista («6 provincias») si el número no está en los hechos.
 
 Devuelve SOLO un JSON válido con estas claves:
 {"titular": "máx. 120 caracteres, informativo, con la cifra más fuerte",
@@ -1166,6 +1167,11 @@ class Redactor:
         if self.uso.get("fecha") != HOY.isoformat():
             self.uso = {"fecha": HOY.isoformat(), "llamadas": 0, "por_modelo": {}}
         self.max_dia = int(os.getenv("REDACCION_MAX_DIA", "150"))
+        # el cupo del día se reparte entre las pasadas que quedan hasta medianoche (dos por hora), para que no se
+        # gaste por la mañana: primero las nacionales, luego las provinciales con aviso
+        local = AHORA.astimezone(MADRID)
+        quedan = max(1, (24 * 60 - (local.hour * 60 + local.minute)) // 30)
+        self.max = min(self.max, max(2, math.ceil((self.max_dia - self.uso["llamadas"]) / quedan)))
 
     def ia_disponible(self):
         activos = {p[0] for p in proveedores_activos()}
