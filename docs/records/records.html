@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Récords de temperatura en las estaciones de AEMET — hoy</title>
+<!-- La pagina buena es la de WordPress: este visor va en un iframe y no debe competir con ella en Google. -->
+<link rel="canonical" href="https://calentamientoglobal.es/records-de-temperatura/">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  /* ───────────────────────────────────────────────────────────────────────
+     Mismo patron que lluvias.html: el mapa ocupa toda la ventana y los tres
+     paneles flotan encima (HUD arriba a la izquierda, barra arriba en el
+     centro, leyenda abajo a la izquierda, cajon a la derecha).
+     Cada punto es una estacion de AEMET con tabla de valores extremos; el
+     color dice a cuantos grados esta hoy de su record del mes.
+     ─────────────────────────────────────────────────────────────────────── */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{background:#06101a;color:#dceaf6;-webkit-font-smoothing:antialiased;
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  #mapa{position:absolute;inset:0;background:#06101a;z-index:1}
+  .vidrio{background:rgba(8,22,36,.90);border:1px solid #1b3d5c;border-radius:16px;
+    backdrop-filter:blur(14px);box-shadow:0 16px 44px rgba(0,0,0,.55)}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute;top:16px;left:16px;z-index:1000;width:286px;max-width:calc(100vw - 32px);
+    max-height:calc(100% - 210px);display:flex;flex-direction:column;padding:15px 17px 6px}
+  .hud-tit{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;letter-spacing:-.01em;color:#eaf5ff}
+  .hud-tit .dot{width:9px;height:9px;border-radius:50%;background:#ff5a1f;flex:none;
+    box-shadow:0 0 0 0 rgba(255,90,31,.6);animation:pulso 2.2s infinite}
+  body.modo-frio .hud-tit .dot{background:#3fa7e8;box-shadow:0 0 0 0 rgba(63,167,232,.6)}
+  @keyframes pulso{0%{box-shadow:0 0 0 0 rgba(255,90,31,.55)}70%{box-shadow:0 0 0 9px rgba(255,90,31,0)}100%{box-shadow:0 0 0 0 rgba(255,90,31,0)}}
+  .hud-fecha{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#5b7d97;font-weight:600;margin-top:5px}
+  .hud-big{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.04;margin:8px 0 1px}
+  .hud-big.rec{color:#ff7a4a}
+  body.modo-frio .hud-big.rec{color:#6ec6ff}
+  .hud-cap{font-size:12px;color:#7e9bb4;line-height:1.4}
+  .hud-div{height:1px;background:#14314b;margin:13px 0}
+  .chips{display:flex;gap:8px}
+  .chips .c{flex:1;background:rgba(13,36,55,.75);border:1px solid #17395a;border-radius:11px;padding:8px 10px}
+  .chips .c b{display:block;font-size:16px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .chips .c span{display:block;margin-top:2px;font-size:10px;color:#5b7d97;line-height:1.3}
+  .hud-k{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#ff9a6a;
+    display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  body.modo-frio .hud-k{color:#5cbcf0}
+  .hud-k button{background:none;border:0;color:#456f8e;cursor:pointer;font:inherit;font-size:14px;line-height:1;padding:0 0 0 6px}
+  .hud-k button:hover{color:#9fbdd6}
+  #panel-lista{overflow-y:auto;margin-top:2px;min-height:0}
+  #hud.plegado #panel-lista{display:none}
+  .pg-card{padding:8px 0;border-bottom:1px solid #102a41;cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .pg-card:last-child{border-bottom:0}
+  .pg-card:hover .pg-zona{color:#fff;text-decoration:underline}
+  .pg-zona{font-size:13px;font-weight:600;color:#dceaf6;line-height:1.3}
+  .pg-prov{font-size:10.5px;color:#5b7d97;margin-top:1px}
+  .pg-mm{font-size:14px;font-weight:700;white-space:nowrap;letter-spacing:-.01em;font-variant-numeric:tabular-nums;text-align:right}
+  .pg-mm small{display:block;font-size:9.5px;font-weight:600;color:#5b7d97;letter-spacing:.04em;text-transform:uppercase}
+  .pg-mm.rec{color:#ff7a4a}
+  .pg-mm.rec.frio{color:#6ec6ff}
+  .vacio{padding:10px 0 12px;font-size:12px;color:#5b7d97;line-height:1.5}
+  .pill-estado{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:2px 6px;border-radius:999px;margin-left:6px;vertical-align:middle;border:1px solid}
+  .pill-estado.prov{color:#e8c28a;border-color:#7a5a2b;background:rgba(201,138,43,.15)}
+  .pill-estado.conf{color:#8fe3a8;border-color:#2f6b45;background:rgba(68,170,102,.15)}
+
+  /* ---------- BARRA ---------- */
+  #barra{position:absolute;top:16px;left:318px;right:16px;z-index:1000;display:flex;align-items:center;gap:7px;
+    padding:8px 11px;flex-wrap:wrap;justify-content:center;width:auto;margin:0 auto;max-width:max-content;
+    transition:right .34s cubic-bezier(.32,.72,.29,1)}
+  body.con-cajon #barra{right:368px}
+  #barra .g{display:inline-flex;align-items:center;gap:7px}
+  #barra .sep{width:1px;height:19px;background:#1b3d5c;margin:0 4px 0 1px;flex:none}
+  .pill{background:rgba(13,36,55,.8);border:1px solid #1b3d5c;color:#9fbdd6;padding:7px 13px;border-radius:999px;
+    font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+  .pill:hover{background:#123049;color:#dceaf6}
+  .pill.activo{background:#1f6ea8;border-color:#2f8fd0;color:#fff}
+  .pill.activo.calor{background:#b8441a;border-color:#e06030}
+
+  /* ---------- LEYENDA ---------- */
+  #leyenda{position:absolute;bottom:16px;left:16px;z-index:1000;padding:11px 14px;max-width:min(330px,calc(100vw - 32px))}
+  .ley-k{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;color:#5b7d97;margin-bottom:7px}
+  #leyenda-items{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+  .ley-item{display:flex;align-items:center;gap:7px;font-size:11px;color:#8ea9c0;line-height:1.3}
+  .ley-dot{width:11px;height:11px;border-radius:50%;flex:none;border:1px solid rgba(255,255,255,.18)}
+  .ley-nota{grid-column:1 / -1;margin-top:5px;padding-top:7px;border-top:1px solid #14314b;font-size:10px;color:#5b7d97;line-height:1.4}
+
+  /* ---------- CAJÓN ---------- */
+  #cajon{position:absolute;top:16px;right:16px;bottom:16px;z-index:1100;width:336px;max-width:calc(100vw - 32px);
+    display:flex;flex-direction:column;overflow:hidden;transform:translateX(calc(100% + 26px));
+    transition:transform .34s cubic-bezier(.32,.72,.29,1)}
+  #cajon.abierto{transform:translateX(0)}
+  .cj-cab{padding:16px 18px 12px;border-bottom:1px solid #14314b;flex:none}
+  .cj-k{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:#7fa8c9;font-weight:600}
+  .cj-cab h2{margin:3px 0 0;font-size:20px;font-weight:700;letter-spacing:-.02em;color:#fff;line-height:1.15;padding-right:26px}
+  .cj-x{position:absolute;top:13px;right:14px;width:27px;height:27px;border-radius:50%;border:1px solid #1b3d5c;
+    background:rgba(13,36,55,.9);color:#7fa8c9;cursor:pointer;font:inherit;font-size:13px;line-height:1}
+  .cj-x:hover{color:#fff;background:#12304a}
+  .cj-body{flex:1;overflow-y:auto;padding:14px 18px 18px}
+  .cj-ahora{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#ff9a6a;margin:0 0 6px}
+  body.modo-frio .cj-ahora{color:#5cbcf0}
+  .cj-n{font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+  .cj-n.rec{color:#ff7a4a}
+  body.modo-frio .cj-n.rec{color:#6ec6ff}
+  .cj-et{font-size:12.5px;margin-top:3px;font-weight:600;color:#9db8cf}
+  .cj-barra{height:8px;background:#16293a;border-radius:5px;margin:14px 0 4px;position:relative;overflow:visible}
+  .cj-barra i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#355f85,#ff8a2a)}
+  body.modo-frio .cj-barra i{background:linear-gradient(90deg,#355f85,#6ec6ff)}
+  .cj-marca{position:absolute;top:-4px;bottom:-4px;left:100%;width:0;border-left:2px solid #fff}
+  .cj-pie{font-size:10.5px;color:#7fa8c9;margin:0 0 12px}
+  .cj-fila{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:7px 0;border-bottom:1px solid #17324a}
+  .cj-fila:last-of-type{border-bottom:0}
+  .cj-fila span{color:#9db8cf}
+  .cj-fila b{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+  .cj-sub{margin:16px 0 2px;padding-top:12px;border-top:1px solid #14314b;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7fa8c9}
+  .cj-aviso{margin:11px 0 0;padding:9px 11px;border-left:3px solid #ff5a1f;background:rgba(255,90,31,.12);border-radius:0 8px 8px 0;font-size:12.5px;line-height:1.45;color:#ffd9c9}
+  .cj-aviso.frio{border-left-color:#3fa7e8;background:rgba(63,167,232,.12);color:#cfe2f2}
+  .cj-aviso.rev{border-left-color:#c98a2b;background:rgba(201,138,43,.12);color:#e8d9bf}
+  .cj-aviso b{color:#fff}
+  .cj-cta{display:block;margin-top:15px;padding:11px 14px;background:#b8441a;color:#fff;text-decoration:none;border-radius:11px;font-size:13.5px;font-weight:600;text-align:center}
+  .cj-cta:hover{background:#d4582a}
+  .cj-nota{margin-top:11px;font-size:10.5px;color:#7b93a8;line-height:1.45}
+
+  /* ---------- TOOLTIP ---------- */
+  .leaflet-tooltip.tip-cg{background:rgba(8,22,36,.96);color:#dceaf6;border:1px solid #2a5577;border-radius:10px;padding:7px 10px;
+    font:12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;box-shadow:0 8px 22px rgba(0,0,0,.5);white-space:nowrap}
+  .leaflet-tooltip.tip-cg b{color:#fff;font-size:13px}
+  .leaflet-tooltip.tip-cg .tt-p{color:#7fa8c9;font-size:11px}
+  .leaflet-tooltip.tip-cg .tt-l{display:block;margin-top:3px;color:#cfe2f2}
+  .leaflet-tooltip.tip-cg .tt-s{display:block;margin-top:3px;color:#6f93b0;font-size:10.5px}
+  .leaflet-tooltip-top.tip-cg:before{border-top-color:#2a5577}
+
+  /* ---------- CONTROLES DE LEAFLET ---------- */
+  .leaflet-control-zoom{border:none !important;box-shadow:0 4px 16px rgba(0,0,0,.5) !important;border-radius:12px !important;overflow:hidden;margin-left:16px !important}
+  .leaflet-control-zoom a{background:#0a1c2c !important;color:#9fbdd6 !important;border-color:#14314b !important;width:34px !important;height:34px !important;line-height:34px !important;font-size:18px !important}
+  .leaflet-control-zoom a:hover{background:#12304a !important;color:#fff !important}
+  .leaflet-bar a:first-child{border-radius:12px 12px 0 0 !important}
+  .leaflet-bar a:last-child{border-radius:0 0 12px 12px !important}
+  .leaflet-control-attribution{background:rgba(6,16,26,.85) !important;color:#456f8e !important;font-size:10px !important;border-radius:8px 0 0 0 !important;padding:2px 8px !important}
+  .leaflet-control-attribution a{color:#6f9fc4 !important}
+  .leaflet-bottom.leaflet-right{transition:right .34s cubic-bezier(.32,.72,.29,1)}
+  body.con-cajon .leaflet-bottom.leaflet-right{right:352px}
+  .leaflet-bottom.leaflet-right .leaflet-control-zoom{margin-bottom:24px !important;margin-right:16px !important}
+
+  /* ---------- PANTALLAS ESTRECHAS ---------- */
+  @media(max-width:900px){#barra{max-width:calc(100vw - 32px)}}
+  @media(max-width:760px){
+    #hud{width:auto;right:16px;padding:11px 14px 4px;max-height:52%}
+    .hud-tit{font-size:14px}
+    .hud-big{font-size:27px;margin:5px 0 0}
+    .hud-cap{font-size:11.5px}
+    #hud .chips,#hud .d-chips{display:none}
+    #hud .hud-div{margin:9px 0}
+    #panel-lista{max-height:150px}
+    #barra{position:absolute;top:auto;bottom:16px;left:16px;right:16px;transform:none;max-width:none;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}
+    #barra .g{flex:none}
+    #leyenda{display:none}
+    #cajon{top:auto;left:16px;right:16px;bottom:16px;width:auto;height:64%;transform:translateY(calc(100% + 26px))}
+    #cajon.abierto{transform:translateY(0)}
+    body.con-cajon #barra{opacity:0;pointer-events:none}
+    .leaflet-control-zoom{display:none}
+    body.con-cajon .leaflet-bottom.leaflet-right{right:0}
+  }
+</style>
+</head>
+<body>
+
+<div id="mapa"></div>
+
+<div id="hud" class="vidrio">
+  <div class="hud-tit"><span class="dot"></span>Récords de temperatura</div>
+  <div class="hud-fecha" id="hud-fecha">Cargando datos…</div>
+  <div class="hud-big" id="hud-big">—</div>
+  <div class="hud-cap" id="hud-cap">&nbsp;</div>
+  <div class="hud-div d-chips"></div>
+  <div class="chips">
+    <div class="c"><b id="chip-a">—</b><span id="chip-a-et">récords en 2026</span></div>
+    <div class="c"><b id="chip-b">—</b><span id="chip-b-et">estaciones a menos de 1 °C de su récord</span></div>
+  </div>
+  <div class="hud-div"></div>
+  <div class="hud-k"><span id="panel-titulo">Récords de hoy</span><button id="panel-cerrar" aria-label="Plegar">−</button></div>
+  <div id="panel-lista"></div>
+</div>
+
+<div id="barra" class="vidrio">
+  <span class="g">
+    <button class="pill activo" data-periodo="hoy">Hoy</button>
+    <button class="pill" data-periodo="ayer">Ayer</button>
+  </span>
+  <span class="g"><span class="sep"></span>
+    <button class="pill activo calor" data-modo="calor">Máximas</button>
+    <button class="pill" data-modo="frio">Mínimas</button>
+  </span>
+  <span class="g"><span class="sep"></span>
+    <button class="pill" data-ir="peninsula">Península</button>
+    <button class="pill" data-ir="canarias">Canarias</button>
+  </span>
+</div>
+
+<div id="leyenda" class="vidrio">
+  <div class="ley-k" id="ley-k">A cuántos grados está hoy cada estación de su récord de máxima del mes</div>
+  <div id="leyenda-items"></div>
+</div>
+
+<div id="cajon" class="vidrio">
+  <div class="cj-cab">
+    <div class="cj-k" id="cj-k">Estación de AEMET</div>
+    <h2 id="cj-h2">—</h2>
+    <button class="cj-x" id="cj-x" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="cj-body" id="cj-body"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const JSON_URL = 'https://davidbebow.github.io/temperaturas-mar-espana/records/hoy.json';
+const PAGINA   = 'https://calentamientoglobal.es/records-de-temperatura/';
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+// ---------- estado ----------
+let D = null;                    // hoy.json
+let periodo = 'hoy';             // hoy | ayer
+let modo = 'calor';              // calor (máximas) | frio (mínimas)
+const capa = L.layerGroup();
+let marcadores = {};             // idema -> circleMarker
+let abierto = null;              // idema del cajón abierto
+
+// ---------- utilidades ----------
+const f1 = v => v == null ? '—' : (Math.round(v * 10) / 10).toLocaleString('es-ES', {minimumFractionDigits: 0, maximumFractionDigits: 1});
+const signo = v => v == null ? '—' : (v > 0 ? '+' : '') + f1(v);
+const fechaDia = iso => { if (!iso) return ''; const d = new Date(iso + 'T12:00:00'); return `${d.getDate()} de ${MESES[d.getMonth()]}`; };
+const fechaLarga = iso => { if (!iso || iso.length < 10) return iso || ''; const d = new Date(iso + 'T12:00:00'); return `${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`; };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// Distancia al récord en el periodo y modo activos: ≥ 0 es récord (batido o igualado).
+function distancia(f) {
+  const p = f[periodo];
+  if (!p) return null;
+  // un récord que AEMET no validó (dx_desc/dn_desc) se pinta como «a 0 °C», no como récord
+  if (modo === 'calor') return p.dx == null ? null : (p.dx_desc ? Math.min(p.dx, -0.05) : p.dx);
+  return p.dn == null ? null : (p.dn_desc ? Math.min(p.dn, -0.05) : p.dn);
+}
+const esIgual = d => d != null && Math.abs(d) < 0.05;
+const esRecord = d => d != null && (d >= 0.049 || esIgual(d));
+function valor(f) { const p = f[periodo]; if (!p) return null; return modo === 'calor' ? p.tx : p.tn; }
+function record(f) { const p = f[periodo]; if (!p) return null; return modo === 'calor' ? p.rx : p.rn; }
+function recordFecha(f) { const p = f[periodo]; if (!p) return null; return modo === 'calor' ? p.rxf : p.rnf; }
+
+// Escala: cuanto más cerca del récord, más caliente (o más frío) el punto.
+const CLASES_CALOR = [
+  {min: 0,    color: '#ff3b1f', et: 'Récord batido o igualado'},
+  {min: -1,   color: '#ff8a2a', et: 'A menos de 1 °C'},
+  {min: -2,   color: '#ffc44a', et: 'A 1-2 °C'},
+  {min: -4,   color: '#9f8a5e', et: 'A 2-4 °C'},
+  {min: -1e9, color: '#3d5a73', et: 'A más de 4 °C'},
+];
+const CLASES_FRIO = [
+  {min: 0,    color: '#4fd1ff', et: 'Récord de frío batido o igualado'},
+  {min: -1,   color: '#6ea8ff', et: 'A menos de 1 °C'},
+  {min: -2,   color: '#8f8fe0', et: 'A 1-2 °C'},
+  {min: -4,   color: '#5f6e8a', et: 'A 2-4 °C'},
+  {min: -1e9, color: '#3d5a73', et: 'A más de 4 °C'},
+];
+function clase(d) {
+  const C = modo === 'calor' ? CLASES_CALOR : CLASES_FRIO;
+  if (d == null) return {color: '#24384a', et: 'Sin dato'};
+  for (const c of C) if (d >= c.min) return c;
+  return C[C.length - 1];
+}
+
+// ---------- mapa ----------
+const mapa = L.map('mapa', {zoomControl: false, attributionControl: true, minZoom: 4, maxZoom: 12})
+  .setView([40.2, -3.7], 6);
+L.control.zoom({position: 'bottomright'}).addTo(mapa);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  {attribution: 'Tiles © Esri · Datos: AEMET OpenData · calentamientoglobal.es', maxZoom: 16}).addTo(mapa);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom: 16, opacity: 0.45}).addTo(mapa);
+capa.addTo(mapa);
+
+function ir(zona) {
+  if (zona === 'canarias') mapa.fitBounds([[27.5, -18.4], [29.5, -13.3]], {padding: [20, 20]});
+  else mapa.fitBounds([[35.9, -9.5], [43.9, 4.4]], {padding: [30, 30]});
+}
+
+// ---------- pintar ----------
+function pintar() {
+  capa.clearLayers(); marcadores = {};
+  if (!D || !D.estaciones) return;
+  // los récords, encima: se añaden los últimos
+  const filas = D.estaciones.slice().sort((a, b) => ((distancia(a) ?? -99) - (distancia(b) ?? -99)));
+  for (const f of filas) {
+    const d = distancia(f);
+    const p = f[periodo] || {};
+    const rev = !!p.rev;
+    const c = clase(rev ? null : d);
+    const esRec = esRecord(d) && !rev;
+    const m = L.circleMarker([f.lat, f.lon], {
+      radius: esRec ? 7.5 : (d != null && d >= -1 ? 6 : 4.5),
+      color: esRec ? '#fff' : 'rgba(255,255,255,.35)', weight: esRec ? 1.6 : 0.8,
+      fillColor: rev ? '#6b5a2b' : c.color, fillOpacity: rev ? .6 : (d == null ? .35 : .92),
+    });
+    const v = valor(f), r = record(f);
+    const extremo = modo === 'calor' ? 'Máxima' : 'Mínima';
+    m.bindTooltip(
+      `<b>${esc(f.n)}</b> <span class="tt-p">${esc(f.p)}</span>` +
+      `<span class="tt-l">${extremo} ${periodo === 'hoy' ? 'hoy' : 'ayer'}: <b>${f1(v)} °C</b>` +
+      (r != null ? ` · récord del mes ${f1(r)} °C` : '') + `</span>` +
+      (rev ? `<span class="tt-s">En comprobación</span>` :
+        (d != null ? `<span class="tt-s">${esIgual(d) ? 'Iguala el récord' : (d > 0 ? `Récord ${modo === 'calor' ? 'batido' : 'de frío batido'} por ${f1(Math.abs(d))} °C` : `A ${f1(Math.abs(d))} °C del récord`)}</span>` : '')),
+      {className: 'tip-cg', direction: 'top', offset: [0, -6]});
+    m.on('click', e => { L.DomEvent.stopPropagation(e); abrir(f.id); });
+    m.addTo(capa); marcadores[f.id] = m;
+  }
+  pintarHud(); pintarLeyenda();
+}
+
+function listaRecords() {
+  if (!D) return [];
+  const todos = periodo === 'hoy' ? (D.records_hoy || []) : (D.records_ayer || []);
+  return todos.filter(x => modo === 'calor' ? x.variable === 'tmax' : x.variable === 'tmin');
+}
+
+function pintarHud() {
+  const recs = listaRecords();
+  const n = recs.length;
+  const fecha = periodo === 'hoy' ? D.hoy : D.ayer;
+  document.getElementById('hud-fecha').textContent =
+    (periodo === 'hoy' ? `Hoy, ${fechaDia(fecha)}` : `Ayer, ${fechaDia(fecha)}`) +
+    (periodo === 'hoy' && D.hasta_local ? ` · datos hasta las ${D.hasta_local}` : ' · día completo');
+  const big = document.getElementById('hud-big');
+  big.textContent = n === 0 ? 'Sin récords' : (n === 1 ? '1 récord' : `${n} récords`);
+  big.classList.toggle('rec', n > 0);
+  const extremo = modo === 'calor' ? 'de máxima' : 'de mínima';
+  document.getElementById('hud-cap').textContent = n === 0
+    ? `Ninguna estación de AEMET ha batido ${periodo === 'hoy' ? 'hoy' : 'ayer'} su récord ${extremo} del mes`
+    : `${n === 1 ? 'estación' : 'estaciones'} de AEMET con récord ${extremo} del mes${periodo === 'hoy' ? ' (día en curso)' : ''}`;
+  const c = D.contador || {};
+  document.getElementById('chip-a').textContent = modo === 'calor' ? (c.tmax ?? '—') : (c.tmin ?? '—');
+  document.getElementById('chip-a-et').textContent = `récords ${extremo} en ${c.anio || ''}`;
+  const cerca = (D.estaciones || []).filter(f => { const d = distancia(f); const p = f[periodo] || {}; return d != null && d >= -1 && d < 0 && !p.rev; }).length;
+  document.getElementById('chip-b').textContent = cerca;
+  document.getElementById('chip-b-et').textContent = `estaciones a menos de 1 °C del récord`;
+  document.getElementById('panel-titulo').textContent = periodo === 'hoy' ? 'Récords de hoy' : 'Récords de ayer';
+  const lista = document.getElementById('panel-lista');
+  if (!n) {
+    const cercanas = (D.estaciones || []).filter(f => { const d = distancia(f); const p = f[periodo] || {}; return d != null && d >= -1.5 && !p.rev; })
+      .sort((a, b) => distancia(b) - distancia(a)).slice(0, 6);
+    if (!cercanas.length) { lista.innerHTML = '<div class="vacio">Ninguna estación está hoy a menos de 1,5 °C de su récord del mes.</div>'; return; }
+    document.getElementById('panel-titulo').textContent = 'Las más cerca del récord';
+    lista.innerHTML = cercanas.map(f => `<div class="pg-card" data-id="${esc(f.id)}"><div><div class="pg-zona">${esc(f.n)}</div><div class="pg-prov">${esc(f.p)} · récord ${f1(record(f))} °C</div></div>` +
+      `<div class="pg-mm">${f1(valor(f))} °C<small>a ${f1(Math.abs(distancia(f)))} °C</small></div></div>`).join('');
+  } else {
+    lista.innerHTML = recs.map(x => `<div class="pg-card" data-id="${esc(x.idema)}"><div><div class="pg-zona">${esc(x.bonito)}` +
+      `<span class="pill-estado ${x.estado === 'confirmado' || x.estado === 'corregido' ? 'conf' : 'prov'}">${x.estado === 'confirmado' || x.estado === 'corregido' ? 'Confirmado' : 'Provisional'}</span></div>` +
+      `<div class="pg-prov">${esc(x.provincia)} · ${x.nivel === 'absoluto' ? 'récord absoluto' : (x.nivel === 'iguala' ? 'iguala el récord del mes' : 'récord del mes')}` +
+      (x.record_anterior && x.record_anterior.valor != null ? ` (anterior ${f1(x.record_anterior.valor)} °C, ${x.record_anterior.anio})` : '') + `</div></div>` +
+      `<div class="pg-mm rec ${modo}">${f1(x.valor)} °C<small>${x.en_curso ? 'en curso' : 'día completo'}</small></div></div>`).join('');
+  }
+  lista.querySelectorAll('.pg-card').forEach(el => el.addEventListener('click', () => abrir(el.dataset.id, true)));
+}
+
+function pintarLeyenda() {
+  const C = modo === 'calor' ? CLASES_CALOR : CLASES_FRIO;
+  const cuando = periodo === 'hoy' ? 'está hoy' : 'estuvo ayer';
+  document.getElementById('ley-k').textContent = modo === 'calor'
+    ? `A cuántos grados ${cuando} cada estación de su récord de máxima del mes`
+    : `A cuántos grados ${cuando} cada estación de su récord de mínima del mes`;
+  document.getElementById('leyenda-items').innerHTML = C.map(c => `<div class="ley-item"><span class="ley-dot" style="background:${c.color}"></span>${c.et}</div>`).join('') +
+    `<div class="ley-item"><span class="ley-dot" style="background:#6b5a2b"></span>En comprobación</div>` +
+    `<div class="ley-nota">Récord de cada estación según su tabla oficial de valores extremos (AEMET). Observación en tiempo real, validada después por AEMET.</div>`;
+}
+
+// ---------- cajón ----------
+function abrir(id, centrar) {
+  const f = (D.estaciones || []).find(x => x.id === id);
+  if (!f) return;
+  abierto = id;
+  const p = f[periodo] || {};
+  const rec = listaRecords().find(x => x.idema === id) || ((periodo === 'hoy' ? D.records_hoy : D.records_ayer) || []).find(x => x.idema === id);
+  const enRev = (D.en_revision || []).find(x => x.idema === id && x.fecha === (periodo === 'hoy' ? D.hoy : D.ayer));
+  const v = valor(f), r = record(f), d = distancia(f);
+  const extremo = modo === 'calor' ? 'Máxima' : 'Mínima';
+  const mes = MESES[new Date((periodo === 'hoy' ? D.hoy : D.ayer) + 'T12:00:00').getMonth()];
+  document.getElementById('cj-k').textContent = `Estación de AEMET · ${f.p}` + (f.alt != null ? ` · ${Math.round(f.alt)} m` : '');
+  document.getElementById('cj-h2').textContent = f.n;
+  let pct = 0;
+  if (v != null && r != null) {
+    pct = modo === 'calor' ? Math.max(4, Math.min(100, 100 - Math.max(0, r - v) * 12)) : Math.max(4, Math.min(100, 100 - Math.max(0, v - r) * 12));
+  }
+  let h = `<div class="cj-ahora">${extremo} ${periodo === 'hoy' ? 'de hoy' : 'de ayer'}${periodo === 'hoy' && D.hasta_local ? ` · hasta las ${D.hasta_local}` : ''}</div>` +
+    `<div class="cj-n ${esRecord(d) && !p.rev ? 'rec' : ''}">${f1(v)} °C</div>` +
+    `<div class="cj-et">${d == null ? 'sin récord de referencia para este mes' : (p.rev ? 'en comprobación' : (esIgual(d) ? `iguala el récord de ${mes}` : (d > 0 ? `${modo === 'calor' ? 'supera' : 'rebaja'} el récord de ${mes} en ${f1(Math.abs(d))} °C` : ((modo === 'calor' ? p.dx_desc : p.dn_desc) ? `por encima de la tabla, pero AEMET no lo validó como récord` : `a ${f1(Math.abs(d))} °C del récord de ${mes}`))))}</div>`;
+  if (v != null && r != null) {
+    h += `<div class="cj-barra"><i style="width:${pct}%"></i><span class="cj-marca" title="récord"></span></div>` +
+      `<div class="cj-pie">La barra llega al 100 % cuando se alcanza el récord del mes (${f1(r)} °C${recordFecha(f) ? ', ' + fechaLarga(recordFecha(f)) : ''}).</div>`;
+  }
+  if (rec && !p.rev && rec.estado !== 'descartado') {
+    h += `<div class="cj-aviso ${modo === 'frio' ? 'frio' : ''}"><b>${rec.nivel === 'absoluto' ? 'Récord absoluto' : (rec.nivel === 'iguala' ? 'Iguala el récord' : 'Récord del mes')}${rec.estado === 'confirmado' || rec.estado === 'corregido' ? ' · confirmado por AEMET' : ' · provisional'}.</b> ${esc(rec.titular)}.</div>`;
+  } else if (enRev) {
+    h += `<div class="cj-aviso rev"><b>En comprobación.</b> La observación da ${f1(enRev.valor)} °C, pero el dato no pasa los controles del observatorio (${esc((enRev.avisos || []).join('; '))}). Se espera al valor validado por AEMET.</div>`;
+  }
+  h += `<div class="cj-sub">Récords de la estación</div>` +
+    `<div class="cj-fila"><span>Récord de ${extremo.toLowerCase()} de ${mes}</span><b>${r != null ? f1(r) + ' °C' : '—'}${recordFecha(f) ? '<br><small style="color:#7fa8c9;font-weight:500">' + fechaLarga(recordFecha(f)) + '</small>' : ''}</b></div>`;
+  if (f.abs) {
+    h += `<div class="cj-fila"><span>Máxima absoluta</span><b>${f.abs.tx != null ? f1(f.abs.tx) + ' °C' : '—'}${f.abs.txa ? ` <small style="color:#7fa8c9;font-weight:500">(${f.abs.txa})</small>` : ''}</b></div>` +
+      `<div class="cj-fila"><span>Mínima absoluta</span><b>${f.abs.tn != null ? f1(f.abs.tn) + ' °C' : '—'}${f.abs.tna ? ` <small style="color:#7fa8c9;font-weight:500">(${f.abs.tna})</small>` : ''}</b></div>`;
+  }
+  h += `<div class="cj-sub">${periodo === 'hoy' ? 'Hoy' : 'Ayer'} en la estación</div>` +
+    `<div class="cj-fila"><span>Máxima</span><b>${f1(p.tx)} °C${p.rx != null && p.dx != null ? ` <small style="color:#7fa8c9;font-weight:500">(${signo(p.dx)} del récord)</small>` : ''}</b></div>` +
+    `<div class="cj-fila"><span>Mínima</span><b>${f1(p.tn)} °C${p.rn != null && p.dn != null ? ` <small style="color:#7fa8c9;font-weight:500">(${p.dn >= 0 ? 'récord de frío' : 'a ' + f1(Math.abs(p.dn)) + ' °C del récord de frío'})</small>` : ''}</b></div>` +
+    `<div class="cj-fila"><span>Horas con observación</span><b>${p.h != null ? p.h + ' de 24' : '—'}</b></div>` +
+    (f.desde ? `<div class="cj-fila"><span>Tabla de extremos</span><b>desde al menos ${f.desde}</b></div>` : '');
+  h += `<a class="cj-cta" href="${PAGINA}" target="_top">Todos los récords y cómo se calculan</a>` +
+    `<div class="cj-nota">Observación horaria de AEMET OpenData (día de 0 a 24 h UTC) comparada con los valores climatológicos extremos que AEMET publica para esta estación. AEMET valida el dato en 2-4 días; el observatorio lo vuelve a comprobar entonces.</div>`;
+  document.getElementById('cj-body').innerHTML = h;
+  document.getElementById('cajon').classList.add('abierto');
+  document.body.classList.add('con-cajon');
+  if (centrar) mapa.flyTo([f.lat, f.lon], Math.max(mapa.getZoom(), 7), {duration: .6});
+  const m = marcadores[id]; if (m) m.bringToFront();
+}
+function cerrar() {
+  abierto = null;
+  document.getElementById('cajon').classList.remove('abierto');
+  document.body.classList.remove('con-cajon');
+}
+document.getElementById('cj-x').addEventListener('click', cerrar);
+mapa.on('click', cerrar);
+
+// ---------- controles ----------
+document.querySelectorAll('[data-periodo]').forEach(b => b.addEventListener('click', () => {
+  periodo = b.dataset.periodo;
+  document.querySelectorAll('[data-periodo]').forEach(x => x.classList.toggle('activo', x === b));
+  pintar(); if (abierto) abrir(abierto);
+}));
+document.querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', () => {
+  modo = b.dataset.modo;
+  document.body.classList.toggle('modo-frio', modo === 'frio');
+  document.querySelectorAll('[data-modo]').forEach(x => { x.classList.toggle('activo', x === b); x.classList.toggle('calor', x === b && modo === 'calor'); });
+  pintar(); if (abierto) abrir(abierto);
+}));
+document.querySelectorAll('[data-ir]').forEach(b => b.addEventListener('click', () => ir(b.dataset.ir)));
+document.getElementById('panel-cerrar').addEventListener('click', () => {
+  const hud = document.getElementById('hud');
+  hud.classList.toggle('plegado');
+  document.getElementById('panel-cerrar').textContent = hud.classList.contains('plegado') ? '+' : '−';
+});
+
+// ---------- carga ----------
+fetch(JSON_URL + '?t=' + Date.now()).then(r => {
+  if (!r.ok) throw new Error(r.status === 404 ? 'sin-datos' : 'http-' + r.status);
+  return r.json();
+}).then(j => {
+  D = j;
+  D.records_hoy = D.records_hoy || []; D.records_ayer = D.records_ayer || []; D.en_revision = D.en_revision || []; D.red = D.red || {};
+  if (!D.estaciones || !D.estaciones.length) {
+    document.getElementById('hud-fecha').textContent = 'Sin datos todavía';
+    document.getElementById('hud-big').textContent = '—';
+    document.getElementById('hud-cap').textContent = D.base && !D.base.n ? 'La tabla de récords de AEMET se está construyendo (tarda media hora).' : 'AEMET no ha publicado observaciones recientes.';
+    return;
+  }
+  // si hoy aún no hay casi datos (primera hora UTC), se abre en ayer
+  if (!D.records_hoy.length && (D.red.estaciones_hoy || 0) < 100 && (D.red.estaciones_ayer || 0) > 100) {
+    periodo = 'ayer';
+    document.querySelectorAll('[data-periodo]').forEach(x => x.classList.toggle('activo', x.dataset.periodo === 'ayer'));
+  }
+  pintar();
+  ir('peninsula');
+  const hash = (location.hash || '').replace('#', '');
+  if (hash && marcadores[hash]) abrir(hash, true);
+}).catch(err => {
+  const sinDatos = err && err.message === 'sin-datos';
+  document.getElementById('hud-fecha').textContent = sinDatos ? 'El mapa se está construyendo' : 'No se han podido cargar los datos';
+  document.getElementById('hud-big').textContent = '—';
+  document.getElementById('hud-cap').textContent = sinDatos ? 'La tabla de récords de AEMET y la primera observación llegan en la próxima hora.' : 'Vuelve a intentarlo en unos minutos.';
+  document.getElementById('panel-lista').innerHTML = '';
+});
+</script>
+</body>
+</html>
