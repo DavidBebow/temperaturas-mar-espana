@@ -5,6 +5,13 @@ name: Hallazgos de prensa
 # y escribe docs/prensa/hallazgos.json + los dossiers (md, png, csv) de los más
 # fuertes; después, partes_prensa.py escribe el parte diario de cada provincia
 # (docs/prensa/partes/). Corre cada hora para que la sala de prensa abra con lo de hoy.
+#
+# 18-10-2026: antes del detector corre records_detectar.py (clima-scripts, privado):
+# lee la observación horaria de toda la red de AEMET y detecta el mismo día los
+# récords de temperatura de cada estación contra su tabla oficial de valores
+# extremos (docs/records/baseline.json, que mantiene records-baseline.yml). Deja
+# docs/records/hallazgos_estaciones.json, que hallazgos_prensa.py mete en la cola
+# con citabilidad alta, y docs/records/hoy.json para el mapa de /records-de-temperatura/.
 
 on:
   workflow_dispatch:
@@ -37,13 +44,37 @@ jobs:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
 
+      - name: Descargar scripts privados (clima-scripts)
+        # Si el token falla, la sala de prensa sigue sin el paso de récords (no debe depender del privado).
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: privado
+
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Instalar dependencias
-        run: pip install matplotlib
+        run: pip install matplotlib requests
+
+      # Récords de temperatura en las estaciones de AEMET, el mismo día. Si AEMET no
+      # responde o falta la base, el paso no tumba la sala de prensa: el resto sigue
+      # con los hallazgos de la pasada anterior (docs/records/ ya está en el repo).
+      - name: Récords en las estaciones de AEMET (observación de hoy + verificación)
+        continue-on-error: true
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          CG_DOCS: docs
+        run: |
+          if [ -f privado/records_detectar.py ]; then
+            python privado/records_detectar.py
+          else
+            echo "Sin scripts privados (checkout fallido): se omite el paso de récords"
+          fi
 
       - name: Detectar hallazgos y generar dossiers
         run: |
@@ -67,7 +98,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes docs/prensa/noticias
+          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes docs/prensa/noticias docs/records
           if git diff --cached --quiet; then
             echo "Sin cambios."
             exit 0
