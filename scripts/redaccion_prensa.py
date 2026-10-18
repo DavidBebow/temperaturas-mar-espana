@@ -967,7 +967,7 @@ SUPERLATIVOS = ["récord", "el más", "la más", "los más", "las más", "máxim
 NOMBRES_OK = {"AEMET", "NOAA", "MITECO", "ERA5", "Copernicus", "ECMWF", "OpenData", "MeteoAlarm", "DANA", "España", "Mediterráneo", "Observatorio",
               "Según", "Hasta", "Entre", "Desde", "Además", "Las", "Los", "La", "El", "En", "Un", "Una", "De", "Del", "Con", "Por", "Para", "A", "Al",
               "Este", "Esta", "Ese", "Esa", "Le", "Ya", "Son", "Hay", "Sin", "Otras", "Otros", "Fuente", "Alborán", "Balear", "Satélite", "AEMET.",
-              "Aviso", "Avisos", "Lluvia", "Mar", "CC", "BY"}
+              "Aviso", "Avisos", "Lluvia", "Mar", "CC", "BY", "Copernicus/ECMWF", "Agencia", "Estatal", "Meteorología", "NOAA."}
 
 
 def corpus(hechos, extra=""):
@@ -1060,6 +1060,10 @@ Reglas que no se rompen nunca:
 4. Nada de adjetivos dramáticos (histórico, alarmante, sin precedentes, catastrófico). No atribuyas causas al cambio climático. Un superlativo o «récord» solo si el hecho lo dice.
 5. Cada cifra de un lugar va con su lugar en la misma frase. Cita la fuente (AEMET, NOAA, MITECO) al menos una vez.
 6. Estilo de agencia: frases cortas y concretas, lo más importante primero, voz activa. Nada de relleno.
+7. Organismos solo por su sigla, como en los hechos: AEMET, NOAA, MITECO (nunca «Agencia Estatal de Meteorología»). No escribas ningún nombre propio (lugar, estación, organismo, persona) que no aparezca en los hechos.
+8. No hagas cálculos ni crees números nuevos: nada de sumas, restas, medias, porcentajes ni redondeos propios. Todas las cantidades en cifras («6 provincias», no «seis provincias»), salvo que el hecho ya las escriba con letra.
+9. No escribas la fecha de publicación ni ningún año o día que no esté en los hechos.
+10. Palabras prohibidas (un verificador automático rechaza el texto si aparecen): nunca, jamás, histórico, histórica, sin precedentes, inédito, catastrófico, alarmante, apocalíptico, provocado, causado, culpa, hoy, ayer, mañana, anoche, esta semana, este mes.
 
 Devuelve SOLO un JSON válido con estas claves:
 {"titular": "máx. 120 caracteres, informativo, con la cifra más fuerte",
@@ -1121,6 +1125,9 @@ def llamar_ia(sistema, usuario, vetados, max_tokens=6000):
                     if e.code == 429 and intento == 0 and "per day" not in cuerpo.lower() and "daily" not in cuerpo.lower():
                         time.sleep(min(int(e.headers.get("Retry-After") or 20), 40))
                         continue
+                    if e.code >= 500 and intento < 2:
+                        time.sleep(4 * (intento + 1))  # saturado un momento: reintento corto
+                        continue
                     break
                 except Exception as e:
                     ultimo = f"{nombre}: {e}"
@@ -1129,6 +1136,9 @@ def llamar_ia(sistema, usuario, vetados, max_tokens=6000):
                     and not ultimo.startswith((f"{nombre} 401", f"{nombre} 403", f"{nombre} 429")):
                 MODELOS_NO_DISPONIBLES.add(modelo)
                 continue  # ese modelo no está: el siguiente del mismo proveedor
+            if ultimo.startswith(f"{nombre} 5"):
+                MODELOS_NO_DISPONIBLES.add(modelo)
+                continue  # ese modelo, saturado: el siguiente del mismo proveedor (y se salta el resto de la pasada)
             if ultimo.startswith((f"{nombre} 401", f"{nombre} 403", f"{nombre} 429")):
                 vetados.add(nombre)
                 LOG.append(f"{nombre} fuera en esta pasada (clave o cupo gratuito): {ultimo[:150]}")
