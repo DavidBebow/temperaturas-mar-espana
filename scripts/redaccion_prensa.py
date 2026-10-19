@@ -178,6 +178,8 @@ class Datos:
         self.MAPA = leer(SALIDA / "base" / "mapa_espana.json", {}) or {}
         self.corte = self.L.get("corte_red")
         self.consulta = self.A.get("generado")
+        if self.E and self.corte:
+            _completar_parciales(self)
 
     def nom(self, e):
         return H._nombre_corto(e)
@@ -313,6 +315,10 @@ def g_episodio(D: Datos, med):
             hechos.append(hecho("lluvia_parcial", f"La estación de AEMET de {D.donde(ep_)} llevaba al menos {f1(mmp)} mm entre la medianoche y las {hp_}:00 del {dia(hoy_f)}, "
                                 f"su último dato publicado: le faltan las horas siguientes, así que no entra en la comparación de las estaciones con datos de todas esas horas.", "AEMET OpenData",
                                 [f"{f1(mmp)} mm", f"{hp_}:00"], lugar=D.nom(ep_), liga=[f"{f1(mmp)} mm"]))
+            for i, (mmq, eq, hq) in enumerate(parcial[1:3], 2):
+                hechos.append(hecho(f"lluvia_parcial_{i}", f"La estación de AEMET de {D.donde(eq)} llevaba al menos {f1(mmq)} mm entre la medianoche y las {hq}:00 "
+                                    f"del {dia(hoy_f)}, también su último dato publicado.", "AEMET OpenData",
+                                    [f"{f1(mmq)} mm", f"{hq}:00"], lugar=D.nom(eq), liga=[f"{f1(mmq)} mm"]))
         cifras.append({"n": f"{f1(mm)} mm", "l": f"en {D.donde(e)} entre la medianoche y las {corte}:00 del {dia(hoy_f)}", "tono": "lluvia"})
         if parcial and parcial[0][0] > mm:
             cifras.append({"n": f"{f1(parcial[0][0])} mm", "l": f"al menos, en {D.donde(parcial[0][1])}: su dato hasta las {parcial[0][2]}:00, el último publicado", "tono": "lluvia"})
@@ -390,6 +396,7 @@ def g_episodio(D: Datos, med):
         kicker = "Última hora · Lluvia"
         puntos = 80
         slug_ = f"{HOY.isoformat()}-lluvia-{slugify(D.nom(e))}"
+    fijar_tit = False
     if manda_lluvia:
         lugar_t = D.donde(e_t)
         tit = (f"La estación de AEMET de {lugar_t} recoge {f1(mm_t)} litros por metro cuadrado en {corte} horas" if hoy_manda
@@ -398,10 +405,17 @@ def g_episodio(D: Datos, med):
             tit += f"; aviso rojo en {lista_y(sorted({z['prov'] for z in rojas}, key=sin_tildes))}"
         elif naranjas:
             provs_n = sorted({z["prov"] for z in naranjas if z["prov"]}, key=sin_tildes)
-            zn = "una zona" if len(naranjas) == 1 else f"{len(naranjas)} zonas"
-            largo = f"{tit}; AEMET tiene emitido aviso naranja para {zn} de {lista_y(provs_n)}"
-            tit = largo if provs_n and len(largo) <= 170 else (f"{tit}; AEMET tiene emitido aviso naranja para {zn} en {len(provs_n)} provincias"
-                                                               if len(provs_n) > 1 else f"{tit}; AEMET tiene emitido aviso naranja para {zn}")
+            p_t = nprov(D.E[e_t].get("prov")) if D.E.get(e_t, {}).get("prov") in PROV else ""
+            aqui = bool(p_t) and any(sin_tildes(p_t).lower() == sin_tildes(x).lower() for x in provs_n)
+            # el titular no puede dar a entender que hay aviso donde llueve si no lo hay: se nombran las provincias
+            largo = f"{tit}; AEMET tiene aviso naranja en {lista_y(provs_n)}"
+            if provs_n and len(largo) <= 170:
+                tit = largo
+            elif len(provs_n) > 1:
+                tit = f"{tit}; AEMET tiene aviso naranja en {'otras ' if not aqui else ''}{len(provs_n)} provincias"
+            else:
+                tit = f"{tit}; AEMET tiene aviso naranja en {'otra provincia' if not aqui else 'la provincia'}"
+            fijar_tit = True
         kicker = "Última hora · Temporal"
         puntos = max(puntos, 100 + min(mm_t, 400) / 40)
     sub = [h["dice"] for h in hechos if h["id"] in ("mar_anio", "efemeride")]
@@ -416,8 +430,8 @@ def g_episodio(D: Datos, med):
         "entradilla": (" ".join(h["dice"] for h in hechos if h["id"] in (("lluvia_hoy_1" if hoy_manda else "lluvia_ayer_1"), "aviso_rojo")) if manda_lluvia else
                        " ".join(h["dice"] for h in hechos if h["id"] in ("aviso_rojo", "mar_hoy"))) or hechos[0]["dice"],
         "cuerpo": [p for p in [
-            " ".join(h["dice"] for h in hechos if h["id"].startswith("lluvia") and h["id"] != "lluvia_parcial"),
-            next((h["dice"] for h in hechos if h["id"] == "lluvia_parcial"), ""),
+            " ".join(h["dice"] for h in hechos if h["id"].startswith("lluvia") and not h["id"].startswith("lluvia_parcial")),
+            " ".join(h["dice"] for h in hechos if h["id"].startswith("lluvia_parcial")),
             " ".join(h["dice"] for h in hechos if h["id"] in (("mar_hoy",) if manda_lluvia else ()) + ("mar_anio", "mar_records", "mar_max")),
             " ".join(h["dice"] for h in hechos if h["id"] in ("mar_hace", "efemeride")),
             " ".join(h["dice"] for h in hechos if h["id"] == "mar_contexto"),
@@ -426,6 +440,8 @@ def g_episodio(D: Datos, med):
         ] if p.strip()],
         "claves": [h["dice"] for h in hechos if h["id"] in ("aviso_rojo", "mar_hoy", "mar_records", "lluvia_hoy_1")][:4],
     }
+    if fijar_tit or rojas:
+        plantilla["fijar"] = ["titular"]
     h = historia("episodio", slug_, kicker, "calor" if (mar and not manda_lluvia) else "lluvia", puntos, hechos, plantilla, cifras[:4],
                  fuentes="AEMET (avisos vía MeteoAlarm; observación horaria de AEMET OpenData)" + (" y NOAA OISST v2.1" if mar else ""),
                  metodo="Avisos de AEMET consultados a la hora indicada. Lluvia: suma de la precipitación horaria de cada estación de AEMET; solo estaciones con todas las horas del periodo."
@@ -464,9 +480,11 @@ def g_episodio(D: Datos, med):
 
 
 def _completar_parciales(D):
-    """lluvias_municipios.json da a un municipio el dato de hoy de otra estación si a la suya le faltan horas (Pego con el de
-    Oliva), y entonces la estación propia se queda sin dato de hoy. historico_estaciones.json sí guarda lo que midió cada
-    estación hasta su última hora seguida con dato: con eso se completa D.E (solo estaciones con provincia conocida)."""
+    """lluvias_municipios.json va por municipio: si a la estación de un municipio le faltan horas, el municipio toma el dato
+    de otra (Pego con el de Oliva) o cambia de estación de referencia (Oliva con la de Miramar el 19-10-2026), y la estación
+    propia se queda sin dato de hoy o desaparece de la lista. historico_estaciones.json sí guarda lo que midió cada
+    estación hasta su última hora seguida con dato: con eso se completa D.E, con las que tienen todas las horas hasta el
+    corte y con las que se quedaron antes (solo estaciones con provincia conocida)."""
     if getattr(D, "_parciales_ok", False):
         return
     D._parciales_ok = True
@@ -476,23 +494,40 @@ def _completar_parciales(D):
     except Exception as e:  # noqa: BLE001
         LOG.append(f"parciales: {e}")
         return
+    rec = leer(DOCS / "records" / "hoy.json", {}) or {}
+    rn = {e["id"]: e.get("n") for e in rec.get("estaciones") or [] if e.get("id") and e.get("n")}
+
+    def nz(x):
+        return re.sub(r"[^a-z0-9]", "", sin_tildes(x or "").lower())
+
+    en_E = {nz(k): k for k in D.E}
+    # municipios del mapa (nombre normalizado, provincia): solo se añaden estaciones que llevan el nombre de uno de ellos
+    muni = {(nz(m.get("n")), k[:2]) for k, m in (D.L.get("municipios") or {}).items() if m.get("n")}
     for c, v in hist.items():
-        if not v or v[0] is None or c not in inv:
+        if not v or v[0] is None:
             continue
         mask = int(v[1])
         horas = bin(mask).count("1")
-        if horas < 1 or mask != (1 << horas) - 1 or horas >= D.corte:
+        if horas < 1 or mask != (1 << horas) - 1 or horas > D.corte:
             continue
-        nom = re.sub(r",(?=\S)", ", ", inv[c][0].title().replace("/ ", "/").strip())
-        p = H.cod_provincia(inv[c][1])
-        r = D.E.get(nom)
-        if r is not None and r.get("hoy") is not None:
+        mm = round(float(v[0]), 1)
+        nombres = [x for x in (rn.get(c), inv[c][0].title() if c in inv else None) if x]
+        if not nombres:
             continue
-        if r is None:
-            if p not in PROV:
-                continue
-            r = D.E.setdefault(nom, {"refs": set(), "prov": p})
-        r.update(hoy=round(float(v[0]), 1), hoy_h=horas)
+        ya = next((en_E[nz(x)] for x in nombres if nz(x) in en_E), None)
+        if ya:  # la estación ya está: solo se completa si se quedó sin dato de hoy
+            if D.E[ya].get("hoy") is None:
+                D.E[ya].update(hoy=mm, hoy_h=horas)
+            continue
+        p = H.cod_provincia(inv[c][1]) if c in inv else None
+        nom = re.sub(r",(?=\S)", ", ", nombres[0].replace("/ ", "/").strip())
+        if p not in PROV or mm < 1 or not any((nz(x), p) in muni for x in nombres):
+            continue
+        # la misma estación con otro nombre (Polinya / Polinyà de Xúquer): mismo dato y mismas horas en la misma provincia
+        if any(r.get("prov") == p and r.get("hoy") == mm and r.get("hoy_h") == horas for r in D.E.values()):
+            continue
+        D.E[nom] = {"refs": set(), "prov": p, "hoy": mm, "hoy_h": horas}
+        en_E[nz(nom)] = nom
 
 
 def parciales_hoy(D, umbral, prov=None):
@@ -1295,7 +1330,8 @@ PALABRAS_NUM = {"dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nuev
                 "dieciséis", "diecisiete", "dieciocho", "diecinueve", "veinte", "treinta", "cuarenta", "cincuenta", "cien", "mil", "doble",
                 "triple", "mitad", "décima", "décimas", "centésima", "centésimas", "primer", "segundo", "tercer", "cuarto", "quinto"}
 VETADAS = ["nunca", "jamás", "histórico", "histórica", "sin precedentes", "inédito", "inédita", "catastróf", "alarmante", "apocalíp",
-           "por culpa", "culpa del cambio", "provocad", "causad", "analizad", "elaborad", "calculad", "mañana", "ayer", "anoche", "pasado mañana", "esta semana", "este mes", "hoy"]
+           "por culpa", "culpa del cambio", "provocad", "causad", "analizad", "elaborad", "calculad", "mañana", "ayer", "anoche", "pasado mañana", "esta semana", "este mes", "hoy",
+           "mantien", "mantení", "destacad", "elevad", "notabl", "importantes", "significativ"]
 SUPERLATIVOS = ["récord", "el más", "la más", "los más", "las más", "máximo", "mínimo", "la mayor", "el mayor", "la menor", "el menor", "más alta", "más alto"]
 NOMBRES_OK = {"AEMET", "NOAA", "MITECO", "ERA5", "Copernicus", "ECMWF", "OpenData", "MeteoAlarm", "DANA", "España", "Mediterráneo", "Observatorio",
               "Según", "Hasta", "Entre", "Desde", "Además", "Las", "Los", "La", "El", "En", "Un", "Una", "De", "Del", "Con", "Por", "Para", "A", "Al",
@@ -1373,6 +1409,22 @@ def verificar(texto: dict, hechos: list, extra="") -> list[str]:
             if not re.search(rf"\b{w}\b", cl):
                 errores.append(f"número escrito con letra que no está en los hechos: «{frag.strip()}»")
                 break
+    # la condición de una comparación no se cae: «la cifra más alta de las 249 estaciones … con datos de todas esas horas»
+    for h in hechos:
+        mq = re.search(r"de las (\d[\d.]*) (estaciones[^.;:]*)", h["dice"])
+        if mq and f"de las {mq.group(1)} estaciones" in todo:
+            cola = " ".join(mq.group(2).split()).lower()
+            if cola not in " ".join(low.split()):
+                errores.append(f"falta la condición de la comparación: «de las {mq.group(1)} {mq.group(2).strip()}»")
+        # «al menos X»: si X aparece, va con «al menos» (es un mínimo, no el total)
+        for ma in re.finditer(r"al menos (\d+(?:,\d+)?\s?(?:mm|días|°C|%))", h["dice"]):
+            # si algún hecho da esa misma cifra sin «al menos» (otro dato que coincide), no se puede exigir
+            if any(re.search(rf"(?<!al menos ){re.escape(ma.group(1))}", h2["dice"]) for h2 in hechos):
+                continue
+            for mt in re.finditer(re.escape(ma.group(1)), todo):
+                if "al menos" not in todo[max(0, mt.start() - 14):mt.start()].lower() and "como mínimo" not in todo[max(0, mt.start() - 16):mt.start()].lower():
+                    errores.append(f"{ma.group(1)} es un mínimo: tiene que ir con «al menos»")
+                    break
     for v in VETADAS:
         if re.search(rf"\b{re.escape(v)}", low) and v not in cl:
             errores.append(f"palabra vetada: «{v}»")
@@ -1401,8 +1453,10 @@ Reglas que no se rompen nunca:
 7. Organismos solo por su sigla, como en los hechos: AEMET, NOAA, MITECO (nunca «Agencia Estatal de Meteorología»). No escribas ningún nombre propio (lugar, estación, organismo, persona) que no aparezca en los hechos.
 8. No hagas cálculos ni crees números nuevos: nada de sumas, restas, medias, porcentajes ni redondeos propios. Todas las cantidades en cifras («6 provincias», no «seis provincias»), salvo que el hecho ya las escriba con letra.
 9. No escribas la fecha de publicación ni ningún año o día que no esté en los hechos.
-10. Palabras prohibidas (un verificador automático rechaza el texto si aparecen): nunca, jamás, histórico, histórica, sin precedentes, inédito, catastrófico, alarmante, apocalíptico, provocado, causado, culpa, analizado, elaborado, calculado, hoy, ayer, mañana, anoche, esta semana, este mes.
+10. Palabras prohibidas (un verificador automático rechaza el texto si aparecen): nunca, jamás, histórico, histórica, sin precedentes, inédito, catastrófico, alarmante, apocalíptico, provocado, causado, culpa, analizado, elaborado, calculado, hoy, ayer, mañana, anoche, esta semana, este mes, mantiene, mantenía, destacado, elevado, notable, importantes, significativo.
 11. Los recuentos, rachas, tendencias y medias los calcula el Observatorio climático de calentamientoglobal.es con datos de AEMET, NOAA o MITECO: escribe «con datos de AEMET» o «según los datos de AEMET». Nunca digas que AEMET (u otro organismo) los ha analizado, elaborado o calculado. No cuentes tú elementos de una lista («6 provincias») si el número no está en los hechos.
+12. Las condiciones de una cifra van siempre con ella, copiadas enteras: «la cifra más alta de las 249 estaciones de AEMET que sigue el observatorio con datos de todas esas horas», «al menos 465,2 mm», «su último dato publicado». Sin ellas el dato es falso.
+13. No juntes en una frase la lluvia de un lugar con avisos que son de otras provincias: di siempre en qué provincias están los avisos. Nada de frases de relleno sin dato («acumulaciones destacadas», «datos elevados»).
 
 Devuelve SOLO un JSON válido con estas claves:
 {"titular": "máx. 120 caracteres, informativo, con la cifra más fuerte",
@@ -1558,8 +1612,10 @@ class Redactor:
     def redactar(self, hechos, plantilla, encargo, provincial=False, permitir_ia=True):
         clave = hashlib.sha1(json.dumps([[h["id"], h["dice"]] for h in hechos] + [encargo], ensure_ascii=False).encode()).hexdigest()[:16]
         c = self.cache.get(clave)
-        if c and not verificar(c["texto"], hechos):
-            return c["texto"], {**c["meta"], "cache": True}
+        if c:
+            ct = {**c["texto"], **{k: plantilla.get(k) for k in (plantilla.get("fijar") or [])}}
+            if not verificar(ct, hechos):
+                return ct, {**c["meta"], "cache": True}
         rechazos = []
         if permitir_ia and self.ia_disponible():
             usuario = json.dumps({"encargo": encargo, "fecha_de_publicacion": dia(HOY, anio=True),
@@ -1584,6 +1640,8 @@ class Redactor:
                 t = {k: t.get(k) for k in ("titular", "subtitulo", "entradilla", "cuerpo", "claves")}
                 if isinstance(t.get("cuerpo"), str):
                     t["cuerpo"] = [t["cuerpo"]]
+                for k in plantilla.get("fijar") or []:  # partes que se quedan como en la plantilla (p. ej. un titular con avisos)
+                    t[k] = plantilla.get(k)
                 errs = verificar(t, hechos)
                 if not errs:
                     meta = {"modo": "ia", "modelo": modelo, "verificado": True, "rechazos": rechazos, "hash": clave}
