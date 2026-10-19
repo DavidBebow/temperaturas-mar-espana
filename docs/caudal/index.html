@@ -4,9 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Caudal de los ríos de España hoy · Mapa en directo</title>
+<!-- Mapa de caudales 2.0.0 · 19-oct-2026 · crecidas y riesgo de desbordamiento, «cerca de mí» -->
+<meta name="cg-version" content="caudal-2.0.0">
 <!-- La pagina buena es la de WordPress: este visor va en un iframe y no debe competir con ella en Google. -->
 <link rel="canonical" href="https://calentamientoglobal.es/caudal-rios-espana-mapa/">
-<meta name="description" content="Mapa del caudal de los ríos de España respecto a lo normal para la época: toda la red fluvial coloreada, previsión a 30 días, resumen por cuenca y aforos medidos de las confederaciones.">
+<meta name="description" content="Mapa del caudal de los ríos de España y riesgo de desbordamiento: crecidas medidas en los aforos, previsión a 10 días frente al caudal de cauce lleno, avisos de AEMET y ríos cerca de ti.">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -131,14 +133,102 @@
   .embed .wrap{padding:0 0 8px;max-width:none}
   @media(max-width:620px){.tbl th:nth-child(4),.tbl td:nth-child(4),.tbl th:nth-child(6),.tbl td:nth-child(6){display:none}.search{width:55%}}
   .aftag{font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 6px;background:#eef2f5;color:#40505c;white-space:nowrap}
+  /* ---------- 2.0: crecidas ---------- */
+  :root{--n1:#c99a00;--n1b:#fff6d4;--n2:#e0670b;--n2b:#ffeedd;--n3:#c8102e;--n3b:#fde8eb;--n0:#1f8a4c;--n0b:#e9f6ee;--vg:#3d8bd4}
+  .alerta{max-width:960px;margin:0 auto 16px;border-radius:18px;padding:16px 18px;border:2px solid var(--line);background:var(--bg2)}
+  .alerta.l0{border-color:#cfe6d8;background:var(--n0b)} .alerta.l1{border-color:var(--n1);background:var(--n1b)}
+  .alerta.l2{border-color:var(--n2);background:var(--n2b)} .alerta.l3{border-color:var(--n3);background:var(--n3b)}
+  .al-top{display:flex;gap:14px;align-items:flex-start}
+  .al-ico{flex:none;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:900}
+  .l0 .al-ico{background:var(--n0)} .l1 .al-ico{background:var(--n1)} .l2 .al-ico{background:var(--n2)} .l3 .al-ico{background:var(--n3);animation:alp 1.6s infinite}
+  @keyframes alp{0%{box-shadow:0 0 0 0 rgba(200,16,46,.55)}70%{box-shadow:0 0 0 12px rgba(200,16,46,0)}100%{box-shadow:0 0 0 0 rgba(200,16,46,0)}}
+  .al-k{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+  .al-t{font-size:20px;font-weight:900;letter-spacing:-.01em;line-height:1.2;margin:2px 0 4px}
+  .al-s{font-size:14.5px;color:#26343f}
+  .al-rows{display:grid;gap:8px;margin-top:12px}
+  .al-row{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.72);border-radius:12px;padding:9px 12px;font-size:14px}
+  .al-row .lbl{flex:none;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:6px;padding:3px 7px;color:#fff;margin-top:1px}
+  .al-row a{color:inherit;font-weight:700}
+  .al-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .al-btns button{font:inherit;font-size:13.5px;font-weight:700;border-radius:10px;padding:8px 13px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  .al-btns button.sec{background:#fff;color:var(--ink);border-color:var(--line)}
+  .al-legal{font-size:12px;color:var(--soft);margin-top:10px}
+  .al-legal b{color:var(--ink)}
+  .nv{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px;color:#fff;white-space:nowrap}
+  .nv.n0{background:#8a96a0}.nv.n1{background:var(--n1)}.nv.n2{background:var(--n2)}.nv.n3{background:var(--n3)}.nv.vg{background:var(--vg)}.nv.bj{background:#6b7c8a}.nv.sd{background:#c3cad0;color:#40505c}
+  .nv.prev{background:#fff;border:2px dashed currentColor}
+  .nv.prev.n1{color:#9a7600}.nv.prev.n2{color:var(--n2)}.nv.prev.n3{color:var(--n3)}
+  /* cerca de mí */
+  .cerca{max-width:960px;margin:0 auto 18px;border:1px solid var(--line);border-radius:18px;padding:16px 18px;background:#fff;box-shadow:0 10px 28px rgba(20,32,43,.05)}
+  .cerca h2{margin:0 0 4px;font-size:20px;font-weight:900;letter-spacing:-.01em}
+  .cerca .cs{margin:0 0 12px;font-size:14px;color:var(--soft)}
+  .c-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .c-form button{font:inherit;font-size:14px;font-weight:700;border-radius:11px;padding:9px 14px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff}
+  .c-form .or{font-size:13px;color:var(--mut)}
+  .c-form input{flex:1;min-width:200px;font:inherit;font-size:14.5px;padding:9px 12px;border-radius:11px;border:1px solid var(--line)}
+  .c-sug{position:relative}
+  .c-sug input{width:100%;box-sizing:border-box}
+  .c-list{position:absolute;z-index:900;left:0;right:0;top:4px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 28px rgba(20,32,43,.14);max-height:280px;overflow:auto;display:none}
+  .c-list div{padding:8px 12px;cursor:pointer;font-size:14px}
+  .c-list div:hover,.c-list div.on{background:var(--bg2)}
+  .c-list small{color:var(--mut)}
+  .c-res{margin-top:14px}
+  .c-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .c-place{font-size:18px;font-weight:800}
+  .c-place small{font-size:13px;font-weight:500;color:var(--soft)}
+  .c-blk{border-top:1px solid var(--line);padding:10px 0 4px}
+  .c-blk h4{margin:0 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+  .c-it{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);cursor:pointer}
+  .c-it:last-child{border-bottom:0}
+  .c-it .a{font-weight:700;font-size:14.5px}
+  .c-it .b{font-size:12.5px;color:var(--soft);grid-column:1/-1}
+  .c-it:hover .a{text-decoration:underline}
+  .c-it.nl{cursor:default}.c-it.nl:hover .a{text-decoration:none}
+  .gauge{height:8px;border-radius:4px;background:#eef1f3;position:relative;margin-top:5px;overflow:visible;grid-column:1/-1}
+  .gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+  .gauge u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#14202b;opacity:.55;text-decoration:none}
+  .c-empty{font-size:13.5px;color:var(--soft);padding:6px 0}
+  .c-foot{font-size:12px;color:var(--mut);margin-top:8px}
+  .c-foot button{font:inherit;font-size:12px;border:0;background:none;color:var(--acc);cursor:pointer;padding:0}
+  /* marcadores en el mapa */
+  .mk{position:relative;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+  .mk.sq{border-radius:4px}
+  .mk.n1{background:var(--n1)}.mk.n2{background:var(--n2)}.mk.n3{background:var(--n3)}
+  .mk.pv{background:#fff!important;border:3px dashed}
+  .mk.pv.n1{border-color:var(--n1)}.mk.pv.n2{border-color:var(--n2)}.mk.pv.n3{border-color:var(--n3)}
+  .mk.pulse::after{content:"";position:absolute;inset:-2px;border-radius:inherit;animation:mkp 1.8s infinite}
+  .mk.n1.pulse::after{box-shadow:0 0 0 0 rgba(201,154,0,.7)} .mk.n2.pulse::after{box-shadow:0 0 0 0 rgba(224,103,11,.7)} .mk.n3.pulse::after{box-shadow:0 0 0 0 rgba(200,16,46,.7)}
+  @keyframes mkp{70%{box-shadow:0 0 0 14px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}
+  .mk-me{width:16px;height:16px;border-radius:50%;background:#1f6fe5;border:3px solid #fff;box-shadow:0 0 0 2px #1f6fe5,0 2px 6px rgba(0,0,0,.3)}
+  @media (prefers-reduced-motion:reduce){.mk.pulse::after,.l3 .al-ico{animation:none}}
+  .cre{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+  @media(max-width:760px){.cre{grid-template-columns:minmax(0,1fr)}}
+  .li>div{min-width:0}
+  @media(max-width:620px){.li{grid-template-columns:minmax(0,1fr) auto}.li .nv,.li .lp{grid-column:1/-1;justify-self:start}.al-row{flex-direction:column;gap:6px}}
+  .f-risk{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--bg2);border-radius:14px;padding:10px 14px;margin:4px 0 6px;font-size:14px}
+  .f-risk .g{flex:1;min-width:220px}
+  @media(max-width:620px){.al-t{font-size:17.5px}.al-top{gap:10px}.al-ico{width:34px;height:34px;font-size:18px}.c-form input{min-width:0;width:100%}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="eyebrow">Observatorio climático · Agua</div>
   <h1>El caudal de los ríos de España, hoy</h1>
-  <p class="sub">Toda la red fluvial comparada con lo normal para esta época del año, la previsión para los próximos 30 días y el caudal medido en las estaciones de aforo.</p>
+  <p class="sub">Dónde hay crecidas y riesgo de desbordamiento, cómo van los ríos cerca de ti, toda la red fluvial comparada con lo normal para la época y el caudal medido en las estaciones de aforo.</p>
   <div class="live"><span class="dot" id="liveDot"></span><span id="liveTxt">Cargando datos…</span></div>
+
+  <section class="alerta" id="alerta" style="display:none" aria-live="polite"></section>
+
+  <section class="cerca" id="cerca">
+    <h2>¿Puede desbordarse un río cerca de ti?</h2>
+    <p class="cs">Mira cómo van ahora los ríos de tu zona: los aforos que miden el caudal en directo, lo que prevé el modelo para los próximos 10 días y los avisos de AEMET por lluvia en tu provincia.</p>
+    <div class="c-form">
+      <button type="button" id="cGeo">📍 Usar mi ubicación</button>
+      <span class="or">o</span>
+      <div class="c-sug" style="flex:1;min-width:220px"><input id="cQ" type="search" placeholder="Escribe tu municipio (p. ej., Gandia, Lorca, Zaragoza)…" autocomplete="off" aria-label="Busca tu municipio"><div class="c-list" id="cList" role="listbox"></div></div>
+    </div>
+    <div class="c-res" id="cRes"></div>
+  </section>
 
   <div class="headline" id="headline" style="display:none">
     <div class="big" id="hlBig">–</div>
@@ -150,6 +240,7 @@
     <div id="map" role="img" aria-label="Mapa de los ríos de España coloreados según su caudal respecto a lo normal"></div>
     <div class="tag"><div class="k" id="tagK">Estado del río</div><div class="v" id="tagV">–</div></div>
     <div class="tools">
+      <button type="button" id="btnCr" class="on" title="Mostrar u ocultar los puntos en crecida y los aforos con subidas bruscas">Crecidas</button>
       <button type="button" data-go="pen">Península</button>
       <button type="button" id="btnAf" class="on" title="Mostrar u ocultar las estaciones de aforo con caudal medido">Aforos medidos</button>
     </div>
@@ -168,6 +259,14 @@
 
   <div class="ficha" id="ficha" style="display:none"></div>
 
+  <h2 class="sec" id="secCre">Crecidas ahora y en los próximos días</h2>
+  <p class="secsub">Los aforos con subidas bruscas de caudal medido y los tramos de la red donde el modelo da un caudal por encima del que llena el cauce. Pulsa uno para verlo en el mapa.</p>
+  <div class="cre">
+    <div class="list"><h3>Medido en los aforos</h3><p class="ls">Subidas bruscas respecto a las últimas 24 horas y a su caudal de la semana</p><div id="lsAf"></div></div>
+    <div class="list"><h3>Previsto por el modelo</h3><p class="ls">Puntos por encima del caudal de 2, 5 o 20 años de periodo de retorno, hoy o en los próximos 10 días</p><div id="lsCr"></div></div>
+  </div>
+  <div class="list" id="lsAvBox" style="margin-top:16px;display:none"><h3>Avisos de AEMET por lluvias y tormentas</h3><p class="ls">Naranja y rojo, en vigor o anunciados para las próximas 48 horas</p><div id="lsAv"></div></div>
+
   <h2 class="sec">Las cuencas, una a una</h2>
   <p class="secsub">Qué parte de la red de cada demarcación hidrográfica va por debajo, en lo normal o por encima de lo habitual para la fecha. Pulsa una para verla en el mapa.</p>
   <div class="basins" id="basins"></div>
@@ -178,7 +277,6 @@
     <div class="list"><h3>Más secos respecto a lo normal</h3><p class="ls">Percentil más bajo de su serie para la fecha</p><div id="lsDry"></div></div>
     <div class="list"><h3>Más caudal de lo normal</h3><p class="ls">Percentil más alto de su serie para la fecha</p><div id="lsWet"></div></div>
   </div>
-  <div class="list" style="margin-top:16px"><h3>Crecidas previstas en los próximos 10 días</h3><p class="ls">Puntos donde el modelo prevé superar el caudal que solo se alcanza el 3 % de los días de esa época</p><div id="lsFlood"></div></div>
 
   <h2 class="sec">Caudal medido en las estaciones de aforo</h2>
   <p class="secsub">Lecturas de las redes automáticas (SAIH) de las confederaciones y agencias del agua que publican sus datos en abierto. Son medidas reales y provisionales, no modelo.</p>
@@ -188,6 +286,8 @@
 
   <div class="note">
     <p><b>Cómo se calcula.</b> El caudal de toda la red sale del sistema europeo de alerta de inundaciones <a href="https://global-flood.emergency.copernicus.eu/" target="_blank" rel="noopener">GloFAS</a> (Copernicus, ECMWF), un modelo hidrológico con celdas de unos 5 km que simula cada día el agua que lleva cada tramo de río. Cada valor se compara con lo que ese mismo tramo llevó en la misma época del año (±15 días) durante <span id="nAnios">casi tres décadas</span>: el <b>percentil</b> dice qué parte de esos días tuvo menos agua. Por debajo del 10 es un caudal muy bajo para la fecha; por encima del 90, muy alto. Los días futuros son la previsión de control de GloFAS. Es un caudal simulado: en ríos muy regulados por embalses puede alejarse del real, por eso se muestran aparte los aforos medidos.</p>
+    <p><b>Cómo se detecta una crecida.</b> En cada punto de la red se calculan, con los máximos diarios de cada año de 1997 a 2025, los caudales que de media solo se superan una vez cada <b>2, 5 y 20 años</b> (ajuste de Gumbel). Son los mismos tres umbrales que usa GloFAS en sus avisos. El de 2 años es la referencia habitual de <b>cauce lleno</b>: por encima, el agua puede salirse en las zonas más bajas. Amarillo es superar el de 2 años; naranja, el de 5; rojo, el de 20. En los <b>aforos medidos</b> no hay umbrales oficiales abiertos, así que se marca la <b>subida brusca</b> (el caudal se multiplica respecto a las últimas 24 horas o a su caudal de la semana, con un mínimo de 2 m³/s) y la <b>crecida fuerte</b> (más de 20 m³/s y diez veces su caudal habitual). El modelo trabaja con celdas de 5 km y pasos diarios: <b>las ramblas y las riadas relámpago de pocas horas se le escapan</b>, por eso conviene mirar también los aforos y los avisos de AEMET.</p>
+    <p><b>Esto no es un aviso oficial.</b> Ante una emergencia, llama al <b>112</b>. Sigue las indicaciones de <a href="https://www.proteccioncivil.es/" target="_blank" rel="noopener">Protección Civil</a>, de <a href="https://www.aemet.es/es/eltiempo/prediccion/avisos" target="_blank" rel="noopener">AEMET</a> y de tu confederación hidrográfica: <a href="https://www.chj.es/" target="_blank" rel="noopener">Júcar</a>, <a href="https://www.chsegura.es/" target="_blank" rel="noopener">Segura</a>, <a href="https://www.chebro.es/" target="_blank" rel="noopener">Ebro</a>, <a href="https://www.chguadalquivir.es/" target="_blank" rel="noopener">Guadalquivir</a>, <a href="https://www.chtajo.es/" target="_blank" rel="noopener">Tajo</a>, <a href="https://www.chduero.es/" target="_blank" rel="noopener">Duero</a>, <a href="https://www.chguadiana.es/" target="_blank" rel="noopener">Guadiana</a>, <a href="https://www.chminosil.es/" target="_blank" rel="noopener">Miño-Sil</a>, <a href="https://www.chcantabrico.es/" target="_blank" rel="noopener">Cantábrico</a> y la <a href="https://aca.gencat.cat/" target="_blank" rel="noopener">Agència Catalana de l'Aigua</a>. No cruces nunca un vado ni un paso inundado.</p>
     <p><b>Fuentes.</b> GloFAS v4 (Copernicus Emergency Management Service, licencia CEMS-FLOODS). Aforos: <span id="afList">Gobierno de Navarra, Agència Catalana de l'Aigua y confederaciones hidrográficas</span>. Mapa base: Natural Earth y provincias del IGN.</p>
   </div>
 </div>
@@ -207,7 +307,7 @@ const fmtD=(d,y)=>d.getUTCDate()+" "+MES[d.getUTCMonth()]+(y?" "+d.getUTCFullYea
 const addD=(d,n)=>new Date(d.getTime()+n*864e5);
 const pctTxt=p=>p==null?"–":p<1?"<1":p>99?">99":Math.round(p);
 
-let R=null,P=null,H=null,A=null;          // red, puntos, hoy, aforos
+let R=null,P=null,H=null,A=null,C=null;   // red, puntos, hoy, aforos, crecidas
 let day=0, T0=null, TODAY=0, NDAY=0, PCT=null, sel=null;
 const mobile=window.matchMedia("(max-width:620px)").matches;
 
@@ -318,12 +418,14 @@ const PUNTO={};
 /* ---------- carga ---------- */
 Promise.all([fetch("red.json?v="+Math.floor(Date.now()/864e5)).then(r=>r.json()),Promise.resolve(null),
   fetch("hoy.json?v="+Math.floor(Date.now()/9e5)).then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch("aforos.json?v="+Math.floor(Date.now()/9e5)).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([r,p,h,a])=>{
-  R=r; P=R.clima?{clima:R.clima}:null; H=h; A=a;
+  fetch("aforos.json?v="+Math.floor(Date.now()/9e5)).then(r=>r.ok?r.json():null).catch(()=>null),
+  fetch("crecidas.json?v="+Math.floor(Date.now()/3e5)).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([r,p,h,a,cr])=>{
+  R=r; P=R.clima?{clima:R.clima}:null; H=h; A=a; C=cr;
   prep();
   if(H){ T0=new Date(H.t0+"T00:00:00Z"); NDAY=H.n; TODAY=H.hoy; PCT=b64u8(H.pct); day=TODAY; }
   rl=new RiverLayer(); rl.addTo(map);
   setupSlider(); setupSearch(); renderSummary(); renderBasins(); renderLists(); renderAforos();
+  try{ prepCrecidas(); renderAlerta(); renderCrecidas(); drawMarkers(); initCerca(); }catch(e){ console.error("crecidas",e); }
   const first=(H&&H.resumen&&H.resumen.destacado!=null)?H.resumen.destacado:(R.puntos.length?R.puntos[0].id:null);
   if(first!=null) openPoint(first,false);
   if(P&&P.clima) document.getElementById("nAnios").textContent=(P.clima.anio1-P.clima.anio0+1)+" años ("+P.clima.anio0+"–"+P.clima.anio1+")";
@@ -370,7 +472,6 @@ function renderSummary(){
   if(below>=above){ big=Math.round(below)+"<small> %</small>"; txt=`de la red fluvial de España lleva <b>menos agua de lo normal</b> para estas fechas`+(s[0]>5?`, y un ${Math.round(s[0])} % está en niveles muy bajos`:"")+`.`; }
   else { big=Math.round(above)+"<small> %</small>"; txt=`de la red fluvial de España lleva <b>más agua de lo normal</b> para estas fechas`+(s[4]>5?`, y un ${Math.round(s[4])} % va muy crecido`:"")+`.`; }
   if(r.cuenca_seca) txt+=` La cuenca más seca respecto a lo habitual es la del <b>${cu[r.cuenca_seca]||r.cuenca_seca}</b>`+(r.cuenca_humeda?`; la que más agua lleva, la del <b>${cu[r.cuenca_humeda]||r.cuenca_humeda}</b>.`:".");
-  if(r.crecidas&&r.crecidas.length) txt+=` El modelo prevé <b>${r.crecidas.length} ${r.crecidas.length===1?"punto":"puntos"} con crecida</b> en los próximos 10 días.`;
   document.getElementById("hlBig").innerHTML=big; document.getElementById("hlTxt").innerHTML=txt; hl.style.display="flex";
 }
 function renderBasins(){
@@ -390,7 +491,6 @@ function renderLists(){
   const row=(x,v)=>{ const p=pn[x.id]; if(!p) return ""; return `<div class="li" data-id="${x.id}"><div><div class="ln">${p.nombre}</div><div class="lc">${cu[p.cuenca]||""}</div></div><div class="lv">${fmtQ(x.q)} m³/s</div>${v}</div>`; };
   document.getElementById("lsDry").innerHTML=(r.secos||[]).map(x=>row(x,pill(x.p))).join("")||'<div class="empty">Sin datos.</div>';
   document.getElementById("lsWet").innerHTML=(r.humedos||[]).map(x=>row(x,pill(x.p))).join("")||'<div class="empty">Sin datos.</div>';
-  document.getElementById("lsFlood").innerHTML=(r.crecidas||[]).map(x=>row(x,`<span class="lp" style="background:${CL[4].c}">${fmtD(new Date(x.f+"T00:00:00Z"))}</span>`)).join("")||'<div class="empty">El modelo no prevé crecidas destacadas en los próximos 10 días.</div>';
   document.querySelectorAll(".li[data-id]").forEach(e=>e.onclick=()=>openPoint(+e.dataset.id,true));
 }
 
@@ -409,7 +509,8 @@ async function openPoint(id,scroll){
     `<div class="kpi"><div class="k">Normal para esta fecha</div><div class="v">${fmtQ(band?band[3]:null)}</div><div class="u">m³/s · mediana ${P?P.clima.anio0+"–"+P.clima.anio1:""}</div></div>`+
     `<div class="kpi"><div class="k">Respecto a lo normal</div><div class="v">${vsMed==null?"–":(vsMed>0?"+":"")+fmtN(vsMed)+" %"}</div><div class="u">frente a la mediana</div></div>`+
     `<div class="kpi"><div class="k">Últimos 7 días</div><div class="v">${d7==null?"–":(d7>0?"▲ +":"▼ ")+fmtN(Math.abs(d7))+" %"}</div><div class="u">${d7==null?"":d7>0?"sube":"baja"}</div></div></div>`;
-  html+=`<div class="chart" id="chMain"></div><div class="legend2"><span><i style="background:rgba(61,139,212,.13)"></i>Lo habitual (percentil 10–90)</span><span><i style="background:rgba(61,139,212,.28)"></i>Percentil 25–75</span><span><i style="background:none;border-top:2px dashed #7d8a94;height:0;width:18px;border-radius:0"></i>Mediana</span><span><i style="background:#14202b;height:2px"></i>Caudal</span><span><i style="background:#7a4bc2;height:2px"></i>Previsión</span></div>`;
+  html+=riskStrip(id);
+  html+=`<div class="chart" id="chMain"></div><div class="legend2"><span><i style="background:rgba(61,139,212,.13)"></i>Lo habitual (percentil 10–90)</span><span><i style="background:rgba(61,139,212,.28)"></i>Percentil 25–75</span><span><i style="background:none;border-top:2px dashed #7d8a94;height:0;width:18px;border-radius:0"></i>Mediana</span><span><i style="background:#14202b;height:2px"></i>Caudal</span><span><i style="background:#7a4bc2;height:2px"></i>Previsión</span>${CP[id]&&CP[id].u?`<span><i style="background:none;border-top:2px dashed #c99a00;height:0;width:18px;border-radius:0"></i>Umbrales de crecida (2, 5 y 20 años)</span>`:""}</div>`;
   if(cl){ html+=`<div class="f-two"><div><h4>Régimen del río: caudal medio de cada mes</h4><p>Media ${P.clima.anio0}–${P.clima.anio1}. En oscuro, el mes actual.</p><div class="chart" id="chMes"></div></div>`+
       `<div><h4>Caudal medio de cada año</h4><p>Los años secos y húmedos del río desde ${P.clima.anio0}. Media: ${fmtQ(cl.media)} m³/s.</p><div class="chart" id="chAnio"></div></div></div>`+
       `<p class="f-note">Mínimo de la serie: ${fmtQ(cl.min[0])} m³/s (${fmtD(new Date(cl.min[1]+"T00:00:00Z"),true)}) · Máximo: ${fmtQ(cl.max[0])} m³/s (${fmtD(new Date(cl.max[1]+"T00:00:00Z"),true)}). Caudal simulado por el modelo GloFAS en la celda de 5 km del río, no una medición.</p>`; }
@@ -425,6 +526,7 @@ function drawMain(p,cl,q){
   const W=el.clientWidth||900, Hh=mobile?220:260, m={l:46,r:12,t:12,b:26}, iw=W-m.l-m.r, ih=Hh-m.t-m.b;
   const bands=[]; for(let i=0;i<NDAY;i++) bands.push(cl?bandAt(cl,dayDate(i)):null);
   let ymax=0; for(let i=0;i<NDAY;i++){ if(q[i]!=null) ymax=Math.max(ymax,q[i]); if(bands[i]) ymax=Math.max(ymax,bands[i][5]); }
+  const U=CP[p.id]&&CP[p.id].u; if(U&&U[0]<=ymax*3) ymax=Math.max(ymax,U[0]*1.05); if(U&&U[1]<=ymax*1.25) ymax=Math.max(ymax,U[1]*1.05);
   ymax=ymax*1.08||1; const X=i=>m.l+i/(NDAY-1)*iw, Y=v=>m.t+ih-(v/ymax)*ih;
   const area=(a,b)=>{ let s="M"; for(let i=0;i<NDAY;i++) s+=X(i).toFixed(1)+","+Y(bands[i][a]).toFixed(1)+" L"; for(let i=NDAY-1;i>=0;i--) s+=X(i).toFixed(1)+","+Y(bands[i][b]).toFixed(1)+(i?" L":" Z"); return s; };
   let s=svgEl(W,Hh);
@@ -434,6 +536,8 @@ function drawMain(p,cl,q){
   if(cl){ s+=`<path d="${area(1,5)}" fill="rgba(61,139,212,.13)"/><path d="${area(2,4)}" fill="rgba(61,139,212,.28)"/>`;
     s+=`<path d="M${bands.map((b,i)=>X(i).toFixed(1)+","+Y(b[3]).toFixed(1)).join(" L")}" fill="none" stroke="#7d8a94" stroke-width="1.5" stroke-dasharray="4 3"/>`; }
   const seg=(a,b,col)=>{ let d="",on=false; for(let i=a;i<=b;i++){ if(q[i]==null){on=false;continue;} d+=(on?" L":" M")+X(i).toFixed(1)+","+Y(q[i]).toFixed(1); on=true; } return `<path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`; };
+  if(U){ const UC=["#c99a00","#e0670b","#c8102e"], UL=["2 años · cauce lleno","5 años","20 años"];
+    U.forEach((u,k)=>{ if(u>ymax) return; s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(u)}" y2="${Y(u)}" stroke="${UC[k]}" stroke-width="1.6" stroke-dasharray="6 4"/><text x="${m.l+6}" y="${Y(u)-4}" font-size="11" font-weight="700" fill="${UC[k]}">${UL[k]}: ${fmtQ(u)} m³/s</text>`; }); }
   s+=seg(0,TODAY,"#14202b")+seg(TODAY,NDAY-1,"#7a4bc2");
   const paso=Math.ceil(NDAY/Math.max(3,Math.floor(iw/95))); for(let i=0;i<NDAY;i+=paso){ if(Math.abs(X(i)-X(TODAY))<42) continue; s+=`<text x="${X(i)}" y="${Hh-6}" text-anchor="middle" font-size="11" fill="#8a96a0">${fmtD(dayDate(i))}</text>`; }
   s+=`<text x="${X(TODAY)}" y="${Hh-6}" text-anchor="middle" font-size="11" font-weight="700" fill="#14202b">hoy</text>`;
@@ -507,11 +611,11 @@ function renderAforos(){
   if(!A){ src.innerHTML='<span>Aforos no disponibles ahora mismo</span>'; return; }
   src.innerHTML=A.fuentes.map(f=>`<span class="${f.ok?"":"ko"}"><b>${f.nombre}</b> · ${f.ok?f.n+" estaciones":"sin datos hoy"}</span>`).join("");
   document.getElementById("afList").textContent=A.fuentes.map(f=>f.nombre).join(", ");
-  const est=A.estaciones.filter(s=>s.q!=null).sort((a,b)=>(b.q||0)-(a.q||0));
+  const est=A.estaciones.filter(s=>s.q!=null).sort((a,b)=>((AFC[b.id]||{}).n||0)-((AFC[a.id]||{}).n||0)||(b.q||0)-(a.q||0));
   const show=afAll?est:est.slice(0,15);
-  tb.innerHTML=`<thead><tr><th>Estación</th><th>Río</th><th class="r">Caudal</th><th class="r">24 h</th><th>Lectura</th><th>Fuente</th></tr></thead><tbody>`+
-    show.map((s,i)=>{ const tr=s.v24==null?"":(s.v24>0?"▲ +":"▼ ")+fmtN(Math.abs(s.v24))+" %";
-      return `<tr data-i="${A.estaciones.indexOf(s)}"><td>${s.nombre}</td><td>${s.rio||"–"}</td><td class="r"><b>${fmtQ(s.q)}</b> m³/s</td><td class="r">${tr}</td><td>${s.t?new Date(s.t).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"}):"–"}</td><td><span class="aftag">${s.fuente_n||s.fuente}</span></td></tr>`; }).join("")+"</tbody>";
+  tb.innerHTML=`<thead><tr><th>Estación</th><th>Río</th><th class="r">Caudal</th><th class="r">24 h</th><th>Estado</th><th>Lectura</th><th>Fuente</th></tr></thead><tbody>`+
+    show.map((s,i)=>{ const tr=s.v24==null?"":(s.v24>0?"▲ +":"▼ ")+fmtN(Math.abs(s.v24))+" %"; const ce=AFC[s.id];
+      return `<tr data-i="${A.estaciones.indexOf(s)}"><td>${s.nombre}</td><td>${s.rio||"–"}</td><td class="r"><b>${fmtQ(s.q)}</b> m³/s</td><td class="r">${tr}</td><td>${ce?afChip(ce):""}</td><td>${s.t?new Date(s.t).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"}):"–"}</td><td><span class="aftag">${s.fuente_n||s.fuente}</span></td></tr>`; }).join("")+"</tbody>";
   const more=document.getElementById("afMore"); more.style.display=est.length>15?"block":"none"; more.textContent=afAll?"Ver menos":"Ver las "+est.length+" estaciones";
   more.onclick=()=>{afAll=!afAll; renderAforos(); postHeight();};
   tb.querySelectorAll("tr[data-i]").forEach(tr=>tr.onclick=()=>{ const s=A.estaciones[+tr.dataset.i]; if(s.lat!=null){ userMoved=true; map.flyTo([s.lat,s.lon],9,{duration:.7}); document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"}); openAforo(s);} });
@@ -519,8 +623,191 @@ function renderAforos(){
 function openAforo(s){ const pt=map.latLngToContainerPoint([s.lat,s.lon]);
   let spark=""; if(s.serie&&s.serie.length>2){ const vs=s.serie.map(x=>x[1]), mx=Math.max(...vs)||1, mn=Math.min(...vs), W=220, Hh=46;
     spark=`<svg width="${W}" height="${Hh}" style="display:block;margin-top:6px"><path d="M${vs.map((v,i)=>(i/(vs.length-1)*W).toFixed(1)+","+(Hh-4-(v-mn)/Math.max(mx-mn,1e-6)*(Hh-8)).toFixed(1)).join(" L")}" fill="none" stroke="#ffd84d" stroke-width="2"/></svg><span style="opacity:.7">Últimos ${s.dias||7} días · mín ${fmtQ(mn)} · máx ${fmtQ(mx)}</span>`; }
-  hint.innerHTML=`<b>${s.nombre}</b><br>${s.rio?s.rio+" · ":""}${s.fuente_n||s.fuente}<br><b style="font-size:16px">${fmtQ(s.q)} m³/s</b> ${s.t?"· "+new Date(s.t).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"}):""}${spark}`;
+  const ce=AFC[s.id];
+  hint.innerHTML=`<b>${s.nombre}</b><br>${s.rio?s.rio+" · ":""}${s.fuente_n||s.fuente}${ce&&ce.n?`<br><span style="color:${ce.n>=2?"#ffb27a":"#ffe27a"};font-weight:700">${AFTXT[ce.estado]}</span>`:""}<br><b style="font-size:16px">${fmtQ(s.q)} m³/s</b> ${s.t?"· "+new Date(s.t).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"}):""}${spark}`;
   hint.style.display="block"; setTimeout(()=>{ const q=map.latLngToContainerPoint([s.lat,s.lon]); hint.style.left=Math.min(Math.max(6,q.x+12),document.getElementById("map").clientWidth-hint.offsetWidth-6)+"px"; hint.style.top=Math.max(6,q.y-hint.offsetHeight-12)+"px"; },750); }
+
+/* ---------- 2.0 · crecidas y riesgo de desbordamiento ---------- */
+const CP={}, AFC={};
+const NVTXT=["Sin crecida","Cauce lleno · posible desbordamiento","Crecida importante","Crecida extraordinaria"];
+const NVCOL=["#8a96a0","#c99a00","#e0670b","#c8102e"];
+const AFTXT={crecida:"Crecida fuerte",subida:"Subida brusca",bajando:"Bajando tras una crecida",normal:"Sin cambios bruscos",sin_dato:"Sin lectura reciente"};
+const AVNOM={1:"amarillo",2:"naranja",3:"rojo"};
+const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const edadTxt=h=>h==null?"":h<1?"hace menos de 1 h":h<36?`hace ${Math.round(h)} h`:`hace ${Math.round(h/24)} días`;
+const fmtF=s=>fmtD(new Date(s.length<=10?s+"T00:00:00Z":s));
+const fmtHora=s=>new Date(s).toLocaleString("es-ES",{weekday:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"});
+const PN=id=>{ const p=R.puntos.find(x=>x.id===id); return p?p.nombre:""; };
+const provN=c=>C&&C.provincias&&C.provincias[c]||"";
+const afNom=a=>String(a.nombre||"").replace(/^Aforament\s*-\s*/i,"");
+const afBase=a=>a.base==null?"":a.base<0.05?" · cauce casi seco hasta ayer":" · habitual "+fmtQ(a.base)+" m³/s";
+function prepCrecidas(){ if(!C) return; C.puntos.forEach(p=>CP[p.id]=p); C.aforos.forEach(a=>{ if(a.id!=null) AFC[a.id]=a; });
+  // la edad de las lecturas se recalcula con la hora del visitante
+  const now=Date.now(); C.aforos.forEach(a=>{ if(a.t) a.edad_h=(now-Date.parse(a.t))/36e5; }); if(A) renderAforos(); }
+function nvChip(n,prev){ return `<span class="nv n${n}${prev?" prev":""}">${prev?"Previsto: ":""}${NVTXT[n]}</span>`; }
+function afChip(a){ if(!a) return ""; if(a.edad_h>36) return `<span class="nv sd">Sin lectura reciente</span>`;
+  if(a.estado==="crecida") return `<span class="nv n2">Crecida fuerte</span>`; if(a.estado==="subida") return `<span class="nv n1">Subida brusca</span>`;
+  if(a.estado==="bajando") return `<span class="nv bj">Bajando tras crecida</span>`; return ""; }
+function ptChip(c){ if(!c) return ""; if(c.n>=1) return nvChip(c.n); if(c.nf>=1) return nvChip(c.nf,true);
+  if((c.p||0)>=95||(c.pf||0)>=95) return `<span class="nv vg">Muy alto para la época</span>`; const k=cls(c.p); return k>=0?`<span class="nv" style="background:${CL[k].c}">${CL[k].n} para la época</span>`:""; }
+function afAlerta(){ return C?C.aforos.filter(a=>a.n>=1&&a.edad_h<=36).sort((a,b)=>b.n-a.n||(a.edad_h>12)-(b.edad_h>12)||b.q-a.q):[]; }
+function glAlerta(){ return C?C.puntos.filter(p=>p.n>=1||p.nf>=1).sort((a,b)=>Math.max(b.n,b.nf)-Math.max(a.n,a.nf)||b.n-a.n||(b.q||0)-(a.q||0)):[]; }
+function avAlerta(){ return C?Object.entries(C.avisos).filter(([k,v])=>v.nivel>=2).sort((a,b)=>b[1].nivel-a[1].nivel||(a[1].provincia>b[1].provincia?1:-1)):[]; }
+function lista(arr,max){ const a=arr.slice(0,max); return a.length<=1?a.join(""):a.slice(0,-1).join(", ")+" y "+a[a.length-1]+(arr.length>max?" (y "+(arr.length-max)+" más)":""); }
+
+function renderAlerta(){
+  const el=document.getElementById("alerta"); if(!C){ el.style.display="none"; return; }
+  const r=C.resumen, lv=r.nivel||0, af=afAlerta(), afNow=af.filter(a=>a.edad_h<=12), gl=glAlerta(), av=avAlerta();
+  el.className="alerta l"+lv; el.style.display="block";
+  let k,t,sub; const rows=[];
+  if(lv===0){ k="Ríos de España · ahora"; t="Sin crecidas destacadas ahora mismo";
+    sub="Ningún aforo registra subidas bruscas y el modelo no prevé que ningún punto de la red supere su caudal de cauce lleno en los próximos 10 días."+(r.vigilancia?` ${r.vigilancia} puntos van muy altos para la época.`:""); }
+  else {
+    k=lv===3?"Alerta · riesgo alto de desbordamiento":lv===2?"Atención · ríos en crecida":"Vigilancia · ríos crecidos";
+    const provs=[]; const add=c=>{ const n=provN(c); if(n&&!provs.includes(n)) provs.push(n); };
+    av.forEach(x=>add(x[0])); afNow.forEach(a=>add(a.prov)); gl.forEach(p=>add(p.prov));
+    t=(lv>=2?"Posibles desbordamientos":"Ríos crecidos")+(provs.length?" en "+lista(provs,4):"");
+    const parts=[]; if(afNow.length) parts.push(`${afNow.length} ${afNow.length===1?"aforo registra":"aforos registran"} subidas bruscas de caudal`);
+    const gh=gl.filter(p=>p.n>=1).length, gp=gl.length-gh;
+    if(gh) parts.push(`${gh} ${gh===1?"tramo supera":"tramos superan"} el caudal de cauce lleno`); if(gp) parts.push(`el modelo prevé crecida en ${gp} ${gp===1?"punto":"puntos"} más en 10 días`);
+    if(av.length){ const nr=av.filter(x=>x[1].nivel===3).length, nn=av.length-nr, pp=n=>n===1?"provincia":"provincias";
+      parts.push("AEMET tiene "+[nr?`aviso rojo por lluvias en ${nr} ${pp(nr)}`:"",nn?`${nr?"naranja":"aviso naranja por lluvias"} en ${nn} ${pp(nn)}`:""].filter(Boolean).join(" y ")); }
+    sub=parts.length?parts.join(" · ").replace(/^./,c=>c.toUpperCase())+".":"";
+  }
+  if(av.length) rows.push(`<div class="al-row"><span class="lbl" style="background:${NVCOL[av[0][1].nivel]}">AEMET</span><div>`+
+    av.slice(0,5).map(([c,v])=>`<b>${esc(v.provincia)}</b>: ${AVNOM[v.nivel]} por ${v.tipos.map(x=>x.toLowerCase()).join(" y ")}${v.activo?" (en vigor":" (desde "+fmtHora(v.inicio)}${v.fin?", hasta "+fmtHora(v.fin):""})`).join(" · ")+(av.length>5?` · y ${av.length-5} más`:"")+`</div></div>`);
+  if(af.length) rows.push(`<div class="al-row"><span class="lbl" style="background:${NVCOL[af[0].n]}">Medido</span><div>`+
+    af.slice(0,4).map(a=>`<a href="#" data-af="${esc(a.id)}">${esc(afNom(a))}</a>${a.rio&&a.rio.length<=18&&!afNom(a).includes(a.rio)?" ("+esc(a.rio)+")":""}: ${fmtQ(a.q)} m³/s, ${AFTXT[a.estado].toLowerCase()} (${edadTxt(a.edad_h)})`).join(" · ")+(af.length>4?` · y ${af.length-4} más`:"")+`</div></div>`);
+  if(gl.length) rows.push(`<div class="al-row"><span class="lbl" style="background:${NVCOL[Math.max(gl[0].n,gl[0].nf)]}">Modelo</span><div>`+
+    gl.slice(0,4).map(p=>`<a href="#" data-p="${p.id}">${esc(PN(p.id))}</a>: `+(p.n>=1?NVTXT[p.n].toLowerCase()+" hoy":NVTXT[p.nf].toLowerCase()+" el "+fmtF(p.ff))).join(" · ")+(gl.length>4?` · y ${gl.length-4} más`:"")+`</div></div>`);
+  if(r.puntos_con_umbral<r.puntos) rows.push(`<div class="al-row"><span class="lbl" style="background:#8a96a0">Nota</span><div>Los umbrales de desbordamiento del modelo están calculados en ${r.puntos_con_umbral} de ${r.puntos} puntos de la red; el resto se completa en las próximas horas. Los aforos medidos y los avisos de AEMET están completos.</div></div>`);
+  const f=C.fuentes||{}; const hh=s=>s?new Date(s).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Madrid"}):"–";
+  el.innerHTML=`<div class="al-top"><div class="al-ico" aria-hidden="true">${lv===0?"✓":"!"}</div><div><div class="al-k">${k}</div><div class="al-t">${esc(t)}</div><div class="al-s">${sub}</div></div></div>`+
+    (rows.length?`<div class="al-rows">${rows.join("")}</div>`:"")+
+    `<div class="al-btns">${lv>0?`<button type="button" id="alMap">Ver las crecidas en el mapa</button>`:""}<button type="button" class="${lv>0?"sec":""}" id="alNear">¿Cómo están los ríos cerca de mí?</button></div>`+
+    `<div class="al-legal">Información orientativa, <b>no es un aviso oficial</b>. Emergencias: <b>112</b>. Aforos: ${hh(f.aforos)} · Modelo GloFAS: día ${f.dia_modelo?fmtF(f.dia_modelo):"–"} · Avisos AEMET: ${hh(f.avisos)}.</div>`;
+  el.querySelectorAll("[data-af]").forEach(a=>a.onclick=e=>{ e.preventDefault(); goAforo(a.dataset.af); });
+  el.querySelectorAll("[data-p]").forEach(a=>a.onclick=e=>{ e.preventDefault(); openPoint(+a.dataset.p,true); });
+  const bm=document.getElementById("alMap"); if(bm) bm.onclick=()=>verCrecidas();
+  document.getElementById("alNear").onclick=()=>{ document.getElementById("cerca").scrollIntoView({behavior:"smooth",block:"start"}); setTimeout(()=>document.getElementById("cQ").focus({preventScroll:true}),500); };
+}
+function goAforo(id){ const s=A&&A.estaciones.find(x=>String(x.id)===String(id)); if(!s) return;
+  if(s.lat!=null){ userMoved=true; map.flyTo([s.lat,s.lon],10,{duration:.7}); document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"}); openAforo(s); }
+  else document.getElementById("secCre").scrollIntoView({behavior:"smooth"}); }
+function verCrecidas(){ showCr=true; document.getElementById("btnCr").classList.add("on"); drawMarkers();
+  const ll=[]; afAlerta().forEach(a=>{ if(a.lat!=null) ll.push([a.lat,a.lon]); }); glAlerta().forEach(p=>{ const q=R.puntos.find(x=>x.id===p.id); if(q) ll.push([q.lat,q.lon]); });
+  if(ll.length){ userMoved=true; map.flyToBounds(L.latLngBounds(ll).pad(.25),{duration:.7,maxZoom:9}); }
+  document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"}); }
+
+function renderCrecidas(){
+  if(!C) return; const cu=Object.fromEntries(R.cuencas.map(c=>[c.id,c.nombre]));
+  const af=C.aforos.filter(a=>(a.n>=1||a.estado==="bajando")&&a.edad_h<=36).sort((a,b)=>b.n-a.n||b.q-a.q);
+  const afRow=a=>`<div class="li" data-af="${esc(a.id)}"><div><div class="ln">${esc(afNom(a))}</div><div class="lc">${esc(a.rio||"")}${a.rio?" · ":""}${a.prov?esc(provN(a.prov))+" · ":""}${edadTxt(a.edad_h)}${afBase(a)}</div></div><div class="lv">${fmtQ(a.q)} m³/s</div>${afChip(a)}</div>`;
+  const lsA=document.getElementById("lsAf"), drawA=all=>{ lsA.innerHTML=(af.length?(all?af:af.slice(0,10)).map(afRow).join("")+(af.length>10?`<button class="more" type="button" id="afCrMore">${all?"Ver menos":"Ver los "+af.length+" aforos"}</button>`:""):'<div class="empty">Ningún aforo registra subidas bruscas en este momento.</div>');
+    lsA.querySelectorAll(".li[data-af]").forEach(e=>e.onclick=()=>goAforo(e.dataset.af)); const mb=document.getElementById("afCrMore"); if(mb) mb.onclick=()=>{ drawA(!all); postHeight(); }; };
+  drawA(false);
+  const gl=glAlerta();
+  document.getElementById("lsCr").innerHTML=gl.map(p=>{ const q=R.puntos.find(x=>x.id===p.id)||{};
+    return `<div class="li" data-id="${p.id}"><div><div class="ln">${esc(q.nombre)}</div><div class="lc">${esc(cu[q.cuenca]||"")}${p.prov?" · "+esc(provN(p.prov)):""} · cauce lleno ${fmtQ(p.u[0])} m³/s${p.n<1?" · máx. "+fmtQ(p.qf)+" m³/s el "+fmtF(p.ff):""}</div></div><div class="lv">${fmtQ(p.n>=1?p.q:p.qf)} m³/s</div>${p.n>=1?nvChip(p.n):nvChip(p.nf,true)}</div>`; }).join("")||
+    `<div class="empty">El modelo no prevé que ningún punto supere su caudal de cauce lleno en los próximos 10 días${C.resumen.puntos_con_umbral<C.resumen.puntos?` (umbral calculado en ${C.resumen.puntos_con_umbral} de ${C.resumen.puntos} puntos)`:""}.</div>`;
+  const av=avAlerta(), box=document.getElementById("lsAvBox");
+  if(av.length){ box.style.display="block"; document.getElementById("lsAv").innerHTML=av.map(([c,v])=>`<div class="li" style="cursor:default"><div><div class="ln">${esc(v.provincia)}</div><div class="lc">${v.zonas.filter(z=>z.nivel!=="amarillo").map(z=>esc(z.zona)+" ("+z.nivel+", "+z.tipo.toLowerCase()+(z.activo?", en vigor":", desde "+fmtHora(z.inicio))+")").join(" · ")}</div></div><div class="lv"></div><span class="nv n${v.nivel}">${AVNOM[v.nivel][0].toUpperCase()+AVNOM[v.nivel].slice(1)}</span></div>`).join(""); }
+  document.querySelectorAll("#lsCr .li[data-id]").forEach(e=>e.onclick=()=>openPoint(+e.dataset.id,true));
+}
+
+/* marcadores de crecida en el mapa */
+let crLayer=null, showCr=true;
+function drawMarkers(){
+  if(crLayer){ crLayer.remove(); crLayer=null; } if(!C||!showCr) return;
+  map.createPane("cr"); map.getPane("cr").style.zIndex=640;
+  crLayer=L.layerGroup().addTo(map);
+  glAlerta().forEach(p=>{ const q=R.puntos.find(x=>x.id===p.id); if(!q) return; const n=Math.max(p.n,p.nf), sz=[0,16,20,24][n];
+    const ic=L.divIcon({className:"",html:`<div class="mk n${n} ${p.n>=1?"pulse":"pv"}" style="width:${sz}px;height:${sz}px"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+    L.marker([q.lat,q.lon],{icon:ic,pane:"cr",keyboard:false,title:q.nombre}).addTo(crLayer)
+      .bindTooltip(`<b>${esc(q.nombre)}</b><br>${p.n>=1?NVTXT[p.n]+" hoy":"Previsto el "+fmtF(p.ff)+": "+NVTXT[p.nf].toLowerCase()}<br>Cauce lleno: ${fmtQ(p.u[0])} m³/s · ${p.n>=1?"hoy "+fmtQ(p.q):"máx. "+fmtQ(p.qf)} m³/s`,{direction:"top",offset:[0,-sz/2]})
+      .on("click",()=>{ openPoint(p.id,false); document.getElementById("ficha").scrollIntoView({behavior:"smooth",block:"nearest"}); }); });
+  afAlerta().forEach(a=>{ if(a.lat==null) return; const sz=a.n>=2?20:16, viejo=a.edad_h>12;
+    const ic=L.divIcon({className:"",html:`<div class="mk sq n${a.n} ${viejo?"":"pulse"}" style="width:${sz}px;height:${sz}px;${viejo?"opacity:.6":""}"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+    L.marker([a.lat,a.lon],{icon:ic,pane:"cr",keyboard:false,title:a.nombre}).addTo(crLayer)
+      .bindTooltip(`<b>${esc(a.nombre)}</b> · aforo medido<br>${AFTXT[a.estado]}: ${fmtQ(a.q)} m³/s<br>${edadTxt(a.edad_h)}`,{direction:"top",offset:[0,-sz/2]})
+      .on("click",()=>goAforo(a.id)); });
+  if(ME) meMarker();
+}
+document.getElementById("btnCr").onclick=e=>{ showCr=!showCr; e.currentTarget.classList.toggle("on",showCr); drawMarkers(); };
+
+/* bloque de riesgo en la ficha de un punto */
+function riskStrip(id){ const c=CP[id]; if(!c) return "";
+  if(!c.u) return `<div class="f-risk">${ptChip(c)}<span class="g">Umbral de desbordamiento todavía sin calcular para este punto.</span></div>`;
+  const pct=c.q!=null?c.q/c.u[0]*100:null, w=v=>Math.min(100,v/c.u[2]*100);
+  const col=NVCOL[Math.max(c.n,1)];
+  return `<div class="f-risk">${ptChip(c)}<div class="g"><b>Cauce lleno (crecida de 2 años): ${fmtQ(c.u[0])} m³/s.</b> `+
+    (pct!=null?`Hoy lleva el ${fmtN(pct)} % de ese caudal. `:"")+
+    (c.nf>c.n?`El modelo prevé ${fmtQ(c.qf)} m³/s el ${fmtF(c.ff)}: ${NVTXT[c.nf].toLowerCase()}. `:c.qf!=null?`Máximo previsto en 10 días: ${fmtQ(c.qf)} m³/s (${fmtF(c.ff)}). `:"")+
+    `Crecida de 5 años: ${fmtQ(c.u[1])} · de 20 años: ${fmtQ(c.u[2])} m³/s.`+
+    `<div class="gauge" title="Caudal de hoy frente a los umbrales"><i style="width:${w(c.q||0)}%;background:${c.n>=1?col:"#3d8bd4"}"></i>${c.qf!=null?`<i style="width:${w(c.qf)}%;background:none;border:2px dashed #7a4bc2"></i>`:""}<u style="left:${w(c.u[0])}%"></u><u style="left:${w(c.u[1])}%"></u></div></div></div>`; }
+
+/* ---------- cerca de mí ---------- */
+let MUNI=null, REJ=null, ME=null, meMk=null;
+const norm=t=>t.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9ñ ]/g," ").replace(/\s+/g," ").trim();
+function km(a,b,c,d){ const r=Math.PI/180, x=Math.sin((c-a)*r/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin((d-b)*r/2)**2; return 12742*Math.asin(Math.sqrt(x)); }
+function loadMuni(){ if(!MUNI) MUNI=fetch("municipios_buscar.json").then(r=>r.json()).then(d=>d.m.map(m=>({n:m[0],k:norm(m[0]),prov:m[1],lat:m[2],lon:m[3]}))).catch(()=>[]); return MUNI; }
+function loadRej(){ if(!REJ) REJ=fetch("provincias_rejilla.json").then(r=>r.json()).then(r=>{ const b=atob(r.g), g=new Uint8Array(b.length); for(let i=0;i<b.length;i++) g[i]=b.charCodeAt(i); r.gb=g; return r; }).catch(()=>null); return REJ; }
+async function provAt(lat,lon){ const r=await loadRej(); if(!r) return null; const i=Math.floor((r.lat0-lat)/r.d), j=Math.floor((lon-r.lon0)/r.d); if(i<0||j<0||i>=r.nlat||j>=r.nlon) return null; const v=r.gb[i*r.nlon+j]; return v?r.cod[v-1]:null; }
+function initCerca(){
+  const inp=document.getElementById("cQ"), lst=document.getElementById("cList"); let opts=[], on=0;
+  inp.addEventListener("focus",loadMuni,{once:true});
+  const paint=()=>{ lst.innerHTML=opts.map((m,i)=>`<div role="option" class="${i===on?"on":""}" data-i="${i}">${esc(m.n)} <small>· ${esc(provN(m.prov))}</small></div>`).join(""); lst.style.display=opts.length?"block":"none";
+    lst.querySelectorAll("[data-i]").forEach(d=>d.onmousedown=e=>{ e.preventDefault(); pick(opts[+d.dataset.i]); }); };
+  const pick=m=>{ if(!m) return; inp.value=m.n; lst.style.display="none"; setPlace({n:m.n,prov:m.prov,lat:m.lat,lon:m.lon,src:"muni"}); inp.blur(); };
+  inp.addEventListener("input",async()=>{ const v=norm(inp.value); if(v.length<2){ opts=[]; paint(); return; } const M=await loadMuni();
+    const a=M.filter(m=>m.k.startsWith(v)), b=M.filter(m=>!m.k.startsWith(v)&&m.k.includes(v)); opts=a.concat(b).slice(0,8); on=0; paint(); });
+  inp.addEventListener("keydown",e=>{ if(e.key==="ArrowDown"){ on=Math.min(on+1,opts.length-1); paint(); e.preventDefault(); } else if(e.key==="ArrowUp"){ on=Math.max(on-1,0); paint(); e.preventDefault(); } else if(e.key==="Enter"){ e.preventDefault(); pick(opts[on]); } else if(e.key==="Escape"){ lst.style.display="none"; } });
+  inp.addEventListener("blur",()=>setTimeout(()=>lst.style.display="none",150));
+  document.getElementById("cGeo").onclick=()=>{ const res=document.getElementById("cRes");
+    if(!navigator.geolocation){ res.innerHTML='<div class="c-empty">Tu navegador no permite usar la ubicación. Escribe tu municipio.</div>'; return; }
+    res.innerHTML='<div class="c-empty">Buscando tu ubicación…</div>';
+    navigator.geolocation.getCurrentPosition(async pos=>{ const la=pos.coords.latitude, lo=pos.coords.longitude, pr=await provAt(la,lo);
+      const M=await loadMuni(); let best=null, bd=1e9; for(const m of M){ if(Math.abs(m.lat-la)>.3||Math.abs(m.lon-lo)>.4) continue; const d=km(la,lo,m.lat,m.lon); if(d<bd){bd=d;best=m;} }
+      setPlace({n:best&&bd<15?"Cerca de "+best.n:"Tu ubicación",prov:pr||(best&&best.prov),lat:la,lon:lo,src:"geo"}); },
+      err=>{ res.innerHTML=`<div class="c-empty">No hemos podido usar tu ubicación${err&&err.code===1?" (permiso denegado)":""}. Escribe tu municipio en el buscador.</div>`; postHeight(); },
+      {enableHighAccuracy:false,timeout:10000,maximumAge:600000}); };
+  try{ const s=JSON.parse(localStorage.getItem("cg_caudal_lugar")||"null"); if(s&&s.lat) setPlace(s,true); }catch(e){}
+}
+function meMarker(){ if(meMk){ meMk.remove(); meMk=null; } if(!ME) return;
+  meMk=L.marker([ME.lat,ME.lon],{icon:L.divIcon({className:"",html:'<div class="mk-me"></div>',iconSize:[16,16],iconAnchor:[8,8]}),pane:"cr",keyboard:false,title:ME.n}).addTo(map).bindTooltip(esc(ME.n),{direction:"top"}); }
+function setPlace(pl,quiet){ ME=pl; try{ localStorage.setItem("cg_caudal_lugar",JSON.stringify(pl)); }catch(e){}
+  map.createPane("cr"); map.getPane("cr").style.zIndex=640; meMarker(); renderCerca(); if(!quiet) document.getElementById("cerca").scrollIntoView({behavior:"smooth",block:"start"}); }
+function renderCerca(){
+  const el=document.getElementById("cRes"); if(!ME){ el.innerHTML=""; return; }
+  const RAD=25, near=(arr,ll)=>{ const w=arr.map(o=>({o,d:km(ME.lat,ME.lon,...ll(o))})).filter(x=>isFinite(x.d)).sort((a,b)=>a.d-b.d); const c=w.filter(x=>x.d<=RAD); return c.length?{l:c,lejos:false}:{l:w.filter(x=>x.d<=70).slice(0,3),lejos:true}; };
+  const afs=A?near(A.estaciones.filter(s=>s.lat!=null&&s.q!=null),s=>[s.lat,s.lon]):{l:[],lejos:true};
+  afs.l.sort((a,b)=>(((AFC[b.o.id]||{}).n||0)-((AFC[a.o.id]||{}).n||0))||a.d-b.d);
+  const gls=near(R.puntos,p=>[p.lat,p.lon]);
+  const sev=x=>{ const c=CP[x.o.id]; return c?Math.max(c.n,c.nf)*10+((c.p||0)>=95||(c.pf||0)>=95?5:0):0; };
+  gls.l.sort((a,b)=>sev(b)-sev(a)||a.d-b.d); gls.l=gls.l.slice(0,6);
+  const av=C&&ME.prov?C.avisos[ME.prov]:null;
+  let lv=0; afs.l.forEach(x=>{ if(!afs.lejos&&AFC[x.o.id]&&AFC[x.o.id].edad_h<=12) lv=Math.max(lv,AFC[x.o.id].n||0); });
+  gls.l.forEach(x=>{ const c=CP[x.o.id]; if(c&&!gls.lejos) lv=Math.max(lv,c.n,c.nf); }); if(av&&av.nivel>=2) lv=Math.max(lv,av.nivel);
+  const vig=!lv&&gls.l.some(x=>{ const c=CP[x.o.id]; return c&&!gls.lejos&&((c.p||0)>=95||(c.pf||0)>=95); });
+  const head=lv?`<span class="nv n${lv}">${lv===3?"Riesgo alto en tu zona":lv===2?"Crecidas en tu zona":"Ríos crecidos en tu zona"}</span>`:vig?`<span class="nv vg">Ríos altos para la época</span>`:`<span class="nv" style="background:var(--n0)">Sin crecidas destacadas cerca</span>`;
+  let h=`<div class="c-head"><div class="c-place">${esc(ME.n)} <small>${ME.prov?"· "+esc(provN(ME.prov)):""}</small></div>${head}</div>`;
+  h+=`<div class="c-blk"><h4>Avisos de AEMET en tu provincia</h4>`+(av?`<div>${av.zonas.map(z=>`<div class="c-it nl"><div class="a">${esc(z.zona)}</div><span class="nv n${({amarillo:1,naranja:2,rojo:3})[z.nivel]}">${z.nivel[0].toUpperCase()+z.nivel.slice(1)} · ${z.tipo.toLowerCase()}</span><div class="b">${z.activo?"En vigor":"Desde "+fmtHora(z.inicio)} · hasta ${fmtHora(z.fin)}</div></div>`).join("")}</div>`:`<div class="c-empty">${ME.prov?"No hay avisos por lluvias ni tormentas en vigor ni anunciados para las próximas 48 horas.":"No sabemos en qué provincia estás."}</div>`)+`</div>`;
+  h+=`<div class="c-blk"><h4>Aforos medidos ${afs.lejos?"más cercanos":"a menos de "+RAD+" km"}</h4>`+(afs.l.length?afs.l.map(x=>{ const s=x.o, c=AFC[s.id];
+      return `<div class="c-it" data-af="${esc(s.id)}"><div class="a">${esc(afNom(s))}</div>${afChip(c)||'<span class="nv" style="background:#8a96a0">Sin subidas bruscas</span>'}<div class="b">${esc(s.rio||"")}${s.rio?" · ":""}a ${fmtN(x.d)} km · <b>${fmtQ(s.q)} m³/s</b>${c?afBase(c):""} · ${edadTxt(c?c.edad_h:null)} · ${esc(s.fuente_n||s.fuente)}</div></div>`; }).join("")
+    :`<div class="c-empty">No hay aforos con datos abiertos cerca. De momento publicamos los de Navarra, Cataluña y la Confederación del Júcar; para el resto, consulta el SAIH de tu confederación (enlaces al final de la página).</div>`)+`</div>`;
+  h+=`<div class="c-blk"><h4>Ríos de la red ${gls.lejos?"más cercanos":"a menos de "+RAD+" km"} · modelo GloFAS</h4>`+(gls.l.length?gls.l.map(x=>{ const p=x.o, c=CP[p.id]; if(!c) return "";
+      const w=v=>c.u?Math.min(100,v/c.u[2]*100):0;
+      return `<div class="c-it" data-p="${p.id}"><div class="a">${esc(p.nombre)}</div>${ptChip(c)}<div class="b">a ${fmtN(x.d)} km · hoy ${fmtQ(c.q)} m³/s`+(c.u?` · cauce lleno ${fmtQ(c.u[0])} m³/s`:"")+(c.qf!=null?` · máximo previsto ${fmtQ(c.qf)} m³/s el ${fmtF(c.ff)}`:"")+`</div>`+
+        (c.u?`<div class="gauge"><i style="width:${w(c.q||0)}%;background:${c.n>=1?NVCOL[c.n]:"#3d8bd4"}"></i>${c.qf!=null?`<i style="width:${w(c.qf)}%;background:none;border:2px dashed #7a4bc2"></i>`:""}<u style="left:${w(c.u[0])}%"></u><u style="left:${w(c.u[1])}%"></u></div>`:"")+`</div>`; }).join("")
+    :`<div class="c-empty">No hay puntos de la red cerca.</div>`)+`</div>`;
+  h+=`<div class="c-foot">Barra: caudal de hoy (relleno) y máximo previsto (discontinua) frente a los umbrales de 2 y 5 años (marcas). Guardamos tu zona en este navegador para la próxima vez · <button type="button" id="cMap">Ver en el mapa</button> · <button type="button" id="cOlv">Olvidar mi zona</button></div>`;
+  el.innerHTML=h;
+  el.querySelectorAll("[data-p]").forEach(e=>e.onclick=()=>openPoint(+e.dataset.p,true));
+  el.querySelectorAll("[data-af]").forEach(e=>e.onclick=()=>goAforo(e.dataset.af));
+  document.getElementById("cMap").onclick=()=>{ userMoved=true; map.flyTo([ME.lat,ME.lon],9.5,{duration:.7}); document.getElementById("map").scrollIntoView({behavior:"smooth",block:"center"}); };
+  document.getElementById("cOlv").onclick=()=>{ try{ localStorage.removeItem("cg_caudal_lugar"); }catch(e){} ME=null; if(meMk){meMk.remove();meMk=null;} el.innerHTML=""; document.getElementById("cQ").value=""; postHeight(); };
+  postHeight();
+}
 
 /* ---------- alto del iframe ---------- */
 function postHeight(){ try{ const h=Math.ceil(document.querySelector(".wrap").getBoundingClientRect().height); parent.postMessage({cgHeight:h,cgTool:"caudal"},"*"); }catch(e){} }
