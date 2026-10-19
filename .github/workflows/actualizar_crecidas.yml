@@ -1,0 +1,121 @@
+name: Actualizar crecidas de los ríos
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+# Mismo patrón que el resto: trae los scripts del privado (clima-scripts) y
+# commitea solo el resultado en docs/caudal/.
+#
+# Dos trabajos:
+#   crecidas  -> docs/caudal/crecidas.json  (segundos; tras cada pasada de avisos
+#                y cada hora). Junta red GloFAS + umbrales + aforos + avisos AEMET.
+#   umbrales  -> docs/caudal/umbrales.json  (Q2/Q5/Q20 de los 298 puntos). Va por
+#                tandas para no pasarse del límite gratuito de Open-Meteo; cuando
+#                están todos, la pasada termina en segundos sin pedir nada.
+on:
+  schedule:
+    - cron: '41 * * * *'
+  workflow_run:
+    workflows: ["Actualizar avisos meteorológicos"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      max_umbrales:
+        description: 'Puntos nuevos de umbral en esta pasada'
+        required: false
+        default: '40'
+  push:
+    paths:
+      - '.github/workflows/actualizar_crecidas.yml'
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  crecidas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: actualizar-crecidas
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: clima-scripts
+      - name: Sincronizar con el remoto
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git pull --rebase --autostash || true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Calcular crecidas
+        run: python clima-scripts/caudal_crecidas.py --docs docs
+      - name: Publicar
+        run: |
+          git add docs/caudal/crecidas.json
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "Crecidas $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push rechazado; reintento $i"; sleep $((i*7))
+          done
+          exit 1
+
+  umbrales:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    concurrency:
+      group: actualizar-umbrales-caudal
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: clima-scripts
+      - name: Sincronizar con el remoto
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git pull --rebase --autostash || true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: ¿Faltan umbrales?
+        id: falta
+        run: |
+          python - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json
+          try:
+              u = json.load(open("docs/caudal/umbrales.json"))
+              hechos = len(u.get("puntos", {})) + sum(1 for c in u.get("crudo", {}).values() if c.get("sin_celda"))
+              total = u.get("total") or len(json.load(open("docs/caudal/red.json"))["puntos"])
+          except Exception:
+              hechos, total = 0, 1
+          print("si=" + ("1" if hechos < total else "0"))
+          EOF
+      - name: Calcular umbrales (una tanda)
+        if: steps.falta.outputs.si == '1'
+        run: python clima-scripts/caudal_umbrales.py --docs docs --max "${{ github.event.inputs.max_umbrales || '40' }}" --inverso
+      - name: Recalcular crecidas con los umbrales nuevos
+        if: steps.falta.outputs.si == '1'
+        run: python clima-scripts/caudal_crecidas.py --docs docs
+      - name: Publicar
+        if: steps.falta.outputs.si == '1'
+        run: |
+          git add docs/caudal/umbrales.json docs/caudal/crecidas.json
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "Umbrales de crecida $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push rechazado; reintento $i"; sleep $((i*7))
+          done
+          exit 1
