@@ -1,6 +1,6 @@
 # San Roque de Riomiera (Cantabria) iguala hoy, 19 de octubre, su récord de mínima para un mes de octubre: 5,1 °C entre las 04:00 y las 05:00 frente a los 5,1 °C de 2025
 
-**Dato:** Medido por AEMET en su estación de San Roque de Riomiera, a 849 m, mínima de 5,1 °C el 19 de octubre (entre las 04:00 y las 05:00, hora local) · récord anterior de octubre en la estación: 5,1 °C (27 de octubre de 2025) · récord absoluto de la estación: -3,9 °C (4 de enero de 2026) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de San Roque de Riomiera, a 849 m, mínima de 5,1 °C el 19 de octubre (entre las 04:00 y las 05:00, hora local) · récord anterior de octubre en la estación: 5,1 °C (27 de octubre de 2025) · récord absoluto de la estación: -3,9 °C (4 de enero de 2026) · día en curso, con observaciones hasta las 19:00 (hora local)  
 **Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** San Roque de Riomiera (Cantabria)  
 **Citabilidad:** media · **Exclusivo:** sí

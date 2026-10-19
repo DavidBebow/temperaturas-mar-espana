@@ -1,6 +1,6 @@
 # Palencia ya supera hoy, 19 de octubre, su récord de máxima para un mes de octubre: 39,4 °C entre las 02:00 y las 03:00 frente a los 33 °C de 2023
 
-**Dato:** Medido por AEMET en su estación de Palencia, a 736 m, máxima de 39,4 °C el 19 de octubre (entre las 02:00 y las 03:00, hora local) · récord anterior de octubre en la estación: 33 °C (2 de octubre de 2023) · récord absoluto de la estación: 39,8 °C (16 de julio de 2022) · día en curso, con observaciones hasta las 18:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Palencia, a 736 m, máxima de 39,4 °C el 19 de octubre (entre las 02:00 y las 03:00, hora local) · récord anterior de octubre en la estación: 33 °C (2 de octubre de 2023) · récord absoluto de la estación: 39,8 °C (16 de julio de 2022) · día en curso, con observaciones hasta las 19:00 (hora local)  
 **Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Palencia  
 **Citabilidad:** media · **Exclusivo:** sí
