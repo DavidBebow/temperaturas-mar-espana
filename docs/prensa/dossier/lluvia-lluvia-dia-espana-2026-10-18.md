@@ -1,6 +1,6 @@
 # La estación de AEMET de Jávea Ayuntamiento (Alicante) recogió 210,6 mm el 18 de octubre; la de Miramar (Valencia), 203,2 mm
 
-**Dato:** 210,6 mm de 0 a 24 h (hora local) del 18 de octubre, la cifra más alta de las 365 estaciones de AEMET con las 24 horas que sigue el mapa · 23 superaron los 30 mm  
+**Dato:** 210,6 mm de 0 a 24 h (hora local) del 18 de octubre, la cifra más alta de las 369 estaciones de AEMET con las 24 horas que sigue el mapa · 23 superaron los 30 mm  
 **Fecha del dato:** 18 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -14,7 +14,7 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación de observación convencional, de 0 a 24 h en hora local. Solo estaciones con las 24 horas.
 
 ## Límites (decirlos antes de que los descubran)
-- La comparación es entre las 365 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (998 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 369 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (998 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Lluvia de cada estación: en el resto del término municipal pudo llover más o menos.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
