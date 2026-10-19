@@ -29,6 +29,7 @@ import hashlib
 import io
 import json
 import math
+from decimal import ROUND_HALF_UP, Decimal
 import os
 import re
 import statistics as st
@@ -46,7 +47,7 @@ import hallazgos_prensa as H  # noqa: E402
 
 DOCS = H.DOCS
 PRENSA = DOCS / "prensa"
-SALIDA = PRENSA / "noticias"
+SALIDA = Path(os.environ["REDACCION_SALIDA"]) if os.getenv("REDACCION_SALIDA") else PRENSA / "noticias"  # otra carpeta solo para pruebas
 MADRID = ZoneInfo("Europe/Madrid")
 AHORA = datetime.now(timezone.utc)
 HOY = AHORA.astimezone(MADRID).date()
@@ -62,12 +63,20 @@ LOG: list[str] = []
 
 
 # ============================================================================ formato
+def _r1(x):
+    """Redondeo a una décima hacia arriba en el 5, sobre la cifra tal como está escrita (16,65 → 16,7), no sobre su binario."""
+    return Decimal(str(float(x))).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
+
+
 def d1(x) -> str:
     """Siempre un decimal, coma decimal: 21,0."""
-    return f"{float(x):.1f}".replace(".", ",")
+    return f"{_r1(x):.1f}".replace(".", ",").replace("-0,0", "0,0")
 
 
-f1 = H.f1  # 24,3 · 39 · 0,5
+def f1(x) -> str:
+    """1 decimal con coma decimal, sin ceros tontos: 24,3 · 39 · 0,5."""
+    s = d1(x)
+    return s[:-2] if s.endswith(",0") else s
 
 
 def miles(n) -> str:
@@ -282,17 +291,38 @@ def g_episodio(D: Datos, med):
                 hechos.append(hecho(f"tramo_{slugify(z['zona'])}", f"En {zona_txt(z['zona'])}, el aviso rojo va " + "; ".join(tramo_txt(t[2], t[3], c) for t in z["tramos"]) + ".", fuente_av))
     if naranjas:
         provs = sorted({z["prov"] for z in naranjas if z["prov"]}, key=sin_tildes)
-        txt = (f"A esa hora había además otras {len(naranjas)} zonas en aviso naranja" if rojas else
-               f"A las {hora(c)} del {dia(c)}, AEMET tenía {len(naranjas)} zonas en aviso naranja") + f", en {lista_y(provs)}."
+        c_dt = datetime.fromisoformat(c)
+        en_vigor = sum(1 for z in naranjas if any(t[0] <= c_dt <= t[1] for t in z["tramos"]))
+        txt = (f"A esa hora AEMET tenía emitido además aviso naranja para otras {len(naranjas)} zonas" if rojas else
+               f"A las {hora(c)} del {dia(c)}, AEMET tenía emitido aviso naranja para {len(naranjas)} zonas") + f", en {lista_y(provs)}"
         if len(naranjas) == 1:
-            txt = txt.replace("otras 1 zonas", "otra zona").replace("1 zonas", "una zona")
-        hechos.append(hecho("avisos_naranja", txt, fuente_av, [str(len(naranjas)), hora(c)]))
+            txt = txt.replace("otras 1 zonas", "otra zona").replace("para 1 zonas", "para una zona")
+        if en_vigor < len(naranjas):
+            txt += (f"; {en_vigor} de ellas estaban ya en vigor y el resto empieza más tarde" if en_vigor else "; todas empiezan más tarde")
+        hechos.append(hecho("avisos_naranja", txt + ".", fuente_av, [str(len(naranjas)), hora(c), str(en_vigor), str(len(provs))]))
     if filas_h and filas_h[0][0] >= 10:
         mm, e = filas_h[0]
+        emp = [x for m2, x in filas_h[1:] if f1(m2) == f1(mm)]
         hechos.append(hecho("lluvia_hoy_1", f"Entre la medianoche y las {corte}:00 del {dia(hoy_f)}, la estación de AEMET de {D.donde(e)} recogió {f1(mm)} mm, "
-                            f"la cifra más alta de las {len(filas_h)} estaciones de AEMET que sigue el observatorio con datos de todas esas horas.",
+                            + (f"empatada con {lista_y([D.donde(x) for x in emp])} en " if emp else "")
+                            + f"la cifra más alta de las {len(filas_h)} estaciones de AEMET que sigue el observatorio con datos de todas esas horas.",
                             "AEMET OpenData", [f"{f1(mm)} mm", f"{corte}:00", str(len(filas_h))], lugar=D.nom(e), superlativo=True, liga=[f"{f1(mm)} mm"]))
+        parcial = parciales_hoy(D, mm)
+        if parcial:
+            mmp, ep_, hp_ = parcial[0]
+            hechos.append(hecho("lluvia_parcial", f"La estación de AEMET de {D.donde(ep_)} llevaba al menos {f1(mmp)} mm entre la medianoche y las {hp_}:00 del {dia(hoy_f)}, "
+                                f"su último dato publicado: le faltan las horas siguientes, así que no entra en la comparación de las estaciones con datos de todas esas horas.", "AEMET OpenData",
+                                [f"{f1(mmp)} mm", f"{hp_}:00"], lugar=D.nom(ep_), liga=[f"{f1(mmp)} mm"]))
         cifras.append({"n": f"{f1(mm)} mm", "l": f"en {D.donde(e)} entre la medianoche y las {corte}:00 del {dia(hoy_f)}", "tono": "lluvia"})
+        if parcial and parcial[0][0] > mm:
+            cifras.append({"n": f"{f1(parcial[0][0])} mm", "l": f"al menos, en {D.donde(parcial[0][1])}: su dato hasta las {parcial[0][2]}:00, el último publicado", "tono": "lluvia"})
+        ref = referencia_otono(D, e)
+        if ref and mm >= ref["normal_total"] * 0.5:
+            veces = math.floor(mm / ref["normal_total"] * 10) / 10  # «más de X veces»: X redondeado hacia abajo para que sea cierto
+            comp = (f"más de {f1(veces)} veces" if veces >= 1.5 else "más") if veces >= 1 else "más de la mitad de"
+            hechos.append(hecho("lluvia_hoy_otono", f"Es {comp} lo que recoge de media la estación de AEMET de {D.nom(e)} en todo el otoño, de septiembre a noviembre: "
+                                f"{f1(ref['normal_total'])} mm ({ref['periodo_txt']}).", "AEMET OpenData; cálculo del observatorio",
+                                [f"{f1(ref['normal_total'])} mm", f1(veces)], lugar=D.nom(e), liga=[f"{f1(ref['normal_total'])} mm"]))
         if len(filas_h) > 1 and filas_h[1][0] >= 10:
             mm2, e2 = filas_h[1]
             hechos.append(hecho("lluvia_hoy_2", f"La segunda cifra más alta a esa hora fue la de {D.donde(e2)}, con {f1(mm2)} mm.", "AEMET OpenData",
@@ -309,7 +339,7 @@ def g_episodio(D: Datos, med):
         if med.get("records"):
             cifras.insert(1, {"n": f"{med['records']} días", "l": f"de {med['ultimo'][:4]} han batido el récord de temperatura del mar para su fecha", "tono": "calor"})
         if med.get("ytd_puesto") == 1:
-            cifras.insert(2, {"n": f"{d1(med['ytd'][0][0])} °C", "l": f"de media entre el 1 de enero y el {dia(med['ultimo'], semana=False)}: la más alta desde 1982", "tono": "calor"})
+            cifras.insert(2, {"n": f"{d1(med['ytd'][0][0])} °C", "l": f"de media entre el 1 de enero y el {dia(med['ultimo'], semana=False)}: la más alta de la serie, que empieza en 1982", "tono": "calor"})
         hechos.append(hecho("mar_contexto", "Un mar más caliente evapora más agua y aporta más humedad a las tormentas de otoño: es uno de los ingredientes de las "
                             "lluvias torrenciales en el Mediterráneo, aunque por sí solo no las provoca.", "Conocimiento meteorológico general", nota="contexto"))
     for f_ef, corto, largo in EFEMERIDES:
@@ -326,6 +356,22 @@ def g_episodio(D: Datos, med):
                     hechos.append(hecho("mar_hace", f"El {dia(med['ultimo'], semana=False)} de {f_ef.year}, {(f_ef - date(f_ef.year, date.fromisoformat(med['ultimo']).month, date.fromisoformat(med['ultimo']).day)).days} días antes de {corto}, "
                                         f"el mismo mar estaba a {d1(v24)} °C: {d1(med['sst'] - v24)} °C menos que en {med['ultimo'][:4]} en la misma fecha.",
                                         "NOAA OISST v2.1", [f"{d1(v24)} °C", f"{d1(med['sst'] - v24)} °C"]))
+    # la lluvia manda cuando es extrema: va al titular, al gráfico y a la primera cifra; el mar queda de contexto
+    manda_lluvia = bool((filas_h and filas_h[0][0] >= 100) or (filas_a and filas_a[0][0] >= 150))
+    hoy_manda = False
+    if manda_lluvia:
+        hoy_manda = bool(filas_h and filas_h[0][0] >= 100 and (not filas_a or filas_h[0][0] >= filas_a[0][0] * 0.6))
+        mm_t, e_t = filas_h[0] if hoy_manda else filas_a[0]
+        hl = next(x for x in hechos if x["id"] == ("lluvia_hoy_1" if hoy_manda else "lluvia_ayer_1"))
+        hl["alias"] = list(hl.get("alias") or []) + [f"{f1(mm_t)} litros por metro cuadrado", f"{corte} horas"]
+        lluvia_c = [x for x in cifras if x.get("tono") == "lluvia"]
+        if len(filas_h) > 1 and filas_h[1][0] >= 10:
+            lluvia_c.append({"n": f"{f1(filas_h[1][0])} mm", "l": f"en {D.donde(filas_h[1][1])}, la segunda cifra a esa hora", "tono": "lluvia"})
+        if filas_a and filas_a[0][0] >= 20:
+            lluvia_c.append({"n": f"{f1(filas_a[0][0])} mm", "l": f"en {D.donde(filas_a[0][1])} el {dia(D.L['fecha'])}, en todo el día", "tono": "lluvia"})
+        if naranjas or rojas:
+            lluvia_c.append({"n": str(len(rojas) + len(naranjas)), "l": "zonas con aviso rojo o naranja de AEMET" if rojas else "zonas con aviso naranja de AEMET", "tono": "aviso"})
+        cifras = lluvia_c + [x for x in cifras if x.get("tono") != "lluvia"]
     if rojas:
         prov_r = lista_y(sorted({z["prov"] for z in rojas}, key=sin_tildes))
         zcorta = lista_y([zona_txt(z["zona"]) for z in sorted(rojas, key=lambda z: (sin_tildes(z["prov"] or ""), z["zona"]))])
@@ -344,14 +390,35 @@ def g_episodio(D: Datos, med):
         kicker = "Última hora · Lluvia"
         puntos = 80
         slug_ = f"{HOY.isoformat()}-lluvia-{slugify(D.nom(e))}"
+    if manda_lluvia:
+        lugar_t = D.donde(e_t)
+        tit = (f"La estación de AEMET de {lugar_t} recoge {f1(mm_t)} litros por metro cuadrado en {corte} horas" if hoy_manda
+               else f"La estación de AEMET de {lugar_t} recogió {f1(mm_t)} litros por metro cuadrado el {dia(D.L['fecha'])}")
+        if rojas:
+            tit += f"; aviso rojo en {lista_y(sorted({z['prov'] for z in rojas}, key=sin_tildes))}"
+        elif naranjas:
+            provs_n = sorted({z["prov"] for z in naranjas if z["prov"]}, key=sin_tildes)
+            zn = "una zona" if len(naranjas) == 1 else f"{len(naranjas)} zonas"
+            largo = f"{tit}; AEMET tiene emitido aviso naranja para {zn} de {lista_y(provs_n)}"
+            tit = largo if provs_n and len(largo) <= 170 else (f"{tit}; AEMET tiene emitido aviso naranja para {zn} en {len(provs_n)} provincias"
+                                                               if len(provs_n) > 1 else f"{tit}; AEMET tiene emitido aviso naranja para {zn}")
+        kicker = "Última hora · Temporal"
+        puntos = max(puntos, 100 + min(mm_t, 400) / 40)
     sub = [h["dice"] for h in hechos if h["id"] in ("mar_anio", "efemeride")]
+    if manda_lluvia:
+        par_h = next((h for h in hechos if h["id"] == "lluvia_parcial"), None)
+        mas_alta = bool(par_h and hoy_manda and parcial and parcial[0][0] > mm_t)
+        orden_sub = ["lluvia_hoy_otono", "lluvia_parcial" if mas_alta else "lluvia_hoy_2"]
+        sub = [h["dice"] for k in orden_sub for h in hechos if h["id"] == k] or sub
     plantilla = {
         "titular": tit,
         "subtitulo": " ".join(sub) if sub else next((h["dice"] for h in hechos if h["id"].startswith("lluvia")), ""),
-        "entradilla": " ".join(h["dice"] for h in hechos if h["id"] in ("aviso_rojo", "mar_hoy")) or hechos[0]["dice"],
+        "entradilla": (" ".join(h["dice"] for h in hechos if h["id"] in (("lluvia_hoy_1" if hoy_manda else "lluvia_ayer_1"), "aviso_rojo")) if manda_lluvia else
+                       " ".join(h["dice"] for h in hechos if h["id"] in ("aviso_rojo", "mar_hoy"))) or hechos[0]["dice"],
         "cuerpo": [p for p in [
-            " ".join(h["dice"] for h in hechos if h["id"].startswith("lluvia")),
-            " ".join(h["dice"] for h in hechos if h["id"] in ("mar_anio", "mar_records", "mar_max")),
+            " ".join(h["dice"] for h in hechos if h["id"].startswith("lluvia") and h["id"] != "lluvia_parcial"),
+            next((h["dice"] for h in hechos if h["id"] == "lluvia_parcial"), ""),
+            " ".join(h["dice"] for h in hechos if h["id"] in (("mar_hoy",) if manda_lluvia else ()) + ("mar_anio", "mar_records", "mar_max")),
             " ".join(h["dice"] for h in hechos if h["id"] in ("mar_hace", "efemeride")),
             " ".join(h["dice"] for h in hechos if h["id"] == "mar_contexto"),
             " ".join(h["dice"] for h in hechos if h["id"].startswith("tramo_") or h["id"] == "avisos_naranja")
@@ -359,7 +426,7 @@ def g_episodio(D: Datos, med):
         ] if p.strip()],
         "claves": [h["dice"] for h in hechos if h["id"] in ("aviso_rojo", "mar_hoy", "mar_records", "lluvia_hoy_1")][:4],
     }
-    h = historia("episodio", slug_, kicker, "calor" if mar else "lluvia", puntos, hechos, plantilla, cifras[:4],
+    h = historia("episodio", slug_, kicker, "calor" if (mar and not manda_lluvia) else "lluvia", puntos, hechos, plantilla, cifras[:4],
                  fuentes="AEMET (avisos vía MeteoAlarm; observación horaria de AEMET OpenData)" + (" y NOAA OISST v2.1" if mar else ""),
                  metodo="Avisos de AEMET consultados a la hora indicada. Lluvia: suma de la precipitación horaria de cada estación de AEMET; solo estaciones con todas las horas del periodo."
                  + (" Mar: media diaria de la caja 36,5-41,5° N y 1,5° O-5° E; normal y rango habitual de 1991-2020." if mar else ""),
@@ -367,7 +434,12 @@ def g_episodio(D: Datos, med):
                           "El observatorio sigue las estaciones de AEMET de referencia de los municipios de su mapa de lluvia, no toda la red."]
                  + (["El dato del mar de los últimos 14 días es preliminar."] if mar else []),
                  pagina="https://calentamientoglobal.es/avisos-meteorologicos/")
-    h["grafico"] = grafico_mar(med, h["id"]) if mar else grafico_barras_lluvia(D, filas_h, h["id"], f"Lluvia entre la medianoche y las {corte}:00 del {dia(hoy_f)}")
+    if mar and not manda_lluvia:
+        h["grafico"] = grafico_mar(med, h["id"])
+    elif manda_lluvia and not hoy_manda:
+        h["grafico"] = grafico_barras_lluvia(D, filas_a, h["id"], f"Lluvia del {dia(D.L['fecha'])}, estación a estación")
+    else:
+        h["grafico"] = grafico_barras_lluvia(D, filas_h, h["id"], f"Lluvia entre la medianoche y las {corte}:00 del {dia(hoy_f)}")
     h["ultima_hora"] = []
     if rojas:
         h["ultima_hora"].append({"hora": hora(c), "texto": f"AEMET: aviso rojo por {lista_y(tipos_r)} en {zcorta}", "tono": "aviso"})
@@ -391,6 +463,72 @@ def g_episodio(D: Datos, med):
     return h
 
 
+def _completar_parciales(D):
+    """lluvias_municipios.json da a un municipio el dato de hoy de otra estación si a la suya le faltan horas (Pego con el de
+    Oliva), y entonces la estación propia se queda sin dato de hoy. historico_estaciones.json sí guarda lo que midió cada
+    estación hasta su última hora seguida con dato: con eso se completa D.E (solo estaciones con provincia conocida)."""
+    if getattr(D, "_parciales_ok", False):
+        return
+    D._parciales_ok = True
+    try:
+        hist = (leer(DOCS.parent / "historico_estaciones.json", {}) or {}).get(D.L.get("hoy_fecha") or HOY.isoformat()) or {}
+        inv = leer(PRENSA / "aemet_inventario.json", {}) or {}
+    except Exception as e:  # noqa: BLE001
+        LOG.append(f"parciales: {e}")
+        return
+    for c, v in hist.items():
+        if not v or v[0] is None or c not in inv:
+            continue
+        mask = int(v[1])
+        horas = bin(mask).count("1")
+        if horas < 1 or mask != (1 << horas) - 1 or horas >= D.corte:
+            continue
+        nom = re.sub(r",(?=\S)", ", ", inv[c][0].title().replace("/ ", "/").strip())
+        p = H.cod_provincia(inv[c][1])
+        r = D.E.get(nom)
+        if r is not None and r.get("hoy") is not None:
+            continue
+        if r is None:
+            if p not in PROV:
+                continue
+            r = D.E.setdefault(nom, {"refs": set(), "prov": p})
+        r.update(hoy=round(float(v[0]), 1), hoy_h=horas)
+
+
+def parciales_hoy(D, umbral, prov=None):
+    """Estaciones con lluvia de hoy por encima de «umbral» pero con horas sin dato al final (no entran en la comparación de las
+    que tienen todas las horas). [(mm, estación, última hora con dato)], de más a menos."""
+    _completar_parciales(D)
+    out = []
+    for e, r in D.E.items():
+        if r.get("hoy") is None or r.get("hoy_h") is None or r.get("hoy_h") == D.corte:
+            continue
+        if prov and r.get("prov") != prov:
+            continue
+        if r["hoy"] > umbral:
+            out.append((r["hoy"], e, r["hoy_h"]))
+    return sorted(out, key=lambda x: (-x[0], x[1]))
+
+
+_OTONO_REF = None
+
+
+def referencia_otono(D, e):
+    """Lluvia media de un otoño completo (sep-nov) en el pluviómetro de AEMET de la estación e, según otonio_municipios.json
+    (referencia 1991-2020 o media de sus otoños medidos). None si esa estación no tiene referencia propia."""
+    global _OTONO_REF
+    if _OTONO_REF is None:
+        O = leer(DOCS / "otonio_municipios.json", {}) or {}
+        _OTONO_REF = {}
+        if O.get("metodo") == "pluviometro":
+            for m in (O.get("municipios") or {}).values():
+                if m.get("en") and m.get("normal_total"):  # la referencia es de la estación «en», sea o no la del municipio
+                    per = m.get("periodo") or ""
+                    _OTONO_REF[sin_tildes(m["en"]).lower()] = {"normal_total": m["normal_total"],
+                        "periodo_txt": ("media 1991-2020" if per == "1991-2020" else f"media de sus otoños {per}" if per else "media de sus otoños medidos")}
+    return _OTONO_REF.get(sin_tildes(D.nom(e)).lower()) or _OTONO_REF.get(sin_tildes(e).lower())
+
+
 def hechos_mar(med, corto=False):
     u = med["ultimo"]
     out = [hecho("mar_hoy", f"El Mediterráneo español (de Alborán al mar Balear) estaba a {d1(med['sst'])} °C el {dia(u)}, {f1(med['anom'])} °C por encima de su normal "
@@ -399,7 +537,7 @@ def hechos_mar(med, corto=False):
         (m1, y1), (m2, y2) = med["ytd"][0], med["ytd"][1]
         dif = round(m1 - m2, 1)
         dif_txt = "una décima" if dif == 0.1 else f"{d1(dif)} °C"
-        out.append(hecho("mar_anio", f"Entre el 1 de enero y el {dia(u, semana=False)}, su temperatura media fue de {d1(m1)} °C, la más alta para ese periodo desde 1982 "
+        out.append(hecho("mar_anio", f"Entre el 1 de enero y el {dia(u, semana=False)}, su temperatura media fue de {d1(m1)} °C, la más alta para ese periodo en la serie de satélite, que empieza en 1982, "
                          f"y {dif_txt} por encima de la de {y2} ({d1(m2)} °C), el anterior máximo.", "NOAA OISST v2.1", [f"{d1(m1)} °C", f"{d1(m2)} °C", "1982", str(y2)],
                          superlativo=True, record=True, alias=["año más cálido", "a estas alturas"]))
     if med.get("records"):
@@ -417,7 +555,8 @@ def version_episodio(D, cod, zonas, filas_h, filas_a, med, c, nac_ctx=None, hid=
     mis = [z for z in zonas.values() if z["cod"] == cod and z["nivel"] in ("rojo", "naranja")]
     h_p = [(mm, e) for mm, e in filas_h if D.E[e].get("prov") == cod]
     a_p = [(mm, e) for mm, e in filas_a if D.E[e].get("prov") == cod]
-    llueve = (h_p and h_p[0][0] >= 10) or (a_p and a_p[0][0] >= 20)
+    pp = parciales_hoy(D, h_p[0][0] if h_p else 0, prov=cod)  # estaciones con más lluvia pero con horas sin dato
+    llueve = (h_p and h_p[0][0] >= 10) or (a_p and a_p[0][0] >= 20) or (pp and pp[0][0] >= 10)
     if not mis and not llueve:
         return None
     P = nprov(cod)
@@ -447,23 +586,40 @@ def version_episodio(D, cod, zonas, filas_h, filas_a, med, c, nac_ctx=None, hid=
                                    f"y aviso naranja en {otras}: {lista_y([zona_txt(z['zona']) for z in nz])}.", fuente_av, [hora(c), str(len(nz))]))
     if h_p and h_p[0][0] >= 1:
         mm, e = h_p[0]
+        emp = [x for m2, x in h_p[1:] if f1(m2) == f1(mm)]
         hechos.append(hecho("lluvia_hoy_p", f"Entre la medianoche y las {D.corte}:00 del {dia(D.L['hoy_fecha'])}, la estación de AEMET de {D.nom(e)} recogió {f1(mm)} mm, "
                             + ("en la única estación de AEMET de la provincia que sigue el observatorio con datos de todas esas horas." if len(h_p) == 1 else
-                               f"la cifra más alta de las {len(h_p)} estaciones de AEMET de la provincia que sigue el observatorio con datos de todas esas horas."),
+                               (f"empatada con {lista_y([D.nom(x) for x in emp])} en " if emp else "")
+                               + f"la cifra más alta de las {len(h_p)} estaciones de AEMET de la provincia que sigue el observatorio con datos de todas esas horas."),
                             "AEMET OpenData", [f"{f1(mm)} mm", str(len(h_p))], lugar=D.nom(e), superlativo=True, liga=[f"{f1(mm)} mm"]))
         cifras.append({"n": f"{f1(mm)} mm", "l": f"en {D.nom(e)} hasta las {D.corte}:00 del {dia(D.L['hoy_fecha'])}", "tono": "lluvia"})
-        otras = [f"{D.nom(x)} ({f1(m)} mm)" for m, x in h_p[1:4] if m >= 1]
+        otras = [f"{D.nom(x)} ({f1(m)} mm)" for m, x in h_p[1:4] if m >= 1 and x not in emp]
         if otras:
             hechos.append(hecho("lluvia_hoy_p2", f"{'Le sigue' if len(otras) == 1 else 'Le siguen'} {lista_y(otras)}.", "AEMET OpenData", [f1(m) for m, x in h_p[1:4]]))
+    top_hoy = max(h_p[0][0] if h_p else 0, pp[0][0] if pp else 0)
+    ayer_manda = bool(a_p and a_p[0][0] >= 50 and a_p[0][0] >= 3 * top_hoy)  # ayer llovió mucho más que hoy: la noticia es lo de ayer
+    lidera_parcial = bool(pp and pp[0][0] >= 10) and not ayer_manda
+    if pp:
+        mmp, ep_, hp_ = pp[0]
+        hp_txt = hecho("lluvia_parcial_p", f"La estación de AEMET de {D.nom(ep_)} llevaba al menos {f1(mmp)} mm entre la medianoche y las {hp_}:00 del "
+                       f"{dia(D.L['hoy_fecha'])}, su último dato publicado" + (": le faltan las horas siguientes, así que no entra en la comparación de las estaciones con datos de todas esas horas." if h_p else "."),
+                       "AEMET OpenData", [f"{f1(mmp)} mm", f"{hp_}:00"], lugar=D.nom(ep_), liga=[f"{f1(mmp)} mm"])
+        hechos.append(hp_txt)
+        if lidera_parcial:
+            cifras.insert(0, {"n": f"{f1(mmp)} mm", "l": f"al menos, en {D.nom(ep_)}: es su dato hasta las {hp_}:00, el último publicado", "tono": "lluvia"})
+    ayer_h = None
     if a_p and a_p[0][0] >= 5:
         mm, e = a_p[0]
-        hechos.append(hecho("lluvia_ayer_p", f"El {dia(D.L['fecha'])}, la estación de AEMET de {D.nom(e)} recogió {f1(mm)} mm, la cifra más alta de las {len(a_p)} "
-                            f"de la provincia que sigue el observatorio con las 24 horas del día.", "AEMET OpenData", [f"{f1(mm)} mm", str(len(a_p))], lugar=D.nom(e), superlativo=True, liga=[f"{f1(mm)} mm"]))
+        ayer_h = hecho("lluvia_ayer_p", f"El {dia(D.L['fecha'])}, la estación de AEMET de {D.nom(e)} recogió {f1(mm)} mm, la cifra más alta de las {len(a_p)} "
+                            f"de la provincia que sigue el observatorio con las 24 horas del día.", "AEMET OpenData", [f"{f1(mm)} mm", str(len(a_p))], lugar=D.nom(e), superlativo=True, liga=[f"{f1(mm)} mm"])
+        hechos.append(ayer_h)
+        if ayer_manda:
+            cifras.insert(0, {"n": f"{f1(mm)} mm", "l": f"en {D.nom(e)} el {dia(D.L['fecha'])}, en todo el día", "tono": "lluvia"})
     if nac_ctx:
         hechos.append(nac_ctx)
     if med and cod in MED_COSTA:
         hechos.extend(hechos_mar(med)[:1])
-        cifras.insert(0, {"n": f"{d1(med['sst'])} °C", "l": f"el Mediterráneo español el {dia(med['ultimo'])}, {f1(med['anom'])} °C sobre lo normal", "tono": "calor"})
+        cifras.append({"n": f"{d1(med['sst'])} °C", "l": f"el Mediterráneo español el {dia(med['ultimo'])}, {f1(med['anom'])} °C sobre lo normal", "tono": "calor"})
     rojas = [z for z in mis if z["nivel"] == "rojo"]
     def en_zonas(zs):
         raras = any(" y " in z["zona"] or "," in z["zona"] for z in zs)
@@ -483,9 +639,19 @@ def version_episodio(D, cod, zonas, filas_h, filas_a, med, c, nac_ctx=None, hid=
     elif mis:
         tit = f"Aviso naranja por {lista_y(sorted({t for z in mis for t in z['tipos']}))} en {en_zonas(mis)}"
         nivel = "naranja"
+    elif lidera_parcial:
+        mmp, ep_, hp_ = pp[0]
+        tit = f"La estación de AEMET de {D.nom(ep_)} lleva al menos {f1(mmp)} mm el {dia(D.L['hoy_fecha'])}, con datos hasta las {hp_}:00"
+        nivel = None
+        hechos.remove(hp_txt)
+        hechos.insert(0, hp_txt)
     else:
-        mm, e = (h_p[0] if h_p and h_p[0][0] >= 10 else a_p[0])
-        tit = (f"La estación de AEMET de {D.nom(e)} lleva {f1(mm)} mm el {dia(D.L['hoy_fecha'])} hasta las {D.corte}:00" if h_p and h_p[0][0] >= 10
+        hoy_vale = bool(h_p and h_p[0][0] >= 10) and not ayer_manda
+        mm, e = (h_p[0] if hoy_vale else a_p[0])
+        if not hoy_vale and ayer_h:
+            hechos.remove(ayer_h)
+            hechos.insert(0, ayer_h)
+        tit = (f"La estación de AEMET de {D.nom(e)} lleva {f1(mm)} mm el {dia(D.L['hoy_fecha'])} hasta las {D.corte}:00" if hoy_vale
                else f"La estación de AEMET de {D.nom(e)} recogió {f1(mm)} mm el {dia(D.L['fecha'])}")
         nivel = None
     if tit[:1].islower():
@@ -496,7 +662,7 @@ def version_episodio(D, cod, zonas, filas_h, filas_a, med, c, nac_ctx=None, hid=
     pl = {"titular": tit, "subtitulo": next((h["dice"] for h in hechos if h["id"] in ("lluvia_hoy_p", "lluvia_ayer_p") and h is not ent), ""),
           "entradilla": ent["dice"], "cuerpo": [" ".join(h["dice"] for h in g) for g in grupos if g], "claves": [h["dice"] for h in hechos[:3]]}
     v = {"provincia": P, "slug": PROV[cod][1], "hechos": hechos, "plantilla": pl, "cifras": cifras[:3], "nivel": nivel,
-         "puntos": (100 if nivel == "rojo" else 85 if nivel == "naranja" else 60) + (h_p[0][0] if h_p else 0) / 10}
+         "puntos": (100 if nivel == "rojo" else 85 if nivel == "naranja" else 60) + max(top_hoy, a_p[0][0] if ayer_manda else 0) / 10}
     if len([1 for m, e in h_p if m >= 1]) >= 2:
         v["grafico"] = grafico_barras_lluvia(D, h_p, f"{hid}-{cod}", f"Lluvia entre la medianoche y las {D.corte}:00 del {dia(D.L['hoy_fecha'])} en {P}", n=8, provincial=True)
     return v
@@ -508,7 +674,7 @@ def g_mediterraneo(D: Datos, med, usado):
     if not (med.get("ytd_puesto") == 1 or med["anom"] >= 2 or med.get("records")):
         return None
     hechos = hechos_mar(med)
-    tit = (f"{med['ultimo'][:4]} es el año más cálido del Mediterráneo español a estas alturas desde 1982" if med.get("ytd_puesto") == 1
+    tit = (f"{med['ultimo'][:4]}, el año más cálido del Mediterráneo español a estas alturas en la serie que empieza en 1982" if med.get("ytd_puesto") == 1
            else f"El Mediterráneo español, a {d1(med['sst'])} °C: {f1(med['anom'])} °C por encima de lo normal")
     pl = {"titular": tit, "subtitulo": " ".join(h["dice"] for h in hechos[1:3]), "entradilla": hechos[0]["dice"],
           "cuerpo": [h["dice"] for h in hechos[1:]], "claves": [h["dice"] for h in hechos[:3]]}
@@ -554,19 +720,20 @@ def g_lluvia_sequia(D: Datos):
         for n, r in capitales:
             grupos.setdefault(r, []).append(n)
         hechos.append(hecho("secas_capitales", "En las estaciones de las capitales, " + "; ".join(
-            f"{lista_y(ns)} llevan {r} días" if len(ns) > 1 else f"{ns[0]} lleva {r} días" for r, ns in sorted(grupos.items(), reverse=True)) + " sin recoger 1 mm.",
+            f"{lista_y(ns)} llevan {'al menos ' if r >= tope else ''}{r} días" if len(ns) > 1 else f"{ns[0]} lleva {'al menos ' if r >= tope else ''}{r} días"
+            for r, ns in sorted(grupos.items(), reverse=True)) + " sin un solo día con 1 mm de lluvia o más.",
             "AEMET OpenData", [f"{r} días" for r in grupos]))
     hechos.append(hecho("mojadas", f"En el otro lado, {len(moj)} de esas {len(base)} estaciones recogieron 1 mm o más el {dia(fa)} o el {dia(fh)}.", "AEMET OpenData",
                         [str(len(moj)), str(len(base))]))
     partida = len(moj) >= 0.3 * len(base)
-    tit = (f"España, partida en dos: {len(secas)} estaciones de AEMET llevan 10 días o más sin recoger 1 mm de lluvia" if partida
-           else f"{len(secas)} estaciones de AEMET de {np_} provincias llevan 10 días o más sin recoger 1 mm de lluvia")
+    tit = (f"España, partida en dos: {len(secas)} estaciones de AEMET llevan 10 días o más sin un solo día con 1 mm de lluvia o más" if partida
+           else f"{len(secas)} estaciones de AEMET de {np_} provincias llevan 10 días o más sin un solo día con 1 mm de lluvia o más")
     pl = {"titular": tit, "subtitulo": " ".join(h["dice"] for h in hechos if h["id"] in ("secas_prov", "secas_tope")),
           "entradilla": hechos[0]["dice"], "cuerpo": [h["dice"] for h in hechos[1:]], "claves": [h["dice"] for h in hechos[:3]]}
-    cif = [{"n": str(len(secas)), "l": "estaciones de AEMET con 10 días o más sin recoger 1 mm", "tono": "calor"},
+    cif = [{"n": str(len(secas)), "l": "estaciones de AEMET con 10 días o más sin un día de 1 mm", "tono": "calor"},
            {"n": str(np_), "l": "provincias" + (f" y {lista_y(ciudades)}" if ciudades else ""), "tono": "calor"},
            {"n": str(len(moj)), "l": f"estaciones con 1 mm o más el {dia(fa)} o el {dia(fh)}", "tono": "lluvia"}]
-    h = historia("lluvia_sequia", f"{HOY.isoformat()}-lluvia-y-sequia", "Lluvia y sequía · 52 provincias", "lluvia", 60 + min(20, len(secas) // 10), hechos, pl, cif,
+    h = historia("lluvia_sequia", f"{HOY.isoformat()}-lluvia-y-sequia", "Dónde llueve y dónde no · 52 provincias", "lluvia", 60 + min(20, len(secas) // 10), hechos, pl, cif,
                  fuentes="AEMET OpenData (observación horaria de las estaciones de referencia del mapa de lluvia de calentamientoglobal.es)",
                  metodo="Racha: días consecutivos, hasta el último día completo, en que la estación recogió menos de 1 mm. Lluvia: suma horaria de cada estación.",
                  limites=[f"La ventana de cálculo es de {tope} días: en las estaciones que llegan a ese tope, la racha real puede ser más larga.",
@@ -604,22 +771,22 @@ def version_sequia(D, cod, base, secas, tope, fa, fh):
     if s:
         r0, e0 = s[0]
         al = "al menos " if r0 >= tope else ""
-        hechos.append(hecho("seca_p", f"La estación de AEMET de {D.nom(e0)} lleva {al}{r0} días seguidos sin recoger 1 mm de lluvia, hasta el {dia(fa)} incluido, "
+        hechos.append(hecho("seca_p", f"La estación de AEMET de {D.nom(e0)} lleva {al}{r0} días seguidos sin un solo día con 1 mm de lluvia o más, hasta el {dia(fa)} incluido, "
                             f"y el {dia(fh)} tampoco llega a 1 mm con los datos disponibles.", "AEMET OpenData", [f"{r0} días", "1 mm"], lugar=D.nom(e0)))
         if len(mis) == 1:
             dice_n = f"Es la única estación de AEMET de {P} que sigue el observatorio."
         elif len(s) == len(mis):
-            dice_n = f"En {P}, las {len(mis)} estaciones de AEMET que sigue el observatorio llevan 10 días o más sin recoger 1 mm."
+            dice_n = f"En {P}, las {len(mis)} estaciones de AEMET que sigue el observatorio llevan 10 días o más sin un solo día con 1 mm de lluvia o más."
         elif len(s) == 1:
-            dice_n = f"En {P}, es la única de las {len(mis)} estaciones de AEMET que sigue el observatorio que lleva 10 días o más sin recoger 1 mm."
+            dice_n = f"En {P}, es la única de las {len(mis)} estaciones de AEMET que sigue el observatorio que lleva 10 días o más sin un solo día con 1 mm de lluvia o más."
         else:
-            dice_n = f"En {P}, {len(s)} de las {len(mis)} estaciones de AEMET que sigue el observatorio llevan 10 días o más sin recoger 1 mm."
+            dice_n = f"En {P}, {len(s)} de las {len(mis)} estaciones de AEMET que sigue el observatorio llevan 10 días o más sin un solo día con 1 mm de lluvia o más."
         hechos.append(hecho("seca_p_n", dice_n, "AEMET OpenData", [str(len(s)), str(len(mis))]))
-        tit = f"La estación de AEMET de {D.nom(e0)} lleva {al}{r0} días seguidos sin recoger 1 mm de lluvia"
+        tit = f"La estación de AEMET de {D.nom(e0)} lleva {al}{r0} días seguidos sin un solo día con 1 mm de lluvia o más"
         pts = 40 + r0
     else:
         return None  # sin estaciones secas, la provincia no tiene versión propia: ve la nacional
-    hechos.append(hecho("secas_nac", f"En toda España, {len(secas)} de las {len(base)} estaciones de AEMET que sigue el observatorio llevan 10 días o más sin recoger 1 mm.",
+    hechos.append(hecho("secas_nac", f"En toda España, {len(secas)} de las {len(base)} estaciones de AEMET que sigue el observatorio llevan 10 días o más sin un solo día con 1 mm de lluvia o más.",
                         "AEMET OpenData", [str(len(secas)), str(len(base))], alias=["partida en dos"]))
     pl = {"titular": tit, "subtitulo": hechos[1]["dice"] if len(hechos) > 1 else "", "entradilla": hechos[0]["dice"],
           "cuerpo": [h["dice"] for h in hechos[1:]], "claves": [h["dice"] for h in hechos[:2]]}
@@ -646,31 +813,31 @@ def g_temporada(D: Datos):
         top = aemet[:3]
         hechos = [hecho("temp_aemet", f"El {est} es {f1(media)} °C más cálido que a principios de los setenta, de media, en las {len(aemet)} capitales con estación de AEMET "
                         f"de serie larga y coherente con el reanálisis (tendencia lineal {q['periodo']}).", "AEMET", [f"{f1(media)} °C", str(len(aemet)), q["periodo"]]),
-                  hecho("temp_top", "Donde más ha subido: " + lista_y([f"{cap(c)} (+{f1(c['delta'])} °C)" for c in top]) + ".", "AEMET",
-                        [f"+{f1(c['delta'])} °C" for c in top], superlativo=True),
-                  hecho("temp_era5", f"En las {len(q['capitales'])} capitales, con el reanálisis ERA5, la subida media es de {f1(q['media_delta'])} °C, y el {est} se ha calentado en {sube} de las {len(q['capitales'])}.",
-                        "ERA5 (Copernicus/ECMWF)", [f"{f1(q['media_delta'])} °C", str(sube), str(len(q["capitales"]))])]
-        for x in q.get("hallazgos", [])[2:3]:
-            if "reanálisis" in x:
-                hechos.append(hecho("temp_dias", x.rstrip(".") + ".", "ERA5 (Copernicus/ECMWF)"))
+                  hecho("temp_top", "Donde más ha subido, según esa tendencia: " + lista_y([f"{cap(c)} (+{f1(c['delta'])} °C)" for c in top]) + ".",
+                        "AEMET; cálculo del observatorio", [f"+{f1(c['delta'])} °C" for c in top], superlativo=True),
+                  hecho("temp_metodo", "La tendencia es un cálculo del observatorio con las temperaturas medidas en las estaciones de AEMET de esas capitales.",
+                        "AEMET; cálculo del observatorio")]
+        # 19-10-2026: fuera las cifras del reanálisis ERA5 (es un modelo, no una medida de la ciudad)
         pl = {"titular": f"El {est} es {f1(media)} °C más cálido que a principios de los setenta en las capitales con estación de AEMET de serie larga",
-              "subtitulo": " ".join(h["dice"] for h in hechos[1:3]), "entradilla": hechos[0]["dice"], "cuerpo": [h["dice"] for h in hechos[1:]],
-              "claves": [h["dice"] for h in hechos[:3]]}
+              "subtitulo": hechos[1]["dice"], "entradilla": hechos[0]["dice"], "cuerpo": [h["dice"] for h in hechos[1:]],
+              "claves": [h["dice"] for h in hechos[:2]]}
         h = historia("temporada", f"{HOY.isoformat()}-{q['id']}-se-calienta", f"Tendencia · tu capital desde 1970", "calor", 40, hechos, pl,
                      [{"n": f"+{f1(media)} °C", "l": f"el {est} en las {len(aemet)} capitales con estación de AEMET de serie larga", "tono": "calor"}],
                      fuentes=q["fuente"], metodo=q["metodo"], limites=list(q.get("limites") or []), pagina="https://calentamientoglobal.es/prensa/")
         h["grafico"] = grafico_barras_temporada(aemet, h["id"], f"Cuánto ha subido la temperatura media del {est}, {q['periodo']}")
         for c in q["capitales"]:
-            if c.get("revisar") or c.get("cod") not in PROV:
+            # solo capitales con estación de AEMET: lo del reanálisis no es una medida de la ciudad
+            if c.get("revisar") or c.get("cod") not in PROV or c.get("fuente_fila") != "AEMET":
                 continue
-            fuente_c = "AEMET" if c.get("fuente_fila") == "AEMET" else "ERA5 (Copernicus/ECMWF)"
-            hc = [hecho("temp_cap", c["titular"].rstrip(".") + ".", fuente_c, [f"{f1(c['delta'])} °C"]),
-                  hecho("temp_cap_dato", f"Tendencia {c['dato']}." if not c["dato"].startswith("tendencia") else c["dato"][0].upper() + c["dato"][1:] + ".", fuente_c)]
-            for x in c.get("contexto", [])[:2]:
-                hc.append(hecho(f"temp_ctx{len(hc)}", x.rstrip(".") + ".", fuente_c, superlativo=True))
-            hc.append(hecho("temp_nac", hechos[0]["dice"], "AEMET"))
+            fuente_c = "AEMET; cálculo del observatorio"
+            tit_c = re.sub(r",? según AEMET\.?$", ", con datos de AEMET", c["titular"].rstrip(".")).replace(" es hoy ", " es ya ")
+            hc = [hecho("temp_cap", tit_c + ".", fuente_c, [f"{f1(c['delta'])} °C"]),
+                  hecho("temp_cap_dato", f"Tendencia {c['dato']}." if not c["dato"].startswith("tendencia") else c["dato"][0].upper() + c["dato"][1:] + ".", fuente_c),
+                  hechos[2]]
+            # sin «el otoño más cálido de la serie»: las series de algunas estaciones tienen años sin dato
+            hc.append(hecho("temp_nac", hechos[0]["dice"], "AEMET; cálculo del observatorio"))
             v = {"provincia": nprov(c["cod"]), "slug": PROV[c["cod"]][1], "hechos": hc, "puntos": 30 + c["delta"] * 5,
-                 "plantilla": {"titular": c["titular"], "subtitulo": hc[1]["dice"], "entradilla": hc[0]["dice"], "cuerpo": [x["dice"] for x in hc[1:]],
+                 "plantilla": {"titular": tit_c, "subtitulo": hc[1]["dice"], "entradilla": hc[0]["dice"], "cuerpo": [x["dice"] for x in hc[1:]],
                                "claves": [x["dice"] for x in hc[:3]]},
                  "cifras": [{"n": f"+{f1(c['delta'])} °C", "l": f"el {est} en {cap(c)} desde 1970 ({'AEMET' if fuente_c == 'AEMET' else 'reanálisis ERA5'})", "tono": "calor"}]}
             serie = serie_csv(c.get("csv"))
@@ -950,7 +1117,7 @@ def grafico_barras_lluvia(D, filas, nombre, titulo, n=10, provincial=False):
         return None
     etiqueta = (lambda e: D.nom(e)) if provincial else D.donde
     ml = int(min(330, 24 + 7.4 * max(len(etiqueta(e)) for mm, e in filas)))
-    W, fila, mr, mt = 640 + max(0, ml - 210), 30, 70, 6
+    W, fila, mr, mt = 640 + max(0, ml - 210), 30, 88, 6
     Hh = mt + fila * len(filas) + 8
     mx = max(mm for mm, e in filas)
     X = lambda v: ml + v / mx * (W - ml - mr)
@@ -1151,6 +1318,8 @@ def verificar(texto: dict, hechos: list, extra="") -> list[str]:
     errores = []
     partes = [texto.get("titular", ""), texto.get("subtitulo", ""), texto.get("entradilla", "")] + list(texto.get("cuerpo") or []) + list(texto.get("claves") or [])
     todo = " ".join(p for p in partes if isinstance(p, str))
+    # «41,8 litros por metro cuadrado» / «41,8 l/m²» = 41,8 mm: se comprueban como mm (cifra, unidad y lugar)
+    todo = re.sub(r"(\d+(?:,\d+)?)\s*(?:litros? por metro cuadrado|l/m²|l/m2|litros/m²)", r"\1 mm", todo)
     if not texto.get("titular") or not texto.get("entradilla") or not texto.get("cuerpo"):
         errores.append("faltan partes (titular, entradilla o cuerpo)")
     if len(texto.get("titular", "")) > 170:
@@ -1180,6 +1349,9 @@ def verificar(texto: dict, hechos: list, extra="") -> list[str]:
             cortes = [x.end() for x in re.finditer(r"[.;]\s+(?=[A-ZÁÉÍÓÚÑ¿«])|\n", todo)]
             ini = max([c_ for c_ in cortes if c_ <= m.start()] or [0])
             fin_ = min([c_ for c_ in cortes if c_ > m.end()] or [len(todo)])
+            frase = " ".join(todo[ini:fin_].split()).strip(" ;")
+            if len(frase) > 20 and any(frase in " ".join(h["dice"].split()) for h in hechos):
+                continue  # la frase es, tal cual, la de un hecho: dice lo que el hecho (p. ej. dos estaciones con la misma cifra)
             mejor, dist = None, 10 ** 6
             for var, ls in lugares.items():
                 for mm_ in re.finditer(re.escape(var), todo[ini:fin_]):
@@ -1407,13 +1579,21 @@ class Redactor:
                     return t, meta
                 rechazos.append(errs)
         # el subtítulo no se repite en el cuerpo (solo se quita texto ya verificado; no se añade nada)
+        def quitar(cuerpo, txt):
+            for frase in re.split(r"(?<=\.)\s+(?=[A-ZÁÉÍÓÚÑ¿«])", txt or ""):
+                if frase.strip():
+                    cuerpo = [" ".join(p.replace(frase.strip(), " ").split()) for p in cuerpo]
+            return [p for p in cuerpo if p]
         sub = (plantilla.get("subtitulo") or "").strip()
-        if sub:
-            cuerpo = list(plantilla.get("cuerpo", []))
-            for frase in re.split(r"(?<=\.)\s+(?=[A-ZÁÉÍÓÚÑ¿«])", sub):
-                cuerpo = [" ".join(p.replace(frase, " ").split()) for p in cuerpo]
-            cuerpo = [p for p in cuerpo if p]
-            plantilla = {**plantilla, "cuerpo": cuerpo} if cuerpo else {**plantilla, "subtitulo": ""}
+        ent = (plantilla.get("entradilla") or "").strip()
+        base = list(plantilla.get("cuerpo", []))
+        sin_ambos = quitar(quitar(base, sub), ent)
+        if sin_ambos:
+            plantilla = {**plantilla, "cuerpo": sin_ambos}
+        elif sub and quitar(base, sub):
+            plantilla = {**plantilla, "cuerpo": quitar(base, sub)}
+        elif sub:
+            plantilla = {**plantilla, "subtitulo": ""}
         errs = verificar(plantilla, hechos)
         meta = {"modo": "plantilla", "verificado": not errs, "rechazos": rechazos, "errores_plantilla": errs, "hash": clave}
         if errs:
@@ -1422,28 +1602,94 @@ class Redactor:
 
 
 # ============================================================================ principal
+SECCION_POR_TIPO = {"episodio": "ultima", "mediterraneo": "mar", "lluvia_sequia": "agua", "embalses": "agua", "temporada": "calor",
+                    "record": "calor", "records_capitales": "calor"}
+
+
+def mapa_portada(D, por_prov):
+    """Mapa de provincias con enlace a cada sala, coloreado por la noticia más fuerte de hoy (noticias/mapa_hoy.svg)."""
+    M = D.MAPA
+    if not M.get("provincias"):
+        return
+    escala = [(85, "#B3261E"), (65, "#E0703D"), (45, "#F0B48E"), (0, "#F3DCCB")]
+    cuerpo = [f'<style>a path{{transition:opacity .15s}}a:hover path{{opacity:.75}}</style>',
+              f'<path d="{M["fondo"]}" fill="#EFEAE2"></path>' if M.get("fondo") else ""]
+    for cod, pr in M["provincias"].items():
+        if cod not in PROV:
+            continue
+        lst = por_prov.get(cod, [])
+        top = lst[0] if lst else None
+        color = next(c for u, c in escala if top and top["puntos"] >= u) if top else "#F6F3EE"
+        n = len(lst)
+        tit = f"{nprov(cod)} · {n} {'noticia' if n == 1 else 'noticias'} hoy" + (f" · {top['titular']}" if top else "")
+        tit = tit.replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;")
+        cuerpo.append(f'<a href="https://calentamientoglobal.es/prensa/{PROV[cod][1]}/" aria-label="{tit}"><title>{tit}</title>'
+                      f'<path d="{pr["d"]}" fill="{color}" stroke="#FFFFFF" stroke-width="0.8"></path></a>')
+    if M.get("canarias"):
+        cuerpo.append(f'<path d="{M["canarias"]}" fill="none" stroke="#C9C1B6" stroke-width="1"></path>')
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {M["W"]} {M["H"]}" role="img" aria-label="Noticias de hoy por provincia">'
+           + "".join(cuerpo) + "</svg>")
+    (SALIDA / "mapa_hoy.svg").write_text(svg, encoding="utf-8")
+
+
+def generadores_sala(D, solo=None):
+    """Carga scripts/sala/*.py y junta sus historias. Un módulo que falla se apunta en el registro y no frena nada."""
+    import importlib
+    import traceback
+    carpeta = Path(__file__).resolve().parent / "sala"
+    if not carpeta.is_dir():
+        return []
+    sys.path.insert(0, str(carpeta.parent))
+    este = sys.modules[__name__]
+    pedidos = {x.strip() for x in solo.split(",")} if solo else None
+    out = []
+    for f in sorted(carpeta.glob("*.py")):
+        if f.stem.startswith("_") or (pedidos and f.stem not in pedidos):
+            continue
+        try:
+            mod = importlib.import_module(f"sala.{f.stem}")
+            nuevas = mod.generar(este, D) or []
+            for h in nuevas:
+                h.setdefault("seccion", getattr(mod, "SECCION", "agua"))
+                h.setdefault("generador", f.stem)
+            out.extend(nuevas)
+        except Exception as e:  # noqa: BLE001
+            LOG.append(f"generador {f.stem}: {type(e).__name__}: {e}")
+            traceback.print_exc()
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sin-ia", action="store_true", help="no llamar a la API (todo de plantilla)")
+    ap.add_argument("--solo", help="solo los generadores de scripts/sala/<módulo>.py (pruebas); separa varios con comas")
     args = ap.parse_args()
     SALIDA.mkdir(parents=True, exist_ok=True)
     (SALIDA / "historias").mkdir(exist_ok=True)
     D = Datos()
-    med = mediterraneo_resumen(D)
     hs = []
-    ep = g_episodio(D, med)
-    if ep:
-        hs.append(ep)
-    m = g_mediterraneo(D, med, usado=bool(ep and ep["tono"] == "calor"))
-    if m:
-        hs.append(m)
-    for g in (g_lluvia_sequia(D), g_embalses(D)):
-        if g:
-            hs.append(g)
-    hs.extend(g_temporada(D))
-    hs.extend(g_records_capitales(D))
-    hs.extend(g_records_estaciones(D))
-    hs.sort(key=lambda h: -h["puntos"])
+    if not args.solo:
+        med = mediterraneo_resumen(D)
+        ep = g_episodio(D, med)
+        if ep:
+            hs.append(ep)
+        m = g_mediterraneo(D, med, usado=bool(ep and ep["tono"] == "calor"))
+        if m:
+            hs.append(m)
+        for g in (g_lluvia_sequia(D), g_embalses(D)):
+            if g:
+                hs.append(g)
+        hs.extend(g_temporada(D))
+        hs.extend(g_records_capitales(D))
+        hs.extend(g_records_estaciones(D))
+    hs.extend(generadores_sala(D, args.solo))
+    # una sola historia por id (la de más peso) y sección por defecto según el tipo
+    vistos = {}
+    for h in hs:
+        h.setdefault("seccion", SECCION_POR_TIPO.get(h["tipo"], "agua"))
+        if h["id"] not in vistos or h["puntos"] > vistos[h["id"]]["puntos"]:
+            vistos[h["id"]] = h
+    hs = sorted(vistos.values(), key=lambda h: -h["puntos"])
 
     cache = (leer(SALIDA / "cache_redaccion.json", {}) or {})
     R = Redactor(cache, int(os.getenv("REDACCION_MAX_LLAMADAS", "8")))
@@ -1472,16 +1718,31 @@ def main():
         pub["provincias"] = {cod: ligera(v) for cod, v in h["provincias"].items()}
         with open(SALIDA / "historias" / f"{h['id']}.json", "w", encoding="utf-8") as f:
             json.dump(pub, f, ensure_ascii=False, separators=(",", ":"))
-        resumen.append({"id": h["id"], "tipo": h["tipo"], "kicker": h["kicker"], "tono": h["tono"], "puntos": h["puntos"], "titular": h["texto"]["titular"],
-                        "subtitulo": h["texto"].get("subtitulo", ""), "cifras": h["cifras"], "grafico": h.get("grafico"), "redaccion": h["redaccion"].get("modo"),
-                        "provincias": sorted(h["provincias"])})
+        resumen.append({"id": h["id"], "tipo": h["tipo"], "seccion": h["seccion"], "fecha": h["fecha"], "kicker": h["kicker"], "tono": h["tono"],
+                        "puntos": h["puntos"], "titular": h["texto"]["titular"], "subtitulo": h["texto"].get("subtitulo", ""), "cifras": h["cifras"],
+                        "grafico": h.get("grafico"), "redaccion": h["redaccion"].get("modo"), "provincias": sorted(h["provincias"])})
         for cod, v in h["provincias"].items():
-            por_prov.setdefault(cod, []).append({"id": h["id"], "tipo": h["tipo"], "kicker": h["kicker"], "tono": h["tono"], "puntos": round(v.get("puntos", 0), 1),
-                                                 "titular": v["texto"]["titular"], "subtitulo": v["texto"].get("subtitulo", ""), "cifras": v.get("cifras", []),
-                                                 "grafico": v.get("grafico"), "nivel": v.get("nivel")})
+            por_prov.setdefault(cod, []).append({"id": h["id"], "tipo": h["tipo"], "seccion": h["seccion"], "fecha": h["fecha"], "kicker": h["kicker"],
+                                                 "tono": h["tono"], "puntos": round(v.get("puntos", 0), 1), "titular": v["texto"]["titular"],
+                                                 "subtitulo": v["texto"].get("subtitulo", ""), "cifras": v.get("cifras", []),
+                                                 "grafico": v.get("grafico") or h.get("grafico"), "propio": bool(v.get("grafico")), "nivel": v.get("nivel")})
     for cod in por_prov:
         por_prov[cod].sort(key=lambda x: -x["puntos"])
-    ticker = [x for h in hs for x in h.get("ultima_hora", [])][:5]
+    # cada provincia, en su fichero (la portada no carga 52 listas); hoy.json lleva solo lo justo para el selector
+    (SALIDA / "provincias").mkdir(exist_ok=True)
+    for cod in PROV:
+        lista_p = por_prov.get(cod, [])[:24]
+        with open(SALIDA / "provincias" / f"{cod}.json", "w", encoding="utf-8") as f:
+            json.dump({"generado": ahora, "fecha": HOY.isoformat(), "cod": cod, "nombre": nprov(cod), "slug": PROV[cod][1], "historias": lista_p},
+                      f, ensure_ascii=False, separators=(",", ":"))
+    try:
+        mapa_portada(D, por_prov)
+    except Exception as e:  # noqa: BLE001
+        LOG.append(f"mapa de la portada: {e}")
+    secciones = {}
+    for x in resumen:
+        secciones.setdefault(x["seccion"], []).append(x["id"])
+    ticker = [x for h in hs for x in h.get("ultima_hora", [])][:8]
     agenda = []
     if D.EMB.get("boletin_fecha"):
         prox = date.fromisoformat(D.EMB["boletin_fecha"]) + timedelta(days=7)
@@ -1496,7 +1757,10 @@ def main():
             agenda.append({"fecha": cumple.isoformat(), "cuando": dia(cumple).capitalize(), "texto": f"Aniversario de {largo}."})
     agenda.sort(key=lambda x: x["fecha"])
     hoy = {"generado": ahora, "fecha": HOY.isoformat(), "consulta_avisos": D.consulta, "corte_lluvia": D.corte, "llamadas_ia": R.llamadas, "ia": [p[0] for p in proveedores_activos()],
-           "portada": [h["id"] for h in hs[:4]], "historias": resumen, "provincias": {cod: {"nombre": nprov(cod), "slug": PROV[cod][1], "historias": v} for cod, v in por_prov.items()},
+           "portada": [h["id"] for h in hs[:6]], "secciones": secciones, "historias": resumen,
+           "provincias": {cod: {"nombre": nprov(cod), "slug": PROV[cod][1], "n": len(v),
+                                "historias": [{k: x[k] for k in ("id", "kicker", "tono", "puntos", "titular", "nivel", "seccion")} for x in v[:3]]}
+                          for cod, v in por_prov.items()},
            "ultima_hora": ticker, "agenda": agenda, "log": LOG[-30:],
            "licencia": "Cálculo y redacción propios de calentamientoglobal.es · CC BY 4.0 · los datos de origen conservan la licencia de su organismo"}
     with open(SALIDA / "hoy.json", "w", encoding="utf-8") as f:
@@ -1512,8 +1776,15 @@ def main():
         json.dump({"generado": ahora, "historias": lista}, f, ensure_ascii=False, indent=1)
     # lo que sale del archivo (más de 60 días) se borra: historias y gráficos llevan la fecha delante
     vivos = {x["id"] for x in lista}
+    en_uso = set()
+    for h in hs:
+        for g in [h.get("grafico")] + [v.get("grafico") for v in h["provincias"].values()]:
+            if g:
+                en_uso.update(Path(g.get(k) or "").name for k in ("svg", "csv"))
     for f in list((SALIDA / "historias").glob("*.json")) + list((SALIDA / "graficos").glob("*")):
         fecha_f = f.name[:10]
+        if f.name in en_uso:
+            continue
         if re.match(r"\d{4}-\d{2}-\d{2}$", fecha_f):
             if fecha_f < lim:
                 f.unlink()
@@ -1526,7 +1797,7 @@ def main():
     with open(SALIDA / "cache_redaccion.json", "w", encoding="utf-8") as f:
         json.dump(dict(list(R.cache.items())[-400:]), f, ensure_ascii=False)
     for h in hs:
-        print(f"[{h['puntos']:5.1f}] {h['tipo']:13s} {h['redaccion']['modo']:9s} {'OK ' if h['redaccion'].get('verificado') else 'MAL'} {h['texto']['titular']}")
+        print(f"[{h['puntos']:5.1f}] {h['seccion']:7s} {h['tipo']:13s} {h['redaccion']['modo']:9s} {'OK ' if h['redaccion'].get('verificado') else 'MAL'} {h['texto']['titular']}")
         if h["redaccion"].get("rechazos"):
             print("        rechazos:", h["redaccion"]["rechazos"])
     print(f"{len(hs)} historias · {sum(len(h['provincias']) for h in hs)} versiones provinciales · {R.llamadas} llamadas a la API")
