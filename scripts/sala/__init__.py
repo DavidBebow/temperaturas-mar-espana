@@ -27,6 +27,7 @@ Reglas (las mismas que el motor):
 
 SECCIONES = {
     "ultima": "Última hora",
+    "analisis": "Análisis",
     "agua": "Lluvia y agua",
     "calor": "Calor y frío",
     "mar": "Mar y costa",
