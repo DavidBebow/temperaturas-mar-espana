@@ -1,0 +1,56 @@
+name: Series diarias largas de AEMET
+
+# Baja, estación a estación, los valores diarios de AEMET desde el principio de cada serie (1920-1960) para el análisis
+# de la sala de prensa: duración del verano, noches tropicales, lluvia torrencial, primera helada. La primera vez tarda
+# varias pasadas (unas 12.000 peticiones); después solo refresca el último medio año de cada estación una vez por semana.
+
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: series-diarias-aemet
+  cancel-in-progress: false
+
+jobs:
+  bajar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Bajar series
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          SERIES_TOPE_MIN: "300"
+          SERIES_PAUSA: "2.0"
+        run: python scripts/series_diarias_aemet.py
+
+      # Siempre, aunque el paso anterior falle o se corte: lo bajado se guarda.
+      - name: Guardar cambios
+        if: always()
+        run: |
+          git config --local user.email "accion@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          git add archivo/aemet_diario
+          if git diff --staged --quiet; then
+            echo "No hay cambios que guardar"
+            exit 0
+          fi
+          git commit -m "Series diarias de AEMET: $(date -u +'%Y-%m-%d %H:%M') UTC [skip ci]"
+          for intento in 1 2 3 4 5 6 7 8; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push fallido. Reintento $intento/8 en 20 s..."
+            sleep 20
+          done
+          echo "No se pudo guardar tras 8 intentos"
+          exit 1
