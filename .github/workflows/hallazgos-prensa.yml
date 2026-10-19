@@ -104,8 +104,15 @@ jobs:
             exit 0
           fi
           git commit -m "prensa: hallazgos $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # 19-10-2026: con la incidencia de GitHub dos pasadas se solaparon y el rebase chocó en 370 ficheros generados
+          # (run #119). Lo de esta pasada es más reciente: en caso de conflicto gana lo nuestro (-X theirs dentro de un
+          # rebase = el commit que se reaplica). Si aun así se para, se aborta antes de reintentar.
           for i in 1 2 3 4 5 6; do
-            git pull --rebase --autostash && git push && exit 0
+            if git pull --rebase -X theirs --autostash; then
+              git push && exit 0
+            else
+              git rebase --abort 2>/dev/null || true
+            fi
             echo "Push rechazado (intento $i), reintento en $((i*5)) s"
             sleep $((i*5))
           done
