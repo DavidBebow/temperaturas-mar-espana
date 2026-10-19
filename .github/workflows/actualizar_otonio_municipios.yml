@@ -1,6 +1,7 @@
 name: Actualizar lluvia de otono por municipio
 
-# Publica docs/otonio_municipios.json: lo que lleva llovido el otono en cada
+# Publica archivo/otonio/era5_municipios.json (hasta el 19-10-2026, docs/otonio_municipios.json):
+# lo que lleva llovido el otono en cada
 # municipio, frente a la normal 1991-2020 del mismo tramo y frente al mismo
 # tramo del ano pasado.
 #
@@ -65,7 +66,18 @@ jobs:
           # 170 y no 180: el trabajo muere a los 180 y hay que dejarle sitio al
           # commit del cache, que es lo unico que salva el trabajo de la pasada.
           CG_MINUTOS: ${{ github.event.inputs.minutos || '170' }}
-        run: python privado/otonio_municipios.py
+        run: |
+          python privado/otonio_municipios.py
+          # 19-10-2026: docs/otonio_municipios.json es ahora del pluviometro
+          # (otonio_estaciones.py, flujo "Actualizar otono por pluviometro").
+          # La cifra de ERA5 queda como respaldo para los municipios sin
+          # pluviometro con normal: se aparta a archivo/ y docs/ vuelve a la
+          # version publicada.
+          if [ -f docs/otonio_municipios.json ] && grep -q '"fuente":"ERA5' docs/otonio_municipios.json; then
+            mkdir -p archivo/otonio
+            mv docs/otonio_municipios.json archivo/otonio/era5_municipios.json
+            git checkout -- docs/otonio_municipios.json 2>/dev/null || true
+          fi
 
       - name: Publicar cambios
         # SIEMPRE. Si el script se queda sin tiempo a mitad de la bajada de
@@ -78,7 +90,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --autostash
           [ -f archivo/otonio/normal_era5.json ] && git add archivo/otonio/normal_era5.json || true
-          [ -f docs/otonio_municipios.json ] && git add docs/otonio_municipios.json || true
+          [ -f archivo/otonio/era5_municipios.json ] && git add archivo/otonio/era5_municipios.json || true
           if git diff --staged --quiet; then
             echo "Sin cambios."
           else
