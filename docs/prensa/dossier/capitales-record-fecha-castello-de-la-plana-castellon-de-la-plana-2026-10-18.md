@@ -1,6 +1,6 @@
-# Castelló de la Plana/Castellón de la Plana recogió el 18 de octubre 50,1 mm, la mayor lluvia para esa fecha desde 1940
+# Castelló de la Plana/Castellón de la Plana recogió el 18 de octubre 48,2 mm, la mayor lluvia para esa fecha desde 1940
 
-**Dato:** 50,1 mm en un día · récord anterior para la fecha 29,1 mm (2018)  
+**Dato:** 48,2 mm en un día · récord anterior para la fecha 29,1 mm (2018)  
 **Fecha del dato:** 18 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Castelló de la Plana/Castellón de la Plana  
 **Citabilidad:** media · **Exclusivo:** sí
