@@ -7,12 +7,20 @@ name: Calcular normales de lluvia de otono por estacion (una vez)
 # archivo/otonio/normal_estaciones.json: la curva normal de lluvia acumulada
 # del otono de cada pluviometro con al menos 20 otonos completos.
 #
+# Guarda ademas los datos tal cual en archivo/otonio/crudo_otonios.json.gz, para
+# poder cambiar el criterio y recalcular sin volver a AEMET (modo = recalcular).
+#
 # Lo lee otonio_estaciones.py (flujo "Actualizar otono por pluviometro"). Hace
 # falta repetirlo una vez al ano, en diciembre, para que "el otono pasado" pase
 # a ser el que acaba de terminar.
 
 on:
   workflow_dispatch:
+    inputs:
+      modo:
+        description: 'normales = bajar de AEMET y calcular (~25 min) · recalcular = solo recalcular con lo ya bajado'
+        required: false
+        default: 'normales'
 
 concurrency:
   group: normales-otonio
@@ -43,13 +51,14 @@ jobs:
       - name: Calcular normales
         env:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
-        run: python privado/otonio_estaciones.py --normales
+        run: python privado/otonio_estaciones.py --${{ github.event.inputs.modo || 'normales' }}
 
       - name: Publicar
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add archivo/otonio/normal_estaciones.json
+          [ -f archivo/otonio/crudo_otonios.json.gz ] && git add archivo/otonio/crudo_otonios.json.gz || true
           if git diff --staged --quiet; then
             echo "Sin cambios."
           else
