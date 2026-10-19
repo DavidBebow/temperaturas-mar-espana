@@ -1,12 +1,12 @@
-# La estación de AEMET de Oliva (Valencia) lleva 174 mm el 19 de octubre hasta las 5:00; la de Miramar (Valencia), 123,6 mm
+# La estación de AEMET de Miramar (Valencia) lleva 206,4 mm el 19 de octubre hasta las 6:00; la de Polinya (Valencia), 99,2 mm
 
-**Dato:** 174 mm de 0:00 a 5:00 (hora local) del 19 de octubre, la cifra más alta de las 237 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 206,4 mm de 0:00 a 6:00 (hora local) del 19 de octubre, la cifra más alta de las 222 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Las que más: Oliva (Valencia): 174 mm · Miramar (Valencia): 123,6 mm · Polinya (Valencia): 73,8 mm · Xátiva (Valencia): 20,4 mm · Ibiza/Es Codolá (Illes Balears): 19 mm.
+- Las que más: Miramar (Valencia): 206,4 mm · Polinya (Valencia): 99,2 mm · Ibiza/Es Codolá (Illes Balears): 46,8 mm · Eivissa (Illes Balears): 36,5 mm · Menorca/Aeropuerto (Illes Balears): 28,2 mm.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData · observación convencional
@@ -14,8 +14,8 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación, desde las 0:00 hasta la última hora cerrada en toda la red. Solo estaciones con todas esas horas.
 
 ## Límites (decirlos antes de que los descubran)
-- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 5:00»).
-- La comparación es entre las 237 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (998 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 6:00»).
+- La comparación es entre las 222 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (998 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
