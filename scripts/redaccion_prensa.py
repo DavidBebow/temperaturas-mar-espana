@@ -1513,13 +1513,24 @@ def llamar_ia(sistema, usuario, vetados, max_tokens=6000):
 
 
 def json_de(txt):
+    """El objeto JSON de la respuesta del modelo. Tolera bloques ```json, texto alrededor, saltos de línea crudos dentro de
+    las cadenas (strict=False) y comas finales."""
     if not txt:
         return None
-    m = re.search(r"\{.*\}", txt, re.S)
-    try:
-        return json.loads(m.group(0)) if m else None
-    except Exception:
+    t = re.sub(r"```(?:json)?", "", txt)
+    i = t.find("{")
+    if i < 0:
         return None
+    cand = [t[i:t.rfind("}") + 1]] if t.rfind("}") > i else []
+    for c in cand + [t[i:]]:
+        for x in (c, re.sub(r",\s*([\]}])", r"\1", c)):
+            try:
+                o, _ = json.JSONDecoder(strict=False).raw_decode(x)
+                if isinstance(o, dict):
+                    return o
+            except Exception:
+                pass
+    return None
 
 
 class Redactor:
@@ -1567,7 +1578,8 @@ class Redactor:
                     break
                 t = json_de(txt)
                 if not t:
-                    rechazos.append(["respuesta sin JSON"])
+                    LOG.append(f"IA sin JSON ({modelo}): {' '.join(txt[:90].split())} … {' '.join(txt[-60:].split())}")
+                    rechazos.append(["respuesta sin JSON: devuelve solo el objeto JSON, completo y bien cerrado"])
                     continue
                 t = {k: t.get(k) for k in ("titular", "subtitulo", "entradilla", "cuerpo", "claves")}
                 if isinstance(t.get("cuerpo"), str):
