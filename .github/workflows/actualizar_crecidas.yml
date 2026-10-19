@@ -53,13 +53,18 @@ jobs:
           python-version: '3.11'
       - name: Calcular crecidas
         run: python clima-scripts/caudal_crecidas.py --docs docs
+      # Solo este trabajo escribe crecidas.json: si otro flujo ha publicado entre
+      # medias, se coloca encima del remoto y se vuelve a poner el fichero nuestro.
       - name: Publicar
         run: |
-          git add docs/caudal/crecidas.json
-          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
-          git commit -m "Crecidas $(date -u +%Y-%m-%dT%H:%MZ)"
+          cp docs/caudal/crecidas.json /tmp/crecidas.json
           for i in 1 2 3 4 5; do
-            git pull --rebase --autostash && git push && exit 0
+            git fetch -q origin main && git reset -q --hard origin/main
+            cp /tmp/crecidas.json docs/caudal/crecidas.json
+            git add docs/caudal/crecidas.json
+            if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+            git commit -q -m "Crecidas $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push -q origin HEAD:main && exit 0
             echo "Push rechazado; reintento $i"; sleep $((i*7))
           done
           exit 1
@@ -105,17 +110,31 @@ jobs:
       - name: Calcular umbrales (una tanda)
         if: steps.falta.outputs.si == '1'
         run: python clima-scripts/caudal_umbrales.py --docs docs --max "${{ github.event.inputs.max_umbrales || '40' }}" --inverso
-      - name: Recalcular crecidas con los umbrales nuevos
-        if: steps.falta.outputs.si == '1'
-        run: python clima-scripts/caudal_crecidas.py --docs docs
+      # Solo publica umbrales.json (crecidas.json lo escribe el otro trabajo cada
+      # media hora y ya recogerá los umbrales nuevos). Mismo truco anti-conflicto.
       - name: Publicar
         if: steps.falta.outputs.si == '1'
         run: |
-          git add docs/caudal/umbrales.json docs/caudal/crecidas.json
-          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
-          git commit -m "Umbrales de crecida $(date -u +%Y-%m-%dT%H:%MZ)"
+          cp docs/caudal/umbrales.json /tmp/umbrales.json
           for i in 1 2 3 4 5; do
-            git pull --rebase --autostash && git push && exit 0
+            git fetch -q origin main && git reset -q --hard origin/main
+            # une lo calculado aquí con lo que haya en el remoto (no pisa puntos de otros)
+            python - <<'EOF'
+          import json
+          a = json.load(open("/tmp/umbrales.json"))
+          try:
+              b = json.load(open("docs/caudal/umbrales.json"))
+          except Exception:
+              b = {}
+          for k in ("puntos", "crudo"):
+              m = dict(b.get(k, {})); m.update(a.get(k, {})); a[k] = m
+          a["completos"] = len(a["puntos"])
+          json.dump(a, open("docs/caudal/umbrales.json", "w"), ensure_ascii=False, separators=(",", ":"))
+          EOF
+            git add docs/caudal/umbrales.json
+            if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+            git commit -q -m "Umbrales de crecida $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push -q origin HEAD:main && exit 0
             echo "Push rechazado; reintento $i"; sleep $((i*7))
           done
           exit 1
