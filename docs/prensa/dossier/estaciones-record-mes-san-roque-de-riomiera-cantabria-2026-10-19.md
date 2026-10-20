@@ -1,12 +1,12 @@
-# San Roque de Riomiera (Cantabria) bajó el 19 de octubre a 5 °C, la temperatura más baja en un mes de octubre desde que hay registros en su estación de AEMET
+# San Roque de Riomiera (Cantabria) bajó el 19 de octubre a 4,4 °C, la temperatura más baja en un mes de octubre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de San Roque de Riomiera, a 849 m, mínima de 5 °C el 19 de octubre (entre las 21:00 y las 22:00, hora local) · récord anterior de octubre en la estación: 5,1 °C (27 de octubre de 2025) · récord absoluto de la estación: -3,9 °C (4 de enero de 2026) · 20 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de San Roque de Riomiera, a 849 m, mínima de 4,4 °C el 19 de octubre (entre las 01:00 y las 02:00, hora local) · récord anterior de octubre en la estación: 5,1 °C (27 de octubre de 2025) · récord absoluto de la estación: -3,9 °C (4 de enero de 2026) · 24 de 24 horas del día con observación  
 **Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** San Roque de Riomiera (Cantabria)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Rebaja el récord anterior en 0,1 °C.
+- Rebaja el récord anterior en 0,7 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2023.
 
 ## Fuente y método
@@ -19,8 +19,6 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 19 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2023.
-- Al día le faltan 4 horas de observación en OpenData: la mínima real pudo ser menor (citar «al menos»).
-- COMPROBAR antes de enviar: la mínima se dio a las 19:00 UTC, fuera de las horas habituales. No se publica hasta que AEMET valide el dato.
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces
