@@ -1831,12 +1831,13 @@ def main():
             json.dump(pub, f, ensure_ascii=False, separators=(",", ":"))
         resumen.append({"id": h["id"], "tipo": h["tipo"], "seccion": h["seccion"], "fecha": h["fecha"], "kicker": h["kicker"], "tono": h["tono"],
                         "puntos": h["puntos"], "titular": h["texto"]["titular"], "subtitulo": h["texto"].get("subtitulo", ""), "cifras": h["cifras"],
-                        "grafico": h.get("grafico"), "redaccion": h["redaccion"].get("modo"), "provincias": sorted(h["provincias"])})
+                        "grafico": h.get("grafico"), "redaccion": h["redaccion"].get("modo"), "provincias": sorted(h["provincias"]), "clave": h.get("clave")})
         for cod, v in h["provincias"].items():
-            por_prov.setdefault(cod, []).append({"id": h["id"], "tipo": h["tipo"], "seccion": h["seccion"], "fecha": h["fecha"], "kicker": h["kicker"],
-                                                 "tono": h["tono"], "puntos": round(v.get("puntos", 0), 1), "titular": v["texto"]["titular"],
+            por_prov.setdefault(cod, []).append({"id": h["id"], "tipo": h["tipo"], "seccion": h["seccion"], "fecha": h["fecha"], "kicker": v.get("kicker") or h["kicker"],
+                                                 "tono": v.get("tono") or h["tono"], "puntos": round(v.get("puntos", 0), 1), "titular": v["texto"]["titular"],
                                                  "subtitulo": v["texto"].get("subtitulo", ""), "cifras": v.get("cifras", []),
-                                                 "grafico": v.get("grafico") or h.get("grafico"), "propio": bool(v.get("grafico")), "nivel": v.get("nivel")})
+                                                 "grafico": v.get("grafico") or h.get("grafico"), "propio": bool(v.get("grafico")), "nivel": v.get("nivel"),
+                                                 "clave": v.get("clave") or h.get("clave")})
     for cod in por_prov:
         por_prov[cod].sort(key=lambda x: -x["puntos"])
     # cada provincia, en su fichero (la portada no carga 52 listas); hoy.json lleva solo lo justo para el selector

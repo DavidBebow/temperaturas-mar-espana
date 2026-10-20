@@ -193,7 +193,7 @@ def _verano(s, a, T, hasta=None):
     ini, fin = largos[0][0], largos[-1][1]
     ultimo = max(sm)
     return {"ini": ini, "fin": fin, "dur": (fin - ini).days + 1, "dias": len(sobre), "ultimo": ultimo,
-            "sigue": fin == ultimo, "bajo_desde_fin": (ultimo - fin).days}
+            "sigue": fin == ultimo, "bajo_desde_fin": (ultimo - fin).days, "sobre": sobre}
 
 
 def _doy_medio(fechas):
@@ -264,7 +264,9 @@ def analizar_verano(s, era5=None):
                          "sigue": v["sigue"], "terminado": v["bajo_desde_fin"] >= 7, "calculable_hasta": v["ultimo"], "datos_hasta": ult,
                          "mas_dias": v["dias"] > max(prev), "max_prev": max(prev),
                          "max_prev_anios": sorted(x for x in cerrados if anios[x]["dias"] == max(prev)),
-                         "supera_media_reciente": v["dias"] > res["rec_dias"]}
+                         "supera_media_reciente": v["dias"] > res["rec_dias"],
+                         # día (de la media de 7 días) en que el año pasó el máximo anterior: sirve para saber si el récord es reciente
+                         "fecha_supera": v["sobre"][max(prev)] if v["dias"] > max(prev) else None}
     # control de saltos con el reanálisis (no se publica)
     res["control"] = None
     if era5:
