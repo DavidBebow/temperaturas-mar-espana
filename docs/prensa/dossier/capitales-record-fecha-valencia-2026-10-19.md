@@ -1,6 +1,6 @@
-# València recogió el 19 de octubre 52,8 mm, la mayor lluvia para esa fecha desde 1940
+# València recogió el 19 de octubre 52,9 mm, la mayor lluvia para esa fecha desde 1940
 
-**Dato:** 52,8 mm en un día · récord anterior para la fecha 25,6 mm (2018)  
+**Dato:** 52,9 mm en un día · récord anterior para la fecha 25,6 mm (2018)  
 **Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** València  
 **Citabilidad:** media · **Exclusivo:** sí
