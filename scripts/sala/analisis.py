@@ -782,9 +782,286 @@ def g_dana_largo(R, D):
     return [h]
 
 
+
+# ============================================================================ 5. verano_largo (series diarias)
+# docs/prensa/analisis/verano.json lo escribe scripts/analisis_series.py con las series diarias largas de AEMET.
+MESES_L = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+PAG_ANALISIS = "https://calentamientoglobal.es/prensa/analisis/"
+
+
+def _dd(x):
+    """Días enteros, redondeo a la mitad hacia arriba (33,5 → 34)."""
+    from decimal import ROUND_HALF_UP, Decimal
+    return int(Decimal(str(float(x))).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
+def _fecha_md(md):
+    """'06-02' → '2 de junio'."""
+    m, d = int(md[:2]), int(md[3:5])
+    return f"{d} de {MESES_L[m - 1]}"
+
+
+def _fecha_iso(iso):
+    d = datetime.date.fromisoformat(iso[:10])
+    return f"{d.day} de {MESES_L[d.month - 1]}"
+
+
+def _grafico_verano(R, x, nombre):
+    """Cada año, una raya del primer al último día de verano; en color, 2026. Líneas: inicio y fin medios de la referencia."""
+    serie = x.get("serie") or []
+    if len(serie) < 20:
+        return None
+    doy = lambda md: (datetime.date(2001, int(md[:2]), int(md[3:5])) - datetime.date(2001, 1, 1)).days  # noqa: E731
+    d0, d1 = doy("04-15"), doy("11-15")
+    W, ml, mr, mt, fila = 640, 44, 16, 34, 4.2
+    Hh = int(mt + fila * len(serie) + 34)
+    X = lambda d: ml + (min(max(d, d0), d1) - d0) / (d1 - d0) * (W - ml - mr)  # noqa: E731
+    s = []
+    for md, et in (("05-01", "1 may"), ("06-01", "1 jun"), ("07-01", "1 jul"), ("08-01", "1 ago"), ("09-01", "1 sep"), ("10-01", "1 oct"), ("11-01", "1 nov")):
+        s.append(f'<line x1="{X(doy(md)):.1f}" x2="{X(doy(md)):.1f}" y1="{mt - 4}" y2="{Hh - 26}" stroke="{R.RAYA}" stroke-width="1"></line>')
+        s.append(R._t(X(doy(md)), Hh - 10, et, 11, R.GRIS, "middle"))
+    for i, (a, ini, fin, dur) in enumerate(serie):
+        y = mt + i * fila
+        dest = a == serie[-1][0] and a >= 2026
+        color = R.CALOR if dest else (MED if a >= 2011 else "#E9C9B8" if a >= 1991 else "#D9D3CA")
+        s.append(f'<rect x="{X(doy(ini)):.1f}" y="{y:.1f}" width="{max(1.0, X(doy(fin)) - X(doy(ini))):.1f}" height="{fila - 0.8:.1f}" fill="{color}"></rect>')
+        if i == 0 or a % 10 == 0:
+            s.append(R._t(ml - 6, y + 4, str(a), 10, R.GRIS, "end"))
+    for k in ("base_ini", "base_fin"):
+        xx = X(doy(x[k]))
+        s.append(f'<line x1="{xx:.1f}" x2="{xx:.1f}" y1="{mt - 6}" y2="{mt + fila * len(serie)}" stroke="{R.TINTA}" stroke-width="1.2" stroke-dasharray="3 3"></line>')
+    s.append(R._t(X(doy(x["base_ini"])), mt - 10, f"inicio medio {x['base']}", 10.5, R.TINTA, "end"))
+    s.append(R._t(X(doy(x["base_fin"])), mt - 10, f"fin medio {x['base']}", 10.5, R.TINTA, "start"))
+    a26 = serie[-1]
+    if a26[0] >= 2026:
+        s.append(R._t(X(doy(a26[2])) + 6, mt + fila * (len(serie) - 1) + 5, str(a26[0]), 11, R.CALOR, "start", 700))
+    svg = R._svg(W, Hh, f"Duración del verano cada año en {x['nombre']}", s)
+    return R.guardar_grafico(nombre, svg, [(a, ini, fin, dur) for a, ini, fin, dur in serie], ["anio", "inicio", "fin", "dias"],
+                             f"El verano de cada año en {x['nombre']}, del primer al último día", [
+                                 {"t": "banda", "c": "#D9D3CA", "l": "hasta 1990"}, {"t": "banda", "c": "#E9C9B8", "l": "1991-2010"},
+                                 {"t": "banda", "c": MED, "l": "2011-2025"}, {"t": "banda", "c": R.CALOR, "l": "2026"}],
+                             f"Estación de AEMET de {x['nombre']}. Verano: del primer al último día del año en que la media de 7 días de la temperatura "
+                             f"media alcanza {R.f1(x['umbral'])} °C, lo que en {x['base']} solo se alcanzaba 92 días al año. Fuente: AEMET OpenData "
+                             "(valores diarios). Cálculo: calentamientoglobal.es.")
+
+
+def _lugar(R, x):
+    """«València» o «Lorca (Murcia)»: la provincia solo si el nombre no la dice ya."""
+    return x["nombre"] if R.H._norm(R.nprov(x["cod"])) in R.H._norm(x["nombre"]) else f"{x['nombre']} ({R.nprov(x['cod'])})"
+
+
+def _hechos_verano(R, x, id_, con_prov=True):
+    n = x["nombre"]
+    donde = _lugar(R, x) if con_prov else n
+    b, bd, rd = x["base"], _dd(x["base_dias"]), _dd(x["rec_dias"])
+    dif = rd - bd
+    hh = [R.hecho(id_, f"En la estación de AEMET de {donde}, el verano sumaba de media {bd} días al año en {b} y {rd} en 2011-2025: {dif} días más.",
+                  FUENTE_D, [str(bd), str(rd), str(dif), b[:4], b[5:], "2011", "2025"], lugar=n, liga=[str(bd), str(rd), str(dif)]),
+          R.hecho(f"{id_}_fechas", f"De media, en 2011-2025 empezaba el {_fecha_md(x['rec_ini'])} y acababa el {_fecha_md(x['rec_fin'])}; en {b}, "
+                                   f"del {_fecha_md(x['base_ini'])} al {_fecha_md(x['base_fin'])}.", FUENTE_D,
+                  [_fecha_md(x["rec_ini"]), _fecha_md(x["rec_fin"]), _fecha_md(x["base_ini"]), _fecha_md(x["base_fin"]), b[:4], b[5:]], lugar=n),
+          R.hecho(f"{id_}_def", f"El observatorio cuenta como días de verano los del año en que la media de siete días de la temperatura media de la estación "
+                                f"alcanza {R.f1(x['umbral'])} °C, un nivel que en {b} se superaba unos 92 días al año, lo que duran junio, julio y agosto; "
+                                "el verano empieza con el primer tramo de al menos cinco días seguidos a ese nivel y acaba con el último.",
+                  FUENTE_D, [R.f1(x["umbral"]) + " °C", "92", b[:4], b[5:]], lugar=n)]
+    a = x.get("actual")
+    if a:
+        hasta = _fecha_iso(a["datos_hasta"])
+        if a.get("mas_dias"):
+            ant = R.lista_y([str(z) for z in a["max_prev_anios"]])
+            t = (f"Con los datos validados por AEMET hasta el {hasta}, {a['anio']} suma ya {a['dias']} días de verano en {n}: más que cualquier año "
+                 f"completo desde {x['desde']} (el máximo anterior eran {a['max_prev']}, en {ant}{'; la serie tiene años sin dato' if x.get('huecos') else ''}).")
+            vals = [hasta, str(a["dias"]), str(x["desde"]), str(a["max_prev"])] + [str(z) for z in a["max_prev_anios"]]
+        elif a.get("supera_media_reciente"):
+            t = (f"Con los datos validados por AEMET hasta el {hasta}, {a['anio']} suma ya {a['dias']} días de verano en {n}, frente a {rd} de media "
+                 f"en 2011-2025 y {bd} en {b}.")
+            vals = [hasta, str(a["dias"]), str(rd), str(bd)]
+        else:
+            t, vals = None, []
+        if t:
+            if a.get("terminado"):
+                t += f" Empezó el {_fecha_iso(a['ini'])} y acabó el {_fecha_iso(a['fin'])}."
+                vals += [_fecha_iso(a["ini"]), _fecha_iso(a["fin"])]
+            elif a.get("sigue"):
+                t += f" Empezó el {_fecha_iso(a['ini'])} y el {_fecha_iso(a['calculable_hasta'])}, último día que se puede calcular, aún seguía."
+                vals += [_fecha_iso(a["ini"]), _fecha_iso(a["calculable_hasta"])]
+            hh.append(R.hecho(f"{id_}_2026", t, FUENTE_D, vals, lugar=n, superlativo=bool(a.get("mas_dias")), record=bool(a.get("mas_dias"))))
+    return hh
+
+
+def g_verano_largo(R, D):
+    V = R.leer(R.DOCS / "prensa" / "analisis" / "verano.json", {}) or {}
+    est = V.get("estaciones") or {}
+    filas = [dict(est[i], id=i) for i in (V.get("provincias") or {}).values() if i in est]
+    con61 = [x for x in filas if x["base"] == "1961-1990"]
+    if len(con61) < 3:
+        return []
+    dif = lambda x: _dd(x["rec_dias"]) - _dd(x["base_dias"])  # noqa: E731
+    con61.sort(key=lambda x: -dif(x))
+    difs = sorted(dif(x) for x in con61)
+    med = st.median(difs)
+    med_t = str(int(med)) if med == int(med) else R.f1(med)
+    recs = sorted((x for x in filas if (x.get("actual") or {}).get("mas_dias")), key=lambda x: x["desde"])
+    recs_largos = [x for x in recs if x["desde"] <= 1960]
+    hechos = [R.hecho("ver_red", f"En las {len(con61)} estaciones de AEMET con al menos 20 años de datos en 1961-1990 que ha analizado el observatorio, el verano "
+                                 f"suma ahora entre {difs[0]} y {difs[-1]} días más al año que entonces (2011-2025 frente a 1961-1990); la mediana, {med_t} días.",
+                      FUENTE_D, [str(len(con61)), "20", "1961", "1990", str(difs[0]), str(difs[-1]), med_t, "2011", "2025"])]
+    lider = con61[0]
+    hechos += _hechos_verano(R, lider, "ver1")
+    if recs:
+        partes = [f"{_lugar(R, x)}, desde {x['desde']}" for x in recs]
+        con26 = sum(1 for x in filas if (x.get("actual") or {}).get("dias"))
+        hechos.append(R.hecho("ver_2026", f"Con los datos validados por AEMET hasta mediados de octubre, 2026 ya es el año con más días de verano de su serie en "
+                                          f"{len(recs)} de las {con26} estaciones analizadas con dato de 2026: {R.lista_y(partes)}.", FUENTE_D,
+                              [str(len(recs)), str(con26), "2026"] + [str(x["desde"]) for x in recs], superlativo=True, record=True))
+    hechos.append(R.hecho("ver_ctrl", "Solo entran estaciones cuyo cambio no se separa del que da el reanálisis en la capital de su provincia (filtro de "
+                                      "traslados y cambios de sensor); una estación también puede calentarse porque la ciudad ha crecido a su alrededor.",
+                          FUENTE_D, []))
+    if recs_largos:
+        nombres = R.lista_y([f"{x['nombre'].split(' (')[0]} desde {x['desde']}" for x in recs_largos[:2]])
+        tit = f"El verano suma entre {difs[0]} y {difs[-1]} días más que en 1961-1990, y 2026 ya es el año con más días de verano en {nombres}"
+    else:
+        tit = f"El verano suma entre {difs[0]} y {difs[-1]} días más al año que en 1961-1990 en las grandes series de AEMET: empieza antes y acaba más tarde"
+    if len(tit) > 165:
+        tit = f"El verano suma entre {difs[0]} y {difs[-1]} días más al año que en 1961-1990 en las grandes series de AEMET"
+    pl = {"titular": tit,
+          "subtitulo": next((h["dice"] for h in hechos if h["id"] == "ver_2026"), next(h["dice"] for h in hechos if h["id"] == "ver1_fechas")),
+          "entradilla": hechos[0]["dice"],
+          "cuerpo": [" ".join(h["dice"] for h in hechos if h["id"] in ("ver1", "ver1_fechas", "ver1_2026")),
+                     " ".join(h["dice"] for h in hechos if h["id"] in ("ver1_def", "ver_ctrl"))],
+          "claves": [hechos[0]["dice"]] + [h["dice"] for h in hechos if h["id"] in ("ver_2026", "ver1")]}
+    cifras = [{"n": f"{difs[0]} a {difs[-1]}", "l": f"días más de verano al año en las {len(con61)} estaciones con serie desde 1961-1990 (AEMET)", "tono": "calor"},
+              {"n": f"+{dif(lider)} días", "l": f"en {lider['nombre']}: {_dd(lider['base_dias'])} → {_dd(lider['rec_dias'])}", "tono": "calor"}]
+    if recs:
+        cifras.append({"n": str(len(recs)), "l": "estaciones donde 2026 ya es el año con más días de verano de su serie", "tono": "calor"})
+    hid = f"{R.HOY.isoformat()}-verano-largo"
+    h = R.historia("verano_largo", hid, "Análisis · el verano se estira", "calor", 66, hechos, pl, cifras, FUENTE_D,
+                   V.get("definicion", "") + " " + V.get("metodo", ""), V.get("limites", []), PAG_ANALISIS)
+    h["seccion"] = SECCION
+    try:
+        h["grafico"] = _grafico_verano(R, (recs_largos or [lider])[0], hid)
+    except Exception as e:  # noqa: BLE001
+        R.LOG.append(f"analisis/verano gráfico: {e}")
+    red = hechos[0]
+    for x in filas:
+        cod = x["cod"]
+        hv = _hechos_verano(R, x, "verp", con_prov=False)
+        if x["base"] == "1961-1990":
+            hv.append(red)
+        hv.append(next(h for h in hechos if h["id"] == "ver_ctrl"))
+        d = dif(x)
+        a = x.get("actual") or {}
+        if a.get("mas_dias"):
+            tit_p = f"2026 ya es el año con más días de verano en {x['nombre']} desde {x['desde']}: {a['dias']}, con datos validados hasta el {_fecha_iso(a['datos_hasta'])}"
+        else:
+            tit_p = (f"El verano en {x['nombre']} suma {d} días más al año que en {x['base']}: empieza el {_fecha_md(x['rec_ini'])} y acaba el "
+                     f"{_fecha_md(x['rec_fin'])}, de media")
+        ent = hv[0]
+        sub = next((z["dice"] for z in hv if z["id"] == "verp_2026"), hv[1]["dice"])
+        plv = {"titular": tit_p, "subtitulo": sub, "entradilla": ent["dice"],
+               "cuerpo": [" ".join(z["dice"] for z in hv[1:] if z["dice"] != sub)], "claves": [z["dice"] for z in hv[:3]]}
+        v = {"provincia": R.nprov(cod), "slug": R.PROV[cod][1], "hechos": hv, "plantilla": plv,
+             "cifras": [{"n": f"+{d} días", "l": f"de verano al año en {x['nombre']}, 2011-2025 frente a {x['base']}", "tono": "calor"},
+                        {"n": f"{_fecha_md(x['base_ini'])} → {_fecha_md(x['rec_ini'])}", "l": "inicio medio del verano", "tono": "calor"}]
+             + ([{"n": f"{a['dias']} días", "l": f"de verano en 2026 (datos hasta el {_fecha_iso(a['datos_hasta'])})" + (", récord de su serie" if a.get("mas_dias") else ""),
+                  "tono": "calor"}] if a.get("dias") else []),
+             "puntos": round(min(70.0, 50 + d / 3 + (8 if a.get("mas_dias") else 0)), 1)}
+        try:
+            v["grafico"] = _grafico_verano(R, x, f"{hid}-{cod}")
+        except Exception as e:  # noqa: BLE001
+            R.LOG.append(f"analisis/verano gráfico {cod}: {e}")
+        h["provincias"][cod] = v
+    return [h]
+
+
+# ============================================================================ 6. danas_lluvia (series diarias + catálogo)
+def g_danas_lluvia(R, D):
+    Dn = R.leer(R.DOCS / "prensa" / "analisis" / "danas.json", {}) or {}
+    est = Dn.get("estaciones") or {}
+    filas = [dict(est[i], id=i) for i in (Dn.get("provincias") or {}).values() if i in est]
+    cat = ((Dn.get("resumen") or {}).get("catalogo") or {})
+    c1, c2 = cat.get("1961-1990") or {}, cat.get("1996-2025") or {}
+    if len(filas) < 5 or not c1 or not c2:
+        return []
+    n = len(filas)
+    FD = Dn.get("fuente", FUENTE_DANA)
+    cambia = lambda a, b: (b - a) / a if a else 0.0  # noqa: E731
+    sube_inv = [x for x in filas if cambia(x["p1"]["dic_may"], x["p2"]["dic_may"]) >= 0.05]
+    baja_oto = [x for x in filas if cambia(x["p1"]["otono"], x["p2"]["otono"]) <= -0.05]
+    de_n = lambda k: f"las {n}" if k == n else f"{k} de las {n}"  # noqa: E731
+    r0 = lambda v: str(_dd(v))  # noqa: E731
+    hechos = [
+        R.hecho("dl_cat", f"El catálogo de DANAs del observatorio cuenta de media {R.f1(c2['dic_may'])} días con DANA al año entre diciembre y mayo en 1996-2025, "
+                          f"frente a {R.f1(c1['dic_may'])} en 1961-1990; en otoño, {R.f1(c2['otono'])} frente a {R.f1(c1['otono'])}.", FD,
+                [R.f1(c2["dic_may"]), R.f1(c1["dic_may"]), R.f1(c2["otono"]), R.f1(c1["otono"]), "1996", "2025", "1961", "1990"]),
+        R.hecho("dl_inv", f"Entre diciembre y mayo cae más lluvia en días con DANA que en 1961-1990 en {de_n(len(sube_inv))} estaciones de AEMET con serie diaria "
+                          "larga que ha analizado el observatorio, sobre todo porque hay más días con DANA: la lluvia por día de DANA sube en unas y baja en otras.",
+                FD, [str(len(sube_inv)), str(n), "1961", "1990"]),
+        R.hecho("dl_oto", f"En otoño, con algo más de días con DANA, la lluvia que dejan es menor que en 1961-1990 en {de_n(len(baja_oto))} estaciones.",
+                FD, [str(len(baja_oto)), str(n), "1961", "1990"]),
+        R.hecho("dl_lim", "Las estaciones comparten los mismos días de DANA y el cambio no es concluyente estadísticamente. Lluvia con DANA es la que mide AEMET "
+                          "en la estación el día que hay una DANA sobre la península o su entorno, según el catálogo del observatorio (un reanálisis, no una "
+                          "medida), o el día siguiente.", FD, []),
+    ]
+    tit = (f"Más días de DANA en invierno y primavera y menos lluvia con DANA en otoño: {n} series de AEMET y el catálogo de DANAs del observatorio, "
+           "1961-1990 frente a 1996-2025")
+    pl = {"titular": tit, "subtitulo": hechos[2]["dice"], "entradilla": hechos[0]["dice"] + " " + hechos[1]["dice"],
+          "cuerpo": [hechos[3]["dice"]], "claves": [h["dice"] for h in hechos[:3]]}
+    cifras = [{"n": f"{R.f1(c1['dic_may'])} → {R.f1(c2['dic_may'])}", "l": "días con DANA al año entre diciembre y mayo, 1961-1990 → 1996-2025 (catálogo del observatorio)", "tono": "lluvia"},
+              {"n": f"{len(baja_oto)} de {n}", "l": "estaciones con menos lluvia con DANA en otoño", "tono": "lluvia"}]
+    hid = f"{R.HOY.isoformat()}-danas-lluvia"
+    h = R.historia("danas_lluvia", hid, "Análisis · lo que dejan las DANAs", "lluvia", 52, hechos, pl, cifras, FD,
+                   Dn.get("definicion", "") + " " + Dn.get("metodo", ""), Dn.get("limites", []), PAG_ANALISIS)
+    h["seccion"] = SECCION
+    et = {"oto": "Sep-nov", "inv": "Dic-may", "ver": "Jun-ago"}
+
+    def graf(x, nombre):
+        ver1 = max(0.0, x["p1"]["dana"] - x["p1"]["otono"] - x["p1"]["dic_may"])
+        ver2 = max(0.0, x["p2"]["dana"] - x["p2"]["otono"] - x["p2"]["dic_may"])
+        return _barras_pares(R, [("inv", round(x["p1"]["dic_may"], 1), round(x["p2"]["dic_may"], 1)), ("ver", round(ver1, 1), round(ver2, 1)),
+                                 ("oto", round(x["p1"]["otono"], 1), round(x["p2"]["otono"], 1))], nombre,
+                             f"Lluvia con DANA en {x['nombre']}, mm al año",
+                             f"Estación de AEMET de {x['nombre']}: lluvia media al año en los días con DANA (y el siguiente). Días con DANA: catálogo del "
+                             "observatorio (reanálisis NCEP/NCAR). Fuente: AEMET OpenData. Cálculo: calentamientoglobal.es.",
+                             et, MED_LL, R.LLUVIA, "1961-1990", "1996-2025", "mm")
+    try:
+        h["grafico"] = graf(max(filas, key=lambda x: x["p2"]["dic_may"] - x["p1"]["dic_may"]), hid)
+    except Exception as e:  # noqa: BLE001
+        R.LOG.append(f"analisis/danas gráfico: {e}")
+    for x in filas:
+        cod = x["cod"]
+        a, b = x["p1"], x["p2"]
+        nn = x["nombre"]
+        oto_t = (f"de {r0(a['otono'])} mm a {r0(b['otono'])} mm" if abs(cambia(a["otono"], b["otono"])) >= 0.05 else f"apenas cambia ({r0(b['otono'])} mm)")
+        hv = [R.hecho("dlp", f"En la estación de AEMET de {nn}, la lluvia que cae con una DANA entre diciembre y mayo pasa de {r0(a['dic_may'])} mm al año "
+                             f"en 1961-1990 a {r0(b['dic_may'])} mm en 1996-2025, y la de otoño, {oto_t}.", FD,
+                      [r0(a["dic_may"]) + " mm", r0(b["dic_may"]) + " mm", r0(a["otono"]) + " mm", r0(b["otono"]) + " mm", "1961", "1990", "1996", "2025"],
+                      lugar=nn, liga=[r0(a["dic_may"]), r0(b["dic_may"]), r0(a["otono"]), r0(b["otono"])]),
+              R.hecho("dlp_dia", f"Por cada día con DANA (o el siguiente) entre diciembre y mayo caen de media {R.f1(b['por_dia_dic_may'])} mm en {nn}, frente a "
+                                 f"{R.f1(a['por_dia_dic_may'])} en 1961-1990; en otoño, {R.f1(b['por_dia_otono'])} frente a {R.f1(a['por_dia_otono'])}.", FD,
+                      [R.f1(b["por_dia_dic_may"]), R.f1(a["por_dia_dic_may"]), R.f1(b["por_dia_otono"]), R.f1(a["por_dia_otono"])], lugar=nn),
+              R.hecho("dlp_max", f"El día con DANA más lluvioso de 1996-2025 en {nn} dejó {R.f1(b['max'])} mm ({_fecha_iso(b['max_fecha'])} de {b['max_fecha'][:4]}); "
+                                 f"el de 1961-1990, {R.f1(a['max'])} mm ({_fecha_iso(a['max_fecha'])} de {a['max_fecha'][:4]}).", FD,
+                      [R.f1(b["max"]), R.f1(a["max"]), b["max_fecha"][:4], a["max_fecha"][:4]], lugar=nn)] + [hechos[0], hechos[3]]
+        tit_p = (f"Las DANAs dejan en {nn} {r0(b['dic_may'])} mm al año entre diciembre y mayo, frente a {r0(a['dic_may'])} en 1961-1990"
+                 + (f"; en otoño, {r0(b['otono'])} frente a {r0(a['otono'])}" if abs(cambia(a["otono"], b["otono"])) >= 0.05 else ""))
+        plv = {"titular": tit_p, "subtitulo": hv[1]["dice"], "entradilla": hv[0]["dice"], "cuerpo": [hv[2]["dice"], hechos[0]["dice"] + " " + hechos[3]["dice"]],
+               "claves": [z["dice"] for z in hv[:3]]}
+        v = {"provincia": R.nprov(cod), "slug": R.PROV[cod][1], "hechos": hv, "plantilla": plv,
+             "cifras": [{"n": f"{r0(a['dic_may'])} → {r0(b['dic_may'])} mm", "l": f"lluvia con DANA entre diciembre y mayo en {nn}", "tono": "lluvia"},
+                        {"n": f"{r0(a['otono'])} → {r0(b['otono'])} mm", "l": "en otoño", "tono": "lluvia"}],
+             "puntos": 50.0}
+        try:
+            v["grafico"] = graf(x, f"{hid}-{cod}")
+        except Exception as e:  # noqa: BLE001
+            R.LOG.append(f"analisis/danas gráfico {cod}: {e}")
+        h["provincias"][cod] = v
+    return [h]
+
+
 def generar(R, D):
     out = []
-    for g in (g_calor_largo, g_otono_serie, g_torrencial, g_dana_largo):
+    for g in (g_verano_largo, g_danas_lluvia, g_otono_serie, g_torrencial, g_dana_largo):
         try:
             out.extend(g(R, D) or [])
         except Exception as e:  # noqa: BLE001
