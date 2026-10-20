@@ -735,13 +735,14 @@ def g_dana_largo(R, D):
     TODO, OTO, INV, VER = range(1, 13), (9, 10, 11), (12, 1, 2, 3, 4, 5), (7, 8)
     an = (media(TODO, Q1), media(TODO, Q2))
     ot = (media(OTO, Q1), media(OTO, Q2))
-    ip = (media(INV, Q1), media(INV, Q2))
+    # Diciembre del año anterior + enero-mayo: el mismo «año de lluvias» que usa danas.json (analisis_series.dias_catalogo).
+    ip = tuple(st.mean(sum(por[(a, m)] for m in (1, 2, 3, 4, 5)) + por[(a - 1, 12)] for a in Q) for Q in (Q1, Q2))
     ver = (media(VER, Q1), media(VER, Q2))
     an3 = media(TODO, Q3)
     mes = {m: (round(media((m,), Q1), 1), round(media((m,), Q2), 1)) for m in TODO}
     hechos = [
         R.hecho("dana_inv", f"El catálogo de DANAs del observatorio cuenta de media {R.f1(ip[1])} días con una DANA sobre España y su entorno entre "
-                            f"diciembre y mayo en 1996-2025, frente a {R.f1(ip[0])} en 1961-1990.", FUENTE_DANA,
+                            f"diciembre y mayo (diciembre del año anterior) en 1996-2025, frente a {R.f1(ip[0])} en 1961-1990.", FUENTE_DANA,
                 [R.f1(ip[1]), R.f1(ip[0]), "1996", "2025", "1961", "1990"]),
         R.hecho("dana_resto", f"En otoño (septiembre a noviembre) pasan de {R.f1(ot[0])} a {R.f1(ot[1])} días, una diferencia pequeña para lo que "
                               f"cambia de un año a otro; en julio y agosto bajan de {R.f1(ver[0])} a {R.f1(ver[1])}.", FUENTE_DANA,
