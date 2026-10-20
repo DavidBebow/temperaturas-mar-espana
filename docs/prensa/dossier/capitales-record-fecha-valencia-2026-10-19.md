@@ -1,7 +1,7 @@
-# València recogió el 18 de octubre 51,7 mm, la mayor lluvia para esa fecha desde 1940
+# València recogió el 19 de octubre 52,8 mm, la mayor lluvia para esa fecha desde 1940
 
-**Dato:** 51,7 mm en un día · récord anterior para la fecha 24,3 mm (2018)  
-**Fecha del dato:** 18 de octubre de 2026  
+**Dato:** 52,8 mm en un día · récord anterior para la fecha 25,6 mm (2018)  
+**Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** València  
 **Citabilidad:** media · **Exclusivo:** sí
 
@@ -19,8 +19,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-valencia/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-valencia-2026-10-18.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-valencia-2026-10-18.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-valencia-2026-10-19.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-valencia-2026-10-19.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
