@@ -35,6 +35,13 @@ jobs:
           SERIES_PAUSA: "2.0"
         run: python scripts/series_diarias_aemet.py
 
+      # Con lo bajado, el análisis (20-10-2026): duración del verano y lluvia con DANA por estación y provincia, que
+      # leen la sala de prensa (scripts/sala/analisis.py) y la página /prensa/analisis/.
+      - name: Analizar las series
+        if: always()
+        continue-on-error: true
+        run: python scripts/analisis_series.py
+
       # Siempre, aunque el paso anterior falle o se corte: lo bajado se guarda.
       - name: Guardar cambios
         if: always()
@@ -42,6 +49,7 @@ jobs:
           git config --local user.email "accion@github.com"
           git config --local user.name "GitHub Actions Bot"
           git add archivo/aemet_diario
+          git add -A docs/prensa/analisis 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "No hay cambios que guardar"
             exit 0

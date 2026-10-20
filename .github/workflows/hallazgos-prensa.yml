@@ -84,6 +84,19 @@ jobs:
       - name: Partes de prensa provinciales (5 ángulos × 52 provincias)
         run: python scripts/partes_prensa.py
 
+      # Series largas (20-10-2026): duración del verano y lluvia con DANA por provincia, con las series diarias de AEMET
+      # que baja «Series diarias largas de AEMET». Tarda unos 15 s y solo reescribe si algo cambia. Lo leen la sección
+      # Análisis y /prensa/analisis/.
+      - name: Análisis de las series largas
+        continue-on-error: true
+        run: python scripts/analisis_series.py
+
+      # Dossier de datos de cada episodio de lluvia (20-10-2026; el primero, la dana Adam): lluvia estación a estación y
+      # día a día, contra la historia de cada pluviómetro, ríos, avisos y mar. Lo pinta /prensa/episodio/<id>/.
+      - name: Dossier de los episodios de lluvia
+        continue-on-error: true
+        run: python scripts/dossier_episodio.py
+
       # Redacción (18-10-2026): convierte los datos en historias con versión nacional y provincial. Coste cero: solo IA
       # con capa gratuita y sin tarjeta (Gemini de Google AI Studio y/o Groq); un verificador rechaza cualquier cifra,
       # hora o nombre que no esté en los hechos comprobados y, si no pasa o no hay clave, sale el texto de plantilla.
@@ -99,6 +112,9 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes docs/prensa/noticias docs/records
+          for d in docs/prensa/episodios docs/prensa/analisis; do   # pueden no existir si su paso falló
+            if [ -d "$d" ]; then git add -A "$d"; fi
+          done
           if git diff --cached --quiet; then
             echo "Sin cambios."
             exit 0
