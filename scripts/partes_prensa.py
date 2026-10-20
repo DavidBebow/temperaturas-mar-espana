@@ -861,7 +861,10 @@ def sonda_impacto(P: Parte, D: Datos, pj: dict):
     # --- mortalidad por calor ---------------------------------------------------------
     C = D.calor
     pc = (C.get("provincias") or {}).get(P.slug) or (C.get("provincias") or {}).get(P.slug.replace("-", "_"))
-    if pc and pc.get("verano") is not None and pc.get("desde") and pc.get("hasta"):
+    # 20-10-2026: el balance del verano (acaba el 30 de septiembre) deja de ser noticia a los 10 días; en octubre la sala
+    # de cada provincia seguía abriendo con «59 muertes atribuibles al calor… entre el 1 de junio y el 30 de septiembre».
+    fresco = bool(pc and pc.get("hasta")) and (HOY - date.fromisoformat(str(pc["hasta"])[:10])).days <= 10
+    if pc and fresco and pc.get("verano") is not None and pc.get("desde") and pc.get("hasta"):
         # Auditoría 17-10-2026: el dato provincial acaba el 30 de septiembre y el nacional sigue hasta octubre; antes se
         # daban juntos «hasta el 16 de octubre». Ahora el periodo es el del dato provincial y España, el mismo periodo.
         desde_p, hasta_p = pc["desde"], pc["hasta"]
