@@ -1,6 +1,6 @@
 # La estación de AEMET de Pego (Alicante) recogió 465,2 mm el 19 de octubre; la de Miramar (Valencia), 371 mm
 
-**Dato:** 465,2 mm de 0 a 24 h (hora local) del 19 de octubre, la cifra más alta de las 359 estaciones de AEMET con las 24 horas que sigue el mapa · 26 superaron los 30 mm  
+**Dato:** 465,2 mm de 0 a 24 h (hora local) del 19 de octubre, la cifra más alta de las 364 estaciones de AEMET con las 24 horas que sigue el mapa · 28 superaron los 30 mm  
 **Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -14,7 +14,7 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación de observación convencional, de 0 a 24 h en hora local. Solo estaciones con las 24 horas.
 
 ## Límites (decirlos antes de que los descubran)
-- La comparación es entre las 359 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (992 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 364 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (997 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Lluvia de cada estación: en el resto del término municipal pudo llover más o menos.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
