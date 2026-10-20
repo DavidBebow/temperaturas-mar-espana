@@ -1,14 +1,14 @@
-# El Mediterráneo español marcó el 18 de octubre su temperatura más alta para esa fecha desde 1981: 24,28 °C
+# El Mediterráneo español tuvo su segundo 19 de octubre más cálido desde 1981: 23,9 °C, 2,2 °C por encima de lo normal
 
-**Dato:** 24,28 °C · récord anterior para la fecha 24,18 °C (2023) · normal 1991-2020 21,73 °C (+2,55)  
-**Fecha del dato:** 18 de octubre de 2026  
+**Dato:** 23,87 °C · puesto 2 de 46 años para la fecha · récord 24,12 °C (2023) · normal 1991-2020 21,64 °C (+2,23)  
+**Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** Mediterráneo occidental  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
 - Al menos 78 días de 2026 han sido récord para su fecha en la serie desde 1981; otros 2 días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).
 - Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.
-- 24,3 °C es lo normal en esta zona para un 19 de septiembre (media 1991-2020).
+- 23,9 °C es lo normal en esta zona para un 24 de septiembre (media 1991-2020).
 
 ## Fuente y método
 - **Fuente:** NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E
@@ -22,8 +22,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/dana/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-record-fecha-mediterraneo-occidental-2026-10-18.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-record-fecha-mediterraneo-occidental-2026-10-18.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-19.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-19.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
