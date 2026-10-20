@@ -1729,6 +1729,32 @@ def generadores_sala(D, solo=None):
     return out
 
 
+# ============================================================================ frescura
+# Una noticia es de hoy o no es noticia. Fuera: lo fechado hace más de 10 días, lo de temporada fuera de su temporada
+# (los récords del verano no se publican en octubre salvo que haya un hecho de las dos últimas semanas) y los récords
+# de estaciones con tabla de extremos de menos de 20 años.
+TEMPORADA_VERANO = ("dias32-record", "noches-tropicales", "calor-30-largo", "muertes-calor", "mar-boyas-records")
+DIAS_VIGENCIA = 10
+
+
+def caducada(h):
+    if h.get("vigente_hasta") and HOY.isoformat() > h["vigente_hasta"]:
+        return f"vigente hasta {h['vigente_hasta']}"
+    m = re.match(r"(\d{4}-\d{2}-\d{2})-", h["id"])
+    if m and (HOY - date.fromisoformat(m.group(1))).days > DIAS_VIGENCIA:
+        return f"fechada el {m.group(1)}"
+    if any(t in h["id"] for t in TEMPORADA_VERANO):
+        reciente = h.get("fecha_hecho")
+        en_temporada = date(HOY.year, 5, 15) <= HOY <= date(HOY.year, 10, 5)
+        if not en_temporada and not (reciente and (HOY - date.fromisoformat(reciente)).days <= 14):
+            return "noticia de verano fuera de temporada"
+    if h["tipo"] == "record":
+        anios = [int(a) for f in h.get("hechos", []) for a in re.findall(r"récords al menos desde (\d{4})", f.get("dice", ""))]
+        if anios and HOY.year - min(anios) < 20:
+            return f"tabla de récords solo desde {min(anios)}"
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sin-ia", action="store_true", help="no llamar a la API (todo de plantilla)")
@@ -1759,7 +1785,22 @@ def main():
         h.setdefault("seccion", SECCION_POR_TIPO.get(h["tipo"], "agua"))
         if h["id"] not in vistos or h["puntos"] > vistos[h["id"]]["puntos"]:
             vistos[h["id"]] = h
-    hs = sorted(vistos.values(), key=lambda h: -h["puntos"])
+    hs = []
+    for h in sorted(vistos.values(), key=lambda h: -h["puntos"]):
+        motivo = caducada(h)
+        if motivo:
+            LOG.append(f"fuera por caducada ({motivo}): {h['id']}")
+        else:
+            hs.append(h)
+    # con un temporal de lluvia en marcha, lo demás no le quita la portada ni la cabecera provincial
+    temporal = any(h["tipo"] == "episodio" and h["tono"] == "lluvia" and h["puntos"] >= 85 for h in hs)
+    if temporal:
+        for h in hs:
+            if h["tono"] not in ("lluvia",) and h["tipo"] not in ("episodio",) and h["seccion"] not in ("agua", "ultima"):
+                h["puntos"] = round(min(h["puntos"], 70), 1)
+                for v in h["provincias"].values():
+                    v["puntos"] = min(v.get("puntos", 0), 60)
+        hs.sort(key=lambda h: -h["puntos"])
 
     cache = (leer(SALIDA / "cache_redaccion.json", {}) or {})
     R = Redactor(cache, int(os.getenv("REDACCION_MAX_LLAMADAS", "8")))
