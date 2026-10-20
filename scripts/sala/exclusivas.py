@@ -143,7 +143,11 @@ def _candidatos(R):
     for cod, ide in (V.get("provincias") or {}).items():
         x = est.get(ide) or {}
         a = x.get("actual") or {}
-        if a.get("mas_dias") and cod in R.PROV:
+        # 20-10-2026 (David): «en la época que estamos ya no van a publicar una noticia así de verano». El récord de días de
+        # verano solo es exclusiva en temporada (15 de mayo-5 de octubre) o si el año pasó su máximo hace dos semanas o menos.
+        en_temporada = datetime.date(R.HOY.year, 5, 15) <= R.HOY <= datetime.date(R.HOY.year, 10, 5)
+        recien = bool(a.get("fecha_supera")) and (R.HOY - datetime.date.fromisoformat(a["fecha_supera"])).days <= 14
+        if a.get("mas_dias") and cod in R.PROV and (en_temporada or recien):
             # un poco más si el año acaba de pasar el máximo anterior (en las tres últimas semanas)
             reciente = bool(a.get("fecha_supera")) and (R.HOY - datetime.date.fromisoformat(a["fecha_supera"])).days <= 21
             out.append((95 + min(10.0, (R.HOY.year - x["desde"]) / 10) + (3 if reciente else 0), cod, "verano_record", dict(x=x, a=a, ide=ide)))
