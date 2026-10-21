@@ -105,10 +105,12 @@ jobs:
           # reaplicar limpio y se commitearon las marcas <<<<<<< dentro del JSON:
           # historico y salida rotos 3 horas. Ahora se commitea primero y el rebase
           # del bucle de push resuelve a favor de esta pasada (-X theirs).
-          if grep -l '^<<<<<<< ' historico_estaciones.json docs/lluvias_municipios.json 2>/dev/null; then
+          if grep -l '^<<<<<<< ' historico_estaciones.json historico_pluviometrico.json docs/lluvias_municipios.json 2>/dev/null; then
             echo "Marcas de conflicto en los JSON: no se publica"; exit 1
           fi
           git add historico_estaciones.json
+          # 21-10-2026: la misma lluvia horaria por dia pluviometrico de AEMET (07-07 UTC), para el dossier de episodios
+          [ -f historico_pluviometrico.json ] && git add historico_pluviometrico.json || true
           # docs/lluvias_municipios.json puede no existir todavia: mientras no
           # haya ningun dia natural cerrado el script guarda historico pero no
           # publica salida, y un `git add` de un fichero inexistente tumbaria el
