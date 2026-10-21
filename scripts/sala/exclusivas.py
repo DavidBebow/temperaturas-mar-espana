@@ -8,8 +8,11 @@ de allí querría publicar hoy. Por orden de fuerza:
    calcula contra los valores diarios de AEMET (archivo/otonio). Con los tres días seguidos y el otoño acumulado.
 2. otono_record · Una estación ya lleva este otoño más lluvia que en el otoño completo más lluvioso de su serie
    (otonio_municipios.json para 2026; archivo/otonio para los otoños 1991-2025 con al menos 85 días con dato).
-3. verano_record · 2026 ya es el año con más días de verano de la serie de la estación (docs/prensa/analisis/
-   verano.json, series diarias de AEMET).
+3. otono_seco / otono_humedo · (21-10-2026) un pluviómetro va por el otoño más seco (al menos 25 otoños) o más
+   lluvioso (al menos 15) a esta fecha desde su primer otoño completo: el mismo cálculo que «el otoño, frente a su
+   historia» (sala/analisis.py, otono_records). Huelva, el 21-10-2026: 0,4 mm, el más seco desde 1991 por segundo año.
+4. verano_record · 2026 ya es el año con más días de verano de la serie de la estación (docs/prensa/analisis/
+   verano.json, series diarias de AEMET), solo en temporada.
 
 Una historia con versión por provincia (la exclusiva de cada una) y una nacional (la más fuerte de todas, con las
 demás como contexto). Pesa más que las demás historias de la provincia: abre su sala.
@@ -18,6 +21,7 @@ from __future__ import annotations
 
 import datetime
 import gzip
+import importlib
 import json
 import math
 
@@ -138,6 +142,19 @@ def _candidatos(R):
                 out.append((125.0, cod, "otono_record", dict(r=r, ep=ep, oh=oh, o=o, mx=mx_c)))
             elif oh.get("record_tres") and oh.get("otonos", 0) >= 10:
                 out.append((120.0, cod, "tres_record", dict(r=r, ep=ep, oh=oh, o=o)))
+    # el otoño frente a su historia: récords secos y húmedos a esta fecha
+    try:
+        rec = importlib.import_module("sala.analisis").otono_records(R)
+    except Exception as ex:  # noqa: BLE001
+        R.LOG.append(f"exclusivas/otoño: {ex}")
+        rec = None
+    if rec:
+        for x in rec["secos"]:
+            if x["cod"] in R.PROV:
+                out.append((118.0 + min(4.0, (x["mediana"] - x["mm"]) / 25), x["cod"], "otono_seco", dict(x=x, hasta=rec["hasta"])))
+        for x in rec["humedos"]:
+            if x["cod"] in R.PROV:
+                out.append((110.0 + min(6.0, 2 * (x["veces"] or 1)), x["cod"], "otono_humedo", dict(x=x, hasta=rec["hasta"])))
     V = R.leer(R.DOCS / "prensa" / "analisis" / "verano.json", {}) or {}
     est = V.get("estaciones") or {}
     for cod, ide in (V.get("provincias") or {}).items():
@@ -156,6 +173,8 @@ def _candidatos(R):
 
 def _clave(tipo, c):
     """Clave estable del dato (no cambia de un día a otro): sirve para no mandar dos veces lo mismo al mismo periodista."""
+    if tipo in ("otono_seco", "otono_humedo"):
+        return f"{tipo}:{c['x']['e']}:{c['hasta'][:4]}"
     if tipo == "verano_record":
         return f"verano_record:{c['ide']}:{c['a'].get('anio')}"
     if tipo == "dia_record":
@@ -163,8 +182,52 @@ def _clave(tipo, c):
     return f"{tipo}:{c['r']['id']}:{c['ep'].get('id')}"
 
 
+def _hechos_otono(R, tipo, c, idp):
+    x, hasta = c["x"], c["hasta"]
+    n, cod = x["nombre"], x["cod"]
+    lugar = _lugar(R, n, cod)
+    corto = _titulo(n)
+    fecha_t = R.dia(hasta)
+    anio = int(hasta[:4])
+    if tipo == "otono_seco":
+        hh = [R.hecho(idp, f"El pluviómetro de AEMET de {lugar} solo lleva {R.f1(x['mm'])} mm desde el 1 de septiembre, hasta las {x['h']}:00 del {fecha_t}: "
+                           f"menos que a estas alturas de cualquier otoño desde {x['desde']} ({x['n']} otoños con datos completos de la estación).", FUENTE_D,
+                      [R.f1(x["mm"]) + " mm", f"{x['h']}:00", str(x["desde"]), str(x["n"])], lugar=n, superlativo=True, record=True, liga=[R.f1(x["mm"])])]
+        seguido = x["a_min"] == anio - 1
+        hh.append(R.hecho(f"{idp}_ant", f"El otoño más seco hasta ahora a estas alturas era el de {x['a_min']}, con {R.f1(x['v_min'])} mm"
+                                        + (": es el segundo año seguido que se bate el récord" if seguido else "")
+                                        + f". Lo habitual a esta fecha es {R.f1(x['mediana'])} mm (mediana de sus otoños).", FUENTE_D,
+                          [str(x["a_min"]), R.f1(x["v_min"]) + " mm", R.f1(x["mediana"]) + " mm"], lugar=n, superlativo=True,
+                          alias=["segundo año seguido"] if seguido else []))
+        tit = (f"{corto} solo lleva {R.f1(x['mm'])} litros desde el 1 de septiembre: el otoño más seco a estas alturas desde {x['desde']}"
+               + (", por segundo año seguido" if seguido else f"; lo habitual son {R.f1(x['mediana'])}"))
+        cifras = [{"n": f"{R.f1(x['mm'])} mm", "l": f"en {corto} desde el 1 de septiembre", "tono": "calor"},
+                  {"n": f"{R.f1(x['mediana'])} mm", "l": "lo habitual a esta fecha (mediana de sus otoños)", "tono": "lluvia"},
+                  {"n": f"{R.f1(x['v_min'])} mm", "l": f"el récord seco anterior, en {x['a_min']}", "tono": "calor"}]
+        kicker, tono = "Exclusiva · un otoño sin lluvia", "calor"
+    else:
+        hh = [R.hecho(idp, f"El pluviómetro de AEMET de {lugar} lleva {R.f1(x['mm'])} mm desde el 1 de septiembre, hasta las {x['h']}:00 del {fecha_t}: "
+                           f"más que a estas alturas de cualquier otoño desde {x['desde']} ({x['n']} otoños con datos completos de la estación).", FUENTE_D,
+                      [R.f1(x["mm"]) + " mm", f"{x['h']}:00", str(x["desde"]), str(x["n"])], lugar=n, superlativo=True, record=True, liga=[R.f1(x["mm"])])]
+        cu = _cuanto(x["mm"], x["v_max"]) if x.get("v_max") else None
+        hh.append(R.hecho(f"{idp}_ant", f"El otoño más lluvioso hasta ahora a estas alturas era el de {x['a_max']}, con {R.f1(x['v_max'])} mm"
+                                        + (f": esta vez lleva {cu}." if cu else "."), FUENTE_D,
+                          [str(x["a_max"]), R.f1(x["v_max"]) + " mm"], lugar=n, superlativo=True, alias=[cu] if cu else []))
+        tit = (f"{corto} lleva este otoño {cu} de lluvia que en cualquier otoño desde {x['desde']} a estas alturas: {R.f1(x['mm'])} litros" if cu
+               else f"{corto} lleva el otoño más lluvioso a estas alturas desde {x['desde']}: {R.f1(x['mm'])} litros, frente a {R.f1(x['v_max'])} en {x['a_max']}")
+        cifras = [{"n": f"{R.f1(x['mm'])} mm", "l": f"en {corto} desde el 1 de septiembre", "tono": "lluvia"},
+                  {"n": f"{R.f1(x['v_max'])} mm", "l": f"el récord anterior a esta fecha, en {x['a_max']}", "tono": "lluvia"}]
+        kicker, tono = "Exclusiva · lluvia contra su historia", "lluvia"
+    hh.append(R.hecho(f"{idp}_met", "La comparación es con todos los otoños de la estación con datos completos en los valores diarios validados de AEMET, "
+                                    "hasta el mismo día; lo de este año suma la observación horaria de los últimos días, que AEMET valida en unos días.",
+                      FUENTE_D, []))
+    return hh, tit, cifras, kicker, tono
+
+
 def _hechos(R, tipo, c, idp):
     """Hechos, titular y cifras de una exclusiva."""
+    if tipo in ("otono_seco", "otono_humedo"):
+        return _hechos_otono(R, tipo, c, idp)
     if tipo in ("dia_record", "otono_record", "tres_record"):
         r, oh, o, ep = c["r"], c["oh"], c["o"], c["ep"]
         n, cod = r["nombre"], r["cod"]
@@ -195,8 +258,9 @@ def _hechos(R, tipo, c, idp):
             tit = (f"{_titulo(n)} ya ha superado el otoño más lluvioso de sus registros: {R.f1(o['mm'])} litros desde el 1 de septiembre, frente a {R.f1(mx[0])} en {mx[1]}")
             cifras.append({"n": f"{R.f1(o['mm'])} mm", "l": f"en {n} desde el 1 de septiembre", "tono": "lluvia"})
         if oh.get("record_tres") and oh.get("tres_ep"):
-            ini = ep["dias_completos"][0]
-            hh.append(R.hecho(f"{idp}_tres", f"En tres días, {_rango(ini, len(ep['dias_completos']))}, sumó {R.f1(oh['tres_ep'])} mm; su máximo anterior en tres días "
+            # 21-10-2026: con un episodio de cuatro días decía «en tres días, del 17 al 20». Es la mejor ventana de tres días.
+            ini = oh.get("tres_ep_ini") or ep["dias_completos"][0]
+            hh.append(R.hecho(f"{idp}_tres", f"En tres días, {_rango(ini, 3)}, sumó {R.f1(oh['tres_ep'])} mm; su máximo anterior en tres días "
                                              f"seguidos de otoño eran {R.f1(oh['tres_max'])} mm, {_rango(oh['tres_fecha'], 3)}.", FUENTE_OBS,
                               [R.f1(oh["tres_ep"]) + " mm", R.f1(oh["tres_max"]) + " mm", oh["tres_fecha"][:4]], lugar=n,
                               superlativo=True, record=True))
@@ -256,6 +320,12 @@ def generar(R, D):
                                                    for cod, c in lluvia[:4]]) + ".", FUENTE_OBS,
                           [R.f1(c["r"]["max"]) + " mm" for cod, c in lluvia[:4]] + [R.f1(c["oh"]["dia_max"]) for cod, c in lluvia[:4]],
                           superlativo=True, record=True))
+    secas = [(cod, c) for cod, t, c in otras if t == "otono_seco"]
+    if secas and tipo0 != "otono_seco":
+        hh.append(R.hecho("ex_seco", "En el otro extremo, " + R.lista_y([f"{_lugar(R, c['x']['nombre'], cod)} solo lleva {R.f1(c['x']['mm'])} mm desde el 1 de septiembre"
+                                                                       for cod, c in secas[:3]])
+                          + f": {'el otoño más seco' if len(secas) == 1 else 'los otoños más secos'} a estas alturas desde que tienen datos completos.",
+                          FUENTE_D, [R.f1(c["x"]["mm"]) + " mm" for cod, c in secas[:3]], superlativo=True, record=True))
     ver = [(cod, c) for cod, t, c in otras if t == "verano_record"]
     if ver:
         hh.append(R.hecho("ex_verano", "Y 2026 ya es el año con más días de verano de su serie en "
@@ -265,7 +335,7 @@ def generar(R, D):
         tit = tit[:tit.rfind(":")] if ":" in tit else tit[:160]
     pl = {"titular": tit, "subtitulo": hh[1]["dice"] if len(hh) > 1 else "", "entradilla": hh[0]["dice"],
           "cuerpo": [" ".join(h["dice"] for h in hh[2:] if not h["id"].startswith("ex_") or h["id"] in ("ex_tres", "ex_oto", "ex_met"))]
-          + [" ".join(h["dice"] for h in hh if h["id"] in ("ex_otras", "ex_verano"))],
+          + [" ".join(h["dice"] for h in hh if h["id"] in ("ex_otras", "ex_seco", "ex_verano"))],
           "claves": [h["dice"] for h in hh[:3]], "fijar": ["titular"]}
     pl["cuerpo"] = [p for p in pl["cuerpo"] if p]
     hid = f"{R.HOY.isoformat()}-exclusiva"
@@ -297,7 +367,18 @@ def generar(R, D):
                "cuerpo": [" ".join(z["dice"] for z in hv[2:])] or [hv[0]["dice"]], "claves": [z["dice"] for z in hv[:3]], "fijar": ["titular"]}
         v = {"provincia": R.nprov(cod), "slug": R.PROV[cod][1], "hechos": hv, "plantilla": plv, "cifras": cif_p, "puntos": round(pts, 1),
              "kicker": kick_p, "tono": tono_p, "clave": _clave(tipo, c)}
-        if tipo == "verano_record":
+        if tipo in ("otono_seco", "otono_humedo"):
+            try:
+                A = importlib.import_module("sala.analisis")
+                seco = tipo == "otono_seco"
+                v["grafico"] = A._barras_serie(R, c["x"]["serie"], {int(c["hasta"][:4])}, f"{hid}-{cod}",
+                                               f"Lluvia del 1 de septiembre al {R.dia(c['hasta']).split(' ', 1)[-1]}, otoño a otoño, en {c['x']['nombre']}",
+                                               f"Pluviómetro de AEMET de {c['x']['nombre']}: lluvia desde el 1 de septiembre hasta la misma fecha de cada otoño con "
+                                               "datos completos. Fuente: AEMET OpenData. Cálculo: calentamientoglobal.es.",
+                                               R.CALOR if seco else R.LLUVIA, A.MED if seco else A.MED_LL)
+            except Exception as ex:  # noqa: BLE001
+                R.LOG.append(f"exclusivas/gráfico {cod}: {ex}")
+        elif tipo == "verano_record":
             g = {"svg": f"prensa/analisis/graficos/verano-{cod}.svg", "titulo": f"El verano de cada año en {c['x']['nombre']}",
                  "pie": f"Estación de AEMET de {c['x']['nombre']}. Fuente: AEMET OpenData (valores diarios). Cálculo: calentamientoglobal.es.",
                  "csv": "prensa/analisis/verano_anual.csv", "leyenda": []}

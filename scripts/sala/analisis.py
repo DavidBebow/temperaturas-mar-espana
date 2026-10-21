@@ -396,11 +396,13 @@ def _veces_txt(x):
     return "más lluvia que en"
 
 
-def g_otono_serie(R, D):
+def otono_records(R):
+    """Pluviómetros con el otoño más lluvioso (≥ 15 otoños) o más seco (≥ 25) a esta fecha desde su primer otoño completo.
+    Lo usan g_otono_serie y la exclusiva del día (sala/exclusivas.py)."""
     O = R.leer(R.DOCS / "otonio_municipios.json", {}) or {}
     c = _crudo(R)
     if not O.get("municipios") or not c.get("datos"):
-        return []
+        return None
     hasta = O.get("hasta")
     dh = datetime.date.fromisoformat(hasta)
     idx = (dh - datetime.date(dh.year, 9, 1)).days
@@ -436,10 +438,16 @@ def g_otono_serie(R, D):
             secos.append({"e": e, "nombre": nombre, "cod": cod, "mm": mm, "h": h, "n": len(vispera), "desde": min(vispera),
                           "a_min": a_min, "v_min": v_min, "mediana": round(st.median(vispera.values()), 1),
                           "serie": sorted(vispera.items()) + [(dh.year, mm)]})
-    if not humedos and not secos:
-        return []
     humedos.sort(key=lambda x: -(x["veces"] or 0))
     secos.sort(key=lambda x: (x["mm"], -x["n"]))
+    return {"humedos": humedos, "secos": secos, "hasta": hasta, "dh": dh}
+
+
+def g_otono_serie(R, D):
+    rec = otono_records(R)
+    if not rec or (not rec["humedos"] and not rec["secos"]):
+        return []
+    humedos, secos, hasta, dh = rec["humedos"], rec["secos"], rec["hasta"], rec["dh"]
     fecha_t = R.dia(hasta)
     hechos = []
 
