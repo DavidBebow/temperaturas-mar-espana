@@ -382,9 +382,32 @@ def grafico_dias(dias_res, nombre, titulo):
     return _svg(W, Hh, titulo, s)
 
 
+def diarios_validados():
+    """{día: {estación: mm}} con los valores diarios VALIDADOS de AEMET de 2026 (archivo/otonio/diarios_2026.json, que baja
+    el flujo del otoño por pluviómetro). Son días pluviométricos: de las 07:00 UTC del día a las 07:00 UTC del siguiente."""
+    d = leer(RAIZ / "archivo" / "otonio" / "diarios_2026.json", {}) or {}
+    out = {}
+    for ini, tr in (d.get("trozos") or {}).items():
+        try:
+            d0 = date.fromisoformat(ini)
+        except ValueError:
+            continue
+        for e, vals in (tr.get("datos") or {}).items():
+            for k, v in (vals or {}).items():
+                if v is not None:
+                    out.setdefault((d0 + timedelta(int(k))).isoformat(), {})[e] = float(v)
+    return out
+
+
 # ============================================================================ episodio
 def construir(ep, prev):
     hist = leer(RAIZ / "historico_estaciones.json", {}) or {}
+    # 21-10-2026: el día de lluvia de AEMET va de 07:00 a 07:00 UTC. Sumando de 0 a 24 h, la tromba de Pego quedaba partida
+    # en 168 y 465,2 mm (18 y 19 de octubre), cuando AEMET y la prensa dan 620,6 en el día pluviométrico del 18; y los
+    # récords con los que se compara salen de días de AEMET. Por estación, si todos los días del episodio están validados o
+    # en el histórico pluviométrico (07-07 UTC) se usan esos; si no, la suma de 0 a 24 h, y se dice.
+    hist_p = leer(RAIZ / "historico_pluviometrico.json", {}) or {}
+    validados = diarios_validados()
     meta = estaciones_meta()
     oto = historia_otono()
     largas = max_serie_larga()
@@ -428,13 +451,26 @@ def construir(ep, prev):
         if not m.get("cod"):
             continue
         valores, todos = {}, True
+        pluv = {}
         for d in dias_c:
-            x = (hist.get(d) or {}).get(c)
-            if x and x[0] is not None and int(x[1]) == COMPLETO:
-                valores[d] = round(float(x[0]), 1)
-            else:
-                valores[d] = None
-                todos = False
+            v_ok = (validados.get(d) or {}).get(c)
+            xp = (hist_p.get(d) or {}).get(c)
+            if v_ok is not None:
+                pluv[d] = (round(v_ok, 1), "validado")
+            elif xp and xp[0] is not None and int(xp[1]) == COMPLETO:
+                pluv[d] = (round(float(xp[0]), 1), "pluviometrico")
+        if dias_c and len(pluv) == len(dias_c):
+            valores = {d: v for d, (v, _) in pluv.items()}
+            fuente_dias = "validado" if all(f == "validado" for _, f in pluv.values()) else "pluviometrico"
+        else:
+            fuente_dias = "horario_0_24"
+            for d in dias_c:
+                x = (hist.get(d) or {}).get(c)
+                if x and x[0] is not None and int(x[1]) == COMPLETO:
+                    valores[d] = round(float(x[0]), 1)
+                else:
+                    valores[d] = None
+                    todos = False
         conocido = [v for v in valores.values() if v is not None]
         if not conocido:
             continue
@@ -448,7 +484,7 @@ def construir(ep, prev):
                     hoy = {"fecha": d.isoformat(), "mm": round(float(x[0]), 1), "horas": h}
         mx = max(((v, d) for d, v in valores.items() if v is not None), default=(0.0, None))
         r = {"id": c, "nombre": m["nombre"], "cod": m["cod"], "lat": m.get("lat"), "lon": m.get("lon"), "alt": m.get("alt"),
-             "dias": valores, "total": total, "completo": todos, "max": mx[0], "max_fecha": mx[1], "hoy": hoy}
+             "dias": valores, "total": total, "completo": todos, "max": mx[0], "max_fecha": mx[1], "hoy": hoy, "fuente_dias": fuente_dias}
         # contra su historia de otoño (1991-2025)
         if c in oto:
             h = max_otono(oto[c])
@@ -748,15 +784,16 @@ def main():
                "nota": ep.get("nota"), "nota_fuente": ep.get("nota_fuente"),
                "dias_completos": dias_c, "dia_en_curso": B["abierto"][0] if B["abierto"] else None,
                "resumen": resumen, "cifras": cifras, "claves": claves(ep, B), "dias": B["dias"],
-               "ranking": [{k: r.get(k) for k in ("id", "nombre", "cod", "total", "dias", "max", "max_fecha", "hoy", "otono", "otono_hist", "serie_larga")}
+               "ranking": [{k: r.get(k) for k in ("id", "nombre", "cod", "total", "dias", "max", "max_fecha", "hoy", "otono", "otono_hist", "serie_larga", "fuente_dias")}
                            for r in comp[:40]],
                "incompletas": [{k: r.get(k) for k in ("id", "nombre", "cod", "total", "dias", "max", "max_fecha")}
                                for r in sorted((r for r in B["est"] if not r["completo"]), key=lambda r: -r["total"])
                                if comp and r["total"] >= comp[min(19, len(comp) - 1)]["total"]][:10],
                "provincias": dict(sorted(B["provs"].items(), key=lambda kv: -((kv[1].get("max") or {}).get("total") or 0))),
                "rios": B["rios"], "mar": B["mar"], "graficos": graf, "csv": f"prensa/episodios/{ep['id']}.csv",
-               "metodo": ("Lluvia: suma por día de hora local de la observación horaria de las estaciones automáticas de AEMET (AEMET OpenData), como la "
-                          "recoge el observatorio cada media hora. Un día cuenta como completo con sus 24 horas con dato; el total del episodio, solo con "
+               "metodo": ("Lluvia: el día pluviométrico de AEMET (de 07:00 a 07:00 UTC): el valor diario validado de AEMET cuando ya está publicado o, "
+                          "si no, la observación horaria de la estación sumada en ese tramo. Mientras una estación no tiene así todos los días del "
+                          "episodio, se usa la suma de 0 a 24 h (hora peninsular) de la observación horaria, y se indica. Un día cuenta como completo con sus 24 horas con dato; el total del episodio, solo con "
                           "todos los días completos. Historia de cada estación: valores climatológicos diarios de AEMET de los otoños (1 de septiembre-30 de "
                           "noviembre) de 1991 a 2025 con al menos 80 días con dato; series diarias largas y archivo mensual desde 1940 donde los hay. "
                           "Otoño: normal 1991-2020 del mismo pluviómetro."),
