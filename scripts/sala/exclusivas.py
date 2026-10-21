@@ -236,7 +236,9 @@ def _hechos(R, tipo, c, idp):
         if tipo == "dia_record":
             v = _veces(r["max"], oh["dia_max"])
             cu = _cuanto(r["max"], oh["dia_max"])
-            hh.append(R.hecho(idp, f"La estación de AEMET de {lugar} recogió {R.f1(r['max'])} mm el {_fecha(r['max_fecha'])}: el día de otoño más lluvioso "
+            dia_t = (f"en el día pluviométrico del {_fecha(r['max_fecha'])} (de 07:00 a 07:00 UTC, como cuenta AEMET)"
+                     if r.get("fuente_dias") in ("validado", "pluviometrico") else f"el {_fecha(r['max_fecha'])} (de 0 a 24 h, hora peninsular)")
+            hh.append(R.hecho(idp, f"La estación de AEMET de {lugar} recogió {R.f1(r['max'])} mm {dia_t}: el día de otoño más lluvioso "
                                    f"de sus registros, que empiezan en {oh['desde']}.", FUENTE_OBS,
                               [R.f1(r["max"]) + " mm", str(oh["desde"])], lugar=n, superlativo=True, record=True, liga=[R.f1(r["max"])]))
             hh.append(R.hecho(f"{idp}_ant", f"Su día de otoño más lluvioso hasta ahora era el {_fecha(oh['dia_fecha'], anio=True)}, con {R.f1(oh['dia_max'])} mm"
