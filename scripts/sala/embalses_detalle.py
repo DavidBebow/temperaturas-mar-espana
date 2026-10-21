@@ -401,7 +401,10 @@ def _version(R, cod, p, fichas, bol, bol_ant, dias, nac_ctx, hid):
     en_puesto = {f["nombre"] for f, _ in puestos[:3]}
     g0 = next((f for f in grandes if f["nombre"] not in en_puesto and _num(f["pct"]) >= 1), None)
     if g0 and len(grandes) >= 2:
-        hechos.append(R.hecho("embp_mayor", f"El mayor de la provincia, el embalse {_nombre_embalse(g0)}, estaba al {R.f1(g0['pct'])} % "
+        # 21-10-2026: si los mayores ya salen arriba (récord para la semana), este es «el mayor de los demás», no el de la
+        # provincia (Cuenca decía «el mayor de la provincia, Contreras», con Buendía y Alarcón mucho más grandes).
+        ini = "El mayor de la provincia" if g0 is grandes[0] else "De los demás, el mayor"
+        hechos.append(R.hecho("embp_mayor", f"{ini}, el embalse {_nombre_embalse(g0)}, estaba al {R.f1(g0['pct'])} % "
                               f"({R.miles(g0['volumen_hm3'])} de {R.miles(g0['capacidad_hm3'])} hm³).", FUENTE,
                               [f"{R.f1(g0['pct'])} %", R.miles(g0["volumen_hm3"]), R.miles(g0["capacidad_hm3"])], lugar=g0["nombre"],
                               superlativo=True, liga=[f"{R.f1(g0['pct'])} %"]))
