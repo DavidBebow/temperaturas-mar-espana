@@ -161,10 +161,9 @@ def _candidatos(R):
         x = est.get(ide) or {}
         a = x.get("actual") or {}
         # 20-10-2026 (David): «en la época que estamos ya no van a publicar una noticia así de verano». El récord de días de
-        # verano solo es exclusiva en temporada (15 de mayo-5 de octubre) o si el año pasó su máximo hace dos semanas o menos.
+        # verano solo es exclusiva en temporada (15 de mayo-5 de octubre).
         en_temporada = datetime.date(R.HOY.year, 5, 15) <= R.HOY <= datetime.date(R.HOY.year, 10, 5)
-        recien = bool(a.get("fecha_supera")) and (R.HOY - datetime.date.fromisoformat(a["fecha_supera"])).days <= 14
-        if a.get("mas_dias") and cod in R.PROV and (en_temporada or recien):
+        if a.get("mas_dias") and cod in R.PROV and en_temporada:
             # un poco más si el año acaba de pasar el máximo anterior (en las tres últimas semanas)
             reciente = bool(a.get("fecha_supera")) and (R.HOY - datetime.date.fromisoformat(a["fecha_supera"])).days <= 21
             out.append((95 + min(10.0, (R.HOY.year - x["desde"]) / 10) + (3 if reciente else 0), cod, "verano_record", dict(x=x, a=a, ide=ide)))
@@ -366,7 +365,7 @@ def generar(R, D):
         if len(tit_p) > 165:
             tit_p = tit_p[:tit_p.rfind(":")] if ":" in tit_p else tit_p[:160]
         plv = {"titular": tit_p, "subtitulo": hv[1]["dice"] if len(hv) > 1 else "", "entradilla": hv[0]["dice"],
-               "cuerpo": [" ".join(z["dice"] for z in hv[2:])] or [hv[0]["dice"]], "claves": [z["dice"] for z in hv[:3]], "fijar": ["titular"]}
+               "cuerpo": [x for x in [" ".join(z["dice"] for z in hv[2:])] if x] or [hv[-1]["dice"]], "claves": [z["dice"] for z in hv[:3]], "fijar": ["titular"]}
         v = {"provincia": R.nprov(cod), "slug": R.PROV[cod][1], "hechos": hv, "plantilla": plv, "cifras": cif_p, "puntos": round(pts, 1),
              "kicker": kick_p, "tono": tono_p, "clave": _clave(tipo, c)}
         if tipo in ("otono_seco", "otono_humedo"):
