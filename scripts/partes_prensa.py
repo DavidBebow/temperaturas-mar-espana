@@ -61,7 +61,7 @@ AYER = HOY - timedelta(days=1)
 AHORA = datetime.now(timezone.utc).replace(microsecond=0)
 
 sys.path.insert(0, str(RAIZ / "scripts"))
-from hallazgos_prensa import PROVINCIAS, MESES, f1, fecha_larga, fecha_dia, num, estaciones_lluvia, _nombre_corto  # noqa: E402
+from hallazgos_prensa import PROVINCIAS, MESES, f1, fecha_larga, fecha_dia, num, estaciones_lluvia, _nombre_corto, ventana_pluvio, hasta_pluvio  # noqa: E402
 
 DIAS_SEMANA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 
@@ -302,7 +302,11 @@ def sonda_ayer(P: Parte, D: Datos, pj: dict):
             D.est_lluvia = estaciones_lluvia(L)
         estaciones = {e: r for e, r in D.est_lluvia.items() if r.get("prov") == cod}
         fuente = L.get("fuente", "AEMET OpenData · observación convencional")
-        metodo = "Precipitación de 0 a 24 h (hora local) de las estaciones de AEMET de la provincia, sumada a partir del dato horario de AEMET OpenData. Solo estaciones con las 24 horas."
+        # 21-10-2026: el día de lluvia es el pluviométrico de AEMET (07-07 UTC), el de sus valores diarios
+        can = cod in ("35", "38")
+        hz = " (hora canaria)" if can else ""
+        metodo = ("Precipitación del día pluviométrico de AEMET (de 07:00 a 07:00 UTC, el de sus valores diarios) en las estaciones de AEMET de la provincia, "
+                  "sumada a partir del dato horario de AEMET OpenData. Solo estaciones con las 24 horas.")
         alcance = ("El observatorio sigue las estaciones de AEMET que sirven de referencia a los municipios de su mapa de lluvia, "
                    "no toda la red: en otra estación de AEMET pudo llover más.")
         tope = max((int(num(m.get("racha"), 0) or 0) for m in L["municipios"].values()), default=0)
@@ -340,8 +344,8 @@ def sonda_ayer(P: Parte, D: Datos, pj: dict):
                 corto_p, of_p = oficial(e_p)
                 falta = 24 - int(r_p["dia_h"])
                 P.add("ayer", "extremo" if r_p["dia_min"] >= 30 else "comparacion",
-                      f"La estación de AEMET de {corto_p} recogió al menos {f1(r_p['dia_min'])} mm el {fecha_dia(fecha)}",
-                      f"{f1(r_p['dia_min'])} mm en las {r_p['dia_h']} horas del {fecha_dia(fecha)} con dato en AEMET ({plural(falta, 'hora', 'horas')} sin dato: la cifra real puede ser mayor)"
+                      f"La estación de AEMET de {corto_p} recogió al menos {f1(r_p['dia_min'])} mm {hasta_pluvio(fecha, canarias=can)}",
+                      f"{f1(r_p['dia_min'])} mm en {r_p['dia_h']} de las 24 horas {ventana_pluvio(fecha, canarias=can)}{hz} con dato en AEMET ({plural(falta, 'hora', 'horas')} sin dato: la cifra real puede ser mayor)"
                       + f" · más que cualquiera de {('la estación' if n_est == 1 else f'las {n_est} estaciones')} de AEMET de la provincia con las 24 horas que sigue el observatorio (la que más, {corto}: {f1(mm)} mm){of_p}",
                       fuente, metodo.replace(" Solo estaciones con las 24 horas.", ""), fecha_dato=fecha,
                       limites=[f"A la estación le {'falta una hora' if falta == 1 else f'faltan {falta} horas'} de ese día en AEMET OpenData: citar como «al menos».",
@@ -349,8 +353,8 @@ def sonda_ayer(P: Parte, D: Datos, pj: dict):
                       pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
             elif mm >= 10:
                 P.add("ayer", "extremo" if mm >= 30 else "comparacion",
-                      f"La estación de AEMET de {corto} recogió {f1(mm)} mm el {fecha_dia(fecha)}",
-                      f"{f1(mm)} mm de 0 a 24 h (hora local) del {fecha_dia(fecha)}, {lider(filas, 'dia', 'con las 24 horas que sigue el observatorio')}"
+                      f"La estación de AEMET de {corto} recogió {f1(mm)} mm {hasta_pluvio(fecha, canarias=can)}",
+                      f"{f1(mm)} mm {ventana_pluvio(fecha, canarias=can)}{hz}, {lider(filas, 'dia', 'con esas 24 horas completas que sigue el observatorio')}"
                       + (f" · {plural(con_lluvia, 'recogió', 'recogieron')} 1 mm o más" if n_est > 1 else "") + of,
                       fuente, metodo, fecha_dato=fecha,
                       contexto=(["Las que más: " + " · ".join(f"{_nombre_corto(e)}: {f1(r['dia'])} mm" for e, r in filas[:5]) + "."] if n_est > 1 else []) + nota_parc,
@@ -375,9 +379,9 @@ def sonda_ayer(P: Parte, D: Datos, pj: dict):
                           limites=([f"La ventana de cálculo es de {tope} días: la racha real puede ser más larga."] if al_menos else []),
                           pagina="https://calentamientoglobal.es/lluvia-hoy-espana/")
             if mm > 0:
-                P.cifra(f"Lluvia el {fecha_dia(fecha)}", f"{f1(mm)} mm", f"{corto}, la que más de las que sigue el observatorio", "AEMET")
+                P.cifra(f"Lluvia {hasta_pluvio(fecha, canarias=can)}", f"{f1(mm)} mm", f"{corto}, la que más de las que sigue el observatorio", "AEMET")
             else:
-                P.cifra(f"Lluvia el {fecha_dia(fecha)}", "0 mm", ("en la estación de AEMET de la provincia que sigue el observatorio" if n_est == 1 else f"en las {n_est} estaciones de AEMET de la provincia que sigue el observatorio"), "AEMET")
+                P.cifra(f"Lluvia {hasta_pluvio(fecha, canarias=can)}", "0 mm", ("en la estación de AEMET de la provincia que sigue el observatorio" if n_est == 1 else f"en las {n_est} estaciones de AEMET de la provincia que sigue el observatorio"), "AEMET")
             sem = [r["sem"] for r in con_dia.values() if r.get("sem") is not None and r.get("sem_dias") == 7]
             if sem:
                 P.cifra("Lluvia de los últimos siete días", f"{f1(sum(sem) / len(sem))} mm",

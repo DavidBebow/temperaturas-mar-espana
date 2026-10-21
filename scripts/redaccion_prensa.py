@@ -340,7 +340,8 @@ def g_episodio(D: Datos, med):
                                 [f"{f1(mm2)} mm"], lugar=D.nom(e2), superlativo=True, liga=[f"{f1(mm2)} mm"]))
     if filas_a and filas_a[0][0] >= 20:
         mm, e = filas_a[0]
-        hechos.append(hecho("lluvia_ayer_1", f"El {dia(D.L['fecha'])}, la estación de AEMET que más recogió fue la de {D.donde(e)}, con {f1(mm)} mm en todo el día.",
+        vp = H.ventana_pluvio(D.L["fecha"], dia)
+        hechos.append(hecho("lluvia_ayer_1", f"{vp[0].upper() + vp[1:]} (hora peninsular), la estación de AEMET que más recogió fue la de {D.donde(e)}, con {f1(mm)} mm.",
                             "AEMET OpenData", [f"{f1(mm)} mm"], lugar=D.nom(e), superlativo=True, liga=[f"{f1(mm)} mm"]))
     mar = False
     if med and med["anom"] >= 1.5 and (date.fromisoformat(med["ultimo"]) >= HOY - timedelta(days=4)):
@@ -379,7 +380,7 @@ def g_episodio(D: Datos, med):
         if len(filas_h) > 1 and filas_h[1][0] >= 10:
             lluvia_c.append({"n": f"{f1(filas_h[1][0])} mm", "l": f"en {D.donde(filas_h[1][1])}, la segunda cifra a esa hora", "tono": "lluvia"})
         if filas_a and filas_a[0][0] >= 20:
-            lluvia_c.append({"n": f"{f1(filas_a[0][0])} mm", "l": f"en {D.donde(filas_a[0][1])} el {dia(D.L['fecha'])}, en todo el día", "tono": "lluvia"})
+            lluvia_c.append({"n": f"{f1(filas_a[0][0])} mm", "l": f"en {D.donde(filas_a[0][1])} {H.hasta_pluvio(D.L['fecha'], dia)}", "tono": "lluvia"})
         if naranjas or rojas:
             lluvia_c.append({"n": str(len(rojas) + len(naranjas)), "l": "zonas con aviso rojo o naranja de AEMET" if rojas else "zonas con aviso naranja de AEMET", "tono": "aviso"})
         cifras = lluvia_c + [x for x in cifras if x.get("tono") != "lluvia"]
@@ -396,8 +397,12 @@ def g_episodio(D: Datos, med):
         puntos = 85 + len(naranjas)
         slug_ = f"{HOY.isoformat()}-avisos-naranja"
     else:
-        mm, e = filas_h[0] if filas_h and filas_h[0][0] >= 40 else filas_a[0]
-        tit = hechos[0]["dice"].split(",")[0]
+        if filas_h and filas_h[0][0] >= 40:
+            mm, e = filas_h[0]
+            tit = f"La estación de AEMET de {D.donde(e)} lleva {f1(mm)} litros por metro cuadrado entre la medianoche y las {corte}:00"
+        else:
+            mm, e = filas_a[0]
+            tit = f"La estación de AEMET de {D.donde(e)} recogió {f1(mm)} litros por metro cuadrado {H.hasta_pluvio(D.L['fecha'], dia)}"
         kicker = "Última hora · Lluvia"
         puntos = 80
         slug_ = f"{HOY.isoformat()}-lluvia-{slugify(D.nom(e))}"
@@ -405,7 +410,7 @@ def g_episodio(D: Datos, med):
     if manda_lluvia:
         lugar_t = D.donde(e_t)
         tit = (f"La estación de AEMET de {lugar_t} recoge {f1(mm_t)} litros por metro cuadrado en {corte} horas" if hoy_manda
-               else f"La estación de AEMET de {lugar_t} recogió {f1(mm_t)} litros por metro cuadrado el {dia(D.L['fecha'])}")
+               else f"La estación de AEMET de {lugar_t} recogió {f1(mm_t)} litros por metro cuadrado {H.hasta_pluvio(D.L['fecha'], dia)}")
         if rojas:
             tit += f"; aviso rojo en {lista_y(sorted({z['prov'] for z in rojas}, key=sin_tildes))}"
         elif naranjas:
@@ -458,7 +463,7 @@ def g_episodio(D: Datos, med):
     if mar and not manda_lluvia:
         h["grafico"] = grafico_mar(med, h["id"])
     elif manda_lluvia and not hoy_manda:
-        h["grafico"] = grafico_barras_lluvia(D, filas_a, h["id"], f"Lluvia del {dia(D.L['fecha'])}, estación a estación")
+        h["grafico"] = grafico_barras_lluvia(D, filas_a, h["id"], f"Lluvia {H.hasta_pluvio(D.L['fecha'], dia)}, estación a estación")
     else:
         h["grafico"] = grafico_barras_lluvia(D, filas_h, h["id"], f"Lluvia entre la medianoche y las {corte}:00 del {dia(hoy_f)}")
     h["ultima_hora"] = []
@@ -467,8 +472,9 @@ def g_episodio(D: Datos, med):
     if filas_h and filas_h[0][0] >= 10:
         h["ultima_hora"].append({"hora": f"{corte}:00", "texto": f"{D.donde(filas_h[0][1])} lleva {f1(filas_h[0][0])} mm desde la medianoche", "tono": "lluvia"})
     if filas_a and filas_a[0][0] >= 20:
-        h["ultima_hora"].append({"hora": dia(D.L["fecha"], semana=True).split(" ")[0][:3].capitalize() + " " + str(date.fromisoformat(D.L["fecha"]).day),
-                                 "texto": f"{D.donde(filas_a[0][1])} recogió {f1(filas_a[0][0])} mm", "tono": "lluvia"})
+        _a, fin_p = H.dia_pluvio_limites(D.L["fecha"])
+        h["ultima_hora"].append({"hora": dia(fin_p.date(), semana=True).split(" ")[0][:3].capitalize() + " " + str(fin_p.day),
+                                 "texto": f"{D.donde(filas_a[0][1])} recogió {f1(filas_a[0][0])} mm en las 24 horas hasta las {fin_p.hour}:00", "tono": "lluvia"})
     # versiones provinciales: provincias con aviso naranja/rojo o lluvia
     if rojas:
         ctx_nac = hecho("nacional", f"En el conjunto de España, a esa hora había aviso rojo en {zt}" + (f" y aviso naranja en {len(naranjas)} zonas más." if naranjas else "."),
@@ -650,11 +656,13 @@ def version_episodio(D, cod, zonas, filas_h, filas_a, med, c, nac_ctx=None, hid=
     ayer_h = None
     if a_p and a_p[0][0] >= 5:
         mm, e = a_p[0]
-        ayer_h = hecho("lluvia_ayer_p", f"El {dia(D.L['fecha'])}, la estación de AEMET de {D.nom(e)} recogió {f1(mm)} mm, la cifra más alta de las {len(a_p)} "
-                            f"de la provincia que sigue el observatorio con las 24 horas del día.", "AEMET OpenData", [f"{f1(mm)} mm", str(len(a_p))], lugar=D.nom(e), superlativo=True, liga=[f"{f1(mm)} mm"])
+        can = cod in ("35", "38")
+        vp = H.ventana_pluvio(D.L["fecha"], dia, canarias=can)
+        ayer_h = hecho("lluvia_ayer_p", f"{vp[0].upper() + vp[1:]}{' (hora canaria)' if can else ''}, la estación de AEMET de {D.nom(e)} recogió {f1(mm)} mm, la cifra más alta de las {len(a_p)} "
+                            f"de la provincia que sigue el observatorio con esas 24 horas completas.", "AEMET OpenData", [f"{f1(mm)} mm", str(len(a_p))], lugar=D.nom(e), superlativo=True, liga=[f"{f1(mm)} mm"])
         hechos.append(ayer_h)
         if ayer_manda:
-            cifras.insert(0, {"n": f"{f1(mm)} mm", "l": f"en {D.nom(e)} el {dia(D.L['fecha'])}, en todo el día", "tono": "lluvia"})
+            cifras.insert(0, {"n": f"{f1(mm)} mm", "l": f"en {D.nom(e)} {H.hasta_pluvio(D.L['fecha'], dia, canarias=cod in ('35', '38'))}", "tono": "lluvia"})
     if nac_ctx:
         hechos.append(nac_ctx)
     if med and cod in MED_COSTA:
@@ -692,7 +700,7 @@ def version_episodio(D, cod, zonas, filas_h, filas_a, med, c, nac_ctx=None, hid=
             hechos.remove(ayer_h)
             hechos.insert(0, ayer_h)
         tit = (f"La estación de AEMET de {D.nom(e)} lleva {f1(mm)} mm el {dia(D.L['hoy_fecha'])} hasta las {D.corte}:00" if hoy_vale
-               else f"La estación de AEMET de {D.nom(e)} recogió {f1(mm)} mm el {dia(D.L['fecha'])}")
+               else f"La estación de AEMET de {D.nom(e)} recogió {f1(mm)} mm {H.hasta_pluvio(D.L['fecha'], dia, canarias=cod in ('35', '38'))}")
         nivel = None
     if tit[:1].islower():
         tit = tit[0].upper() + tit[1:]
@@ -733,7 +741,8 @@ def g_lluvia_sequia(D: Datos):
     if not E:
         return None
     tope = max(int(m["racha"]) for m in L["municipios"].values())
-    base = {e: r for e, r in E.items() if r.get("racha") is not None and r.get("hoy") is not None and r.get("dia") is not None}
+    # días con o sin 1 mm: de 0 a 24 h, como la racha (dia_local); las cifras en mm del día ya no salen de aquí
+    base = {e: dict(r, dia=r["dia_local"]) for e, r in E.items() if r.get("racha") is not None and r.get("hoy") is not None and r.get("dia_local") is not None}
     secas = {e: r for e, r in base.items() if int(r["racha"]) >= 10 and r["hoy"] < 1}
     moj = {e: r for e, r in base.items() if (r["dia"] or 0) >= 1 or (r["hoy"] or 0) >= 1}
     if len(secas) < 20:
@@ -879,10 +888,10 @@ def g_temporada(D: Datos):
             v = {"provincia": nprov(c["cod"]), "slug": PROV[c["cod"]][1], "hechos": hc, "puntos": 30 + c["delta"] * 5,
                  "plantilla": {"titular": tit_c, "subtitulo": hc[1]["dice"], "entradilla": hc[0]["dice"], "cuerpo": [x["dice"] for x in hc[1:]],
                                "claves": [x["dice"] for x in hc[:3]]},
-                 "cifras": [{"n": f"+{f1(c['delta'])} °C", "l": f"el {est} en {cap(c)} desde 1970 ({'AEMET' if fuente_c == 'AEMET' else 'reanálisis ERA5'})", "tono": "calor"}]}
+                 "cifras": [{"n": f"+{f1(c['delta'])} °C", "l": f"el {est} en {cap(c)} desde 1970 (estación de AEMET)", "tono": "calor"}]}
             serie = serie_csv(c.get("csv"))
             if serie:
-                v["grafico"] = grafico_serie_capital(serie, f"{h['id']}-{c['cod']}", f"Temperatura media del {est} en {cap(c)} ({'estación de AEMET' if fuente_c == 'AEMET' else 'reanálisis ERA5'})", fuente_c)
+                v["grafico"] = grafico_serie_capital(serie, f"{h['id']}-{c['cod']}", f"Temperatura media del {est} en {cap(c)} (estación de AEMET)", fuente_c)
             h["provincias"][c["cod"]] = v
         out.append(h)
     return out
@@ -1200,7 +1209,7 @@ def grafico_mapa(D, base, secas, moj, nombre):
             continue
         clase = "seca" if e in secas else ("lluvia" if e in moj else "nada")
         pts.append((clase, p, (r["dia"] or 0) + (r["hoy"] or 0)))
-        filas.append((D.nom(e), nprov(r.get("prov")), clase, r["dia"], r["hoy"], r["racha"]))
+        filas.append((D.nom(e), nprov(r.get("prov")), clase, r["racha"]))
     for clase, p, mm in sorted(pts, key=lambda x: {"nada": 0, "lluvia": 1, "seca": 2}[x[0]]):
         if clase == "nada":
             s.append(f'<circle cx="{p[0]}" cy="{p[1]}" r="2.6" fill="#B7AFA3"></circle>')
@@ -1210,7 +1219,7 @@ def grafico_mapa(D, base, secas, moj, nombre):
             s.append(f'<circle cx="{p[0]}" cy="{p[1]}" r="3.6" fill="{CALOR}" stroke="#fff" stroke-width="0.8"></circle>')
     svg = _svg(W, Hh, "Estaciones de AEMET con lluvia frente a estaciones con diez días o más sin recoger 1 mm", s)
     n = {c: sum(1 for x in pts if x[0] == c) for c in ("lluvia", "seca", "nada")}
-    return guardar_grafico(nombre, svg, filas, ["estacion", "provincia", "clase", "mm_dia_anterior", "mm_hoy", "dias_sin_1mm"], "Dónde llueve y dónde no",
+    return guardar_grafico(nombre, svg, filas, ["estacion", "provincia", "clase", "dias_sin_1mm"], "Dónde llueve y dónde no",
                            [{"t": "punto", "c": LLUVIA, "l": f"1 mm o más el {dia(D.L['fecha'])} o el {dia(D.L['hoy_fecha'])} ({n['lluvia']})"},
                             {"t": "punto", "c": CALOR, "l": f"10 días o más sin 1 mm ({n['seca']})"}, {"t": "punto", "c": "#B7AFA3", "l": f"Ni una cosa ni otra ({n['nada']})"}],
                            f"Cada punto, una de las {len(pts)} estaciones de AEMET que sigue el observatorio con el día anterior completo y dato de hoy (posición aproximada, en su municipio). "

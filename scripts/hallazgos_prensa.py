@@ -40,6 +40,7 @@ import sys
 import unicodedata
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 RAIZ = Path(__file__).resolve().parent.parent
 DOCS = RAIZ / "docs"
@@ -128,6 +129,71 @@ def fecha_larga(s: str) -> str:
 def fecha_dia(s: str) -> str:
     d = date.fromisoformat(s[:10])
     return f"{d.day} de {MESES[d.month - 1]}"
+
+
+# ---------------------------------------------------------------------------- día pluviométrico de AEMET
+# 21-10-2026: la lluvia «de un día» es la del día pluviométrico de AEMET, de las 07:00 UTC del día D a las 07:00 UTC
+# del D+1 (las 9:00 en horario de verano, las 8:00 en invierno, hora peninsular). Es el día de los valores diarios
+# validados de AEMET y de sus récords: la dana Adam dejó en Pego 620,6 mm en el día pluviométrico del 18 de octubre,
+# que de 0 a 24 h quedaban partidos en dos días (168 y 465,2).
+TZ_PENINSULA, TZ_CANARIAS = ZoneInfo("Europe/Madrid"), ZoneInfo("Atlantic/Canary")
+
+
+def dia_pluvio_limites(fecha: str, canarias: bool = False):
+    """(inicio, fin) del día pluviométrico del `fecha`, en hora peninsular (o canaria)."""
+    d = date.fromisoformat(str(fecha)[:10])
+    a = datetime(d.year, d.month, d.day, 7, tzinfo=timezone.utc)
+    tz = TZ_CANARIAS if canarias else TZ_PENINSULA
+    return a.astimezone(tz), (a + timedelta(days=1)).astimezone(tz)
+
+
+def ventana_pluvio(fecha: str, dia_fn=None, canarias: bool = False) -> str:
+    """«entre las 9:00 del 20 y las 9:00 del 21 de octubre»."""
+    a, b = dia_pluvio_limites(fecha, canarias)
+    f = dia_fn or fecha_dia
+    da, db = f(a.date().isoformat()), f(b.date().isoformat())
+    if a.month == b.month:
+        da = da.rsplit(" de ", 1)[0]
+    return f"entre las {a.hour}:00 del {da} y las {b.hour}:00 del {db}"
+
+
+def hasta_pluvio(fecha: str, dia_fn=None, canarias: bool = False) -> str:
+    """«en las 24 horas hasta las 9:00 del 21 de octubre»."""
+    _a, b = dia_pluvio_limites(fecha, canarias)
+    return f"en las 24 horas hasta las {b.hour}:00 del {(dia_fn or fecha_dia)(b.date().isoformat())}"
+
+
+def _dia_pluviometrico(L: dict, est: dict) -> None:
+    """Cambia el «dia» de cada estación (suma de 0 a 24 h, hora local) por el de su día pluviométrico de AEMET, de
+    historico_pluviometrico.json (indicativo → [mm, máscara de 24 horas desde las 07 UTC]). Sin las 24 horas no hay
+    dato del día; si el día ya acabó y le faltan horas, queda como mínimo (dia_min, dia_h). Lo de 0 a 24 h se guarda
+    en *_local, solo para contar días con o sin lluvia (rachas)."""
+    for r in est.values():
+        for k in ("dia", "dia_min", "dia_h"):
+            if k in r:
+                r[k + "_local"] = r.pop(k)
+    fecha, ids = L.get("fecha"), L.get("ids") or {}
+    if not fecha or not ids:
+        return
+    try:
+        P = (leer(RAIZ / "historico_pluviometrico.json") or {}).get(fecha) or {}
+    except Exception:
+        return
+    _a, fin = dia_pluvio_limites(fecha)
+    try:
+        gen = datetime.fromisoformat(str(L.get("generado")))
+        cerrado = gen >= fin + timedelta(hours=2)  # las horas que faltan ya no van a llegar
+    except (TypeError, ValueError):
+        cerrado = False
+    for e, r in est.items():
+        x = P.get(ids.get(e) or "")
+        if not x:
+            continue
+        h = bin(int(x[1]) & 0xFFFFFF).count("1")
+        if h == 24:
+            r["dia"] = round(float(x[0]), 1)
+        elif cerrado and h >= 20:  # con una o pocas horas sin dato: la cifra es un mínimo
+            r["dia_min"], r["dia_h"] = round(float(x[0]), 1), h
 
 
 def dias_desde(s: str) -> int:
@@ -973,6 +1039,7 @@ def estaciones_lluvia(L: dict) -> dict:
         else:
             r["prov"] = p_inv or p_top
         out[e] = r
+    _dia_pluviometrico(L, out)
     return out
 
 
@@ -1010,24 +1077,24 @@ def lluvia_aemet():
         empate = [x for x in filas[1:] if x[0] == mm]
         return "la cifra más alta" + (f" (empatada con {', '.join(donde(x[1]) for x in empate)})" if empate else "")
 
-    # --- ayer, día completo (24 horas) ---------------------------------------------------
+    # --- ayer, día pluviométrico completo (24 horas, de 07 a 07 UTC) ------------------------
     fecha = L.get("fecha")
     filas = sorted(((r["dia"], e) for e, r in est.items() if r.get("dia") is not None), key=lambda x: (-x[0], x[1]))
     parciales = sorted(((e, r) for e, r in est.items() if (r.get("dia_min") or 0) >= 30), key=lambda kv: -kv[1]["dia_min"])
     if fecha and filas and filas[0][0] >= 30:
         mm, e = filas[0]
         n30 = sum(1 for x in filas if x[0] >= 30)
-        tit = f"La estación de AEMET de {donde(e)} recogió {f1(mm)} mm el {fecha_dia(fecha)}"
+        tit = f"La estación de AEMET de {donde(e)} recogió {f1(mm)} mm {hasta_pluvio(fecha)}"
         if len(filas) > 1 and filas[1][0] >= 30:
             tit += f"; la de {donde(filas[1][1])}, {f1(filas[1][0])} mm"
         anadir({**base, "tipo": "lluvia_dia", "fecha_dato": fecha, "indicador": "lluvia_dia_max",
                 "titular": tit,
-                "dato": (f"{f1(mm)} mm de 0 a 24 h (hora local) del {fecha_dia(fecha)}, {lider(filas, mm)} de las {len(filas)} "
+                "dato": (f"{f1(mm)} mm {ventana_pluvio(fecha)} (hora peninsular), {lider(filas, mm)} de las {len(filas)} "
                          f"estaciones de AEMET con las 24 horas que sigue el mapa · {('1 superó' if n30 == 1 else f'{n30} superaron')} los 30 mm{oficial(e)}"),
                 "contexto": ["Las que más: " + " · ".join(f"{donde(x[1])}: {f1(x[0])} mm" for x in filas[:5]) + "."]
                 + (["Con horas sin dato en AEMET (la cifra es un mínimo): " + " · ".join(
                     f"{donde(e2)}: al menos {f1(r2['dia_min'])} mm ({r2['dia_h']} de 24 horas)" for e2, r2 in parciales) + "."] if parciales else []),
-                "metodo": "Suma de la precipitación horaria que publica AEMET OpenData en cada estación de observación convencional, de 0 a 24 h en hora local. Solo estaciones con las 24 horas.",
+                "metodo": "Suma de la precipitación horaria que publica AEMET OpenData en cada estación de observación convencional, en el día pluviométrico de AEMET (de 07:00 a 07:00 UTC), el de sus valores diarios. Solo estaciones con las 24 horas.",
                 "limites": [alcance(len(filas)),
                             "Lluvia de cada estación: en el resto del término municipal pudo llover más o menos.",
                             "Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo."]})
@@ -1056,7 +1123,7 @@ def lluvia_aemet():
     if fecha and filas:
         mm, e = filas[0]
         p = est[e].get("prov")
-        ENVIVO["lluvia_ayer"] = {"fecha": fecha, "estacion": _nombre_corto(e),
+        ENVIVO["lluvia_ayer"] = {"fecha": fecha, "ventana": ventana_pluvio(fecha), "estacion": _nombre_corto(e),
                                  "provincia": PROVINCIAS[p][0] if p in PROVINCIAS else None, "mm": mm}
 
 
