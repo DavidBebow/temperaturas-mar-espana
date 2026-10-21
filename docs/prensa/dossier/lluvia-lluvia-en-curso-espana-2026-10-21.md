@@ -1,6 +1,6 @@
 # La estación de AEMET de Donostia/San Sebastián Aeropuerto (Gipuzkoa) lleva 24,6 mm el 21 de octubre hasta las 22:00
 
-**Dato:** 24,6 mm de 0:00 a 22:00 (hora local) del 21 de octubre, la cifra más alta de las 182 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 24,6 mm de 0:00 a 22:00 (hora local) del 21 de octubre, la cifra más alta de las 232 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 21 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -15,7 +15,7 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 22:00»).
-- La comparación es entre las 182 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (993 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 232 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (993 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
