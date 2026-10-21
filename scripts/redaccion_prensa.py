@@ -53,7 +53,12 @@ AHORA = datetime.now(timezone.utc)
 HOY = AHORA.astimezone(MADRID).date()
 AYER = HOY - timedelta(days=1)
 PROV = H.PROVINCIAS
-MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+# Historias retiradas del archivo de 60 días (21-10-2026): daban como lluvia «de un día» la suma de 0 a 24 h
+# (Pego, 465,2 mm el 19-10), que no coincide con el día pluviométrico de AEMET (07-07 UTC: 620,6 mm el 18-10).
+# Siguen en su URL, pero dejan de listarse en las salas.
+RETIRADAS = {"2026-10-20-exclusiva", "2026-10-20-lluvia-pego", "2026-10-20-avisos-naranja",
+             "2026-10-20-lluvia-sant-antoni-de-portmany", "2026-10-21-lluvia-sant-antoni-de-portmany"}
+MESES =["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 MED_COSTA = {"17", "08", "43", "12", "46", "03", "30", "04", "18", "29", "07", "51", "52"}
 EFEMERIDES = [  # (fecha, texto corto, texto largo)
@@ -1896,7 +1901,7 @@ def main():
     lista = [x for x in arch["historias"] if x["id"] not in ids] + [{"id": h["id"], "fecha": h["fecha"], "tipo": h["tipo"], "titular": h["texto"]["titular"],
                                                                      "provincias": sorted(h["provincias"])} for h in hs]
     lim = (HOY - timedelta(days=60)).isoformat()
-    lista = sorted((x for x in lista if x["fecha"] >= lim), key=lambda x: (x["fecha"], x["id"]), reverse=True)
+    lista = sorted((x for x in lista if x["fecha"] >= lim and x["id"] not in RETIRADAS), key=lambda x: (x["fecha"], x["id"]), reverse=True)
     with open(SALIDA / "archivo.json", "w", encoding="utf-8") as f:
         json.dump({"generado": ahora, "historias": lista}, f, ensure_ascii=False, indent=1)
     # lo que sale del archivo (más de 60 días) se borra: historias y gráficos llevan la fecha delante
