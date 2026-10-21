@@ -483,6 +483,7 @@ def construir(ep, prev):
                 if int(x[1]) == (1 << h) - 1:
                     hoy = {"fecha": d.isoformat(), "mm": round(float(x[0]), 1), "horas": h}
         mx = max(((v, d) for d, v in valores.items() if v is not None), default=(0.0, None))
+        alineado = fuente_dias in ("validado", "pluviometrico")
         r = {"id": c, "nombre": m["nombre"], "cod": m["cod"], "lat": m.get("lat"), "lon": m.get("lon"), "alt": m.get("alt"),
              "dias": valores, "total": total, "completo": todos, "max": mx[0], "max_fecha": mx[1], "hoy": hoy, "fuente_dias": fuente_dias}
         # contra su historia de otoño (1991-2025)
@@ -497,10 +498,12 @@ def construir(ep, prev):
                 r["otono_hist"] = {"otonos": h["otonos"], "desde": h["desde"], "dia_max": h["dia"][0], "dia_fecha": h["dia"][1],
                                    "tres_max": round(h["tres"][0], 1), "tres_fecha": h["tres"][1], "tres_ep": round(tres, 1) if tres else None,
                                    "tres_ep_ini": tres_ini.isoformat() if hasattr(tres_ini, "isoformat") else tres_ini,
-                                   "record_dia": mx[0] > h["dia"][0], "record_tres": bool(tres and tres > h["tres"][0])}
+                                   # 21-10-2026 (David): un récord de un día o de tres solo se da con días de AEMET (07-07 UTC),
+                                   # los mismos de la serie con la que se compara; con la suma de 0 a 24 h, no.
+                                   "record_dia": alineado and mx[0] > h["dia"][0], "record_tres": bool(alineado and tres and tres > h["tres"][0])}
         if c in largas:
             L = largas[c]
-            r["serie_larga"] = dict(L, record=mx[0] > L["mm"])
+            r["serie_larga"] = dict(L, record=alineado and mx[0] > L["mm"])
         est.append(r)
     # otoño hasta hoy en el mismo pluviómetro
     por_est = {}
@@ -615,7 +618,11 @@ def claves(ep, B):
     # el día más lluvioso del episodio
     top_dia = max((r for r in B["est"] if r["max_fecha"]), key=lambda r: r["max"], default=None)
     if top_dia:
-        t = f"La estación de AEMET de {top_dia['nombre']} ({nprov(top_dia['cod'])}) recogió {f1(top_dia['max'])} mm el {dia(top_dia['max_fecha'])}, la cifra diaria más alta del episodio"
+        cero24 = top_dia.get("fuente_dias") == "horario_0_24"
+        t = (f"La estación de AEMET de {top_dia['nombre']} ({nprov(top_dia['cod'])}) recogió {f1(top_dia['max'])} mm "
+             + (f"el {dia(top_dia['max_fecha'])}, contando de 0 a 24 h (AEMET cuenta el día de lluvia de 07:00 a 07:00 UTC y publica el dato "
+                "validado unos días después)" if cero24 else f"en el día pluviométrico del {dia(top_dia['max_fecha'])} (de 07:00 a 07:00 UTC)")
+             + ", la cifra diaria más alta del episodio")
         oh = top_dia.get("otono_hist")
         if oh and oh["record_dia"]:
             v = veces(top_dia["max"], oh["dia_max"])
@@ -766,7 +773,9 @@ def main():
                    "rios": len(B["rios"])}
         cifras = []
         if topd:
-            cifras.append({"n": f"{f1(topd['max'])} mm", "l": f"en {topd['nombre']} ({nprov(topd['cod'])}) el {dia(topd['max_fecha'], semana=False)}: el día más lluvioso"})
+            cifras.append({"n": f"{f1(topd['max'])} mm", "l": f"en {topd['nombre']} ({nprov(topd['cod'])}) el {dia(topd['max_fecha'], semana=False)}"
+                                                           + (", de 0 a 24 h" if topd.get("fuente_dias") == "horario_0_24" else " (día pluviométrico de AEMET)")
+                                                           + ": el día más lluvioso"})
         if top:
             cifras.append({"n": f"{f1(top['total'])} mm", "l": f"en {top['nombre']} ({nprov(top['cod'])}), el total del episodio más alto"})
         cifras.append({"n": str(resumen["n100"]), "l": "estaciones de AEMET con 100 mm o más en el episodio"})
