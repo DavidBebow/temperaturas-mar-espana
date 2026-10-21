@@ -554,7 +554,7 @@ def construir(ep, prev):
                 p["max"] = {"id": r["id"], "nombre": r["nombre"], "total": r["total"]}
             p["n100"] += r["total"] >= 100
             p["n50"] += r["total"] >= 50
-        if r["max_fecha"] and (not p["max_dia"] or r["max"] > p["max_dia"]["mm"]):
+        if r["max_fecha"] and r.get("fuente_dias") != "horario_0_24" and (not p["max_dia"] or r["max"] > p["max_dia"]["mm"]):
             p["max_dia"] = {"id": r["id"], "nombre": r["nombre"], "mm": r["max"], "fecha": r["max_fecha"]}
     for d in dias_res:
         for nivel in ("rojo", "naranja"):
@@ -617,8 +617,12 @@ def claves(ep, B):
     tramo = tramo_txt(dias_c)
     # el día más lluvioso del episodio
     top_dia = max((r for r in B["est"] if r["max_fecha"]), key=lambda r: r["max"], default=None)
+    # 21-10-2026 (David): la cifra de un solo día solo se da con el día de AEMET (07-07 UTC); la suma de 0 a 24 h no coincide
+    # con la oficial (Pego: 465,2 el 19 frente a 620,6 en el día pluviométrico del 18). Hasta entonces, solo totales.
+    if top_dia and top_dia.get("fuente_dias") == "horario_0_24":
+        top_dia = None
     if top_dia:
-        cero24 = top_dia.get("fuente_dias") == "horario_0_24"
+        cero24 = False
         t = (f"La estación de AEMET de {top_dia['nombre']} ({nprov(top_dia['cod'])}) recogió {f1(top_dia['max'])} mm "
              + (f"el {dia(top_dia['max_fecha'])}, contando de 0 a 24 h (AEMET cuenta el día de lluvia de 07:00 a 07:00 UTC y publica el dato "
                 "validado unos días después)" if cero24 else f"en el día pluviométrico del {dia(top_dia['max_fecha'])} (de 07:00 a 07:00 UTC)")
@@ -765,6 +769,8 @@ def main():
         en_curso = not B["cierre"]
         top = comp[0] if comp else None
         topd = max((r for r in B["est"] if r["max_fecha"]), key=lambda r: r["max"], default=None)
+        if topd and topd.get("fuente_dias") == "horario_0_24":
+            topd = None  # la cifra de un día, solo con el día de AEMET (07-07 UTC)
         resumen = {"estaciones": len(B["est"]), "completas": len(comp),
                    "max_total": {"nombre": top["nombre"], "cod": top["cod"], "mm": top["total"]} if top else None,
                    "max_dia": {"nombre": topd["nombre"], "cod": topd["cod"], "mm": topd["max"], "fecha": topd["max_fecha"]} if topd else None,
@@ -772,7 +778,7 @@ def main():
                    "rojo": sorted({p for d in B["dias"] for p in d["rojo"]}),
                    "rios": len(B["rios"])}
         cifras = []
-        if topd:
+        if topd and topd.get("fuente_dias") != "horario_0_24":
             cifras.append({"n": f"{f1(topd['max'])} mm", "l": f"en {topd['nombre']} ({nprov(topd['cod'])}) el {dia(topd['max_fecha'], semana=False)}"
                                                            + (", de 0 a 24 h" if topd.get("fuente_dias") == "horario_0_24" else " (día pluviométrico de AEMET)")
                                                            + ": el día más lluvioso"})
