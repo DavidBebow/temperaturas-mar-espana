@@ -899,6 +899,9 @@ def _hechos_verano(R, x, id_, con_prov=True):
 
 
 def g_verano_largo(R, D):
+    # 21-10-2026: historias de verano, solo en temporada (del 15 de mayo al 5 de octubre), como las exclusivas
+    if not datetime.date(R.HOY.year, 5, 15) <= R.HOY <= datetime.date(R.HOY.year, 10, 5):
+        return []
     V = R.leer(R.DOCS / "prensa" / "analisis" / "verano.json", {}) or {}
     est = V.get("estaciones") or {}
     filas = [dict(est[i], id=i) for i in (V.get("provincias") or {}).values() if i in est]
