@@ -1,6 +1,6 @@
-# San Roque de Riomiera (Cantabria) ya ha bajado hoy, 20 de octubre, por debajo de su récord de mínima para un mes de octubre: 4,5 °C entre las 02:00 y las 03:00 frente a los 5,1 °C de 2025
+# San Roque de Riomiera (Cantabria) bajó el 20 de octubre a 4,5 °C, la temperatura más baja en un mes de octubre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de San Roque de Riomiera, a 849 m, mínima de 4,5 °C el 20 de octubre (entre las 02:00 y las 03:00, hora local) · récord anterior de octubre en la estación: 5,1 °C (27 de octubre de 2025) · récord absoluto de la estación: -3,9 °C (4 de enero de 2026) · día en curso, con observaciones hasta las 23:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de San Roque de Riomiera, a 849 m, mínima de 4,5 °C el 20 de octubre (entre las 02:00 y las 03:00, hora local) · récord anterior de octubre en la estación: 5,1 °C (27 de octubre de 2025) · récord absoluto de la estación: -3,9 °C (4 de enero de 2026) · 20 de 24 horas del día con observación  
 **Fecha del dato:** 20 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** San Roque de Riomiera (Cantabria)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -19,7 +19,7 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 19 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2023.
-- Día en curso: la cifra puede cambiar hasta la medianoche (hora UTC). Citar siempre con la hora.
+- Al día le faltan 4 horas de observación en OpenData: la mínima real pudo ser menor (citar «al menos»).
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces

@@ -1,12 +1,12 @@
-# 13 capitales españolas tuvieron el 19 de octubre máximas de al menos 5 °C por debajo de lo normal para la fecha
+# 10 capitales españolas tuvieron el 20 de octubre mínimas de al menos 5 °C por debajo de lo normal para la fecha
 
-**Dato:** 13 de 50 capitales · las más extremas: Lleida 12,8 °C (-9,8); Zaragoza 13,9 °C (-8); Burgos 8,7 °C (-7,8); Valladolid 10,9 °C (-7,1); Palencia 10,8 °C (-6,8); Pamplona/Iruña 11,9 °C (-6,5); Vitoria-Gasteiz 11,5 °C (-6,4); Huesca 13 °C (-6,3)  
-**Fecha del dato:** 19 de octubre de 2026  
+**Dato:** 10 de 50 capitales · las más extremas: Palencia 1,7 °C (-7,1); Burgos 1,3 °C (-7,1); Bilbao 7,2 °C (-6,6); Santander 8,2 °C (-6,4); Valladolid 2,8 °C (-6,3); Zamora 3,1 °C (-5,9); Oviedo 5,3 °C (-5,7); León 2,3 °C (-5,5)  
+**Fecha del dato:** 20 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Media de la desviación en esas 13 capitales: -6,8 °C.
+- Media de la desviación en esas 10 capitales: -6,1 °C.
 - Normal de referencia: 1991-2020, día a día, en la celda de cada capital.
 
 ## Fuente y método
