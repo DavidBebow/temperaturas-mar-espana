@@ -453,13 +453,14 @@ def construir(ep, prev):
         if c in oto:
             h = max_otono(oto[c])
             if h["otonos"] >= 10:
-                tres = 0.0
+                tres, tres_ini = 0.0, None
                 for i in range(len(dias_c) - 2):
                     vs = [valores[dias_c[i + k]] for k in range(3)]
-                    if all(v is not None for v in vs):
-                        tres = max(tres, sum(vs))
+                    if all(v is not None for v in vs) and sum(vs) > tres:
+                        tres, tres_ini = sum(vs), dias_c[i]
                 r["otono_hist"] = {"otonos": h["otonos"], "desde": h["desde"], "dia_max": h["dia"][0], "dia_fecha": h["dia"][1],
                                    "tres_max": round(h["tres"][0], 1), "tres_fecha": h["tres"][1], "tres_ep": round(tres, 1) if tres else None,
+                                   "tres_ep_ini": tres_ini.isoformat() if hasattr(tres_ini, "isoformat") else tres_ini,
                                    "record_dia": mx[0] > h["dia"][0], "record_tres": bool(tres and tres > h["tres"][0])}
         if c in largas:
             L = largas[c]

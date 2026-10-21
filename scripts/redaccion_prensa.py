@@ -1609,11 +1609,21 @@ class Redactor:
                    if m not in MODELOS_NO_DISPONIBLES and m not in AGOTADOS_HOY]
         return bool(modelos) and self.llamadas < self.max and self.uso["llamadas"] < self.max_dia
 
+    @staticmethod
+    def _con_record(t, plantilla):
+        """21-10-2026: la IA convirtió «2026, el año más cálido del Mediterráneo español a estas alturas en la serie que
+        empieza en 1982» en «El Mediterráneo español registra una temperatura media de 21,0 °C…». Si el titular de la
+        plantilla dice un récord y el de la IA no, se queda el de la plantilla: el récord es la noticia."""
+        pt = plantilla.get("titular") or ""
+        if RE_RECORD.search(pt) and not RE_RECORD.search(t.get("titular") or ""):
+            t["titular"] = pt
+        return t
+
     def redactar(self, hechos, plantilla, encargo, provincial=False, permitir_ia=True):
         clave = hashlib.sha1(json.dumps([[h["id"], h["dice"]] for h in hechos] + [encargo], ensure_ascii=False).encode()).hexdigest()[:16]
         c = self.cache.get(clave)
         if c:
-            ct = {**c["texto"], **{k: plantilla.get(k) for k in (plantilla.get("fijar") or [])}}
+            ct = self._con_record({**c["texto"], **{k: plantilla.get(k) for k in (plantilla.get("fijar") or [])}}, plantilla)
             if not verificar(ct, hechos):
                 return ct, {**c["meta"], "cache": True}
         rechazos = []
@@ -1642,6 +1652,7 @@ class Redactor:
                     t["cuerpo"] = [t["cuerpo"]]
                 for k in plantilla.get("fijar") or []:  # partes que se quedan como en la plantilla (p. ej. un titular con avisos)
                     t[k] = plantilla.get(k)
+                t = self._con_record(t, plantilla)
                 errs = verificar(t, hechos)
                 if not errs:
                     meta = {"modo": "ia", "modelo": modelo, "verificado": True, "rechazos": rechazos, "hash": clave}
@@ -1733,6 +1744,8 @@ def generadores_sala(D, solo=None):
 # Una noticia es de hoy o no es noticia. Fuera: lo fechado hace más de 10 días, lo de temporada fuera de su temporada
 # (los récords del verano no se publican en octubre salvo que haya un hecho de las dos últimas semanas) y los récords
 # de estaciones con tabla de extremos de menos de 20 años.
+# titulares que cuentan un récord: si la IA lo pierde, se queda el de la plantilla
+RE_RECORD = re.compile(r"(r[eé]cord|m[aá]s (c[aá]lid|sec|lluvios|alt|baj|fr[ií]|larg)\w*|el (mayor|menor)|nunca|desde (19|20)\d\d|sus registros|de la serie|de su serie)", re.I)
 TEMPORADA_VERANO = ("dias32-record", "noches-tropicales", "calor-30-largo", "muertes-calor", "mar-boyas-records")
 DIAS_VIGENCIA = 10
 
