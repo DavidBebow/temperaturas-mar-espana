@@ -1761,6 +1761,7 @@ def generadores_sala(D, solo=None):
 # titulares que cuentan un récord: si la IA lo pierde, se queda el de la plantilla
 RE_RECORD = re.compile(r"(r[eé]cord|m[aá]s (c[aá]lid|sec|lluvios|alt|baj|fr[ií]|larg)\w*|el (mayor|menor)|nunca|desde (19|20)\d\d|sus registros|de la serie|de su serie)", re.I)
 TEMPORADA_VERANO = ("dias32-record", "noches-tropicales", "calor-30-largo", "muertes-calor", "mar-boyas-records")
+TIPOS_VERANO = {"verano_largo", "calor_largo", "dias32_record", "mortalidad_calor"}
 DIAS_VIGENCIA = 10
 
 
@@ -1910,7 +1911,10 @@ def main():
     lista = [x for x in arch["historias"] if x["id"] not in ids] + [{"id": h["id"], "fecha": h["fecha"], "tipo": h["tipo"], "titular": h["texto"]["titular"],
                                                                      "provincias": sorted(h["provincias"])} for h in hs]
     lim = (HOY - timedelta(days=60)).isoformat()
-    lista = sorted((x for x in lista if x["fecha"] >= lim and x["id"] not in RETIRADAS), key=lambda x: (x["fecha"], x["id"]), reverse=True)
+    # 22-10-2026: fuera de temporada, el archivo tampoco lista las historias de verano
+    en_temporada = date(HOY.year, 5, 15) <= HOY <= date(HOY.year, 10, 5)
+    lista = sorted((x for x in lista if x["fecha"] >= lim and x["id"] not in RETIRADAS and (en_temporada or x["tipo"] not in TIPOS_VERANO)),
+                   key=lambda x: (x["fecha"], x["id"]), reverse=True)
     with open(SALIDA / "archivo.json", "w", encoding="utf-8") as f:
         json.dump({"generado": ahora, "historias": lista}, f, ensure_ascii=False, indent=1)
     # lo que sale del archivo (más de 60 días) se borra: historias y gráficos llevan la fecha delante
