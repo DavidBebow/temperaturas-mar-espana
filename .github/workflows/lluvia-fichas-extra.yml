@@ -1,0 +1,59 @@
+name: "Lluvia: bloques extra de las fichas"
+
+# Calcula, para las 999 fichas de /lluvias-en-espana/, el ano hidrologico al dia frente al mismo
+# pluviometro, el ultimo episodio frente a la historia, el mes, un ano de lluvia dia a dia, los records
+# y la hora mas intensa (scripts/lluvia_fichas_extra.py). Escribe docs/lluvia_extra/<provincia>.json,
+# que pinta el plugin "CG · Lluvia al dia" (cg-lluvia-plus).
+#
+# CUANDO: justo despues del otono por pluviometro (que va detras de la lluvia diaria por municipio, cada
+# hora) y de cada pasada de la descarga diaria. El cron es solo una red por si la cadena se cae.
+
+on:
+  workflow_run:
+    workflows: ["Actualizar otono por pluviometro", "Lluvia diaria de todas las estaciones"]
+    types: [completed]
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: lluvia-fichas-extra
+  cancel-in-progress: true
+
+jobs:
+  calcular:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Calcular
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+        run: python scripts/lluvia_fichas_extra.py
+
+      - name: Publicar
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/lluvia_extra archivo/lluvia_extra 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "Lluvia, bloques extra: $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash -X theirs origin main && git push && exit 0
+            echo "Push fallido. Reintento $i/6..."
+            sleep $((i*5))
+          done
+          exit 1
