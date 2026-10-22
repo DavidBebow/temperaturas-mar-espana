@@ -1,6 +1,6 @@
-# Retamal de Llerena (Badajoz) ya ha bajado hoy, 21 de octubre, por debajo de su récord de mínima para un mes de octubre: 4,4 °C entre las 08:00 y las 09:00 frente a los 6,4 °C de 2024
+# Retamal de Llerena (Badajoz) bajó el 21 de octubre a 4,4 °C, la temperatura más baja en un mes de octubre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Retamal de Llerena, a 474 m, mínima de 4,4 °C el 21 de octubre (entre las 08:00 y las 09:00, hora local) · récord anterior de octubre en la estación: 6,4 °C (26 de octubre de 2024) · récord absoluto de la estación: -5,8 °C (1 de marzo de 2023) · día en curso, con observaciones hasta las 01:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Retamal de Llerena, a 474 m, mínima de 4,4 °C el 21 de octubre (entre las 08:00 y las 09:00, hora local) · récord anterior de octubre en la estación: 6,4 °C (26 de octubre de 2024) · récord absoluto de la estación: -5,8 °C (1 de marzo de 2023) · 23 de 24 horas del día con observación  
 **Fecha del dato:** 21 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Retamal de Llerena (Badajoz)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -19,7 +19,7 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 19 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2022.
-- Día en curso: la cifra puede cambiar hasta la medianoche (hora UTC). Citar siempre con la hora.
+- Al día le faltan 1 horas de observación en OpenData: la mínima real pudo ser menor (citar «al menos»).
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces
