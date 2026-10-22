@@ -1,11 +1,12 @@
-# Retamal de Llerena (Badajoz) iguala hoy, 22 de octubre, su récord de mínima para un mes de octubre: 6,4 °C entre las 04:00 y las 05:00 frente a los 6,4 °C de 2024
+# Retamal de Llerena (Badajoz) ya ha bajado hoy, 22 de octubre, por debajo de su récord de mínima para un mes de octubre: 5,9 °C entre las 06:00 y las 07:00 frente a los 6,4 °C de 2024
 
-**Dato:** Medido por AEMET en su estación de Retamal de Llerena, a 474 m, mínima de 6,4 °C el 22 de octubre (entre las 04:00 y las 05:00, hora local) · récord anterior de octubre en la estación: 6,4 °C (26 de octubre de 2024) · récord absoluto de la estación: -5,8 °C (1 de marzo de 2023) · día en curso, con observaciones hasta las 06:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Retamal de Llerena, a 474 m, mínima de 5,9 °C el 22 de octubre (entre las 06:00 y las 07:00, hora local) · récord anterior de octubre en la estación: 6,4 °C (26 de octubre de 2024) · récord absoluto de la estación: -5,8 °C (1 de marzo de 2023) · día en curso, con observaciones hasta las 07:00 (hora local)  
 **Fecha del dato:** 22 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Retamal de Llerena (Badajoz)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
+- Rebaja el récord anterior en 0,5 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2022.
 
 ## Fuente y método
@@ -23,8 +24,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/records-de-temperatura/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-puesto-extremo-retamal-de-llerena-badajoz-2026-10-22.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-puesto-extremo-retamal-de-llerena-badajoz-2026-10-22.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-retamal-de-llerena-badajoz-2026-10-22.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-retamal-de-llerena-badajoz-2026-10-22.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET OpenData · observación y valores climatológicos extremos. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
