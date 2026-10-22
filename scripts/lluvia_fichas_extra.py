@@ -40,7 +40,7 @@ try:
 except ImportError:  # pragma: no cover
     ZoneInfo = None
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 RAIZ = Path(__file__).resolve().parent.parent
 DIARIA = RAIZ / "archivo" / "lluvia_diaria"
 LARGAS = RAIZ / "archivo" / "aemet_diario"
@@ -60,7 +60,7 @@ ANIOS_MIN_RESPALDO = 15         # si no, media de todos los anos medidos, dicien
 HUECOS = 3                      # dias sin dato que se le perdonan a una ventana
 LLUVIOSO = 1.0                  # mm: dia de lluvia (convenio de AEMET y de la OMM)
 VECINOS_KM = 35.0
-VECINOS_N = 6
+VECINOS_N = 15                  # el plugin enseña hasta 7, sin repetir pluviómetro
 FRESCURA = 6                    # dias: una serie que no llega a hoy menos esto no da "al dia"
 MIN_MUNICIPIOS = int(os.environ.get("CG_MIN_MUNICIPIOS", "300"))
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
