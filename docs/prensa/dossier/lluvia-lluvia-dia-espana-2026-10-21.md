@@ -1,6 +1,6 @@
 # La estación de AEMET de Agüimes-El Milano (Las Palmas) recogió 42,2 mm en las 24 horas hasta las 9:00 del 22 de octubre
 
-**Dato:** 42,2 mm entre las 9:00 del 21 y las 9:00 del 22 de octubre (hora peninsular), la cifra más alta de las 374 estaciones de AEMET con las 24 horas que sigue el mapa · 1 superó los 30 mm  
+**Dato:** 42,2 mm entre las 9:00 del 21 y las 9:00 del 22 de octubre (hora peninsular), la cifra más alta de las 375 estaciones de AEMET con las 24 horas que sigue el mapa · 1 superó los 30 mm  
 **Fecha del dato:** 21 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -14,7 +14,7 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación de observación convencional, en el día pluviométrico de AEMET (de 07:00 a 07:00 UTC), el de sus valores diarios. Solo estaciones con las 24 horas.
 
 ## Límites (decirlos antes de que los descubran)
-- La comparación es entre las 374 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (996 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 375 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (996 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Lluvia de cada estación: en el resto del término municipal pudo llover más o menos.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
