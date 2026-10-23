@@ -19,6 +19,19 @@ Ahora todo sale de un mismo producto oficial y documentado:
       definitiva completa (copia íntegra en upwell, sin huecos) y una
       ventana centrada de 15 días.
 
+Revisión del 23-10-2026: desde el 18-10 ninguna pasada terminaba. La normal se
+pedía de una vez (30 años por punto) al ERDDAP de upwell, que devuelve 408 o
+no responde, y con cinco reintentos de 300 s por punto el flujo llegaba a su
+límite de 40 minutos sin guardar nada: datos.json se quedó en el 17-10. Ahora:
+  · la normal sale de la serie definitiva de CoastWatch (la misma OISST v2.1),
+    en tramos de diez años, en paralelo y con un presupuesto de tiempo;
+  · lo descargado se guarda tramo a tramo en mar_climatologia.json, así que si
+    una pasada no llega a todo, la siguiente sigue donde se quedó;
+  · un punto sin normal completa conserva su dato anterior con su fecha;
+  · datos.json solo se reescribe si al menos un punto tiene dato nuevo.
+CoastWatch tiene días sin dato en algunos años (1995 y 1998, sobre todo): la
+normal se calcula con los días disponibles y el JSON dice cuántos son.
+
 Cada punto usa la celda de océano más cercana a la costa que lo nombra (entre
 2 y 22 km mar adentro, comprobado el 18-10-2026), y el JSON dice cuál es y a
 qué distancia está. Es la temperatura de la superficie del mar en esa celda,
@@ -33,6 +46,7 @@ import math
 import os
 import time
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -47,6 +61,11 @@ CLIMA = "docs/mar_climatologia.json"
 NORMAL = (1991, 2020)
 VENTANA = 7                     # ±7 días alrededor de cada día del año
 METODO = "oisst_v21_normal_1991_2020"
+TRAMOS = [(1991, 2000), (2001, 2010), (2011, 2020)]
+MIN_DIAS_NORMAL = 8000          # de 10.958: por debajo, la normal no se da por buena
+HILOS = 4
+INICIO = time.monotonic()
+PRESUPUESTO = float(os.environ.get("PRESUPUESTO_MIN", "30")) * 60   # segundos para descargar normales
 
 # lat/lon: dónde se pinta el punto · celda: celda OISST de océano más cercana
 PUNTOS = [
@@ -132,34 +151,94 @@ def md(f):
     return "02-28" if k == "02-29" else k
 
 
-def climatologia(p, previo):
-    """Normal 1991-2020 de cada día del año en la celda del punto."""
-    c = previo.get(p["id"])
-    if c and tuple(c.get("celda", ())) == tuple(p["celda"]) and len(c.get("normal", {})) >= 365:
-        return c
+def _tramo(p, ini, fin):
+    """Suma y número de valores por día del calendario en un tramo de años (serie definitiva de CoastWatch)."""
     la, lo = p["celda"]
-    lo360 = lo % 360
-    url = (f"{UPWELL}?sst[({NORMAL[0]}-01-01T12:00:00Z):1:({NORMAL[1]}-12-31T12:00:00Z)][(0.0)]"
-           f"[({la:.3f}):1:({la:.3f})][({lo360:.3f}):1:({lo360:.3f})]")
-    log(f"   normal 1991-2020 de {p['nombre']} (celda {la}, {lo})...")
-    serie = parse_csv(http(url, timeout=300))
-    dias = sorted(serie)
-    if len(dias) < 10000:
-        raise RuntimeError(f"serie 1991-2020 incompleta ({len(dias)} días)")
-    # ventana centrada de 15 días alrededor de cada día del calendario
+    url = (f"{CW}{DEF}.csv?sst[({ini}-01-01T12:00:00Z):1:({fin}-12-31T12:00:00Z)][(0.0)]"
+           f"[({la:.3f}):1:({la:.3f})][({lo:.3f}):1:({lo:.3f})]")
+    serie = parse_csv(http(url, intentos=3, timeout=240))
+    s, n = {}, {}
+    for f, v in serie.items():
+        k = md(f)
+        s[k] = s.get(k, 0.0) + v
+        n[k] = n.get(k, 0) + 1
+    return {"s": {k: round(v, 3) for k, v in s.items()}, "n": n, "dias": len(serie)}
+
+
+def _normal(tramos):
+    """Normal de cada día del calendario: media de todos los valores de la ventana centrada de 15 días."""
+    S, N = {}, {}
+    for t in tramos.values():
+        for k, v in t["s"].items():
+            S[k] = S.get(k, 0.0) + v
+            N[k] = N.get(k, 0) + t["n"][k]
     base = date(2001, 1, 1)
-    por_md = {}
-    for f in dias:
-        por_md.setdefault(md(f), []).append(serie[f])
     normal = {}
     for i in range(365):
         d0 = base + timedelta(days=i)
-        vals = []
+        ss = nn = 0
         for k in range(-VENTANA, VENTANA + 1):
-            vals += por_md.get((d0 + timedelta(days=k)).strftime("%m-%d"), [])
-        normal[d0.strftime("%m-%d")] = round(sum(vals) / len(vals), 2)
-    time.sleep(2)
-    return {"celda": list(p["celda"]), "dias_serie": len(dias), "normal": normal}
+            kk = (d0 + timedelta(days=k)).strftime("%m-%d")
+            ss += S.get(kk, 0.0)
+            nn += N.get(kk, 0)
+        normal[d0.strftime("%m-%d")] = round(ss / nn, 2) if nn else None
+    return normal
+
+
+def climatologias(clima_prev):
+    """Normal 1991-2020 de cada punto. Reutiliza lo ya calculado y descarga lo que falta en tramos de diez
+    años, en paralelo, hasta agotar el presupuesto de tiempo; lo descargado queda en el JSON para la próxima."""
+    clima = {}
+    for p in PUNTOS:
+        c = clima_prev.get(p["id"]) or {}
+        if tuple(c.get("celda", ())) != tuple(p["celda"]):
+            c = {}
+        c = {"celda": list(p["celda"]), "tramos": dict(c.get("tramos") or {}),
+             **({"normal": c["normal"], "dias_serie": c.get("dias_serie")} if len(c.get("normal") or {}) >= 365 else {})}
+        clima[p["id"]] = c
+    pend = [(p, a, b) for p in PUNTOS if "normal" not in clima[p["id"]]
+            for a, b in TRAMOS if f"{a}-{b}" not in clima[p["id"]]["tramos"]]
+    if pend:
+        log(f"Normales 1991-2020: faltan {len(pend)} tramos de diez años")
+    with ThreadPoolExecutor(HILOS) as ex:
+        futs = {}
+        for p, a, b in pend:
+            futs[ex.submit(lambda p=p, a=a, b=b: None if time.monotonic() - INICIO > PRESUPUESTO else _tramo(p, a, b))] = (p, a, b)
+        for f in as_completed(futs):
+            p, a, b = futs[f]
+            try:
+                t = f.result()
+            except Exception as e:  # noqa: BLE001
+                log(f"   ✗ normal {p['nombre']} {a}-{b}: {e}")
+                continue
+            if t is None:
+                continue   # fuera de presupuesto: lo hará la próxima pasada
+            clima[p["id"]]["tramos"][f"{a}-{b}"] = t
+            log(f"   normal {p['nombre']} {a}-{b}: {t['dias']} días")
+    for p in PUNTOS:
+        c = clima[p["id"]]
+        if "normal" in c or len(c["tramos"]) < len(TRAMOS):
+            continue
+        dias = sum(t["dias"] for t in c["tramos"].values())
+        if dias < MIN_DIAS_NORMAL:
+            log(f"   ✗ normal {p['nombre']}: solo {dias} días en 1991-2020; se vuelve a pedir")
+            c["tramos"] = {}
+            continue
+        c["normal"] = _normal(c["tramos"])
+        c["dias_serie"] = dias
+        c.pop("tramos", None)   # con la normal hecha, las sumas ya no hacen falta
+    return clima
+
+
+def actual_de(p, fin_def, fin_nrt):
+    """Serie reciente del punto: definitiva (400 días) y, detrás, la preliminar."""
+    serie = {}
+    if fin_def:
+        serie.update(serie_cw(DEF, p["celda"], (fin_def - timedelta(days=400)).isoformat(), fin_def.isoformat()))
+    if fin_nrt and (not fin_def or fin_nrt > fin_def):
+        desde = (fin_def + timedelta(days=1)) if fin_def else fin_nrt - timedelta(days=30)
+        serie.update(serie_cw(NRT, p["celda"], desde.isoformat(), fin_nrt.isoformat()))
+    return serie
 
 
 def clasificar(anom):
@@ -227,22 +306,32 @@ def main():
         log("La NOAA no responde: se conserva el JSON anterior.")
         return
 
-    clima, resultados, con_dato = {}, [], 0
+    clima = climatologias(clima_prev)
+    con_normal = [p for p in PUNTOS if "normal" in clima[p["id"]]]
+    log(f"Normales completas: {len(con_normal)} de {len(PUNTOS)} puntos")
+    series = {}
+    with ThreadPoolExecutor(HILOS) as ex:
+        futs = {ex.submit(actual_de, p, fin_def, fin_nrt): p for p in con_normal}
+        for f in as_completed(futs):
+            p = futs[f]
+            try:
+                series[p["id"]] = f.result()
+            except Exception as e:  # noqa: BLE001
+                series[p["id"]] = e
+
+    resultados, con_dato, nuevos = [], 0, 0
     for p in PUNTOS:
         log(f"Procesando {p['nombre']}...")
         dist = round(km(p["lat"], p["lon"], *p["celda"]))
         base = {"id": p["id"], "nombre": p["nombre"], "zona": p["zona"], "lat": p["lat"], "lon": p["lon"],
                 "celda_lat": p["celda"][0], "celda_lon": p["celda"][1], "distancia_km": dist}
         try:
-            c = climatologia(p, clima_prev)
-            clima[p["id"]] = c
-            serie = {}
-            if fin_def:
-                serie.update(serie_cw(DEF, p["celda"], (fin_def - timedelta(days=400)).isoformat(), fin_def.isoformat()))
-            if fin_nrt and (not fin_def or fin_nrt > fin_def):
-                desde = (fin_def + timedelta(days=1)) if fin_def else fin_nrt - timedelta(days=30)
-                nrt = serie_cw(NRT, p["celda"], desde.isoformat(), fin_nrt.isoformat())
-                serie.update(nrt)
+            c = clima[p["id"]]
+            if "normal" not in c:
+                raise RuntimeError(f"sin normal 1991-2020 todavía ({len(c['tramos'])} de {len(TRAMOS)} tramos)")
+            serie = series.get(p["id"])
+            if isinstance(serie, Exception):
+                raise serie
             if not serie:
                 raise RuntimeError("serie vacía")
             fecha = max(serie)
@@ -279,11 +368,10 @@ def main():
                 "rachas_desde": anoms[0][0],
             })
             con_dato += 1
+            nuevos += 1
             log(f"  ✓ {fecha}: {actual} °C · normal {normal:.1f} · anomalía {anom:+.1f}")
         except Exception as e:  # noqa: BLE001
             log(f"  ✗ {p['nombre']}: {e}")
-            if p["id"] in clima_prev:
-                clima[p["id"]] = clima_prev[p["id"]]
             pv = previo.get(p["id"])
             if pv and pv.get("fecha_dato"):
                 resultados.append({**pv, **base})      # el dato anterior, con su fecha
@@ -295,10 +383,15 @@ def main():
                                    "color": "#888888", "etiqueta_anomalia": "Sin datos",
                                    "dias_consecutivos": None, "signo_consecutivo": None,
                                    "max_dias_positiva": None, "max_dias_negativa": None})
-        time.sleep(1)
 
-    if con_dato == 0:
-        log("Ningún punto con dato: se conserva el JSON anterior.")
+    # la normal (también la parcial) se guarda siempre: la próxima pasada sigue donde se quedó esta
+    with open(CLIMA, "w", encoding="utf-8") as f:
+        json.dump({"fuente": f"NOAA OISST v2.1 definitiva (ERDDAP CoastWatch, {DEF})",
+                   "periodo": f"{NORMAL[0]}-{NORMAL[1]}", "ventana_dias": 2 * VENTANA + 1,
+                   "nota": "Normal con los días disponibles en CoastWatch; dias_serie dice cuántos de los 10.958.",
+                   "puntos": clima}, f, ensure_ascii=False, separators=(",", ":"))
+    if nuevos == 0:
+        log("Ningún punto con dato nuevo: se conserva el JSON anterior.")
         return
 
     fechas = [r["fecha_dato"] for r in resultados if r.get("fecha_dato")]
@@ -310,7 +403,8 @@ def main():
         "total_puntos": len(PUNTOS),
         "puntos_con_datos": con_dato,
         "fuente": "NOAA OISST v2.1 (satélite, 0,25°)",
-        "normal": "1991-2020, misma celda, ventana de 15 días",
+        "normal": "1991-2020, misma celda, ventana de 15 días (serie definitiva de CoastWatch)",
+        "puntos_actualizados": nuevos,
         "metodo": METODO,
         "aviso": ("Temperatura de la superficie del mar en la celda de 0,25° más cercana a cada punto (entre 2 y 22 km "
                   "mar adentro), no la del agua en la orilla. Los últimos días son la versión preliminar de la NOAA."),
@@ -320,11 +414,7 @@ def main():
         json.dump(salida, f, ensure_ascii=False, indent=2)
     with open(HISTORIAL, "w", encoding="utf-8") as f:
         json.dump(historial, f, ensure_ascii=False, indent=1)
-    with open(CLIMA, "w", encoding="utf-8") as f:
-        json.dump({"fuente": "NOAA OISST v2.1 (definitiva, ERDDAP upwell oisst_rclone)",
-                   "periodo": f"{NORMAL[0]}-{NORMAL[1]}", "ventana_dias": 2 * VENTANA + 1, "puntos": clima},
-                  f, ensure_ascii=False, separators=(",", ":"))
-    log(f"\n✓ {con_dato}/{len(PUNTOS)} puntos · dato más reciente: {salida['fecha_dato']}")
+    log(f"\n✓ {con_dato}/{len(PUNTOS)} puntos ({nuevos} con dato nuevo) · dato más reciente: {salida['fecha_dato']}")
 
 
 if __name__ == "__main__":
