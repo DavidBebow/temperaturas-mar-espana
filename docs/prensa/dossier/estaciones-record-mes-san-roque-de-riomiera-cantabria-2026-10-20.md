@@ -1,12 +1,12 @@
-# San Roque de Riomiera (Cantabria) bajó el 20 de octubre a 4,5 °C, la temperatura más baja en un mes de octubre desde que hay registros en su estación de AEMET
+# San Roque de Riomiera (Cantabria) bajó el 20 de octubre a 4,4 °C, la temperatura más baja en un mes de octubre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de San Roque de Riomiera, a 849 m, mínima de 4,5 °C el 20 de octubre (entre las 02:00 y las 03:00, hora local) · récord anterior de octubre en la estación: 5,1 °C (27 de octubre de 2025) · récord absoluto de la estación: -3,9 °C (4 de enero de 2026) · 24 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de San Roque de Riomiera, a 849 m, mínima de 4,4 °C el 20 de octubre (hora de la mínima: 00:21) · récord anterior de octubre en la estación: 5,1 °C (27 de octubre de 2025) · récord absoluto de la estación: -3,9 °C (4 de enero de 2026) · valor climatológico diario validado por AEMET: 4,4 °C  
 **Fecha del dato:** 20 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** San Roque de Riomiera (Cantabria)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Rebaja el récord anterior en 0,6 °C.
+- Rebaja el récord anterior en 0,7 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2023.
 
 ## Fuente y método
@@ -15,7 +15,7 @@
 - **Método:** Mínima diaria de la estación (día de 0 a 24 h UTC) obtenida de la observación horaria que publica AEMET OpenData (campo «tamin», extremo de cada hora), comparada con los valores climatológicos extremos mensuales y absolutos que AEMET publica para esa estación (tabla consultada el 19 de octubre de 2026).
 
 ## Límites (decirlos antes de que los descubran)
-- Observación en tiempo real, sin validar: AEMET revisa el dato en 2-4 días y puede corregirlo. El observatorio vuelve a comprobarlo con el valor validado y marca el hallazgo como confirmado o lo retira.
+- Confirmado con el valor climatológico diario validado por AEMET (4,4 °C el 20 de octubre).
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 19 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2023.
