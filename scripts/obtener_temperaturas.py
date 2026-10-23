@@ -63,7 +63,8 @@ VENTANA = 7                     # ±7 días alrededor de cada día del año
 METODO = "oisst_v21_normal_1991_2020"
 TRAMOS = [(1991, 2000), (2001, 2010), (2011, 2020)]
 MIN_DIAS_NORMAL = 8000          # de 10.958: por debajo, la normal no se da por buena
-HILOS = 4
+HILOS = 2                       # 23-10-2026: con 4, CoastWatch respondió 403 a la pasada siguiente
+BLOQUEO = {"codigo": None}      # 403/429 del servidor: no se insiste en esta pasada
 INICIO = time.monotonic()
 PRESUPUESTO = float(os.environ.get("PRESUPUESTO_MIN", "30")) * 60   # segundos para descargar normales
 
@@ -112,6 +113,10 @@ def http(url, intentos=5, timeout=180):
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 return r.read().decode("utf-8", "replace")
         except Exception as e:  # noqa: BLE001
+            # 403/429: el ERDDAP limita a quien pide mucho; reintentar solo alarga el bloqueo
+            if getattr(e, "code", None) in (403, 429):
+                BLOQUEO["codigo"] = e.code
+                raise
             if i == intentos - 1:
                 raise
             log(f"   reintento {i + 1}: {e}")
@@ -203,7 +208,8 @@ def climatologias(clima_prev):
     with ThreadPoolExecutor(HILOS) as ex:
         futs = {}
         for p, a, b in pend:
-            futs[ex.submit(lambda p=p, a=a, b=b: None if time.monotonic() - INICIO > PRESUPUESTO else _tramo(p, a, b))] = (p, a, b)
+            futs[ex.submit(lambda p=p, a=a, b=b: None if (time.monotonic() - INICIO > PRESUPUESTO or BLOQUEO["codigo"])
+                           else _tramo(p, a, b))] = (p, a, b)
         for f in as_completed(futs):
             p, a, b = futs[f]
             try:
