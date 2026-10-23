@@ -18,7 +18,9 @@ concurrency:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    # 23-10-2026: la primera pasada descarga la normal 1991-2020 de los 23 puntos (30 min de presupuesto
+    # en el script, que guarda lo hecho aunque no llegue a todo); las siguientes tardan unos minutos.
+    timeout-minutes: 60
     permissions:
       contents: write
     steps:
@@ -32,6 +34,8 @@ jobs:
 
       # 18-10-2026: el script ya no usa requests (NOAA OISST por ERDDAP con urllib).
       - name: Ejecutar script de temperaturas
+        env:
+          PRESUPUESTO_MIN: "30"
         run: python scripts/obtener_temperaturas.py
 
       - name: Guardar cambios en el repositorio
