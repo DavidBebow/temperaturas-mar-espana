@@ -1,6 +1,6 @@
-# Murcia recogió el 18 de octubre 28,6 mm, la mayor lluvia para esa fecha desde 1940
+# Murcia recogió el 18 de octubre 32,9 mm, la mayor lluvia para esa fecha desde 1940
 
-**Dato:** 28,6 mm en un día · récord anterior para la fecha 23,8 mm (1973)  
+**Dato:** 32,9 mm en un día · récord anterior para la fecha 23,8 mm (1973)  
 **Fecha del dato:** 18 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Murcia  
 **Citabilidad:** media · **Exclusivo:** sí

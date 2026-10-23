@@ -1,6 +1,6 @@
-# Lleida recogió el 19 de octubre 26,4 mm, la mayor lluvia para esa fecha desde 1940
+# Lleida recogió el 19 de octubre 27 mm, la mayor lluvia para esa fecha desde 1940
 
-**Dato:** 26,4 mm en un día · récord anterior para la fecha 20,1 mm (1940)  
+**Dato:** 27 mm en un día · récord anterior para la fecha 20,1 mm (1940)  
 **Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Lleida  
 **Citabilidad:** media · **Exclusivo:** sí
