@@ -195,14 +195,24 @@ class Datos:
 
 
 # ============================================================================ avisos
+ZONAS_SIN_COD = {"Costa - A Mariña": ("27", "Lugo")}
+
+
 def avisos_por_zona(D: Datos):
     orden = {"amarillo": 1, "naranja": 2, "rojo": 3}
     z = {}
     for a in D.A.get("avisos") or []:
         if a.get("nivel") not in orden or not a.get("zona"):
             continue
-        k = (a.get("cod"), a["zona"])
-        r = z.setdefault(k, {"cod": a.get("cod"), "zona": a["zona"], "prov": a.get("provincia"), "nivel": "amarillo", "avisos": []})
+        # 23-10-2026: MeteoAlarm deja alguna zona sin provincia («Costa - A Mariña» llegaba como «Otras zonas», y el texto
+        # decía «en A Coruña, Asturias … y Otras zonas»)
+        cod_a, prov_a = a.get("cod"), a.get("provincia")
+        if not cod_a and a["zona"] in ZONAS_SIN_COD:
+            cod_a, prov_a = ZONAS_SIN_COD[a["zona"]]
+        if prov_a and sin_tildes(prov_a).lower().startswith("otras zonas"):
+            prov_a = None
+        k = (cod_a, a["zona"])
+        r = z.setdefault(k, {"cod": cod_a, "zona": a["zona"], "prov": prov_a, "nivel": "amarillo", "avisos": []})
         r["avisos"].append(a)
         if orden[a["nivel"]] > orden[r["nivel"]]:
             r["nivel"] = a["nivel"]

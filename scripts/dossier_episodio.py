@@ -392,10 +392,13 @@ def diarios_validados():
             d0 = date.fromisoformat(ini)
         except ValueError:
             continue
+        # 23-10-2026: la clave de cada valor es el día del otoño contado desde el 1 de septiembre (0 = 1-9), no desde el
+        # inicio del trozo: el trozo del 16-10 trae 45..49 (16 a 20 de octubre).
+        base = date(d0.year, 9, 1)
         for e, vals in (tr.get("datos") or {}).items():
             for k, v in (vals or {}).items():
                 if v is not None:
-                    out.setdefault((d0 + timedelta(int(k))).isoformat(), {})[e] = float(v)
+                    out.setdefault((base + timedelta(int(k))).isoformat(), {})[e] = float(v)
     return out
 
 
@@ -485,7 +488,8 @@ def construir(ep, prev):
         mx = max(((v, d) for d, v in valores.items() if v is not None), default=(0.0, None))
         alineado = fuente_dias in ("validado", "pluviometrico")
         r = {"id": c, "nombre": m["nombre"], "cod": m["cod"], "lat": m.get("lat"), "lon": m.get("lon"), "alt": m.get("alt"),
-             "dias": valores, "total": total, "completo": todos, "max": mx[0], "max_fecha": mx[1], "hoy": hoy, "fuente_dias": fuente_dias}
+             "dias": valores, "total": total, "completo": todos, "max": mx[0], "max_fecha": mx[1], "hoy": hoy, "fuente_dias": fuente_dias,
+             "validados": sorted(d for d, (_v, f) in pluv.items() if f == "validado") if fuente_dias != "horario_0_24" else []}
         # contra su historia de otoño (1991-2025)
         if c in oto:
             h = max_otono(oto[c])
@@ -650,7 +654,7 @@ def claves(ep, B):
     recs = sorted((r for r in B["est"] if (r.get("otono_hist") or {}).get("record_dia")), key=lambda r: -r["max"])
     if recs:
         nombres = lista_y([f"{r['nombre']} ({f1(r['max'])} mm; antes, {f1(r['otono_hist']['dia_max'])})" for r in recs[:6]])
-        out.append({"t": f"En {len(recs)} estaciones, el día más lluvioso del episodio es el día de otoño más lluvioso de sus registros "
+        out.append({"t": f"En {len(recs)} estaciones, el día más lluvioso del episodio es su día de otoño más lluvioso de la serie "
                          f"(otoños con dato desde 1991 o desde que empieza la estación, con al menos 10): {nombres}"
                          + (f", entre otras." if len(recs) > 6 else "."),
                     "fuente": "AEMET OpenData (valores climatológicos diarios 1991-2025 y observación); cálculo de calentamientoglobal.es"})
@@ -714,7 +718,9 @@ def claves(ep, B):
         if m.get("puesto") == 1:
             t += f": la más alta para ese día desde {m.get('desde') or 1981}"
             if m.get("segundo"):
-                t += f", {f1(m['sst'] - m['segundo'][1])} °C por encima de {m['segundo'][0]}"
+                dif = m["sst"] - m["segundo"][1]
+                # 23-10-2026: con una diferencia de centésimas decía «0 °C por encima de 2023»
+                t += (f", {f1(dif)} °C por encima de {m['segundo'][0]}" if dif >= 0.05 else f", por centésimas sobre {m['segundo'][0]}")
             t += " (dato provisional)"
         out.append({"t": t + ".", "fuente": "NOAA OISST v2.1 (análisis diario con satélites y boyas)"})
     return out
@@ -787,7 +793,7 @@ def main():
         cifras.append({"n": str(resumen["n100"]), "l": "estaciones de AEMET con 100 mm o más en el episodio"})
         recs = sum(1 for r in B["est"] if (r.get("otono_hist") or {}).get("record_dia"))
         if recs:
-            cifras.append({"n": str(recs), "l": "estaciones con el día de otoño más lluvioso de sus registros"})
+            cifras.append({"n": str(recs), "l": "estaciones con su día de otoño más lluvioso desde 1991 o desde que tienen datos"})
         if B["rios"]:
             r0 = B["rios"][0]
             lugar = lugar_aforo(r0)
@@ -799,7 +805,7 @@ def main():
                "nota": ep.get("nota"), "nota_fuente": ep.get("nota_fuente"),
                "dias_completos": dias_c, "dia_en_curso": B["abierto"][0] if B["abierto"] else None,
                "resumen": resumen, "cifras": cifras, "claves": claves(ep, B), "dias": B["dias"],
-               "ranking": [{k: r.get(k) for k in ("id", "nombre", "cod", "total", "dias", "max", "max_fecha", "hoy", "otono", "otono_hist", "serie_larga", "fuente_dias")}
+               "ranking": [{k: r.get(k) for k in ("id", "nombre", "cod", "total", "dias", "max", "max_fecha", "hoy", "otono", "otono_hist", "serie_larga", "fuente_dias", "validados")}
                            for r in comp[:40]],
                "incompletas": [{k: r.get(k) for k in ("id", "nombre", "cod", "total", "dias", "max", "max_fecha")}
                                for r in sorted((r for r in B["est"] if not r["completo"]), key=lambda r: -r["total"])
