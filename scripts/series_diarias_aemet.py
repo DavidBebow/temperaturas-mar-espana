@@ -44,6 +44,9 @@ PAUSA = float(os.environ.get("SERIES_PAUSA", "1.3"))      # entre peticiones: el
 ANIO_MIN = 1920
 DESDE_MAX = 1960                                          # estaciones con tabla de extremos desde este año o antes
 REFRESCO_DIAS = 7
+# Capitales que usan heladas.py y balance_mensual.py y no están en la lista de ciudad ni en el inventario de extremos:
+# Ávila, Segovia, Ourense y Lugo.
+EXTRA = ["2444", "2465", "1690A", "1518A"]
 T0 = time.time()
 
 
@@ -64,7 +67,7 @@ def estaciones():
     base = (leer_json(RAIZ / "docs" / "records" / "baseline.json", {}) or {}).get("estaciones") or {}
     largas = sorted((v.get("desde") or 9999, k) for k, v in base.items() if (v.get("desde") or 9999) <= DESDE_MAX)
     orden, vistos = [], set()
-    for ide in ciudad + [k for _, k in largas]:
+    for ide in ciudad + EXTRA + [k for _, k in largas]:
         if ide not in vistos:
             vistos.add(ide)
             desde = (base.get(ide) or {}).get("desde") or 1950
