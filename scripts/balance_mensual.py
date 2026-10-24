@@ -1288,6 +1288,7 @@ def main():
     if not args.mes:
         cur = SALIDA / "en_curso.json"
         if HOY.day >= 4:
+            actualizar_validados(mes_actual)     # los diarios validados que AEMET ya tenga del mes en curso
             hist = hist or Historia()
             hasta = HOY.day - 1
             bal = calcular(hist, mes_actual, completo=False, hasta_dia=hasta)
