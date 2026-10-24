@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Balance del mes, provincia a provincia</title>
+<style>
+:root{--bg:#f7f9fb;--ink:#1d1d1f;--soft:#6e6e73;--line:#dfe5ea;--card:#fff;--acc:#0071b8;--ember:#cc4416;--cool:#0071b8;--ok:#1f9d55;--warn:#d9821a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:22px 16px 40px}
+.eyebrow{font-size:10.5px;letter-spacing:.14em;color:var(--soft);text-transform:uppercase;font-weight:700}
+h1{margin:3px 0 0;font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-.02em;line-height:1.12}
+.sub{font-size:13px;color:var(--soft);margin-top:6px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.bar select,.bar button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--card);border-radius:9px;padding:6px 10px;color:var(--ink)}
+.bar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.estado{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;border-radius:7px;padding:4px 9px}
+.estado.provisional{background:#fdf1e2;color:var(--warn)}.estado.verificado,.estado.cerrado{background:#e8f6ee;color:var(--ok)}.estado.encurso{background:#e6f1f9;color:var(--acc)}
+.band{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 15px}
+.stat .n{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat .l{font-size:11px;color:var(--soft);margin-top:3px;line-height:1.35}
+h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);font-weight:800;margin:26px 0 8px 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.tit{font-size:19px;font-weight:800;letter-spacing:-.01em;line-height:1.3}
+.txt{font-size:14.5px;margin-top:8px}
+.lim{margin:10px 0 0;padding:8px 10px;background:#fdf6ec;border-radius:9px;font-size:12.5px;color:#6a4a10;line-height:1.45}
+.claves{margin:10px 0 0;padding-left:18px;font-size:13.5px}
+.acc{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:12.5px}
+.acc a,.acc button{color:var(--acc);font-weight:700;text-decoration:none;background:none;border:0;padding:0;font:inherit;font-size:12.5px;cursor:pointer}
+img.graf{width:100%;height:auto;border-radius:10px;border:1px solid var(--line);margin-top:12px;background:#fff}
+.tabla{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tabla th{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--soft);text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;user-select:none}
+.tabla th:first-child,.tabla td:first-child{text-align:left}
+.tabla td{padding:8px 10px;border-bottom:1px solid #eef1f4;text-align:right;font-variant-numeric:tabular-nums}
+.tabla tr.f{cursor:pointer}.tabla tr.f:hover td{background:#f7fafc}
+.c{font-weight:700}.e{font-size:11px;color:var(--soft);display:block;font-weight:400}
+.pos{color:var(--ember);font-weight:800}.neg{color:var(--cool);font-weight:800}
+.pill{font-size:10px;font-weight:800;border-radius:6px;padding:2px 6px;background:#fbe9e6;color:var(--ember);margin-left:4px}
+.pill.pc{background:#fdf1e2;color:var(--warn)}
+tr.det td{background:#fbfcfd;text-align:left;font-size:13.5px;padding:12px 14px}
+.fuera{font-size:12.5px;color:var(--soft);margin-top:10px}
+.vacio{padding:30px;text-align:center;color:var(--soft)}
+@media (max-width:720px){.band{grid-template-columns:repeat(2,1fr)}.tabla .m{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Sala de prensa · observatorio climático</div>
+  <h1 id="h1">Balance del mes, provincia a provincia</h1>
+  <div class="sub">Temperatura de cada mes en una estación de AEMET por provincia, frente a su normal de 1991-2020 y a toda su serie.</div>
+  <div class="bar">
+    <select id="sel" aria-label="Mes"></select>
+    <button id="bCurso" type="button">Mes en curso</button>
+    <span id="estado" class="estado"></span>
+    <span id="gen" class="sub" style="margin:0"></span>
+  </div>
+  <div id="main"><div class="vacio">Cargando…</div></div>
+</div>
+<script>
+// Solo en local se puede apuntar a otros datos (?base=), para probar; en la web, siempre los publicados.
+const PUBLICADO = 'https://davidbebow.github.io/temperaturas-mar-espana/prensa/balance/';
+const BASE = (() => {
+  const b = new URLSearchParams(location.search).get('base');
+  if (b && /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(b)) return b;
+  return PUBLICADO;
+})();
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const num = v => (v == null || isNaN(Number(v)) ? null : Number(v));
+const f1 = v => (num(v) == null ? '—' : num(v).toFixed(1).replace('.', ','));
+const sg = v => { const n = num(v); if (n == null) return '—'; return (n > 0 ? '+' : n < 0 ? '−' : '') + f1(Math.abs(n)); };
+const ent = v => (num(v) == null ? '—' : String(Math.round(num(v))));
+const MES_OK = /^\d{4}-\d{2}$/, COD_OK = /^\d{2}$/;
+let datos = null, orden = {k: 'anomalia', d: -1}, abierta = null;
+
+async function json(u) { const r = await fetch(u + (u.includes('?') ? '&' : '?') + 't=' + Date.now()); if (!r.ok) throw new Error(r.status); return r.json(); }
+function copiar(t, b) { navigator.clipboard.writeText(t).then(() => { const o = b.textContent; b.textContent = 'Copiado'; setTimeout(() => b.textContent = o, 1400); }); }
+function lugar(c) { return c.tipo === 'capital' ? c.ciudad : `${c.ciudad} (${c.estacion})`; }
+function plural(m) { return m + (/[rl]$/.test(m) ? 'es' : 's'); }
+
+async function iniciar() {
+  let idx;
+  try { idx = await json(BASE + 'index.json'); } catch (e) { $('#main').innerHTML = '<div class="vacio">Aún no hay balances publicados.</div>'; return; }
+  const meses = (idx.meses || []).filter(m => MES_OK.test(m.mes || ''));
+  const sel = $('#sel');
+  sel.innerHTML = meses.map(m => `<option value="${esc(m.mes)}">${esc(m.titulo_mes)}${m.estado === 'provisional' ? ' · provisional' : ''}</option>`).join('');
+  sel.onchange = () => cargar(BASE + sel.value + '.json');
+  $('#bCurso').onclick = () => cargar(BASE + 'en_curso.json');
+  if (!idx.en_curso) $('#bCurso').style.display = 'none';
+  if (!meses.length) sel.style.display = 'none';
+  if (meses.length) cargar(BASE + meses[0].mes + '.json');
+  else if (idx.en_curso) cargar(BASE + 'en_curso.json');
+}
+
+async function cargar(u) {
+  $('#main').innerHTML = '<div class="vacio">Cargando…</div>';
+  try { datos = await json(u); } catch (e) { $('#main').innerHTML = '<div class="vacio">No se pudo cargar el balance.</div>'; return; }
+  if (!MES_OK.test(datos.mes || '')) { $('#main').innerHTML = '<div class="vacio">Datos no válidos.</div>'; return; }
+  abierta = null; pintar();
+}
+
+function pintar() {
+  const b = datos, n = b.nacional || {}, curso = b.estado === 'en curso';
+  const calido = n.sentido !== 'frio', adj = calido ? 'cálido' : 'frío', adjs = calido ? 'cálidos' : 'fríos';
+  const pend = num(n.dias_sin_validar) > 0;
+  $('#bCurso').classList.toggle('on', curso);
+  const est = $('#estado');
+  est.textContent = b.estado;
+  est.className = 'estado ' + ({'provisional': 'provisional', 'verificado': 'verificado', 'cerrado': 'cerrado', 'en curso': 'encurso'}[b.estado] || '');
+  $('#gen').textContent = 'Calculado: ' + new Date(b.generado).toLocaleString('es-ES', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+  const tm = String(b.titulo_mes || ''), mes = tm.split(' de ')[0];
+  $('#h1').textContent = curso ? `${tm.charAt(0).toUpperCase() + tm.slice(1)}, del 1 al ${ent(b.hasta_dia)}` : `${tm.charAt(0).toUpperCase() + tm.slice(1)}, provincia a provincia`;
+  if (!num(n.n)) { $('#main').innerHTML = '<div class="vacio">Aún no hay estaciones con datos suficientes para este periodo.</div>'; return; }
+  const nm = calido ? n.n_calidas : n.n_frias;
+  const t5 = pend ? n.n_top5_firme : n.n_top5, rec = pend ? n.n_record_firme : n.n_record;
+  let h = `<div class="band">
+    <div class="stat"><div class="n ${num(n.anomalia_media) >= 0 ? 'pos' : 'neg'}">${sg(n.anomalia_media)} °C</div><div class="l">anomalía media frente a 1991-2020${curso ? ' (mismos días)' : ''}</div></div>
+    <div class="stat"><div class="n">${ent(nm)}/${ent(n.n)}</div><div class="l">provincias más ${calido ? 'cálidas' : 'frías'} de lo normal</div></div>
+    <div class="stat"><div class="n">${ent(t5)}${pend && num(n.n_top5) > num(n.n_top5_firme) ? '+' : ''}</div><div class="l">con uno de sus cinco ${curso ? 'arranques de mes' : esc(plural(mes))} más ${adjs}</div></div>
+    <div class="stat"><div class="n">${ent(rec)}${pend && num(n.n_record) > num(n.n_record_firme) ? '+' : ''}</div><div class="l">con récord de su serie${num(n.n_empate_record) ? ` · ${ent(n.n_empate_record)} empates técnicos` : ''}</div></div>
+  </div>`;
+  const nn = b.nota_nacional;
+  if (nn) {
+    const todo = [nn.titular, nn.texto, nn.aviso ? 'Atención: ' + nn.aviso : '', nn.cita].filter(Boolean).join('\n\n');
+    h += `<h2>Nota nacional</h2><div class="card"><div class="tit">${esc(nn.titular)}</div><div class="txt">${esc(nn.texto)}</div>
+      <ul class="claves">${(nn.datos_clave || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+      ${nn.aviso ? `<div class="lim">${esc(nn.aviso)}</div>` : ''}
+      <div class="acc"><button type="button" id="cpN">Copiar la nota</button><a href="${esc(PUBLICADO + b.mes)}.csv">CSV de las provincias</a><a href="${esc(BASE + b.mes)}/nacional.png" target="_blank" rel="noopener">Gráfico (PNG)</a></div>
+      <img class="graf" src="${esc(BASE + b.mes)}/nacional.png?t=${Date.now()}" alt="Anomalía de temperatura de ${esc(tm)} en cada provincia" loading="lazy"></div>`;
+    setTimeout(() => { const x = $('#cpN'); if (x) x.onclick = () => copiar(todo, x); }, 0);
+  } else if (curso) {
+    h += `<div class="lim" style="margin-top:14px">${esc(b.metodo)}</div>`;
+  }
+  h += `<h2>Provincia a provincia</h2><table class="tabla"><thead><tr>
+    <th data-k="ciudad">Estación</th><th data-k="tm">Media</th><th data-k="anomalia">Anomalía</th><th data-k="puesto">Puesto</th>
+    <th class="m" data-k="anomalia_tx">Máx.</th><th class="m" data-k="anomalia_tn">Mín.</th><th class="m" data-k="tendencia_decada">°C/década</th></tr></thead><tbody>`;
+  const caps = (b.capitales || []).filter(c => c.valido && COD_OK.test(c.cod || '')).sort((x, y) => {
+    const a = x[orden.k], c = y[orden.k];
+    if (typeof a === 'string') return orden.d * a.localeCompare(c, 'es');
+    return orden.d * ((a == null ? -99 : a) - (c == null ? -99 : c));
+  });
+  for (const c of caps) {
+    const cadj = c.sentido === 'frio' ? 'frío' : 'cálido';
+    const firme = c.puesto_firme && (c.top5_firme || !c.top5);
+    let pill = '';
+    if (num(c.anomalia) !== 0 && c.sentido === n.sentido) {
+      if (c.record) pill = firme ? '<span class="pill">récord</span>' : '<span class="pill pc">récord?</span>';
+      else if (c.empate_record) pill = `<span class="pill${firme ? '' : ' pc'}">empate con el récord${firme ? '' : '?'}</span>`;
+      else if (c.top5) pill = `<span class="pill${firme ? '' : ' pc'}">top 5${firme ? '' : '?'}</span>`;
+    }
+    const puesto = firme ? `${ent(c.puesto)}.º más ${cadj}` : 'por confirmar';
+    const notas = [c.estacion];
+    if (num(c.dias_observacion)) notas.push(`${ent(c.dias_observacion)} días sin validar`);
+    if ((c.dias_faltan || []).length) notas.push(`${c.dias_faltan.length} días sin dato`);
+    h += `<tr class="f" data-cod="${esc(c.cod)}"><td><span class="c">${esc(c.tipo === 'capital' ? c.ciudad : c.provincia)}</span>${pill}<span class="e">${esc(notas.join(' · '))}</span></td>
+      <td>${f1(c.tm)} °C</td><td class="${num(c.anomalia) >= 0 ? 'pos' : 'neg'}">${sg(c.anomalia)}</td>
+      <td>${esc(puesto)}<span class="e">de ${ent(c.anios_serie)} años</span></td>
+      <td class="m">${sg(c.anomalia_tx)}</td><td class="m">${sg(c.anomalia_tn)}</td>
+      <td class="m">${c.tendencia_decada == null ? '—' : sg(c.tendencia_decada) + (c.tendencia_significativa ? '' : '<span class="e">no signif.</span>')}</td></tr>`;
+    if (abierta === c.cod) {
+      const nt = c.nota;
+      h += `<tr class="det"><td colspan="7">${nt ? `<div class="tit" style="font-size:16px">${esc(nt.titular)}</div><div class="txt">${esc(nt.texto)}</div>${nt.aviso ? `<div class="lim">${esc(nt.aviso)}</div>` : ''}
+        <div class="acc"><button type="button" id="cpC">Copiar la nota</button><a href="${esc(BASE + b.mes)}/${esc(c.cod)}.png" target="_blank" rel="noopener">Gráfico (PNG)</a></div>
+        <img class="graf" src="${esc(BASE + b.mes)}/${esc(c.cod)}.png?t=${Date.now()}" alt="Serie de ${esc(mes)} en ${esc(lugar(c))}" loading="lazy">`
+        : `<div class="txt">Del 1 al ${ent(b.hasta_dia)}: ${f1(c.tm)} °C de media, ${sg(c.anomalia)} °C respecto a los mismos días de 1991-2020. ${firme ? `Es el ${ent(c.puesto)}.º arranque de mes más ${cadj} de ${ent(c.anios_serie)} años con dato.` : 'Su puesto depende de días aún sin validar.'}</div>`}</td></tr>`;
+      if (nt) setTimeout(() => { const x = $('#cpC'); if (x) x.onclick = () => copiar([nt.titular, nt.texto, nt.aviso ? 'Atención: ' + nt.aviso : '', nt.fuente].filter(Boolean).join('\n\n'), x); }, 0);
+    }
+  }
+  h += '</tbody></table>';
+  const fuera = (b.capitales || []).filter(c => !c.valido).map(c => `${c.provincia} (${c.motivo})`);
+  const sin = (b.sin_serie || []).map(s => s.provincia);
+  h += `<div class="fuera">${fuera.length ? 'Sin datos suficientes en este periodo: ' + esc(fuera.join(' · ')) + '. ' : ''}Provincias sin estación de serie larga: ${esc(sin.join(', '))}.</div>`;
+  if (!curso) h += `<h2>Método</h2><div class="card"><div class="txt" style="margin:0">${esc(b.metodo)}</div><ul class="claves">${(b.limites || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul><div class="fuera">${esc(b.fuente)}. ${esc(b.licencia)}.</div></div>`;
+  $('#main').innerHTML = h;
+  document.querySelectorAll('.tabla th').forEach(th => th.onclick = () => { const k = th.dataset.k; orden = {k, d: orden.k === k ? -orden.d : (k === 'ciudad' || k === 'puesto' ? 1 : -1)}; pintar(); });
+  document.querySelectorAll('tr.f').forEach(tr => tr.onclick = () => { abierta = abierta === tr.dataset.cod ? null : tr.dataset.cod; pintar(); });
+  if (window.parent !== window) window.parent.postMessage({tipo: 'cg-alto', alto: document.documentElement.scrollHeight}, '*');
+}
+iniciar();
+</script>
+</body>
+</html>
