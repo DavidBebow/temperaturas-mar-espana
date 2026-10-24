@@ -559,12 +559,14 @@ def frase_otono(x: dict) -> str:
 
 
 # ----------------------------------------------------------------------------------------------------------- gráficos
-# Paleta «escarcha»: del rastrojo sin helar al azul de noche de hielo. La brasa solo marca hoy y este otoño.
-TINTA = "#1a2530"
-GRIS = "#5d6b78"
-RASTROJO = "#efe6d6"
-BRASA = "#c4471d"
-HIELO = [(0.0, (207, 227, 242)), (0.25, (141, 187, 221)), (0.5, (76, 136, 184)), (0.75, (36, 96, 143)), (1.0, (15, 53, 84))]
+# Paleta «noche de helada»: los gráficos van sobre azul noche y la escarcha brilla: cuanto más blanco, en más inviernos
+# heló ese día. La brasa solo marca hoy y este otoño.
+TINTA = "#e8f1f8"      # texto principal sobre el panel
+GRIS = "#8fa9bd"       # texto secundario sobre el panel
+RASTROJO = "#163a55"   # pista vacía: días en que no heló ningún invierno
+REJILLA = "#2a4a63"    # líneas de rejilla
+BRASA = "#ff7a45"
+HIELO = [(0.0, (31, 77, 112)), (0.2, (58, 127, 179)), (0.45, (140, 198, 238)), (0.7, (212, 238, 255)), (1.0, (255, 255, 255))]
 MESES_EJE = [(8, "ago"), (9, "sep"), (10, "oct"), (11, "nov"), (12, "dic"), (1, "ene"), (2, "feb"), (3, "mar"), (4, "abr"),
              (5, "may"), (6, "jun"), (7, "jul")]
 
@@ -575,7 +577,7 @@ def color_hielo(p: float) -> str:
         if p <= b:
             f = (p - a) / (b - a)
             return "#%02x%02x%02x" % tuple(round(ca[k] + f * (cb[k] - ca[k])) for k in range(3))
-    return "#0f3554"
+    return "#ffffff"
 
 
 def _tramos(prob: list, x0: float, ancho: float, y: float, alto: float) -> list:
@@ -617,7 +619,7 @@ def svg_calendario(x: dict, movil: bool = False) -> str:
     for m, lab in MESES_EJE:
         i = indice(date(2021 if m >= 8 else 2022, m, 1))
         s.append(f'<line x1="{X0 + AN * i / 365:.1f}" x2="{X0 + AN * i / 365:.1f}" y1="{Y + AL}" y2="{Y + AL + 5}" '
-                 f'stroke="#b9c3cc"/><text x="{X0 + AN * (i + 15) / 365:.1f}" y="{Y + AL + 19}" font-size="{FM}" '
+                 f'stroke="{REJILLA}"/><text x="{X0 + AN * (i + 15) / 365:.1f}" y="{Y + AL + 19}" font-size="{FM}" '
                  f'text-anchor="middle" fill="{GRIS}">{lab}</text>')
     if c["tipo"] == "frecuente":
         # las dos fechas hacia fuera: la primera termina en su línea y la última empieza en la suya, así no se pisan
@@ -710,7 +712,7 @@ def svg_temporada(x: dict) -> str:
     for m, lab in MESES_EJE:
         i = indice(date(2021 if m >= 8 else 2022, m, 1))
         if lo <= i <= hi:
-            s.append(f'<line x1="{L}" x2="{W - R}" y1="{Y(i):.1f}" y2="{Y(i):.1f}" stroke="#e6ebef"/>'
+            s.append(f'<line x1="{L}" x2="{W - R}" y1="{Y(i):.1f}" y2="{Y(i):.1f}" stroke="{REJILLA}"/>'
                      f'<text x="{L - 8}" y="{Y(i) + 4:.1f}" font-size="12.5" text-anchor="end" fill="{GRIS}">1 {lab}</text>')
     for k, y in enumerate(range(ys[0], ys[0] + n)):
         v = inv.get(y)
@@ -718,7 +720,7 @@ def svg_temporada(x: dict) -> str:
         w = max(2.0, paso * 0.6)
         if v and v["primera"]:
             a, b = Y(indice(date.fromisoformat(v["primera"]))), Y(indice(date.fromisoformat(v["ultima"])))
-            col = "#24608f" if NORMAL[0] <= y <= NORMAL[1] else "#8dbbdd"
+            col = "#bfe6ff" if NORMAL[0] <= y <= NORMAL[1] else "#3f7aa6"
             s.append(f'<rect x="{cx - w / 2:.1f}" y="{a:.1f}" width="{w:.1f}" height="{max(2, b - a):.1f}" rx="{w / 2:.1f}" '
                      f'fill="{col}"><title>{invierno(y)}: de {esc(dia_mes(indice(date.fromisoformat(v["primera"]))))} '
                      f'a {esc(dia_mes(indice(date.fromisoformat(v["ultima"]))))}, {v["dias"]} días de helada</title></rect>')
@@ -749,7 +751,7 @@ def svg_minimas(x: dict) -> str:
     paso_t = 2 if hi - lo <= 14 else 4
     t = lo + (-lo) % paso_t
     while t <= hi:
-        trazo = f' stroke="{TINTA}"' if t == 0 else ' stroke="#e6ebef"'
+        trazo = f' stroke="{TINTA}"' if t == 0 else f' stroke="{REJILLA}"'
         s.append(f'<line x1="{L}" x2="{W - R}" y1="{Y(t):.1f}" y2="{Y(t):.1f}"{trazo}/><text x="{L - 8}" y="{Y(t) + 4:.1f}" '
                  f'font-size="12.5" text-anchor="end" fill="{GRIS}">{num(t, 0)} °C</text>')
         t += paso_t
@@ -761,7 +763,7 @@ def svg_minimas(x: dict) -> str:
         cx = L + (k + 0.5) * paso
         w = max(2.0, paso * 0.6)
         yy = Y(v["minima"])
-        col = "#24608f" if v["minima"] <= 0 else "#d9c7a8"
+        col = "#bfe6ff" if v["minima"] <= 0 else "#4a6378"
         top, h = (min(yy, base), abs(yy - base))
         s.append(f'<rect x="{cx - w / 2:.1f}" y="{top:.1f}" width="{w:.1f}" height="{max(1.5, h):.1f}" fill="{col}">'
                  f'<title>{invierno(y)}: {esc(grados(v["minima"]))} el {esc(fecha_larga(date.fromisoformat(v["minima_f"])))}'
@@ -779,80 +781,136 @@ FUENTE = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel=
           'crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800'
           '&amp;display=swap" rel="stylesheet">')
 CSS = FUENTE + """<style>
-.cghel{--tinta:#1a2530;--gris:#5d6b78;--escarcha:#eaf3fa;--cristal:#a9cde8;--hielo:#24608f;--noche:#0f3554;--rastrojo:#efe6d6;--brasa:#c4471d;
-max-width:860px;margin:0 auto;padding:28px 24px 12px;box-sizing:border-box;background:#fff;color:var(--tinta);
+.cghel{--tinta:#1a2530;--gris:#5d6b78;--escarcha:#eaf3fa;--hielo:#24608f;--noche:#0f3554;--brasa:#c4471d;
+--p-txt:#e8f1f8;--p-sub:#b9cddc;--p-mut:#8fa9bd;--p-cel:#132f45;--p-hondo:#0a1b2a;--p-cristal:#bfe6ff;--p-brasa:#ff7a45;
+max-width:1120px;margin:0 auto;padding:24px 20px 12px;box-sizing:border-box;background:#fff;color:var(--tinta);
 font:17px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 .cghel *{box-sizing:border-box}
 .cghel a{color:var(--hielo);text-decoration-thickness:1px;text-underline-offset:3px}
 .cghel a:hover{color:var(--noche)}
-.cghel a:focus-visible{outline:2px solid var(--brasa);outline-offset:2px;border-radius:2px}
-.cghel h1,.cghel h2,.cghel .cghel-cal-f,.cghel-cifra-n{font-family:"Bricolage Grotesque",-apple-system,"Segoe UI",sans-serif}
-.cghel-migas{font-size:14px;color:var(--gris);margin:0 0 18px}.cghel-migas a{color:var(--gris);text-decoration:none}
-.cghel-migas a:hover{text-decoration:underline}.cghel-migas span{margin:0 6px;color:#aab4bd}
-.cghel h1{font-size:46px;line-height:1.04;letter-spacing:-.025em;font-weight:780;margin:0 0 18px;max-width:17ch;color:var(--noche)}
-.cghel .lede{font-size:20px;line-height:1.55;margin:0 0 26px;max-width:62ch}
-.cghel h2{font-size:29px;line-height:1.15;letter-spacing:-.015em;font-weight:720;margin:52px 0 12px;color:var(--noche)}
-.cghel h3{font-size:18px;line-height:1.35;margin:26px 0 4px;font-weight:700}
-.cghel p{margin:0 0 14px;max-width:68ch}
+.cghel a:focus-visible,.cghel summary:focus-visible{outline:2px solid var(--brasa);outline-offset:2px;border-radius:4px}
+.cghel h1,.cghel h2,.cghel h3,.cghel .cghel-cal-f,.cghel-cifra-n,.cghel-otono-v b,.cghel-dia b,.cghel-rec b,.cghel-antes b{font-family:"Bricolage Grotesque",-apple-system,"Segoe UI",sans-serif}
+.cghel h2{font-size:30px;line-height:1.15;letter-spacing:-.015em;font-weight:720;margin:56px 0 12px;color:var(--noche)}
+.cghel h3{font-size:18px;line-height:1.35;margin:0;font-weight:700}
+.cghel p{margin:0 0 14px;max-width:70ch}
 .cghel-svg{display:block;width:100%;height:auto;overflow:visible}
 .cghel-svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 .cghel .cghel-cal-f{font-weight:760;letter-spacing:-.01em}
 .cghel-m{display:none}
-.cghel-esp-n{text-decoration:underline;text-decoration-color:#c9d3db}
-.cghel a:hover .cghel-esp-n{fill:var(--hielo)}
-.cghel-cal{margin:6px 0 4px}
-.cghel-clave{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:14px;color:var(--gris);margin:6px 0 0}
+/* el panel de noche */
+.cghel-panel{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);column-gap:40px;
+grid-template-areas:"intro otono" "cal cal" "cifras cifras" "semana semana";grid-template-rows:repeat(4,auto);grid-auto-rows:0;
+background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color:var(--p-txt);border-radius:28px;padding:40px 44px 38px}
+.cghel-panel a{color:var(--p-cristal)}.cghel-panel a:hover{color:#fff}
+.cghel-intro{grid-area:intro;align-self:end}
+.cghel-migas{font-size:14px;color:var(--p-mut);margin:0 0 16px}.cghel-migas a{color:var(--p-mut);text-decoration:none}
+.cghel-migas a:hover{text-decoration:underline;color:#fff}.cghel-migas span{margin:0 6px;opacity:.6}
+.cghel h1{font-size:50px;line-height:1.02;letter-spacing:-.025em;font-weight:760;margin:0 0 18px;color:#fff}
+.cghel h1 span{display:block;font-size:.52em;line-height:1.15;font-weight:560;letter-spacing:-.01em;color:#9fd2f3;margin-top:8px}
+.cghel .lede{font-size:18.5px;line-height:1.55;margin:0;color:var(--p-sub);max-width:36em}
+.cghel-otono{grid-area:otono;align-self:end;background:rgba(255,255,255,.06);border:1px solid rgba(191,230,255,.16);border-radius:22px;padding:22px 24px}
+.cghel .cghel-otono h2{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;font-weight:500;letter-spacing:0;color:var(--p-mut);margin:0}
+.cghel .cghel-otono-v{margin:4px 0 8px;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
+.cghel-otono-v b{font-size:60px;line-height:1;font-weight:760;color:#fff;letter-spacing:-.02em}
+.cghel-otono-v span{font-size:16px;line-height:1.35;color:var(--p-cristal);font-weight:600}
+.cghel .cghel-otono p{font-size:15.5px;line-height:1.5;color:var(--p-sub);margin:0}
+.cghel-otono ul{margin:10px 0 0;padding:0;list-style:none;font-size:15px;color:var(--p-sub)}
+.cghel-otono li{padding:6px 0;border-top:1px solid rgba(191,230,255,.12)}
+.cghel-calw{grid-area:cal;margin-top:36px}
+.cghel-cal{margin:0}
+.cghel-clave{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:14px;color:var(--p-mut);margin:4px 0 0}
 .cghel-escala{display:inline-flex;align-items:center;gap:8px}
-.cghel-escala i{display:inline-block;width:120px;height:10px;border-radius:5px;background:linear-gradient(90deg,#cfe3f2,#8dbbdd,#4c88b8,#24608f,#0f3554)}
-.cghel-sin i{display:inline-block;width:18px;height:10px;border-radius:5px;background:var(--rastrojo);vertical-align:-1px;margin-right:6px}
-.cghel-cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 28px;margin:26px 0 0;padding:18px 0 0;border-top:1px solid #e3e8ec}
-.cghel-cifra-n{display:block;font-size:34px;line-height:1.05;font-weight:760;color:var(--noche);letter-spacing:-.015em}
-.cghel-cifra-l{display:block;font-size:14.5px;color:var(--gris);margin-top:4px;max-width:22ch}
+.cghel-escala i{display:inline-block;width:120px;height:10px;border-radius:5px;background:linear-gradient(90deg,#1f4d70,#3a7fb3,#8cc6ee,#d4eeff,#fff)}
+.cghel-sin i{display:inline-block;width:18px;height:10px;border-radius:5px;background:#163a55;box-shadow:inset 0 0 0 1px #2a4a63;vertical-align:-1px;margin-right:6px}
+.cghel-cifras{grid-area:cifras;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:26px}
+.cghel-cifra{background:var(--p-cel);border-radius:18px;padding:18px 20px}
+.cghel-cifra-n{display:block;font-size:36px;line-height:1.05;font-weight:760;color:#fff;letter-spacing:-.015em}
+.cghel-cifra-l{display:block;font-size:14px;line-height:1.4;color:#9fb6c8;margin-top:6px}
+.cghel-panel .cg-ssr-slot,.cghel-panel .cghel-hoy{display:contents}
 .cg-ssr-slot{visibility:hidden;font-size:0;line-height:0}
-.cg-ssr-slot .cghel-hoy{visibility:visible;font-size:17px;line-height:1.55}
-.cghel-hoy{background:var(--escarcha);border-radius:22px;padding:24px 26px 18px;margin:34px 0 6px;color:var(--tinta)}
-.cghel .cghel-hoy h2{margin:0 0 6px;font-size:25px}
-.cghel-hoy p{margin:0 0 12px}
-.cghel-hoy .cghel-estado{font-size:19px;line-height:1.5}
-.cghel .cghel-hoy h3{margin:18px 0 10px;font-size:16px;color:var(--gris);font-weight:600}
-.cghel-hoy ul.cghel-dias{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-.cghel-hoy .cghel-dia{background:#fff;border-radius:14px;padding:10px 4px 9px;text-align:center;margin:0}
-.cghel-hoy .cghel-dia span{display:block;font-size:13px;color:var(--gris);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cghel-hoy .cghel-dia b{display:block;font-size:22px;line-height:1.2;font-weight:760;font-family:"Bricolage Grotesque",-apple-system,sans-serif}
-.cghel-hoy .cghel-dia small{display:block;font-size:11.5px;min-height:15px;color:var(--gris)}
-.cghel-hoy .cghel-dia-casi{background:#d4e6f4}
-.cghel-hoy .cghel-dia-helada{background:var(--noche);color:#fff}
-.cghel-hoy .cghel-dia-helada span,.cghel-hoy .cghel-dia-helada small{color:#cfe3f2}
-.cghel-hoy ul.cghel-ya{margin:4px 0 12px;padding-left:20px}
-.cghel-hoy .cghel-pie{font-size:13.5px;color:var(--gris);margin:12px 0 0}
-.cghel figure{margin:20px 0 6px}
-.cghel figcaption{font-size:14px;color:var(--gris);margin-top:8px;max-width:68ch}
-.cghel-antes{margin:16px 0 10px;display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center;max-width:620px}
-.cghel-antes span{font-size:14.5px;color:var(--gris);white-space:nowrap}
-.cghel-barra{height:30px;border-radius:15px;background:var(--cristal);display:flex;align-items:center;justify-content:flex-end;padding:0 12px;
-font-weight:700;font-size:15px;color:var(--noche);min-width:max-content}
-.cghel-barra.cghel-ahora{background:var(--noche);color:#fff}
-.cghel-rec{display:grid;grid-template-columns:1fr auto;margin:10px 0;max-width:640px}
-.cghel-rec dt,.cghel-rec dd{margin:0;padding:11px 0;border-bottom:1px solid #e3e8ec}
-.cghel-rec dt{color:var(--gris)}
-.cghel-rec dd{text-align:right;font-weight:650}
-.cghel-rec dd small{display:block;font-weight:400;color:var(--gris);font-size:14px}
-.cghel-tabla{width:100%;border-collapse:collapse;font-size:15.5px;margin:12px 0}
-.cghel-tabla th,.cghel-tabla td{border-bottom:1px solid #e3e8ec;padding:9px 8px 9px 0;text-align:left;vertical-align:top}
-.cghel-tabla th{font-size:14px;color:var(--gris);font-weight:600}
-.cghel-tabla td:last-child,.cghel-tabla th:last-child{text-align:right;padding-right:0}
+.cg-ssr-slot .cghel-otono,.cg-ssr-slot .cghel-semana{visibility:visible;font-size:17px;line-height:1.55}
+.cghel-semana{grid-area:semana;margin-top:20px;background:var(--p-hondo);border-radius:22px;padding:22px 24px 18px}
+.cghel .cghel-semana h3{font-size:21px;color:#fff;font-weight:700;margin:0 0 16px}
+.cghel-semana ul.cghel-dias{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.cghel-dia{background:var(--p-cel);border-radius:16px;padding:12px 6px 10px;margin:0;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+.cghel-dia-n{font-size:13px;color:#9fb6c8;white-space:nowrap}
+.cghel-dia b{font-size:26px;line-height:1.1;font-weight:760;color:#fff}
+.cghel-termo{position:relative;width:12px;height:84px;margin:6px 0 4px;border-radius:6px;background:#0c2133}
+.cghel-termo span{position:absolute;left:0;right:0;display:block}
+.cghel-nivel{bottom:0;border-radius:6px;background:linear-gradient(#6fb0dc,#2f6f9f)}
+.cghel-termo span.cghel-cero{left:-7px;right:-7px;height:2px;margin-bottom:-1px;background:rgba(232,241,248,.55);border-radius:1px}
+.cghel-dia small{display:block;font-size:12px;line-height:1.2;min-height:15px;color:var(--p-cristal);font-weight:600}
+.cghel-dia-casi .cghel-nivel{background:linear-gradient(#bfe6ff,#6fb0dc)}
+.cghel-dia-helada{background:#1f4d70}
+.cghel-dia-helada .cghel-nivel{background:#fff;box-shadow:0 0 10px rgba(191,230,255,.9)}
+.cghel-dia-helada small{color:#fff}
+.cghel-dia-hoy{box-shadow:inset 0 0 0 2px var(--p-cristal)}
+.cghel .cghel-semana .cghel-pie{font-size:13.5px;line-height:1.5;color:var(--p-mut);margin:14px 0 0;max-width:none}
+.cghel-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.cghel-chips li{background:var(--p-cel);border-radius:999px;padding:7px 14px;font-size:15px;color:var(--p-sub)}
+.cghel-chips li b{color:#fff;font-weight:700}
+.cghel-chips li.cghel-chip-hel{background:#1f4d70}
+/* debajo del panel */
+.cghel-panel-hub{grid-template-areas:"intro otono" "semana semana" "cal cal";grid-template-rows:repeat(3,auto)}
+.cghel .cghel-panel-h2{color:#fff;font-size:24px;margin:0 0 14px}
+.cghel .cghel-pnota{font-size:14px;color:var(--p-mut);margin:10px 0 0;max-width:none}
+.cghel-bajan{display:grid;gap:8px;margin:16px 0 10px;background:#0c2133;border-radius:22px;padding:20px 22px;max-width:820px}
+.cghel .cghel-baja{display:grid;grid-template-columns:150px 1fr 96px;align-items:center;gap:14px;text-decoration:none;color:var(--p-txt);font-size:15.5px}
+.cghel .cghel-baja:hover{color:#fff}.cghel .cghel-baja:hover .cghel-baja-c{text-decoration:underline}
+.cghel-baja-b{position:relative;height:16px}
+.cghel-baja-a,.cghel-baja-h{position:absolute;left:0;top:0;bottom:0;border-radius:8px}
+.cghel-baja-a{background:#2f6f9f}.cghel-baja-h{background:#bfe6ff;top:4px;bottom:4px}
+.cghel-baja-n{text-align:right;color:var(--p-mut);font-size:14.5px}.cghel-baja-n b{color:#fff}
 .cghel-nota{font-size:14.5px;color:var(--gris)}
-.cghel-faq h3{color:var(--noche)}
-.cghel-metodo{margin:52px 0 12px;padding:20px 0 0;border-top:2px solid var(--noche);font-size:15px;color:#33414e}
+.cghel-tras{margin:16px 4px 0}
+.cghel-graf{margin:22px 0 6px;background:#0c2133;border-radius:24px;padding:26px 26px 18px}
+.cghel-graf figcaption{font-size:14px;color:var(--p-mut);margin-top:12px;max-width:70ch}
+.cghel-antes{margin:18px 0 16px;display:grid;grid-template-columns:auto 1fr;gap:14px 18px;align-items:center;max-width:760px;
+background:#0c2133;border-radius:22px;padding:22px 24px;color:var(--p-txt)}
+.cghel-antes span{font-size:15px;color:var(--p-mut);white-space:nowrap}
+.cghel-barra{height:40px;border-radius:12px;background:#2f6f9f;display:flex;align-items:center;justify-content:flex-end;padding:0 14px;min-width:max-content}
+.cghel-barra b{font-size:20px;font-weight:760;color:#fff}
+.cghel-barra.cghel-ahora{background:linear-gradient(90deg,#6fb0dc,#bfe6ff)}.cghel-barra.cghel-ahora b{color:var(--noche)}
+.cghel-recs{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:18px 0 0}
+.cghel-rec{background:var(--escarcha);border-radius:18px;padding:18px 20px}
+.cghel-rec span{display:block;font-size:14px;color:var(--gris);line-height:1.4}
+.cghel-rec b{display:block;font-size:24px;line-height:1.15;font-weight:740;color:var(--noche);margin:6px 0 2px;letter-spacing:-.01em}
+.cghel-rec small{display:block;font-size:14px;color:var(--gris)}
+.cghel-faq{max-width:820px}
+.cghel-faq details{border-bottom:1px solid #e1e8ee}
+.cghel-faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 0}
+.cghel-faq summary::-webkit-details-marker{display:none}
+.cghel-faq summary::after{content:"+";font-size:26px;line-height:1;color:var(--hielo);font-weight:300;transition:transform .2s}
+.cghel-faq details[open] summary::after{transform:rotate(45deg)}
+.cghel-faq summary h3{color:var(--noche)}
+.cghel-faq details p{margin:0 0 18px}
+.cghel-tabla{width:100%;border-collapse:collapse;font-size:15.5px;margin:12px 0}
+.cghel-tabla th,.cghel-tabla td{border-bottom:1px solid #e3e8ec;padding:10px 8px 10px 0;text-align:left;vertical-align:top}
+.cghel-tabla th{font-size:14px;color:var(--gris);font-weight:600}
+.cghel-tabla tbody tr:hover{background:var(--escarcha)}
+.cghel-tabla td:last-child,.cghel-tabla th:last-child{text-align:right;padding-right:0}
+.cghel-metodo{margin:56px 0 12px;padding:22px 26px 10px;border-radius:20px;background:#f2f5f8;font-size:15px;color:#33414e}
 .cghel-metodo p{max-width:none}
-@media(max-width:600px){.cghel{padding:18px 16px 4px;font-size:16.5px}.cghel h1{font-size:33px}.cghel .lede{font-size:18px}
-.cghel h2{font-size:24px;margin-top:42px}
+.cghel-esp-n{text-decoration:underline;text-decoration-color:#3f6684}
+.cghel a:hover .cghel-esp-n{fill:#fff}
+@media(max-width:860px){.cghel-panel{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "otono" "cal" "cifras" "semana";grid-template-rows:repeat(5,auto);padding:28px 22px 24px}
+.cghel-panel-hub{grid-template-areas:"intro" "otono" "semana" "cal";grid-template-rows:repeat(4,auto)}
+.cghel-otono{margin-top:24px}.cghel h1{font-size:40px}}
+@media(max-width:600px){.cghel{padding:12px 10px 4px;font-size:16.5px}
+.cghel-panel{padding:22px 14px 16px;border-radius:22px;background:radial-gradient(600px 400px at 90% -10%,#1d4a6e 0,#0c2133 60%)}
+.cghel h1{font-size:31px}.cghel .lede{font-size:17px}.cghel h2{font-size:24px;margin-top:44px}
+.cghel-otono{padding:18px 18px}.cghel-otono-v b{font-size:46px}
 .cghel-d{display:none}.cghel-m{display:block}
+.cghel-cifras{grid-template-columns:1fr 1fr;gap:10px}.cghel-cifra{padding:14px 14px}.cghel-cifra-n{font-size:26px}
+.cghel-semana{padding:16px 10px 14px}.cghel .cghel-semana h3{font-size:17px;padding:0 4px}
+.cghel-semana ul.cghel-dias{gap:4px}.cghel-dia{padding:9px 2px 8px;border-radius:12px}.cghel-dia b{font-size:18px}
+.cghel-dn{display:none}.cghel-dia-n{font-size:12px}.cghel-termo{height:58px;width:8px}.cghel-dia small{display:none}
+.cghel .cghel-semana .cghel-pie{padding:0 4px}
+.cghel-graf{padding:16px 12px 12px;border-radius:18px;margin-left:-4px;margin-right:-4px}
 .cghel-svgw{overflow-x:auto;direction:rtl}.cghel-svgw svg{min-width:600px;direction:ltr}
-.cghel-cifras{grid-template-columns:1fr 1fr;gap:16px 18px}.cghel-cifra-n{font-size:26px}
-.cghel-hoy{padding:18px 14px 14px;border-radius:18px}
-.cghel-hoy ul.cghel-dias{grid-template-columns:repeat(4,minmax(0,1fr))}
-.cghel-tabla{font-size:14.5px}.cghel-escala i{width:70px}}
+.cghel-antes{padding:16px 14px;gap:10px 12px}.cghel-barra{height:34px}.cghel-barra b{font-size:17px}
+.cghel-tabla{font-size:14.5px}.cghel-escala i{width:70px}
+.cghel .cghel-baja{grid-template-columns:96px 1fr 70px;gap:8px;font-size:14px}.cghel-bajan{padding:14px 12px}.cghel-metodo{padding:18px 16px 6px}}
 @media(prefers-reduced-motion:reduce){.cghel *{transition:none!important}}
 </style>"""
 
@@ -924,25 +982,35 @@ def bloque_antes(x: dict) -> str:
     if not d or max(d["t1"], d["t2"]) < 1:
         return ""
     m = max(d["t1"], d["t2"])
-    fila = lambda lab, v, cls: (f'<span>{lab}</span><div class="cghel-barra{cls}" style="width:{max(14, 100 * v / m):.0f}%">'
-                                f'{entero(v) if v >= 1 else num(v)} días</div>')
+    fila = lambda lab, v, cls: (f'<span>{lab}</span><div class="cghel-barra{cls}" style="width:{max(16, 100 * v / m):.0f}%">'
+                                f'<b>{entero(v) if v >= 1 else num(v)} días</b></div>')
     return ('<div class="cghel-antes">' + fila("1971-1990", d["t1"], "") + fila("2006-2025", d["t2"], " cghel-ahora")
             + "</div>")
+
+
+def h1_html(principal: str, resto: str) -> str:
+    """Titular en dos alturas; el texto sigue siendo una sola frase para buscadores."""
+    return f"<h1>{esc(principal)}:<span> {esc(resto)}</span></h1>"
+
+
+def faq_html(q: list) -> str:
+    out = ['<div class="cghel-faq"><h2>Preguntas frecuentes</h2>']
+    for k, (a, b) in enumerate(q):
+        out.append(f'<details{" open" if k == 0 else ""}><summary><h3>{esc(a)}</h3></summary><p>{esc(b)}</p></details>')
+    out.append("</div>")
+    return "".join(out)
+
+
+def tarjeta(etiqueta: str, valor: str, detalle: str = "") -> str:
+    return (f'<div class="cghel-rec"><span>{esc(etiqueta)}</span><b>{esc(valor)}</b>'
+            + (f"<small>{esc(detalle)}</small>" if detalle else "") + "</div>")
 
 
 def html_ciudad(x: dict, hub_url: str) -> str:
     c, r, ciudad, e = x["clima"], x["records"], x["ciudad"], x["estacion"]
     tipo = c["tipo"]
-    h1 = (f"Heladas en {ciudad}: cuándo llega la primera y cuándo la última" if tipo == "frecuente"
-          else f"¿Hiela en {ciudad}?")
-    out = [CSS, '<div class="cghel">',
-           f'<div class="cghel-migas"><a href="/">Inicio</a><span>/</span><a href="{hub_url}">Heladas</a><span>/</span>'
-           f'{esc(ciudad)}</div>',
-           f"<h1>{esc(h1)}</h1>",
-           f'<p class="lede">{esc(frase_cuando(x))}</p>',
-           '<figure class="cghel-cal"><div class="cghel-d">' + svg_calendario(x) + '</div><div class="cghel-m">'
-           + svg_calendario(x, True) + "</div></figure>",
-           clave_calendario()]
+    h1 = (h1_html(f"Heladas en {ciudad}", "cuándo llega la primera y cuándo la última") if tipo == "frecuente"
+          else f"<h1>{esc(f'¿Hiela en {ciudad}?')}</h1>")
     cif = []
     if tipo == "frecuente":
         cif.append((f"{entero(c['dias'])}", "días de helada en un año normal"))
@@ -955,12 +1023,19 @@ def html_ciudad(x: dict, hub_url: str) -> str:
             cif.append((str(date.fromisoformat(r["ultima_helada"]).year),
                         f"la última vez que heló ({fecha_larga(date.fromisoformat(r['ultima_helada']), False)})"))
     if r.get("minima"):
-        cif.append((grados(r["minima"]["t"]), f"la temperatura más baja, en {date.fromisoformat(r['minima']['f']).year}"))
-    out.append('<div class="cghel-cifras">' + "".join(
-        f'<div class="cghel-cifra"><span class="cghel-cifra-n">{esc(a)}</span><span class="cghel-cifra-l">{esc(b)}</span></div>'
-        for a, b in cif) + "</div>")
-    out.append(f'<div class="cg-ssr-slot">{ANCLA}</div>')
-    out.append(f'<p class="cghel-nota" style="margin-top:22px">{esc(nota_estacion(x))}</p>')
+        cif.append((grados(r["minima"]["t"]), f"la temperatura más baja, el {fecha_larga(date.fromisoformat(r['minima']['f']))}"))
+    out = [CSS, '<div class="cghel">', '<div class="cghel-panel">',
+           '<div class="cghel-intro">'
+           f'<div class="cghel-migas"><a href="/">Inicio</a><span>/</span><a href="{hub_url}">Heladas</a><span>/</span>'
+           f'{esc(ciudad)}</div>{h1}<p class="lede">{esc(frase_cuando(x))}</p></div>',
+           f'<div class="cg-ssr-slot">{ANCLA}</div>',
+           '<div class="cghel-calw"><figure class="cghel-cal"><div class="cghel-d">' + svg_calendario(x)
+           + '</div><div class="cghel-m">' + svg_calendario(x, True) + "</div></figure>" + clave_calendario() + "</div>",
+           '<div class="cghel-cifras">' + "".join(
+               f'<div class="cghel-cifra"><span class="cghel-cifra-n">{esc(a)}</span><span class="cghel-cifra-l">{esc(b)}</span>'
+               f'</div>' for a, b in cif) + "</div>",
+           "</div>",
+           f'<p class="cghel-nota cghel-tras">{esc(nota_estacion(x))}</p>']
     if tipo == "frecuente":
         out.append(f"<h2>Cuándo hiela en {esc(ciudad)}, invierno a invierno</h2>")
         out.append(f"<p>En 8 de cada 10 inviernos la primera helada llega entre el {esc(dia_mes(c['primera_p10']))} y el "
@@ -968,13 +1043,12 @@ def html_ciudad(x: dict, hub_url: str) -> str:
                    f"{esc(dia_mes(c['ultima_p90']))}. Si vas a plantar en el huerto o en el balcón, la fecha que importa "
                    f"es la segunda: en 9 de cada 10 inviernos ya no ha vuelto a helar después del "
                    f"<b>{esc(dia_mes(c['ultima_p90']))}</b>.</p>")
-        out.append('<figure><div class="cghel-svgw">' + svg_temporada(x) + "</div>"
-                   f"<figcaption>Cada barra va de la primera a la última helada de un invierno, de agosto a julio. En azul "
-                   f"oscuro, los inviernos de 1991 a 2021; sin barra, no heló o faltan datos. Fuente: AEMET, estación de "
-                   f"{esc(e['nombre'])}.</figcaption></figure>")
+        out.append('<figure class="cghel-graf"><div class="cghel-svgw">' + svg_temporada(x) + "</div>"
+                   f"<figcaption>Cada barra va de la primera a la última helada de un invierno, de agosto a julio. Las más "
+                   f"claras son los inviernos de 1991 a 2021, los del año normal; sin barra, no heló o faltan datos. Fuente: "
+                   f"AEMET, estación de {esc(e['nombre'])}.</figcaption></figure>")
     else:
-        titulo = "La noche más fría de cada invierno"
-        out.append(f"<h2>{titulo} en {esc(ciudad)}</h2>")
+        out.append(f"<h2>La noche más fría de cada invierno en {esc(ciudad)}</h2>")
         med = c.get("mediana_minima")
         texto = (f"La noche más fría de un invierno normal se queda en {grados(med)}. Las barras que bajan de la línea de 0 °C "
                  f"son los inviernos en que heló.")
@@ -982,35 +1056,34 @@ def html_ciudad(x: dict, hub_url: str) -> str:
             texto = (f"Cuando hiela, la primera helada suele llegar hacia el {dia_mes(c['primera'])} y la última hacia el "
                      f"{dia_mes(c['ultima'])}. Pero muchos inviernos pasan sin ninguna. " + texto)
         out.append(f"<p>{esc(texto)}</p>")
-        out.append('<figure><div class="cghel-svgw">' + svg_minimas(x) + "</div>"
+        out.append('<figure class="cghel-graf"><div class="cghel-svgw">' + svg_minimas(x) + "</div>"
                    f"<figcaption>La temperatura más baja de cada invierno, de agosto a julio. Fuente: AEMET, estación de "
                    f"{esc(e['nombre'])}.</figcaption></figure>")
     fc = frase_cambio(x)
     if fc:
-        out.append(f"<h2>¿Hiela menos que antes?</h2>")
+        out.append("<h2>¿Hiela menos que antes?</h2>")
         out.append(bloque_antes(x))
         out.append(f"<p>{esc(fc)}</p>")
         if r.get("desde") and r["desde"] > 1971:
             out.append(f'<p class="cghel-nota">La serie diaria de esta estación empieza en {r["desde"]}.</p>')
-    out.append(f"<h2>Récords</h2><dl class=\"cghel-rec\">")
+    out.append('<h2>Récords</h2><div class="cghel-recs">')
+    if r.get("minima"):
+        out.append(tarjeta("La temperatura más baja", grados(r["minima"]["t"]),
+                           f"el {fecha_larga(date.fromisoformat(r['minima']['f']))}"))
     if r.get("mas_temprana"):
         m = r["mas_temprana"]
-        out.append(f"<dt>La primera helada más temprana</dt><dd>{esc(fecha_larga(date.fromisoformat(m['f'])))}"
-                   f"<small>{esc(grados(m['t']))}</small></dd>")
+        f = date.fromisoformat(m["f"])
+        out.append(tarjeta("La primera helada más temprana", fecha_larga(f, False), f"en {f.year}, con {grados(m['t'])}"))
         m = r["mas_tardia"]
-        out.append(f"<dt>La última helada más tardía</dt><dd>{esc(fecha_larga(date.fromisoformat(m['f'])))}"
-                   f"<small>{esc(grados(m['t']))}</small></dd>")
+        f = date.fromisoformat(m["f"])
+        out.append(tarjeta("La última helada más tardía", fecha_larga(f, False), f"en {f.year}, con {grados(m['t'])}"))
         m = r["mas_dias"]
-        out.append(f"<dt>El invierno con más heladas</dt><dd>{esc(m['invierno'])}<small>{m['dias']} días</small></dd>")
-    if r.get("minima"):
-        out.append(f"<dt>La temperatura más baja</dt><dd>{esc(grados(r['minima']['t']))}"
-                   f"<small>{esc(fecha_larga(date.fromisoformat(r['minima']['f'])))}</small></dd>")
-    out.append(f"<dt>Datos diarios desde</dt><dd>{r['desde']}</dd></dl>")
-    q = preguntas(x)
-    out.append('<div class="cghel-faq"><h2>Preguntas frecuentes</h2>')
-    for a, b in q:
-        out.append(f"<h3>{esc(a)}</h3><p>{esc(b)}</p>")
+        out.append(tarjeta("El invierno con más heladas", f"{m['dias']} días", f"el de {m['invierno']}"))
+    out.append(tarjeta("Datos diarios desde", str(r["desde"]),
+                       f"{r['inviernos']} inviernos" if r.get("inviernos") else ""))
     out.append("</div>")
+    q = preguntas(x)
+    out.append(faq_html(q))
     out.append(
         '<div class="cghel-metodo"><p><b>Cómo se calcula.</b> Un día de helada es un día con una temperatura mínima de 0 °C '
         f'o menos en la estación de AEMET de {esc(e["nombre"])} (indicativo {esc(e["id"])}), con los valores diarios '
@@ -1030,6 +1103,17 @@ def html_ciudad(x: dict, hub_url: str) -> str:
     return "<!-- wp:html -->\n" + "\n".join(out) + "\n<!-- /wp:html -->"
 
 
+TERMO = (-8.0, 16.0)   # escala de los termómetros de la previsión, en °C
+
+
+def termometro(t: float) -> str:
+    lo, hi = TERMO
+    nivel = (min(hi, max(lo, t)) - lo) / (hi - lo) * 100
+    cero = (0 - lo) / (hi - lo) * 100
+    return (f'<span class="cghel-termo"><span class="cghel-nivel" style="height:{max(4, nivel):.0f}%"></span>'
+            f'<span class="cghel-cero" style="bottom:{cero:.0f}%"></span></span>')
+
+
 def dias_prevision(x: dict) -> str:
     p = x["prevision"]
     if not p["dias"]:
@@ -1040,9 +1124,13 @@ def dias_prevision(x: dict) -> str:
         t = dd["tn"]
         cls, nota = ("cghel-dia cghel-dia-helada", "helada") if t <= 0 else (
             ("cghel-dia cghel-dia-casi", "cerca de 0") if t <= 2 else ("cghel-dia", ""))
-        nombre = "Hoy" if f == HOY else ("Mañana" if f == HOY + timedelta(days=1) else
-                                         f"{DIAS_SEM[f.weekday()][:3].capitalize()} {f.day}")
-        celdas.append(f'<li class="{cls}"><span>{esc(nombre)}</span><b>{num(t, 0)}°</b><small>{nota}</small></li>')
+        if f == HOY:
+            cls += " cghel-dia-hoy"
+            nombre = "Hoy"
+        else:
+            nombre = f'{DIAS_SEM[f.weekday()][:3].capitalize()} <span class="cghel-dn">{f.day}</span>'
+        celdas.append(f'<li class="{cls}"><span class="cghel-dia-n">{nombre}</span><b>{num(t, 0)}°</b>{termometro(t)}'
+                      f'<small>{nota}</small></li>')
     hel = [d for d in p["dias"][:7] if d["tn"] <= 0]
     if hel:
         f = date.fromisoformat(hel[0]["f"])
@@ -1052,28 +1140,78 @@ def dias_prevision(x: dict) -> str:
         mn = min(p["dias"][:7], key=lambda d: d["tn"])
         intro = (f"AEMET no prevé heladas esta semana: la mínima más baja sería de {grados(mn['tn'])}, el "
                  f"{dia_semana(date.fromisoformat(mn['f']))}.")
-    pie = f"Mínimas previstas por AEMET para el municipio de {p['municipio'] or x['ciudad']}."
+    return f"<h3>{esc(intro)}</h3><ul class=\"cghel-dias\">{''.join(celdas)}</ul>"
+
+
+def otono_valor(x: dict) -> tuple | None:
+    """La cifra grande de la tarjeta «Este otoño»."""
+    o = x["otono"]
+    if not o.get("hasta"):
+        return None
+    if o.get("primera"):
+        p = o["primera"]
+        f = date.fromisoformat(p["f"])
+        return f"{f.day} {MESES[f.month - 1][:3]}", f"primera helada, con {grados(p['t'])}"
+    m = o["minima"]
+    return f"{num(m['t'])}°", f"la mínima más baja, el {fecha_larga(date.fromisoformat(m['f']), False)}"
+
+
+def frase_otono_corta(x: dict) -> str:
+    o, c = x["otono"], x["clima"]
+    if not o.get("hasta"):
+        return frase_otono(x)
+    if o.get("primera"):
+        p = o["primera"]
+        partes = []
+        fn = p.get("frente_normal")
+        if fn is not None and c["tipo"] == "frecuente":
+            fn = round(fn)
+            partes.append("Ya ha helado, el mismo día que en un año normal." if fn == 0 else
+                          f"Ya ha helado, {abs(fn)} días {'antes' if fn < 0 else 'después'} de lo normal.")
+        else:
+            partes.append("Ya ha helado este otoño.")
+        if o["dias_helada"] > 1:
+            partes.append(f"Lleva {o['dias_helada']} días de helada.")
+        if p["fuente"] == "observación":
+            partes.append("Es un dato de la observación horaria, pendiente de que AEMET lo valide.")
+        return " ".join(partes)
+    if c["tipo"] == "frecuente" and c.get("primera") is not None:
+        if indice(date.fromisoformat(o["hasta"])) < c["primera"]:
+            return f"Aún no ha helado. Es lo normal: la primera helada suele llegar hacia el {dia_mes(c['primera'])}."
+        s = "Aún no ha helado."
+        ya = o.get("normal_ya")
+        if ya is not None:
+            k = round(ya * 10)
+            s += (" En todos los inviernos de 1991 a 2021 ya había helado a estas alturas." if k >= 10 else
+                  f" En {k} de cada 10 inviernos ya había helado a estas alturas." if k >= 1 else "")
+        return s
+    return "No ha helado este otoño."
+
+
+def pie_datos(x: dict) -> str:
+    o, p = x["otono"], x["prevision"]
+    pie = f"Mínimas previstas por AEMET para el municipio de {p['municipio'] or x['ciudad']}; la raya de cada termómetro marca 0 °C."
     if x["estacion"]["nota"] == "afueras":
         pie += " La estación de las afueras suele quedar más fría que el pronóstico de la ciudad."
-    return (f"<h3>{esc(intro)}</h3><ul class=\"cghel-dias\">{''.join(celdas)}</ul>"
-            f'<p class="cghel-pie">{esc(pie)}</p>')
+    if o.get("hasta"):
+        hv = o.get("hasta_validado")
+        pie += f" Datos de la estación hasta el {fecha_larga(date.fromisoformat(o['hasta']), False)}"
+        if hv and hv < o["hasta"]:
+            pie += (f" (desde el {fecha_larga(date.fromisoformat(hv) + timedelta(days=1), False)}, observación horaria "
+                    f"pendiente de validar)")
+        pie += "."
+    pie += f" Actualizado el {fecha_larga(AHORA.astimezone(TZ).date(), False)} a las {AHORA.astimezone(TZ):%H:%M}."
+    return pie
 
 
 def ssr_ciudad(x: dict) -> str:
-    o = x["otono"]
-    partes = [f'<section class="cghel-hoy"><h2>Este otoño en {esc(x["ciudad"])}</h2>',
-              f'<p class="cghel-estado">{esc(frase_otono(x))}</p>']
-    partes.append(dias_prevision(x))
-    nota = ""
-    if o.get("hasta"):
-        hv = o.get("hasta_validado")
-        nota = f"Datos de la estación hasta el {fecha_larga(date.fromisoformat(o['hasta']), False)}"
-        if hv and hv < o["hasta"]:
-            nota += (f" (desde el {fecha_larga(date.fromisoformat(hv) + timedelta(days=1), False)}, observación horaria "
-                     f"pendiente de validar)")
-        nota += ". "
-    partes.append(f'<p class="cghel-pie">{esc(nota)}Actualizado el {esc(fecha_larga(AHORA.astimezone(TZ).date(), False))} '
-                  f'a las {AHORA.astimezone(TZ):%H:%M}.</p></section>')
+    v = otono_valor(x)
+    partes = ['<div class="cghel-hoy"><div class="cghel-otono">', f'<h2>Este otoño en {esc(x["ciudad"])}</h2>']
+    if v:
+        partes.append(f'<p class="cghel-otono-v"><b>{esc(v[0])}</b><span>{esc(v[1])}</span></p>')
+    partes.append(f"<p>{esc(frase_otono_corta(x))}</p></div>")
+    dp = dias_prevision(x) or "<h3>La predicción de AEMET no está disponible ahora mismo.</h3>"
+    partes.append(f'<div class="cghel-semana">{dp}<p class="cghel-pie">{esc(pie_datos(x))}</p></div></div>')
     return "".join(partes)
 
 
@@ -1125,19 +1263,21 @@ def html_hub(xs: list) -> str:
     rara = sorted([x for x in xs if x["clima"]["tipo"] == "rara"], key=lambda x: -x["clima"]["dias"])
     prim = frec[0]
     nunca = [x["ciudad"] for x in rara if x["clima"]["con_helada"] == 0]
-    out = [CSS, '<div class="cghel">',
-           '<div class="cghel-migas"><a href="/">Inicio</a><span>/</span>Heladas</div>',
-           "<h1>Heladas en España: cuándo llega la primera helada a cada ciudad</h1>",
-           f'<p class="lede">La primera helada llega antes a {esc(prim["ciudad"])}, hacia el {esc(dia_mes(prim["clima"]["primera"]))}, '
-           f'y a {esc(frec[1]["ciudad"])} y {esc(frec[2]["ciudad"])} pocos días después. En buena parte de la costa casi nunca '
-           f'hiela{": en " + esc(_lista(nunca)) + " no ha helado ni un día desde 1991" if nunca else ""}.</p>',
-           '<figure class="cghel-cal"><div class="cghel-d">' + svg_espana(xs) + '</div><div class="cghel-m">'
-           + svg_espana(xs, True) + "</div></figure>",
-           clave_calendario(),
-           f'<p class="cghel-nota" style="margin-top:12px">Cada fila es una capital y cada columna, un día del año, de agosto a '
-           f'julio: cuanto más oscuro, en más inviernos de 1991 a 2021 heló ese día. A la derecha, los días de helada de un año '
-           f'normal. Pulsa en una ciudad para ver su página.</p>',
+    out = [CSS, '<div class="cghel">', '<div class="cghel-panel cghel-panel-hub">',
+           '<div class="cghel-intro"><div class="cghel-migas"><a href="/">Inicio</a><span>/</span>Heladas</div>'
+           + h1_html("Heladas en España", "cuándo llega la primera helada a cada ciudad")
+           + f'<p class="lede">La primera helada llega antes a {esc(prim["ciudad"])}, hacia el '
+           f'{esc(dia_mes(prim["clima"]["primera"]))}, y a {esc(frec[1]["ciudad"])} y {esc(frec[2]["ciudad"])} pocos días '
+           f'después. En buena parte de la costa casi nunca hiela'
+           f'{": en " + esc(_lista(nunca)) + " no ha helado ni un día desde 1991" if nunca else ""}.</p></div>',
            f'<div class="cg-ssr-slot">{ANCLA}</div>',
+           '<div class="cghel-calw"><h2 class="cghel-panel-h2">El calendario de la helada, capital a capital</h2>'
+           '<figure class="cghel-cal"><div class="cghel-d">' + svg_espana(xs) + '</div><div class="cghel-m">'
+           + svg_espana(xs, True) + "</div></figure>" + clave_calendario()
+           + '<p class="cghel-pnota">Cada fila es una capital y cada columna, un día del año, de agosto a julio: cuanto más '
+           'blanco, en más inviernos de 1991 a 2021 heló ese día. A la derecha, los días de helada de un año normal. Pulsa '
+           'en una ciudad para ver su página.</p></div>',
+           "</div>",
            "<h2>La primera y la última helada, ciudad a ciudad</h2>",
            '<p>Fechas de un año normal (mediana de los inviernos de 1991-92 a 2020-21) en la estación de AEMET de cada ciudad.</p>',
            '<table class="cghel-tabla"><thead><tr><th>Ciudad</th><th>Primera helada</th><th>Última helada</th>'
@@ -1170,12 +1310,15 @@ def html_hub(xs: list) -> str:
         out.append("<h2>¿Hiela menos que antes?</h2>")
         out.append(f"<p>En {len(bajan)} de las {len(xs)} ciudades hiela hoy claramente menos que hace cincuenta años, con una "
                    f"tendencia estadísticamente significativa. Donde más ha bajado, en días de helada al año:</p>")
-        out.append('<table class="cghel-tabla"><thead><tr><th>Ciudad</th><th>1971-1990</th><th>2006-2025</th></tr></thead><tbody>')
+        m = max(x["cambio"]["dias"]["t1"] for _, x in bajan[:8])
+        out.append('<div class="cghel-bajan">')
         for dlt, x in bajan[:8]:
             d = x["cambio"]["dias"]
-            out.append(f'<tr><td><a href="/heladas/{esc(x["slug"])}/">{esc(x["ciudad"])}</a></td><td>{entero(d["t1"])}</td>'
-                       f'<td>{entero(d["t2"])}</td></tr>')
-        out.append("</tbody></table>")
+            out.append(f'<a class="cghel-baja" href="/heladas/{esc(x["slug"])}/"><span class="cghel-baja-c">{esc(x["ciudad"])}'
+                       f'</span><span class="cghel-baja-b"><span class="cghel-baja-a" style="width:{100 * d["t1"] / m:.0f}%">'
+                       f'</span><span class="cghel-baja-h" style="width:{100 * d["t2"] / m:.0f}%"></span></span>'
+                       f'<span class="cghel-baja-n">{entero(d["t1"])} → <b>{entero(d["t2"])}</b></span></a>')
+        out.append('</div><p class="cghel-nota">Barra clara: días de helada al año en 1971-1990. Barra blanca: en 2006-2025.</p>')
     q = [("¿Dónde llega antes la primera helada en España?",
           f"Entre las capitales, a {prim['ciudad']}, hacia el {dia_mes(prim['clima']['primera'])} en un año normal; después, "
           f"{frec[1]['ciudad']} ({dia_mes(frec[1]['clima']['primera'])}) y {frec[2]['ciudad']} "
@@ -1192,10 +1335,7 @@ def html_hub(xs: list) -> str:
     q.append(("¿Cuándo es la última helada en España?",
               f"Depende mucho de la ciudad: en {tarde['ciudad']} la última helada llega hacia el "
               f"{dia_mes(tarde['clima']['ultima'])}, y en {pronto['ciudad']}, hacia el {dia_mes(pronto['clima']['ultima'])}."))
-    out.append('<div class="cghel-faq"><h2>Preguntas frecuentes</h2>')
-    for a, b in q:
-        out.append(f"<h3>{esc(a)}</h3><p>{esc(b)}</p>")
-    out.append("</div>")
+    out.append(faq_html(q))
     out.append('<div class="cghel-metodo"><p><b>Cómo se calcula.</b> Un día de helada es un día con una temperatura mínima de '
                '0 °C o menos en la estación de AEMET, con los valores diarios validados de AEMET OpenData. Cada invierno va del 1 '
                'de agosto al 31 de julio. «En un año normal» es la mediana de los inviernos de 1991-92 a 2020-21. Lo de este otoño '
@@ -1217,17 +1357,23 @@ def _lista(xs: list) -> str:
 
 
 def ssr_hub(xs: list) -> str:
+    n = len(xs)
     ya = [x for x in xs if x["otono"].get("primera")]
     ya.sort(key=lambda x: x["otono"]["primera"]["f"])
-    prev = []
+    prev, frias = [], []
     for x in xs:
-        hel = [d for d in x["prevision"]["dias"][:7] if d["tn"] <= 0]
+        dias = x["prevision"]["dias"][:7]
+        hel = [d for d in dias if d["tn"] <= 0]
         if hel:
             prev.append((min(d["tn"] for d in hel), x, hel))
+        elif dias:
+            frias.append((min(d["tn"] for d in dias), x))
     prev.sort(key=lambda z: z[0])
-    p = ['<section class="cghel-hoy"><h2>Este otoño</h2>']
+    frias.sort(key=lambda z: (z[0], z[1]["ciudad"]))
+    p = ['<div class="cghel-hoy"><div class="cghel-otono"><h2>Este otoño</h2>']
     if ya:
-        p.append(f'<p class="cghel-estado">Ya ha helado en {len(ya)} de las {len(xs)} capitales.</p><ul class="cghel-ya">')
+        verbo = "ya ha tenido" if len(ya) == 1 else "ya han tenido"
+        p.append(f'<p class="cghel-otono-v"><b>{len(ya)}</b><span>de las {n} capitales {verbo} su primera helada</span></p><ul>')
         for x in ya:
             f = x["otono"]["primera"]
             p.append(f'<li><a href="/heladas/{esc(x["slug"])}/">{esc(x["ciudad"])}</a>: el '
@@ -1235,17 +1381,24 @@ def ssr_hub(xs: list) -> str:
                      + (" (observación horaria, pendiente de validar)" if f["fuente"] == "observación" else "") + "</li>")
         p.append("</ul>")
     else:
-        p.append('<p class="cghel-estado">Todavía no ha helado este otoño en ninguna capital.</p>')
+        p.append(f'<p class="cghel-otono-v"><b>0</b><span>capitales con helada este otoño</span></p>'
+                 f'<p>Todavía no ha helado este otoño en ninguna de las {n} capitales.</p>')
+    p.append('</div><div class="cghel-semana">')
     if prev:
-        p.append(f"<h3>AEMET prevé mínimas de 0 °C o menos esta semana en {len(prev)} capitales</h3><ul class=\"cghel-ya\">")
+        cap = "capital" if len(prev) == 1 else "capitales"
+        p.append(f'<h3>AEMET prevé mínimas de 0 °C o menos esta semana en {len(prev)} {cap}</h3><ul class="cghel-chips">')
         for t, x, hel in prev:
-            p.append(f'<li><a href="/heladas/{esc(x["slug"])}/">{esc(x["ciudad"])}</a>: hasta {esc(grados(t))} '
-                     f'({esc(_lista([dia_semana(date.fromisoformat(d["f"])) for d in hel]))})</li>')
+            p.append(f'<li class="cghel-chip-hel"><a href="/heladas/{esc(x["slug"])}/">{esc(x["ciudad"])}</a> '
+                     f'<b>{esc(grados(t))}</b> {esc(_lista([dia_semana(date.fromisoformat(d["f"])) for d in hel]))}</li>')
         p.append("</ul>")
     else:
-        p.append("<h3>AEMET no prevé mínimas de 0 °C o menos en ninguna capital en los próximos días.</h3>")
+        p.append('<h3>AEMET no prevé heladas en ninguna capital esta semana. Las mínimas más bajas previstas:</h3>'
+                 '<ul class="cghel-chips">')
+        for t, x in frias[:8]:
+            p.append(f'<li><a href="/heladas/{esc(x["slug"])}/">{esc(x["ciudad"])}</a> <b>{esc(grados(t))}</b></li>')
+        p.append("</ul>")
     p.append(f'<p class="cghel-pie">Actualizado el {esc(fecha_larga(AHORA.astimezone(TZ).date(), False))} a las '
-             f'{AHORA.astimezone(TZ):%H:%M}, con los datos de las estaciones y la predicción municipal de AEMET.</p></section>')
+             f'{AHORA.astimezone(TZ):%H:%M}, con los datos de las estaciones y la predicción municipal de AEMET.</p></div></div>')
     return "".join(p)
 
 
