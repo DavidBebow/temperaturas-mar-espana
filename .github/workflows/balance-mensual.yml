@@ -59,8 +59,11 @@ jobs:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
           MES: ${{ github.event.inputs.mes }}
           FORZAR: ${{ github.event.inputs.forzar }}
+          EVENTO: ${{ github.event_name }}
         run: |
+          # A mano y sin mes: pasada completa ya. Encadenado o por cron: --auto (solo cuando toca).
           ARGS="--auto"
+          if [ "$EVENTO" = "workflow_dispatch" ]; then ARGS=""; fi
           if [ -n "$MES" ]; then
             if ! printf '%s' "$MES" | grep -Eq '^(19|20)[0-9]{2}-(0[1-9]|1[0-2])$'; then
               echo "Mes no válido: $MES (formato AAAA-MM)"; exit 1
