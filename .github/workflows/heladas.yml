@@ -1,0 +1,77 @@
+name: Heladas en cada capital
+
+# Páginas /heladas/ y /heladas/<ciudad>/ de calentamientoglobal.es (scripts/heladas.py).
+# Sale detrás de «Actualizar prediccion por municipio» (4 veces al día), para llevar la previsión de mínimas recién
+# bajada; el cron queda de red. En cada pasada:
+#   · recalcula la climatología con el archivo diario de AEMET (cambia poco: el contenido fijo de cada página solo se
+#     reescribe si cambia, para no llenar WordPress de revisiones);
+#   · rehace el bloque del día (meta cg_ssr_html: si ya ha helado este otoño y la previsión de AEMET);
+#   · deja docs/heladas/ (JSON y CSV para descargar) y el registro de lo publicado.
+# Necesita los secretos WP_USER y WP_APP_AGOSTO (contraseña de aplicación de WordPress), los mismos que
+# «Publicar resúmenes en WordPress».
+
+on:
+  workflow_dispatch:
+    inputs:
+      forzar:
+        description: "Reescribir el contenido de todas las páginas aunque no haya cambiado"
+        type: boolean
+        default: false
+  workflow_run:
+    workflows: ["Actualizar prediccion por municipio"]
+    types: [completed]
+  schedule:
+    - cron: "25 7,19 * * *"   # red: 07:25 y 19:25 UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: heladas
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  heladas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Calcular y publicar
+        env:
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
+          FORZAR: ${{ github.event.inputs.forzar }}
+        run: |
+          ARGS="--publicar"
+          if [ "$FORZAR" = "true" ]; then ARGS="$ARGS --forzar"; fi
+          python scripts/heladas.py $ARGS
+
+      - name: Guardar
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs/heladas
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "heladas: $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
