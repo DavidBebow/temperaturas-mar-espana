@@ -454,6 +454,7 @@ def calcular(c: tuple) -> dict | None:
         return None
     return {
         "slug": slug, "ciudad": ciudad, "prov": prov, "prov_slug": pslug, "provincia": pnombre,
+        "ine": ine,
         "estacion": {"id": ide, "nombre": est, "nota": nota, "alias_obs": OBS_ALIAS.get(ide)},
         "clima": clima, "records": records(inv, val), "cambio": cambio(inv, clima),
         "otono": este_otono(val, obs_ide, clima), "prevision": prevision(prov, ine),
