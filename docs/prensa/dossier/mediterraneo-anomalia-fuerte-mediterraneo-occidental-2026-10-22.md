@@ -1,14 +1,9 @@
-# El Mediterráneo español tuvo uno de sus dos 20 de octubre más cálidos desde 1981: 23,7 °C, 2,2 °C por encima de lo normal
+# El Mediterráneo español estaba el 22 de octubre 1,8 °C por encima de lo normal para la fecha: 23,2 °C
 
-**Dato:** 23,72 °C · dato preliminar de NOAA: queda a 0,03 °C del de 2023 (23,69 °C), menos de lo que puede corregirse, así que no se puede decir cuál es más alto · normal 1991-2020 21,55 °C (+2,17)  
-**Fecha del dato:** 20 de octubre de 2026  
+**Dato:** 23,2 °C · normal 21,4 °C · p90 para la fecha 22,8 °C  
+**Fecha del dato:** 22 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** Mediterráneo occidental  
 **Citabilidad:** alta · **Exclusivo:** sí
-
-## Contexto
-- Al menos 78 días de 2026 han sido récord para su fecha en la serie desde 1981; otros 3 días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).
-- Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.
-- 23,7 °C es lo normal en esta zona para un 26 de septiembre (media 1991-2020).
 
 ## Fuente y método
 - **Fuente:** NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E
@@ -22,8 +17,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/dana/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-20.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-20.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-anomalia-fuerte-mediterraneo-occidental-2026-10-22.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-anomalia-fuerte-mediterraneo-occidental-2026-10-22.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
