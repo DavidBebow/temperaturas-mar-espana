@@ -1,0 +1,90 @@
+name: Balance del mes, capital a capital
+
+# El «balance mensual» de Climate Central con estaciones de AEMET (scripts/balance_mensual.py).
+# Sale cada media hora detrás de «Actualizar lluvia diaria por municipio» (como «Hallazgos de prensa»: el cron de
+# GitHub no es fiable en este repo y queda solo de red). En cada pasada (--auto):
+#   · copia los días completos de la observación horaria (docs/records/obs_dias.json solo guarda seis)
+#     a archivo/balance/obs/, para tener el final del mes cuando se cierre; solo escribe si hay días nuevos;
+#   · una vez al día (y del día 1 al 13, cada 6 horas) hace la pasada completa: pide a AEMET los diarios
+#     validados del mes anterior y rehace su balance (día 1 «provisional», ~día 6 «verificado», día 12
+#     «cerrado») y, desde el día 4, deja en en_curso.json cómo va el mes.
+# Escribe docs/prensa/balance/ (JSON, CSV, gráficos, index.json) y archivo/balance/.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mes:
+        description: "Mes a recalcular (AAAA-MM). Vacío: lo que toque hoy"
+        required: false
+        default: ""
+      forzar:
+        description: "Recalcular aunque el mes ya esté cerrado"
+        type: boolean
+        default: false
+  workflow_run:
+    workflows: ["Actualizar lluvia diaria por municipio"]
+    types: [completed]
+  schedule:
+    - cron: "40 6 * * *"   # red: 06:40 UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: balance-mensual
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  balance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install "matplotlib==3.9.*"
+
+      - name: Calcular el balance
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          MES: ${{ github.event.inputs.mes }}
+          FORZAR: ${{ github.event.inputs.forzar }}
+        run: |
+          ARGS="--auto"
+          if [ -n "$MES" ]; then
+            if ! printf '%s' "$MES" | grep -Eq '^(19|20)[0-9]{2}-(0[1-9]|1[0-2])$'; then
+              echo "Mes no válido: $MES (formato AAAA-MM)"; exit 1
+            fi
+            ARGS="--mes $MES"
+          fi
+          if [ "$FORZAR" = "true" ]; then ARGS="$ARGS --forzar"; fi
+          python scripts/balance_mensual.py $ARGS
+
+      - name: Guardar
+        if: success()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs/prensa/balance archivo/balance
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "prensa: balance mensual $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
