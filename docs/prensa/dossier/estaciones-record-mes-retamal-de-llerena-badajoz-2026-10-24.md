@@ -1,12 +1,12 @@
-# Retamal de Llerena (Badajoz) bajó el 22 de octubre a 5,5 °C, la temperatura más baja en un mes de octubre desde que hay registros en su estación de AEMET
+# Retamal de Llerena (Badajoz) ya ha bajado hoy, 24 de octubre, por debajo de su récord de mínima para un mes de octubre: 4,3 °C entre las 05:00 y las 06:00 frente a los 6,4 °C de 2024
 
-**Dato:** Medido por AEMET en su estación de Retamal de Llerena, a 474 m, mínima de 5,5 °C el 22 de octubre (entre las 07:00 y las 08:00, hora local) · récord anterior de octubre en la estación: 6,4 °C (26 de octubre de 2024) · récord absoluto de la estación: -5,8 °C (1 de marzo de 2023) · 24 de 24 horas del día con observación  
-**Fecha del dato:** 22 de octubre de 2026  
+**Dato:** Medido por AEMET en su estación de Retamal de Llerena, a 474 m, mínima de 4,3 °C el 24 de octubre (entre las 05:00 y las 06:00, hora local) · récord anterior de octubre en la estación: 6,4 °C (26 de octubre de 2024) · récord absoluto de la estación: -5,8 °C (1 de marzo de 2023) · día en curso, con observaciones hasta las 06:00 (hora local)  
+**Fecha del dato:** 24 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Retamal de Llerena (Badajoz)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Rebaja el récord anterior en 0,9 °C.
+- Rebaja el récord anterior en 2,1 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2022.
 
 ## Fuente y método
@@ -19,12 +19,13 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 19 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2022.
+- Día en curso: la cifra puede cambiar hasta la medianoche (hora UTC). Citar siempre con la hora.
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/records-de-temperatura/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-retamal-de-llerena-badajoz-2026-10-22.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-retamal-de-llerena-badajoz-2026-10-22.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-retamal-de-llerena-badajoz-2026-10-24.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-retamal-de-llerena-badajoz-2026-10-24.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET OpenData · observación y valores climatológicos extremos. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
