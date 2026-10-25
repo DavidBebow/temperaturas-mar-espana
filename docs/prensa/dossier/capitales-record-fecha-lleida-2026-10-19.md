@@ -1,6 +1,6 @@
-# Lleida recogió el 19 de octubre 27 mm, la mayor lluvia para esa fecha desde 1940
+# Lleida recogió el 19 de octubre 26,4 mm, la mayor lluvia para esa fecha desde 1940
 
-**Dato:** 27 mm en un día · récord anterior para la fecha 20,1 mm (1940)  
+**Dato:** 26,4 mm en un día · récord anterior para la fecha 20,1 mm (1940)  
 **Fecha del dato:** 19 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Lleida  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -8,7 +8,7 @@
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026
 - **Serie desde:** 1940
-- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Lleida, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +0,3 °C, mínimas -1,6 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
+- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Lleida, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +0,2 °C, mínimas -1,6 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
