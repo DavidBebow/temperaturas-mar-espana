@@ -1,6 +1,6 @@
 # 11 capitales españolas tuvieron el 24 de octubre mínimas de al menos 5 °C por debajo de lo normal para la fecha
 
-**Dato:** 11 de 50 capitales · las más extremas: Pontevedra 6 °C (-7); León 1,1 °C (-6,4); Valladolid 2,5 °C (-6,2); Zamora 2,7 °C (-6,2); Ourense 5,7 °C (-6); Burgos 2 °C (-5,8); Palencia 2,6 °C (-5,8); Lugo 3,9 °C (-5,6)  
+**Dato:** 11 de 50 capitales · las más extremas: Pontevedra 6 °C (-7); León 1 °C (-6,5); Ourense 5,6 °C (-6,2); Valladolid 2,4 °C (-6,1); Zamora 2,6 °C (-6,1); Burgos 1,9 °C (-5,9); Palencia 2,6 °C (-5,8); Lugo 3,8 °C (-5,6)  
 **Fecha del dato:** 24 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** media · **Exclusivo:** sí
