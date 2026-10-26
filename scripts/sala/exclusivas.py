@@ -193,15 +193,17 @@ def _hechos_otono(R, tipo, c, idp):
                            f"menos que a estas alturas de cualquier otoño desde {x['desde']} ({x['n']} otoños con datos completos de la estación).", FUENTE_D,
                       [R.f1(x["mm"]) + " mm", f"{x['h']}:00", str(x["desde"]), str(x["n"])], lugar=n, superlativo=True, record=True, liga=[R.f1(x["mm"])])]
         seguido = x["a_min"] == anio - 1
+        # 26-10-2026: la mediana y el récord anterior se cuentan hasta la víspera; se dice la fecha
+        visp = _fecha((datetime.date.fromisoformat(hasta[:10]) - datetime.timedelta(days=1)).isoformat())
         hh.append(R.hecho(f"{idp}_ant", f"El otoño más seco hasta ahora a estas alturas era el de {x['a_min']}, con {R.f1(x['v_min'])} mm"
                                         + (": es el segundo año seguido que se bate el récord" if seguido else "")
-                                        + f". Lo habitual a esta fecha es {R.f1(x['mediana'])} mm (mediana de sus otoños).", FUENTE_D,
+                                        + f". Lo habitual hasta el {visp} son {R.f1(x['mediana'])} mm (mediana de sus otoños).", FUENTE_D,
                           [str(x["a_min"]), R.f1(x["v_min"]) + " mm", R.f1(x["mediana"]) + " mm"], lugar=n, superlativo=True,
                           alias=["segundo año seguido"] if seguido else []))
         tit = (f"{corto} solo lleva {R.f1(x['mm'])} litros desde el 1 de septiembre: el otoño más seco a estas alturas desde {x['desde']}"
                + (", por segundo año seguido" if seguido else f"; lo habitual son {R.f1(x['mediana'])}"))
         cifras = [{"n": f"{R.f1(x['mm'])} mm", "l": f"en {corto} desde el 1 de septiembre", "tono": "calor"},
-                  {"n": f"{R.f1(x['mediana'])} mm", "l": "lo habitual a esta fecha (mediana de sus otoños)", "tono": "lluvia"},
+                  {"n": f"{R.f1(x['mediana'])} mm", "l": f"lo habitual hasta el {visp} (mediana de sus otoños)", "tono": "lluvia"},
                   {"n": f"{R.f1(x['v_min'])} mm", "l": f"el récord seco anterior, en {x['a_min']}", "tono": "calor"}]
         kicker, tono = "Exclusiva · un otoño sin lluvia", "calor"
     else:
@@ -217,8 +219,11 @@ def _hechos_otono(R, tipo, c, idp):
         cifras = [{"n": f"{R.f1(x['mm'])} mm", "l": f"en {corto} desde el 1 de septiembre", "tono": "lluvia"},
                   {"n": f"{R.f1(x['v_max'])} mm", "l": f"el récord anterior a esta fecha, en {x['a_max']}", "tono": "lluvia"}]
         kicker, tono = "Exclusiva · lluvia contra su historia", "lluvia"
+    # 26-10-2026: el récord seco se mide contra los otoños anteriores hasta la víspera (más exigente); el húmedo, hasta el mismo día
+    tramo_t = ("hasta la víspera: lo de este año, que llega hasta hoy, queda aun así por debajo" if tipo == "otono_seco"
+               else "hasta el mismo día, completo")
     hh.append(R.hecho(f"{idp}_met", "La comparación es con todos los otoños de la estación con datos completos en los valores diarios validados de AEMET, "
-                                    "hasta el mismo día; lo de este año suma la observación horaria de los últimos días, que AEMET valida en unos días.",
+                                    f"{tramo_t}; lo de este año suma la observación horaria de los últimos días, que AEMET valida en unos días.",
                       FUENTE_D, []))
     return hh, tit, cifras, kicker, tono
 

@@ -473,7 +473,7 @@ def g_otono_serie(R, D):
         return [R.hecho(id_, dice, FUENTE_D, [R.f1(x["mm"]), f"{x['h']}:00", str(x["n"]), str(x["desde"])], lugar=x["nombre"],
                         liga=[R.f1(x["mm"])], superlativo=True, record=True),
                 R.hecho(id_ + "_antes", f"En {x['nombre']}, el otoño más seco a estas alturas desde {x['desde']} era el de {x['a_min']}, con "
-                                        f"{R.f1(x['v_min'])} mm; lo habitual es {R.f1(x['mediana'])} mm (mediana de esos otoños).", FUENTE_D,
+                                        f"{R.f1(x['v_min'])} mm; lo habitual hasta la víspera es {R.f1(x['mediana'])} mm (mediana de esos otoños).", FUENTE_D,
                         [str(x["a_min"]), R.f1(x["v_min"]), R.f1(x["mediana"])], lugar=x["nombre"], liga=[R.f1(x["v_min"]), R.f1(x["mediana"])],
                         superlativo=True)]
     if humedos:
