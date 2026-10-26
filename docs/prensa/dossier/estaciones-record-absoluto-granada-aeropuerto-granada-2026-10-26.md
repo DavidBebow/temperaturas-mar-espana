@@ -1,6 +1,6 @@
 # Granada Aeropuerto (Granada) ya ha bajado hoy, 26 de octubre, a -19,9 °C entre las 17:00 y las 18:00, la temperatura más baja de toda la serie de su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Granada Aeropuerto, a 560 m, mínima de -19,9 °C el 26 de octubre (entre las 17:00 y las 18:00, hora local) · récord absoluto anterior de la estación: -14,2 °C (16 de enero de 1987) · récord anterior de octubre en la estación: -2,6 °C (31 de octubre de 1974) · día en curso, con observaciones hasta las 23:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Granada Aeropuerto, a 560 m, mínima de -19,9 °C el 26 de octubre (entre las 17:00 y las 18:00, hora local) · récord absoluto anterior de la estación: -14,2 °C (16 de enero de 1987) · récord anterior de octubre en la estación: -2,6 °C (31 de octubre de 1974) · día en curso, con observaciones hasta las 00:00 (hora local)  
 **Fecha del dato:** 26 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Granada Aeropuerto (Granada)  
 **Citabilidad:** alta · **Exclusivo:** sí

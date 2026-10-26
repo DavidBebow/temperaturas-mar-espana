@@ -1,6 +1,6 @@
 # Granada Aeropuerto (Granada) ya supera hoy, 26 de octubre, su récord de máxima para un mes de octubre: 40,2 °C entre las 18:00 y las 19:00 frente a los 35,9 °C de 2023
 
-**Dato:** Medido por AEMET en su estación de Granada Aeropuerto, a 560 m, máxima de 40,2 °C el 26 de octubre (entre las 18:00 y las 19:00, hora local) · récord anterior de octubre en la estación: 35,9 °C (1 de octubre de 2023) · récord absoluto de la estación: 46 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 23:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Granada Aeropuerto, a 560 m, máxima de 40,2 °C el 26 de octubre (entre las 18:00 y las 19:00, hora local) · récord anterior de octubre en la estación: 35,9 °C (1 de octubre de 2023) · récord absoluto de la estación: 46 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 00:00 (hora local)  
 **Fecha del dato:** 26 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Granada Aeropuerto (Granada)  
 **Citabilidad:** alta · **Exclusivo:** sí
