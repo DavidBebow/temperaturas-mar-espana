@@ -1,12 +1,9 @@
-# El Mediterráneo español estaba el 23 de octubre 1,5 °C por encima de lo normal para la fecha: 22,8 °C
+# El Mediterráneo español estaba el 24 de octubre 1,6 °C por encima de lo normal para la fecha: 22,8 °C
 
-**Dato:** 22,8 °C · normal 21,3 °C · p90 para la fecha 22,7 °C  
-**Fecha del dato:** 23 de octubre de 2026  
+**Dato:** 22,8 °C · normal 21,2 °C · p90 para la fecha 22,6 °C  
+**Fecha del dato:** 24 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** Mediterráneo occidental  
 **Citabilidad:** alta · **Exclusivo:** sí
-
-## Contexto
-- Puesto 4 de 46 años para la fecha.
 
 ## Fuente y método
 - **Fuente:** NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E
@@ -20,8 +17,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/dana/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-anomalia-fuerte-mediterraneo-occidental-2026-10-23.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-anomalia-fuerte-mediterraneo-occidental-2026-10-23.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-anomalia-fuerte-mediterraneo-occidental-2026-10-24.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-anomalia-fuerte-mediterraneo-occidental-2026-10-24.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
