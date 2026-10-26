@@ -99,7 +99,8 @@ def _ent(x):
 def _titulo(n):
     """Nombre para un titular: «Ibiza, Aeropuerto» → «El aeropuerto de Ibiza»; «Huelva, Ronda Este» → «Huelva»."""
     import re
-    m = re.match(r"^(.+?),\s*Aeropuerto$", n) or re.match(r"^(.+?) \(aeropuerto\)$", n)
+    m = (re.match(r"^(.+?),\s*Aeropuerto$", n) or re.match(r"^(.+?) \(aeropuerto\)$", n)
+         or re.match(r"^(.+?) Aeropuerto$", n, flags=re.I))
     if m:
         return f"El aeropuerto de {m.group(1)}"
     return re.split(r" \(|, | - ", n)[0]
@@ -155,6 +156,17 @@ def _candidatos(R):
         for x in rec["humedos"]:
             if x["cod"] in R.PROV:
                 out.append((110.0 + min(6.0, 2 * (x["veces"] or 1)), x["cod"], "otono_humedo", dict(x=x, hasta=rec["hasta"])))
+    # 26-10-2026: el otoño en las series diarias largas (desde los años 20-50): «no llovía tanto desde 1972»
+    try:
+        largo = importlib.import_module("sala.analisis").otono_largo(R)
+    except Exception as ex:  # noqa: BLE001
+        R.LOG.append(f"exclusivas/otoño largo: {ex}")
+        largo = []
+    for x in largo:
+        if x["cod"] not in R.PROV:
+            continue
+        anios = R.HOY.year - (x["ref"] or x["desde"])
+        out.append(((108.0 if x["seco"] else 112.0) + min(6.0, anios / 10) + (2 if x["record"] else 0), x["cod"], "otono_largo", dict(x=x)))
     V = R.leer(R.DOCS / "prensa" / "analisis" / "verano.json", {}) or {}
     est = V.get("estaciones") or {}
     for cod, ide in (V.get("provincias") or {}).items():
@@ -174,6 +186,8 @@ def _clave(tipo, c):
     """Clave estable del dato (no cambia de un día a otro): sirve para no mandar dos veces lo mismo al mismo periodista."""
     if tipo in ("otono_seco", "otono_humedo"):
         return f"{tipo}:{c['x']['e']}:{c['hasta'][:4]}"
+    if tipo == "otono_largo":
+        return f"otono_largo:{'seco' if c['x']['seco'] else 'humedo'}:{c['x']['e']}:{c['x']['hasta'][:4]}"
     if tipo == "verano_record":
         return f"verano_record:{c['ide']}:{c['a'].get('anio')}"
     if tipo == "dia_record":
@@ -210,15 +224,24 @@ def _hechos_otono(R, tipo, c, idp):
         hh = [R.hecho(idp, f"El pluviómetro de AEMET de {lugar} lleva {R.f1(x['mm'])} mm desde el 1 de septiembre, hasta las {x['h']}:00 del {fecha_t}: "
                            f"más que a estas alturas de cualquier otoño desde {x['desde']} ({x['n']} otoños con datos completos de la estación).", FUENTE_D,
                       [R.f1(x["mm"]) + " mm", f"{x['h']}:00", str(x["desde"]), str(x["n"])], lugar=n, superlativo=True, record=True, liga=[R.f1(x["mm"])])]
-        cu = _cuanto(x["mm"], x["v_max"]) if x.get("v_max") else None
-        hh.append(R.hecho(f"{idp}_ant", f"El otoño más lluvioso hasta ahora a estas alturas era el de {x['a_max']}, con {R.f1(x['v_max'])} mm"
+        cu = _cuanto(x["mm"], x["v_max"]) if x.get("v_max") and not x.get("huecos") else None
+        hh.append(R.hecho(f"{idp}_ant", ("Entre sus otoños con datos completos, el" if x.get("huecos") else "El")
+                                        + f" más lluvioso hasta ahora a estas alturas era el de {x['a_max']}, con {R.f1(x['v_max'])} mm"
                                         + (f": esta vez lleva {cu}." if cu else "."), FUENTE_D,
                           [str(x["a_max"]), R.f1(x["v_max"]) + " mm"], lugar=n, superlativo=True, alias=[cu] if cu else []))
         tit = (f"{corto} lleva este otoño {cu} de lluvia que en cualquier otoño desde {x['desde']} a estas alturas: {R.f1(x['mm'])} litros" if cu
-               else f"{corto} lleva el otoño más lluvioso a estas alturas desde {x['desde']}: {R.f1(x['mm'])} litros, frente a {R.f1(x['v_max'])} en {x['a_max']}")
+               else f"{corto} lleva el otoño más lluvioso a estas alturas desde {x['desde']}: {R.f1(x['mm'])} litros"
+               + ("" if x.get("huecos") else f", frente a {R.f1(x['v_max'])} en {x['a_max']}"))
         cifras = [{"n": f"{R.f1(x['mm'])} mm", "l": f"en {corto} desde el 1 de septiembre", "tono": "lluvia"},
                   {"n": f"{R.f1(x['v_max'])} mm", "l": f"el récord anterior a esta fecha, en {x['a_max']}", "tono": "lluvia"}]
         kicker, tono = "Exclusiva · lluvia contra su historia", "lluvia"
+    if x.get("huecos"):
+        anios = R.lista_y([str(a) for a, _v in x["huecos"]])
+        vec = R.lista_y(sorted({n for _a, vs in x["huecos"] for n in vs})[:4])
+        hh.append(R.hecho(f"{idp}_huecos", f"AEMET no tiene completo{'s' if len(x['huecos']) > 1 else ''} el otoño de {anios} en esta estación; "
+                                           f"en las estaciones de AEMET más cercanas con ese otoño completo ({vec}) "
+                                           + ("llovió mucho más que este año a estas alturas." if tipo == "otono_seco"
+                                              else "llovió mucho menos que este año a estas alturas."), FUENTE_D, [str(a) for a, _v in x["huecos"]]))
     # 26-10-2026: el récord seco se mide contra los otoños anteriores hasta la víspera (más exigente); el húmedo, hasta el mismo día
     tramo_t = ("hasta la víspera: lo de este año, que llega hasta hoy, queda aun así por debajo" if tipo == "otono_seco"
                else "hasta el mismo día, completo")
@@ -228,18 +251,88 @@ def _hechos_otono(R, tipo, c, idp):
     return hh, tit, cifras, kicker, tono
 
 
+def _hechos_largo(R, c, idp):
+    """26-10-2026: el otoño hasta el último día validado frente a la serie diaria larga de la estación."""
+    x = c["x"]
+    n, cod = x["nombre"], x["cod"]
+    lugar = _lugar(R, n, cod)
+    corto = _titulo(n)
+    hasta_t = _fecha(x["hasta"])
+    anio = int(x["hasta"][:4])
+    seco = x["seco"]
+    tanto = "tan poca lluvia" if seco else "tanta lluvia"
+    if x["record"]:
+        dice = (f"Con los datos validados por AEMET hasta el {hasta_t}, la estación de AEMET de {lugar} suma {R.f1(x['mm'])} mm desde el 1 de "
+                f"septiembre: {'menos' if seco else 'más'} que en esas mismas fechas de cualquier año de su serie diaria, que empieza en {x['desde']}.")
+        vals = [R.f1(x["mm"]) + " mm", str(x["desde"])]
+    else:
+        dice = (f"Con los datos validados por AEMET hasta el {hasta_t}, la estación de AEMET de {lugar} suma {R.f1(x['mm'])} mm desde el 1 de "
+                f"septiembre: no recogía {tanto} en esas fechas desde {x['ref']}, cuando llevaba {R.f1(x['v_ref'])} mm.")
+        vals = [R.f1(x["mm"]) + " mm", str(x["ref"]), R.f1(x["v_ref"]) + " mm"]
+    hh = [R.hecho(idp, dice, FUENTE_D, vals, lugar=n, superlativo=True, record=x["record"], liga=[R.f1(x["mm"])])]
+    otros = [(y, v) for y, v in x["ganan"]]
+    if otros and len(otros) <= 4:
+        lista = R.lista_y([f"{y} ({R.f1(v)} mm)" for y, v in otros])
+        hh.append(R.hecho(f"{idp}_ant", f"En su serie diaria, que empieza en {x['desde']} ({x['n']} años con todos los días de esas fechas), "
+                                        + f"solo {lista} llevaba{'n' if len(otros) > 1 else ''} {'menos' if seco else 'más'} lluvia a estas alturas.",
+                          FUENTE_D, [str(x["desde"]), str(x["n"])] + [str(y) for y, _v in otros] + [R.f1(v) + " mm" for _y, v in otros],
+                          lugar=n, superlativo=True))
+    else:
+        hh.append(R.hecho(f"{idp}_ant", f"La serie diaria de la estación empieza en {x['desde']}: son {x['n']} años con todos los días de esas fechas.",
+                          FUENTE_D, [str(x["desde"]), str(x["n"])], lugar=n))
+    cifras = [{"n": f"{R.f1(x['mm'])} mm", "l": f"en {n} del 1 de septiembre al {hasta_t}", "tono": "calor" if seco else "lluvia"}]
+    if x["ref"]:
+        cifras.append({"n": f"{R.f1(x['v_ref'])} mm", "l": f"en esas fechas de {x['ref']}", "tono": "calor" if seco else "lluvia"})
+    if x.get("media"):
+        t = f"Lo normal entre el 1 de septiembre y el {hasta_t} son {R.f1(x['media'])} mm en esa estación (media de 1991-2020)"
+        vv = _veces(x["mm"], x["media"]) if not seco else None
+        vals = [R.f1(x["media"]) + " mm", "1991", "2020"]
+        if vv and vv >= 1.5:
+            t += f": este año lleva más de {R.f1(vv)} veces esa cifra"
+            vals.append(R.f1(vv))
+        elif seco:
+            pct = math.floor(x["mm"] / x["media"] * 100) if x["media"] else None
+            if pct is not None and pct < 50:
+                t += f": este año no llega al {pct + 1} %"
+                vals.append(f"{pct + 1} %")
+        if not seco and x.get("media_otono") and x["mm"] > x["media_otono"]:
+            v2 = _veces(x["mm"], x["media_otono"])
+            t += (f", y ya {'más del doble de' if v2 >= 2 else 'más de'} lo que llueve de media en un otoño entero, del 1 de septiembre al "
+                  f"30 de noviembre ({R.f1(x['media_otono'])} mm)")
+            vals.append(R.f1(x["media_otono"]) + " mm")
+        hh.append(R.hecho(f"{idp}_media", t + ".", FUENTE_D, vals, lugar=n))
+        cifras.append({"n": f"{R.f1(x['media'])} mm", "l": f"lo normal hasta el {hasta_t} (media de 1991-2020)", "tono": "lluvia"})
+    hh.append(R.hecho(f"{idp}_met", f"Cálculo del observatorio con los valores climatológicos diarios de AEMET de la estación: la lluvia del 1 de "
+                                    f"septiembre al {hasta_t} de cada año desde {x['desde']}, en los años con todos los días con dato (entre "
+                                    f"{x['ref'] or x['desde']} y {anio} no falta ninguno), y los valores diarios validados de {anio}. Los días "
+                                    f"posteriores al {hasta_t} aún no tienen dato validado.", FUENTE_D, []))
+    if x["record"]:
+        tit = (f"{corto} vive el otoño {'más seco' if seco else 'más lluvioso'} a estas alturas de toda su serie, desde {x['desde']}: "
+               f"{R.f1(x['mm'])} litros desde el 1 de septiembre")
+    else:
+        tit = (f"{corto} vive el otoño {'más seco' if seco else 'más lluvioso'} a estas alturas desde {x['ref']}: "
+               f"{R.f1(x['mm'])} litros desde el 1 de septiembre")
+    kicker, tono = ("Exclusiva · un otoño sin lluvia", "calor") if seco else ("Exclusiva · lluvia contra su historia", "lluvia")
+    return hh, tit, cifras, kicker, tono
+
+
 def _hechos(R, tipo, c, idp):
     """Hechos, titular y cifras de una exclusiva."""
     if tipo in ("otono_seco", "otono_humedo"):
         return _hechos_otono(R, tipo, c, idp)
+    if tipo == "otono_largo":
+        return _hechos_largo(R, c, idp)
     if tipo in ("dia_record", "otono_record", "tres_record"):
         r, oh, o, ep = c["r"], c["oh"], c["o"], c["ep"]
         n, cod = r["nombre"], r["cod"]
         lugar = _lugar(R, n, cod)
         hh, cifras = [], []
         if tipo == "dia_record":
-            v = _veces(r["max"], oh["dia_max"])
-            cu = _cuanto(r["max"], oh["dia_max"])
+            # 26-10-2026: si la serie tiene días de otoño sin dato, el récord está confirmado con las vecinas, pero el máximo
+            # anterior es solo el más alto con dato: no se dan multiplicadores («casi el triple») ni «frente a X»
+            completa = oh.get("completa", True)
+            v = _veces(r["max"], oh["dia_max"]) if completa else None
+            cu = _cuanto(r["max"], oh["dia_max"]) if completa else None
             dia_t = (f"en el día pluviométrico del {_fecha(r['max_fecha'])} (de 07:00 a 07:00 UTC, como cuenta AEMET)"
                      if r.get("fuente_dias") in ("validado", "pluviometrico") else f"el {_fecha(r['max_fecha'])} (de 0 a 24 h, hora peninsular)")
             # 23-10-2026: «de sus registros, que empiezan en 1991» era falso en estaciones más antiguas (el aeropuerto de Ibiza):
@@ -248,17 +341,24 @@ def _hechos(R, tipo, c, idp):
             hh.append(R.hecho(idp, f"La estación de AEMET de {lugar} recogió {R.f1(r['max'])} mm {dia_t}: su día de otoño más lluvioso "
                                    f"desde {oh['desde']}{nota91}.", FUENTE_OBS,
                               [R.f1(r["max"]) + " mm", str(oh["desde"])], lugar=n, superlativo=True, record=True, liga=[R.f1(r["max"])]))
-            hh.append(R.hecho(f"{idp}_ant", f"Su día de otoño más lluvioso hasta ahora era el {_fecha(oh['dia_fecha'], anio=True)}, con {R.f1(oh['dia_max'])} mm"
+            hh.append(R.hecho(f"{idp}_ant", f"Su día de otoño más lluvioso {'hasta ahora' if completa else 'con dato hasta ahora'} era el {_fecha(oh['dia_fecha'], anio=True)}, con {R.f1(oh['dia_max'])} mm"
                                             + (f": esta vez cayó más de {R.f1(v)} veces esa cifra." if v and v >= 1.5 else "."), FUENTE_D,
                               [R.f1(oh["dia_max"]) + " mm", oh["dia_fecha"][:4]] + ([R.f1(v)] if v and v >= 1.5 else []), lugar=n,
                               alias=[cu] if cu else []))
+            if not completa and oh.get("dias_sin_dato"):
+                vec = oh.get("vecinas") or []
+                hh.append(R.hecho(f"{idp}_hue", f"La serie de {n} tiene {oh['dias_sin_dato']} días de otoño sin dato desde {oh['desde']}; en esos días, "
+                                                f"las estaciones de AEMET más cercanas con dato ({R.lista_y(vec)}) no pasaron de {R.f1(oh['max_vecinas'])} mm en un día.",
+                                  FUENTE_D, [str(oh["dias_sin_dato"]), str(oh["desde"]), R.f1(oh["max_vecinas"]) + " mm"], lugar=n))
             nt = _titulo(n)
             if cu:
                 tit = f"{nt} recoge en un solo día {cu} de lluvia que en su día de otoño más lluvioso desde {oh['desde']}: {R.f1(r['max'])} litros"
-            else:
+            elif completa:
                 tit = f"{nt} vive su día de otoño más lluvioso desde {oh['desde']}: {R.f1(r['max'])} litros, frente a {R.f1(oh['dia_max'])} de su máximo anterior"
+            else:
+                tit = f"{nt} vive su día de otoño más lluvioso desde {oh['desde']}: {R.f1(r['max'])} litros en un día"
             cifras.append({"n": f"{R.f1(r['max'])} mm", "l": f"en {n} el {_fecha(r['max_fecha'])}: su día de otoño más lluvioso desde {oh['desde']}", "tono": "lluvia"})
-            cifras.append({"n": f"{R.f1(oh['dia_max'])} mm", "l": f"su máximo anterior ({_fecha(oh['dia_fecha'], anio=True)})", "tono": "lluvia"})
+            cifras.append({"n": f"{R.f1(oh['dia_max'])} mm", "l": f"su máximo anterior{'' if completa else ' con dato'} ({_fecha(oh['dia_fecha'], anio=True)})", "tono": "lluvia"})
         elif tipo == "tres_record":
             tit = (f"{_titulo(n)} suma {R.f1(oh['tres_ep'])} litros en tres días, más que en cualquier otro tramo de tres días de otoño desde {oh['desde']}")
             cifras.append({"n": f"{R.f1(oh['tres_ep'])} mm", "l": f"en {n} en tres días", "tono": "lluvia"})
@@ -290,8 +390,14 @@ def _hechos(R, tipo, c, idp):
             if tipo != "otono_record":
                 cifras.append({"n": f"{R.f1(o['mm'])} mm", "l": f"en {n} desde el 1 de septiembre", "tono": "lluvia"})
         valid_dia = tipo == "dia_record" and r.get("max_fecha") in (r.get("validados") or [])
-        hh.append(R.hecho(f"{idp}_met", "La comparación es con todos los otoños (1 de septiembre-30 de noviembre) con dato de la estación en los valores diarios "
-                                        "validados de AEMET; " + (f"el dato del {_fecha(r['max_fecha'])} ya es también el valor diario validado de AEMET."
+        if tipo in ("dia_record", "tres_record") and oh.get("desde"):
+            # 26-10-2026: la serie de cada récord empieza donde todos sus días de otoño son comprobables
+            base_t = (f"La comparación es con todos los días de otoño (1 de septiembre-30 de noviembre) de la estación desde {oh['desde']} en los "
+                      "valores diarios validados de AEMET" + ("" if oh.get("completa", True) else
+                                                               ", y en los que no tienen dato, con las estaciones de AEMET más cercanas") + "; ")
+        else:
+            base_t = "La comparación es con todos los otoños (1 de septiembre-30 de noviembre) con dato de la estación en los valores diarios validados de AEMET; "
+        hh.append(R.hecho(f"{idp}_met", base_t + (f"el dato del {_fecha(r['max_fecha'])} ya es también el valor diario validado de AEMET."
                                                                     if valid_dia else "el dato de este episodio es observación horaria, que AEMET valida en unos días."),
                           FUENTE_D, []))
         return hh, tit, cifras, "Exclusiva · lluvia contra su historia", "lluvia"
@@ -328,7 +434,7 @@ def generar(R, D):
     lluvia = [(cod, c) for cod, t, c in otras if t == "dia_record"]
     if lluvia:
         hh.append(R.hecho("ex_otras", "También viven su día de otoño más lluvioso de la serie "
-                                      + R.lista_y([f"{_lugar(R, c['r']['nombre'], cod)}, con {R.f1(c['r']['max'])} mm (su máximo anterior, {R.f1(c['oh']['dia_max'])}; serie desde {c['oh']['desde']})"
+                                      + R.lista_y([f"{_lugar(R, c['r']['nombre'], cod)}, con {R.f1(c['r']['max'])} mm (su máximo anterior{'' if c['oh'].get('completa', True) else ' con dato'}, {R.f1(c['oh']['dia_max'])}; serie desde {c['oh']['desde']})"
                                                    for cod, c in lluvia[:4]]) + ".", FUENTE_OBS,
                           [R.f1(c["r"]["max"]) + " mm" for cod, c in lluvia[:4]] + [R.f1(c["oh"]["dia_max"]) for cod, c in lluvia[:4]],
                           superlativo=True, record=True))
@@ -346,7 +452,7 @@ def generar(R, D):
     if len(tit) > 165:
         tit = tit[:tit.rfind(":")] if ":" in tit else tit[:160]
     pl = {"titular": tit, "subtitulo": hh[1]["dice"] if len(hh) > 1 else "", "entradilla": hh[0]["dice"],
-          "cuerpo": [" ".join(h["dice"] for h in hh[2:] if not h["id"].startswith("ex_") or h["id"] in ("ex_tres", "ex_oto", "ex_met"))]
+          "cuerpo": [" ".join(h["dice"] for h in hh[2:] if not h["id"].startswith("ex_") or h["id"] in ("ex_tres", "ex_oto", "ex_met", "ex_hue", "ex_huecos"))]
           + [" ".join(h["dice"] for h in hh if h["id"] in ("ex_otras", "ex_seco", "ex_verano"))],
           "claves": [h["dice"] for h in hh[:3]], "fijar": ["titular"]}
     pl["cuerpo"] = [p for p in pl["cuerpo"] if p]
@@ -369,7 +475,7 @@ def generar(R, D):
         mas = [cc for p2, cod2, t2, cc in cands if cod2 == cod and t2 == "dia_record" and cc is not c]
         if mas:
             hv.append(R.hecho("exp_mas", "En la provincia también vive su día de otoño más lluvioso de la serie "
-                                         + R.lista_y([f"{cc['r']['nombre']}, con {R.f1(cc['r']['max'])} mm el {_fecha(cc['r']['max_fecha'])} (su máximo anterior, "
+                                         + R.lista_y([f"{cc['r']['nombre']}, con {R.f1(cc['r']['max'])} mm el {_fecha(cc['r']['max_fecha'])} (su máximo anterior{'' if cc['oh'].get('completa', True) else ' con dato'}, "
                                                       f"{R.f1(cc['oh']['dia_max'])} mm en {cc['oh']['dia_fecha'][:4]}; serie desde {cc['oh']['desde']})" for cc in mas[:3]]) + ".",
                               FUENTE_OBS, [R.f1(cc["r"]["max"]) + " mm" for cc in mas[:3]] + [R.f1(cc["oh"]["dia_max"]) + " mm" for cc in mas[:3]]
                               + [cc["oh"]["dia_fecha"][:4] for cc in mas[:3]] + [str(cc["oh"]["desde"]) for cc in mas[:3]], superlativo=True, record=True))

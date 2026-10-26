@@ -379,6 +379,57 @@ def _crudo(R):
     return c
 
 
+def _vecinas(c, e, km_max=35.0, n=8):
+    """Estaciones del archivo de otoños a menos de km_max de e, de más cerca a más lejos: [(km, id, nombre)]."""
+    inv = c.get("inventario") or {}
+    o = inv.get(e) or {}
+    if o.get("lat") is None:
+        return []
+    out = []
+    for k, v in inv.items():
+        if k == e or v.get("lat") is None:
+            continue
+        r = math.radians
+        h = (math.sin(r(v["lat"] - o["lat"]) / 2) ** 2
+             + math.cos(r(o["lat"])) * math.cos(r(v["lat"])) * math.sin(r(v["lon"] - o["lon"]) / 2) ** 2)
+        d = 2 * 6371 * math.asin(math.sqrt(h))
+        if d <= km_max:
+            out.append((round(d, 1), k, v.get("nom") or k))
+    return sorted(out)[:n]
+
+
+def _huecos_otono(c, e, desde, anio, idx, mm, seco, completos):
+    """26-10-2026: años de la serie sin otoño completo en la estación (de su primer otoño completo al año pasado).
+    Un récord solo vale si en cada uno de ellos o la propia estación ya basta (su lluvia parcial no deja que sea más
+    seco o más lluvioso) o al menos dos estaciones vecinas con ese otoño completo dicen que fue muy distinto: para un
+    récord seco, que llovió al menos el doble (y 20 mm más); para uno húmedo, que no pasó del 60 %.
+    Devuelve (confirmado, [(año, [nombres de vecinas])])."""
+    D = c.get("datos") or {}
+    yrs = D.get(e) or {}
+    vec = _vecinas(c, e)
+    huecos = []
+    for a in range(desde, anio):
+        if a in completos:
+            continue
+        propio = yrs.get(str(a)) or {}
+        parcial = sum(v for i, v in propio.items() if v is not None and int(i) <= idx)
+        if seco and parcial >= mm:
+            continue   # con lo que tiene ya llovió más: no pudo ser más seco
+        vals = []
+        for _d, k, nom in vec:
+            acc = _acumulado(D.get(k, {}).get(str(a)) or {}, idx)
+            if acc is not None:
+                vals.append((acc, nom))
+        if len(vals) < 2:
+            return False, []
+        if seco and min(v for v, _n in vals) < max(2 * mm, mm + 20):
+            return False, []
+        if not seco and max(v for v, _n in vals) > 0.6 * mm:
+            return False, []
+        huecos.append((a, [n for _v, n in vals[:3]]))
+    return True, huecos
+
+
 def _acumulado(dias, hasta_idx):
     """Lluvia del 1 de septiembre al día hasta_idx (incluido), o None si faltan más de 2 días."""
     vals = [dias.get(str(i)) for i in range(hasta_idx + 1)]
@@ -394,6 +445,141 @@ def _veces_txt(x):
     if v >= 2:
         return "más del doble de lluvia que en"
     return "más lluvia que en"
+
+
+# 26-10-2026: el otoño a estas alturas en las series diarias largas de AEMET (archivo/aemet_diario, desde los años 20-50).
+# El archivo de otoños (crudo_otonios) empieza en 1991, y «el más lluvioso desde 2011» en el pluviómetro automático de
+# San Javier escondía que en el observatorio de al lado (serie desde 1947) no llovía tanto en esas fechas desde 1972.
+LARGO_MIN_ANIOS = 30      # «desde <año>» solo si ese año queda al menos tan lejos
+LARGO_MIN_SERIE = 40      # años con todos los días del tramo
+
+
+def _serie_larga(R, e):
+    f = R.DOCS.parent / "archivo" / "aemet_diario" / f"{e}.csv.gz"
+    if not f.exists():
+        return None
+    out = {}
+    with gzip.open(f, "rt", encoding="utf-8") as g:
+        for r in csv.DictReader(g):
+            try:
+                out[r["fecha"]] = float(r["prec"]) if r.get("prec") not in (None, "") else None
+            except ValueError:
+                out[r["fecha"]] = None
+    return out
+
+
+def _validados_2026(R):
+    v = getattr(_validados_2026, "_v", None)
+    if v is None:
+        v = _validados_2026._v = {}
+        d = R.leer(R.DOCS.parent / "archivo" / "otonio" / "diarios_2026.json", {}) or {}
+        for ini, tr in (d.get("trozos") or {}).items():
+            base = datetime.date(int(ini[:4]), 9, 1)
+            for e, vals in (tr.get("datos") or {}).items():
+                for k, mm in (vals or {}).items():
+                    if mm is not None:
+                        v.setdefault(e, {})[(base + datetime.timedelta(int(k))).isoformat()] = float(mm)
+    return v
+
+
+def otono_largo(R):
+    """Estaciones con serie diaria larga en las que el otoño, hasta el último día validado por AEMET, es el más lluvioso
+    o el más seco desde hace al menos 30 años (o de toda la serie). Se compara el mismo tramo (1 de septiembre-último día
+    validado) de todos los años con todos sus días con dato; si entre el año de referencia y hoy falta algún día, no hay
+    historia."""
+    c = getattr(otono_largo, "_c", None)
+    if c is not None and c[0] == R.HOY:
+        return c[1]
+    est = (R.leer(R.DOCS.parent / "archivo" / "aemet_diario" / "estado.json", {}) or {}).get("estaciones") or {}
+    inv = R.leer(R.PRENSA / "aemet_inventario.json", {}) or {}
+    val = _validados_2026(R)
+    anio = R.HOY.year if R.HOY.month >= 9 else R.HOY.year - 1
+    ini = datetime.date(anio, 9, 1)
+    out = []
+    for e, m in est.items():
+        if not m.get("completa") or not inv.get(e) or not m.get("primer_dia"):
+            continue
+        cod = _prov(R, inv[e][1])
+        if not cod:
+            continue
+        P = _serie_larga(R, e)
+        if not P:
+            continue
+        # este otoño: día a día, el validado de 2026 o el de la serie; se corta en el primer día sin dato
+        mm, d, D = 0.0, ini, None
+        while d <= datetime.date(anio, 11, 30):
+            x = (val.get(e) or {}).get(d.isoformat())
+            x = P.get(d.isoformat()) if x is None else x
+            if x is None:
+                break
+            mm, D, d = mm + x, d, d + datetime.timedelta(1)
+        if D is None or (D - ini).days < 29 or (R.HOY - D).days > 12:
+            continue
+        mm = round(mm, 1)
+        primero = int(m["primer_dia"][:4]) + (0 if m["primer_dia"][5:] <= "09-01" else 1)
+        comp, inc = {}, []
+        for y in range(primero, anio):
+            s, ok, dd = 0.0, True, datetime.date(y, 9, 1)
+            while dd <= datetime.date(y, D.month, D.day):
+                x = P.get(dd.isoformat())
+                if x is None:
+                    ok = False
+                    break
+                s, dd = s + x, dd + datetime.timedelta(1)
+            if ok:
+                comp[y] = round(s, 1)
+            else:
+                inc.append(y)
+        if len(comp) < LARGO_MIN_SERIE:
+            continue
+        nom = _nombre(R, e, inv[e][0])
+        normal = [comp[y] for y in range(1991, 2021) if y in comp]
+        base = {"e": e, "nombre": nom, "cod": cod, "mm": mm, "hasta": D.isoformat(), "desde": min(comp), "n": len(comp),
+                "media": round(st.mean(normal), 1) if len(normal) >= 27 else None, "n_media": len(normal)}
+        # el otoño entero (1 de septiembre-30 de noviembre), media de 1991-2020
+        ent = []
+        for y in range(1991, 2021):
+            vals = [P.get((datetime.date(y, 9, 1) + datetime.timedelta(i)).isoformat()) for i in range(91)]
+            if all(v is not None for v in vals):
+                ent.append(sum(vals))
+        base["media_otono"] = round(st.mean(ent), 1) if len(ent) >= 27 else None
+        for seco in (False, True):
+            if not seco and mm < 50:
+                continue
+            if seco and (st.median(comp.values()) < 20 or mm > 0.5 * st.median(comp.values())):
+                continue
+            ganan = sorted(y for y, v in comp.items() if (v <= mm if seco else v >= mm))
+            ref = ganan[-1] if ganan else None
+            if ref is not None and anio - ref < LARGO_MIN_ANIOS:
+                continue
+            # sin huecos entre el año de referencia (o el primero) y hoy
+            if any(y > (ref if ref is not None else primero - 1) for y in inc):
+                continue
+            out.append(dict(base, seco=seco, ref=ref, v_ref=comp.get(ref), ganan=[(y, comp[y]) for y in ganan],
+                            record=ref is None))
+    out.sort(key=lambda x: -(anio - (x["ref"] or x["desde"])))
+    otono_largo._c = (R.HOY, out)
+    return out
+
+
+def _hermanas_largas(R, c, e):
+    """Estaciones de serie larga a menos de 3 km de e con el mismo nombre en el inventario de AEMET."""
+    inv = R.leer(R.PRENSA / "aemet_inventario.json", {}) or {}
+    ci = c.get("inventario") or {}
+    o = ci.get(e) or {}
+    out = []
+    for x in otono_largo(R):
+        v = ci.get(x["e"]) or {}
+        if x["e"] == e or o.get("lat") is None or v.get("lat") is None:
+            continue
+        if (inv.get(x["e"]) or [None])[0] != (inv.get(e) or [""])[0]:
+            continue
+        r = math.radians
+        h = (math.sin(r(v["lat"] - o["lat"]) / 2) ** 2
+             + math.cos(r(o["lat"])) * math.cos(r(v["lat"])) * math.sin(r(v["lon"] - o["lon"]) / 2) ** 2)
+        if 2 * 6371 * math.asin(math.sqrt(h)) <= 3:
+            out.append(x)
+    return out
 
 
 def otono_records(R):
@@ -429,18 +615,39 @@ def otono_records(R):
         vispera = {a: v for a, v in vispera.items() if v is not None and a < dh.year}
         nombre = _limpio(nom) if nom else _nombre(R, e, inv[e][0])
         if len(hoy_c) >= 15 and mm >= 50 and all(mm > v for v in hoy_c.values()) and mm > parcial_max:
-            a_max, v_max = max(hoy_c.items(), key=lambda x: (x[1], x[0]))
-            humedos.append({"e": e, "nombre": nombre, "cod": cod, "mm": mm, "h": h, "n": len(hoy_c), "desde": min(hoy_c),
-                            "a_max": a_max, "v_max": v_max, "veces": _veces(mm, v_max) if v_max > 0 else None,
-                            "serie": sorted(hoy_c.items()) + [(dh.year, mm)]})
+            ok, huecos = _huecos_otono(c, e, min(hoy_c), dh.year, idx, mm, False, hoy_c)
+            if ok:
+                a_max, v_max = max(hoy_c.items(), key=lambda x: (x[1], x[0]))
+                humedos.append({"e": e, "nombre": nombre, "cod": cod, "mm": mm, "h": h, "n": len(hoy_c), "desde": min(hoy_c),
+                                "a_max": a_max, "v_max": v_max, "veces": _veces(mm, v_max) if v_max > 0 and not huecos else None,
+                                "huecos": huecos, "serie": sorted(hoy_c.items()) + [(dh.year, mm)]})
         if len(vispera) >= 25 and all(mm < v for v in vispera.values()) and st.median(vispera.values()) >= 20:
-            a_min, v_min = min(vispera.items(), key=lambda x: (x[1], -x[0]))
-            secos.append({"e": e, "nombre": nombre, "cod": cod, "mm": mm, "h": h, "n": len(vispera), "desde": min(vispera),
-                          "a_min": a_min, "v_min": v_min, "mediana": round(st.median(vispera.values()), 1),
-                          "serie": sorted(vispera.items()) + [(dh.year, mm)]})
+            ok, huecos = _huecos_otono(c, e, min(vispera), dh.year, idx - 1, mm, True, vispera)
+            if ok:
+                a_min, v_min = min(vispera.items(), key=lambda x: (x[1], -x[0]))
+                secos.append({"e": e, "nombre": nombre, "cod": cod, "mm": mm, "h": h, "n": len(vispera), "desde": min(vispera),
+                              "a_min": a_min, "v_min": v_min, "mediana": round(st.median(vispera.values()), 1),
+                              "huecos": huecos, "serie": sorted(vispera.items()) + [(dh.year, mm)]})
+    # 26-10-2026: si al lado (≤ 3 km, mismo nombre) hay una estación de serie larga con historia del mismo signo, manda
+    # esa: «desde 1972» en el observatorio de San Javier, no «desde 2011» en su pluviómetro automático
+    try:
+        humedos = [x for x in humedos if not any(not h["seco"] for h in _hermanas_largas(R, c, x["e"]))]
+        secos = [x for x in secos if not any(h["seco"] for h in _hermanas_largas(R, c, x["e"]))]
+    except Exception as ex:  # noqa: BLE001
+        R.LOG.append(f"analisis/otoño largo: {ex}")
     humedos.sort(key=lambda x: -(x["veces"] or 0))
     secos.sort(key=lambda x: (x["mm"], -x["n"]))
     return {"humedos": humedos, "secos": secos, "hasta": hasta, "dh": dh}
+
+
+def _hecho_huecos(R, x, id_, seco):
+    if not x.get("huecos"):
+        return []
+    anios = R.lista_y([str(a) for a, _v in x["huecos"]])
+    vec = R.lista_y(sorted({n for _a, vs in x["huecos"] for n in vs})[:4])
+    return [R.hecho(id_ + "_huecos", f"AEMET no tiene completo{'s' if len(x['huecos']) > 1 else ''} el otoño de {anios} en {x['nombre']}; en las "
+                                     f"estaciones de AEMET más cercanas con ese otoño completo ({vec}) llovió mucho "
+                                     + ("más" if seco else "menos") + " que este año a estas alturas.", FUENTE_D, [str(a) for a, _v in x["huecos"]])]
 
 
 def g_otono_serie(R, D):
@@ -464,7 +671,7 @@ def g_otono_serie(R, D):
                                               f"lluvioso hasta ahora en esas fechas desde {x['desde']}: {R.f1(x['v_max'])} mm.", FUENTE_D,
                               [R.f1(x["veces"]), str(x["a_max"]), R.f1(x["v_max"])], lugar=x["nombre"], liga=[R.f1(x["v_max"])],
                               superlativo=True))
-        return hh
+        return hh + _hecho_huecos(R, x, id_, False)
 
     def h_seco(x, id_, con_prov=True):
         donde = f"{x['nombre']} ({R.nprov(x['cod'])})" if con_prov else x["nombre"]
@@ -475,7 +682,7 @@ def g_otono_serie(R, D):
                 R.hecho(id_ + "_antes", f"En {x['nombre']}, el otoño más seco a estas alturas desde {x['desde']} era el de {x['a_min']}, con "
                                         f"{R.f1(x['v_min'])} mm; lo habitual hasta la víspera es {R.f1(x['mediana'])} mm (mediana de esos otoños).", FUENTE_D,
                         [str(x["a_min"]), R.f1(x["v_min"]), R.f1(x["mediana"])], lugar=x["nombre"], liga=[R.f1(x["v_min"]), R.f1(x["mediana"])],
-                        superlativo=True)]
+                        superlativo=True)] + _hecho_huecos(R, x, id_, True)
     if humedos:
         lider = humedos[0]
         hechos += h_humedo(lider, "ot_h1")
