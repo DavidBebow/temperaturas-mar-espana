@@ -1,12 +1,12 @@
-# Granada Aeropuerto (Granada) ya supera hoy, 26 de octubre, su récord de máxima para un mes de octubre: 38,9 °C entre las 17:00 y las 18:00 frente a los 35,9 °C de 2023
+# Granada Aeropuerto (Granada) ya supera hoy, 26 de octubre, su récord de máxima para un mes de octubre: 40,2 °C entre las 18:00 y las 19:00 frente a los 35,9 °C de 2023
 
-**Dato:** Medido por AEMET en su estación de Granada Aeropuerto, a 560 m, máxima de 38,9 °C el 26 de octubre (entre las 17:00 y las 18:00, hora local) · récord anterior de octubre en la estación: 35,9 °C (1 de octubre de 2023) · récord absoluto de la estación: 46 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 18:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Granada Aeropuerto, a 560 m, máxima de 40,2 °C el 26 de octubre (entre las 18:00 y las 19:00, hora local) · récord anterior de octubre en la estación: 35,9 °C (1 de octubre de 2023) · récord absoluto de la estación: 46 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 19:00 (hora local)  
 **Fecha del dato:** 26 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Granada Aeropuerto (Granada)  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 3 °C.
+- Supera el récord anterior en 4,3 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 1973.
 
 ## Fuente y método
@@ -20,7 +20,7 @@
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 26 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 1973.
 - Día en curso: la cifra puede cambiar hasta la medianoche (hora UTC). Citar siempre con la hora.
-- COMPROBAR antes de enviar: el extremo de la hora se separa 13,8 °C de la temperatura de esa hora: posible pico del sensor; ninguna estación vecina (a menos de 50 km) pasa de 29,9 °C. No se publica hasta que AEMET valide el dato.
+- COMPROBAR antes de enviar: supera el récord anterior en 4,3 °C, demasiado para un dato sin validar; el extremo de la hora se separa 19,9 °C de la temperatura de esa hora: posible pico del sensor; ninguna estación vecina (a menos de 50 km) pasa de 29,9 °C. No se publica hasta que AEMET valide el dato.
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/records-de-temperatura/
