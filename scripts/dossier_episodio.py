@@ -218,20 +218,77 @@ def estaciones_meta():
     return out
 
 
+_CRUDO = {}
+
+
 def historia_otono():
     """id → días de otoño (1-9 a 30-11) con dato de 1991-2025: [(fecha, mm)] y años con dato."""
-    d = leer(RAIZ / "archivo" / "otonio" / "crudo_otonios.json.gz", {}) or {}
-    return d.get("datos") or {}
+    if not _CRUDO:
+        _CRUDO.update(leer(RAIZ / "archivo" / "otonio" / "crudo_otonios.json.gz", {}) or {})
+    return _CRUDO.get("datos") or {}
 
 
-def max_otono(serie):
+def huecos_dia(e, desde, umbral, ultimo=2025, km_max=35.0):
+    """26-10-2026: un día de otoño récord solo vale si en los días de otoño sin dato de la estación las estaciones vecinas
+    (al menos dos, a menos de km_max) no pasaron de `umbral`: con huecos en la serie, la estación pudo tener un día mayor que
+    no consta. Se recorre de `ultimo` hacia atrás; el primer otoño con un hueco que no se puede comprobar así corta la serie.
+    Devuelve (primer año desde el que vale el récord o None, días sin dato desde ese año, vecinas usadas, máx. de las vecinas)."""
+    D = historia_otono()
+    inv = _CRUDO.get("inventario") or {}
+    o = inv.get(e) or {}
+    if o.get("lat") is None or not desde:
+        return None, 0, [], None
+    vec = []
+    for k, v in inv.items():
+        if k == e or v.get("lat") is None:
+            continue
+        r = math.radians
+        h = (math.sin(r(v["lat"] - o["lat"]) / 2) ** 2
+             + math.cos(r(o["lat"])) * math.cos(r(v["lat"])) * math.sin(r(v["lon"] - o["lon"]) / 2) ** 2)
+        d = 2 * 6371 * math.asin(math.sqrt(h))
+        if d <= km_max:
+            vec.append((d, k, v.get("nom") or k))
+    vec.sort()
+    propio = D.get(e) or {}
+    n_falt, usadas, mx_vec, inicio = 0, set(), 0.0, int(desde)
+    for a in range(ultimo, int(desde) - 1, -1):
+        v = propio.get(str(a)) or {}
+        n_a, us_a, mx_a, ok = 0, set(), 0.0, True
+        for i in range(91):
+            if v.get(str(i)) is not None:
+                continue
+            n_a += 1
+            vals = [(D[k][str(a)][str(i)], nom) for _d, k, nom in vec
+                    if D.get(k, {}).get(str(a)) and D[k][str(a)].get(str(i)) is not None]
+            if len(vals) < 2 or max(x for x, _n in vals) > umbral:
+                ok = False
+                break
+            mx_a = max(mx_a, max(x for x, _n in vals))
+            us_a.update(nom for _x, nom in vals[:2])
+        if not ok:
+            inicio = a + 1
+            break
+        n_falt, mx_vec = n_falt + n_a, max(mx_vec, mx_a)
+        usadas |= us_a
+    if inicio > ultimo:
+        return None, 0, [], None
+    return inicio, n_falt, sorted(usadas)[:4], (round(mx_vec, 1) if n_falt else None)
+
+
+def max_otono(serie, desde_min=None):
     """Día de otoño más lluvioso y tres días seguidos más lluviosos de una estación (crudo de un año → {índice: mm})."""
     dia_max, tres_max, anios = (0.0, None), (0.0, None), 0
+    primero = min((int(a) for a, v in serie.items() if len([m for m in v.values() if m is not None]) >= 80
+                   and (desde_min is None or int(a) >= desde_min)), default=None)
+    if primero is not None and desde_min is not None:
+        primero = max(primero, desde_min)
     for a, v in serie.items():
         vals = {int(i): m for i, m in v.items() if m is not None}
-        if len(vals) < 80:
+        # 26-10-2026: el máximo se busca en todos los días con dato desde el primer otoño completo, también en los otoños
+        # con huecos (antes se saltaban: un día mayor en un otoño incompleto no contaba como máximo anterior)
+        if primero is None or int(a) < primero:
             continue
-        anios += 1
+        anios += len(vals) >= 80
         for i, m in vals.items():
             if m > dia_max[0]:
                 dia_max = (m, (date(int(a), 9, 1) + timedelta(i)).isoformat())
@@ -239,7 +296,6 @@ def max_otono(serie):
                 s3 = m + vals[i + 1] + vals[i + 2]
                 if s3 > tres_max[0]:
                     tres_max = (s3, (date(int(a), 9, 1) + timedelta(i)).isoformat())
-    primero = min((int(a) for a, v in serie.items() if len([m for m in v.values() if m is not None]) >= 80), default=None)
     return {"dia": dia_max, "tres": tres_max, "otonos": anios, "desde": primero}
 
 
@@ -505,6 +561,25 @@ def construir(ep, prev):
                                    # 21-10-2026 (David): un récord de un día o de tres solo se da con días de AEMET (07-07 UTC),
                                    # los mismos de la serie con la que se compara; con la suma de 0 a 24 h, no.
                                    "record_dia": alineado and mx[0] > h["dia"][0], "record_tres": bool(alineado and tres and tres > h["tres"][0])}
+                oh = r["otono_hist"]
+                if oh["record_dia"] or oh["record_tres"]:
+                    # 26-10-2026: con días sin dato en la serie, el récord se confirma con las vecinas (no pasaron del 70 %
+                    # de la cifra de hoy) y se dejan de dar multiplicadores; el de tres días exige la serie sin huecos
+                    ini, n_falt, vecs, mx_v = huecos_dia(c, h["desde"], 0.7 * mx[0])
+                    if ini is not None and ini != h["desde"]:
+                        # la serie comprobable empieza más tarde: el récord se da desde ese año, con su máximo
+                        h2 = max_otono(oto[c], desde_min=ini)
+                        oh.update({"otonos": h2["otonos"], "desde": ini, "desde_archivo": h["desde"], "dia_max": h2["dia"][0],
+                                   "dia_fecha": h2["dia"][1], "tres_max": round(h2["tres"][0], 1), "tres_fecha": h2["tres"][1]})
+                    ok = ini is not None and 2025 - ini + 1 >= 10
+                    # los días de este otoño anteriores al episodio (validados) también cuentan como máximo anterior
+                    antes = max(((v[c], d) for d, v in validados.items() if c in v and d < dias_c[0]), default=(0.0, None))
+                    if antes[0] > oh["dia_max"]:
+                        oh.update({"dia_max": antes[0], "dia_fecha": antes[1]})
+                        oh["record_dia"] = bool(oh["record_dia"] and mx[0] > antes[0])
+                    oh.update({"dias_sin_dato": n_falt, "completa": n_falt == 0, "vecinas": vecs, "max_vecinas": mx_v})
+                    oh["record_dia"] = bool(oh["record_dia"] and ok and mx[0] > oh["dia_max"])
+                    oh["record_tres"] = bool(oh["record_tres"] and ok and n_falt == 0)
         if c in largas:
             L = largas[c]
             r["serie_larga"] = dict(L, record=alineado and mx[0] > L["mm"])
@@ -633,8 +708,9 @@ def claves(ep, B):
              + ", la cifra diaria más alta del episodio")
         oh = top_dia.get("otono_hist")
         if oh and oh["record_dia"]:
-            v = veces(top_dia["max"], oh["dia_max"])
-            t += (f"; es el día de otoño más lluvioso en los registros de la estación desde {oh['desde']}: su máximo anterior eran "
+            v = veces(top_dia["max"], oh["dia_max"]) if oh.get("completa") else None
+            t += (f"; es el día de otoño más lluvioso en los registros de la estación desde {oh['desde']}: su máximo anterior "
+                  + ("" if oh.get("completa") else "con dato ") + "eran "
                   f"{f1(oh['dia_max'])} mm, el {dia(oh['dia_fecha'], semana=False, anio=True)}"
                   + (f" (ahora, más de {f1(v)} veces esa cifra)" if v and v >= 1.5 else ""))
         out.append({"t": t + ".", "fuente": F_OBS})
@@ -653,9 +729,11 @@ def claves(ep, B):
     # récords de otoño
     recs = sorted((r for r in B["est"] if (r.get("otono_hist") or {}).get("record_dia")), key=lambda r: -r["max"])
     if recs:
-        nombres = lista_y([f"{r['nombre']} ({f1(r['max'])} mm; antes, {f1(r['otono_hist']['dia_max'])})" for r in recs[:6]])
+        nombres = lista_y([f"{r['nombre']} ({f1(r['max'])} mm; antes, {f1(r['otono_hist']['dia_max'])}; serie desde {r['otono_hist']['desde']})" for r in recs[:6]])
+        # 26-10-2026: cada serie empieza en el primer otoño desde el que todos sus días se pueden comprobar (con dato o, si
+        # falta, con las estaciones vecinas), no siempre en 1991 ni en el primer año de la estación
         out.append({"t": f"En {len(recs)} estaciones, el día más lluvioso del episodio es su día de otoño más lluvioso de la serie "
-                         f"(otoños con dato desde 1991 o desde que empieza la estación, con al menos 10): {nombres}"
+                         f"(al menos 10 otoños; los días sin dato de cada estación se comprueban con las estaciones de AEMET más cercanas): {nombres}"
                          + (f", entre otras." if len(recs) > 6 else "."),
                     "fuente": "AEMET OpenData (valores climatológicos diarios 1991-2025 y observación); cálculo de calentamientoglobal.es"})
     recs3 = sorted((r for r in B["est"] if (r.get("otono_hist") or {}).get("record_tres")), key=lambda r: -r["otono_hist"]["tres_ep"])
