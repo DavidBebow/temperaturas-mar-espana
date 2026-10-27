@@ -1,6 +1,6 @@
 # Laguna Seca, Parque Nacional Sierra Nevada (Granada) ya supera hoy, 27 de octubre, su récord de máxima para un mes de octubre: 15,8 °C entre las 11:00 y las 12:00 frente a los 14,6 °C de 2025
 
-**Dato:** Medido por AEMET en su estación de Laguna Seca, Parque Nacional Sierra Nevada, a 2300 m, máxima de 15,8 °C el 27 de octubre (entre las 11:00 y las 12:00, hora local) · récord anterior de octubre en la estación: 14,6 °C (5 de octubre de 2025) · récord absoluto de la estación: 30 °C (1 de julio de 2024) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Laguna Seca, Parque Nacional Sierra Nevada, a 2300 m, máxima de 15,8 °C el 27 de octubre (entre las 11:00 y las 12:00, hora local) · récord anterior de octubre en la estación: 14,6 °C (5 de octubre de 2025) · récord absoluto de la estación: 30 °C (1 de julio de 2024) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 27 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Laguna Seca, Parque Nacional Sierra Nevada (Granada)  
 **Citabilidad:** media · **Exclusivo:** sí
