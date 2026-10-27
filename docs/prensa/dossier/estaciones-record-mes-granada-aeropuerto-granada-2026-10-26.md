@@ -1,6 +1,6 @@
-# Granada Aeropuerto (Granada) alcanzó el 26 de octubre al menos 40,2 °C, la temperatura más alta en un mes de octubre desde que hay registros en su estación de AEMET
+# Granada Aeropuerto (Granada) alcanzó el 26 de octubre 40,2 °C, la temperatura más alta en un mes de octubre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Granada Aeropuerto, a 560 m, máxima de 40,2 °C el 26 de octubre (entre las 18:00 y las 19:00, hora local) · récord anterior de octubre en la estación: 35,9 °C (1 de octubre de 2023) · récord absoluto de la estación: 46 °C (14 de agosto de 2021) · 23 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Granada Aeropuerto, a 560 m, máxima de 40,2 °C el 26 de octubre (entre las 18:00 y las 19:00, hora local) · récord anterior de octubre en la estación: 35,9 °C (1 de octubre de 2023) · récord absoluto de la estación: 46 °C (14 de agosto de 2021) · 24 de 24 horas del día con observación  
 **Fecha del dato:** 26 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Granada Aeropuerto (Granada)  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -19,7 +19,6 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 26 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 1973.
-- Al día le faltan 1 horas de observación en OpenData: la máxima real pudo ser mayor (citar «al menos»).
 - COMPROBAR antes de enviar: supera el récord anterior en 4,3 °C, demasiado para un dato sin validar; el extremo de la hora se separa 19,9 °C de la temperatura de esa hora: posible pico del sensor; ninguna estación vecina (a menos de 50 km) pasa de 29,9 °C. No se publica hasta que AEMET valide el dato.
 
 ## Enlaces
