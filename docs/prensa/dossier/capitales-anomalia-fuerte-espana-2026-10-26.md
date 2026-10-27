@@ -1,12 +1,12 @@
-# 22 capitales españolas tuvieron el 26 de octubre máximas de al menos 5 °C por encima de lo normal para la fecha
+# 21 capitales españolas tuvieron el 26 de octubre máximas de al menos 5 °C por encima de lo normal para la fecha
 
-**Dato:** 22 de 50 capitales · las más extremas: Segovia 23,8 °C (+8,8); Salamanca 24,1 °C (+8,5); Ávila 21,7 °C (+7,5); Soria 22,5 °C (+7,4); Cuenca 23,1 °C (+6,7); Burgos 22 °C (+6,7); Granada 27,4 °C (+6,6); Ciudad Real 25,6 °C (+6,6)  
+**Dato:** 21 de 50 capitales · las más extremas: Segovia 23,8 °C (+8,6); Salamanca 24,3 °C (+8,4); Ávila 21,7 °C (+7,3); Soria 22,5 °C (+7,2); Burgos 22,1 °C (+6,7); Granada 27,5 °C (+6,6); Cuenca 23,1 °C (+6,6); Ciudad Real 25,7 °C (+6,4)  
 **Fecha del dato:** 26 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Media de la desviación en esas 22 capitales: +6,4 °C.
+- Media de la desviación en esas 21 capitales: +6,3 °C.
 - Normal de referencia: 1991-2020, día a día, en la celda de cada capital.
 
 ## Fuente y método
