@@ -794,6 +794,8 @@ def texto_capital(c: dict, clave: str, estado: str) -> dict:
         tit = f"{mes_a.capitalize()} empata en {lugar(c)} con el más {adj} {frase_serie(c)}"
     elif c["top5"] and an != 0 and c["top5_firme"] and c["puesto_firme"]:
         tit = f"{mes_a.capitalize()}: en {lugar(c)}, el {ord_s(c['puesto'])} más {adj} {frase_serie(c)}"
+    elif c["top5"] and an != 0 and c["top5_firme"]:
+        tit = f"{mes_a.capitalize()}: en {lugar(c)}, uno de los cinco más {adj}s {frase_serie(c)}"
     elif an > 0:
         tit = f"{mes_a.capitalize()} fue {f1(an)} °C más cálido de lo normal en {lugar(c)}"
     elif an < 0:
@@ -808,6 +810,10 @@ def texto_capital(c: dict, clave: str, estado: str) -> dict:
     if an != 0:
         if firme_puesto:
             p1 += " " + frase_posicion(c, mes)
+        elif c["top5"] and c["top5_firme"]:
+            p1 += (f" Es uno de los cinco {mes}s más {adj}s de la serie de la estación ({c['anios_serie']} años desde "
+                   f"{c['serie_desde']}); el puesto exacto depende de unas décimas y se dará cuando AEMET valide los días "
+                   f"que faltan.")
         else:
             p1 += (f" Su puesto en la serie de la estación ({c['anios_serie']} años desde {c['serie_desde']}) depende de "
                    f"unas décimas y se dará cuando AEMET valide los días que faltan.")
@@ -923,9 +929,17 @@ def texto_nacional(r: dict, caps: list[dict], clave: str, estado: str) -> dict:
           f"{signo(r['anomalia_tx_media'])} °C respecto a lo normal y las mínimas, {signo(r['anomalia_tn_media'])} °C.")
     p4 = ""
     if r.get("n_tendencia_1970"):
-        p4 = (f"A más largo plazo, en las {r['n_tendencia_1970']} estaciones con serie desde 1970 el {mes} se ha calentado en "
-              f"{r['n_calentado_1970']} (en {r['n_calentado_1970_signif']} de ellas la tendencia es estadísticamente "
-              f"significativa), a un ritmo medio de {signo(r['tendencia_decada_media_1970'])} °C por década.")
+        nt, nc, ns = r["n_tendencia_1970"], r["n_calentado_1970"], r["n_calentado_1970_signif"]
+        ritmo = f"a un ritmo medio de {signo(r['tendencia_decada_media_1970'])} °C por década"
+        if nc == nt and ns == nt:
+            p4 = (f"A más largo plazo, en las {nt} estaciones con serie desde 1970 el {mes} se ha calentado en todas, con una "
+                  f"tendencia estadísticamente significativa, {ritmo}.")
+        elif ns == nc:
+            p4 = (f"A más largo plazo, de las {nt} estaciones con serie desde 1970, el {mes} se ha calentado en {nc}, todas "
+                  f"con una tendencia estadísticamente significativa, {ritmo}.")
+        else:
+            p4 = (f"A más largo plazo, de las {nt} estaciones con serie desde 1970, el {mes} se ha calentado en {nc} (en {ns} "
+                  f"de ellas la tendencia es estadísticamente significativa), {ritmo}.")
     p5 = ""
     if r.get("n_lluvia"):
         p5 = (f"En lluvia, el mes quedó por encima de lo normal en {r['n_lluvia_por_encima']} de {r['n_lluvia']} provincias "
@@ -1012,7 +1026,8 @@ def graficos(caps: list[dict], clave: str, nacional: dict, estado: str):
                 return ""
             if c["record"] and c["puesto_firme"]:
                 return " ★"
-            if c["top5"] and c["top5_firme"] and c["puesto_firme"]:
+            if c["top5"] and c["top5_firme"]:
+                # Top-5 firme aunque el puesto exacto aún pueda moverse (p. ej. 2.º que podría ser récord): la nota ya lo cuenta.
                 return " ●"
             return ""
         ax.set_yticklabels([lugar(c) if c["tipo"] == "capital" else c["provincia"] + "*" for c in v], fontsize=9)
@@ -1034,6 +1049,8 @@ def graficos(caps: list[dict], clave: str, nacional: dict, estado: str):
                      loc="left", fontsize=12, fontweight="bold", color="#1d1d1f")
         lo, hi = min(c["anomalia"] for c in v), max(c["anomalia"] for c in v)
         ax.set_xlim(min(-0.5, lo - 0.7), max(0.5, hi + 0.7))
+        from matplotlib.ticker import FuncFormatter
+        ax.xaxis.set_major_formatter(FuncFormatter(lambda x, _: f"{x:+.1f}".replace(".", ",").replace("+0,0", "0")))
         fig.text(0.99, 0.005, pie, ha="right", fontsize=7.5, color="#6e6e73")
         fig.tight_layout(rect=(0, 0.02, 1, 1))
         fig.savefig(d / "nacional.png")
@@ -1078,6 +1095,9 @@ def graficos(caps: list[dict], clave: str, nacional: dict, estado: str):
                 rel += f" · empata con el más {adj} ({c['mejor_anterior']['anio']})"
             else:
                 rel += f" · {ord_s(c['puesto'])} más {adj} de {c['anios_serie']}"
+        elif c["top5"] and c["top5_firme"] and an != 0:
+            adj = "cálidos" if c["sentido"] == "calido" else "fríos"
+            rel += f" · uno de los cinco más {adj} de {c['anios_serie']}"
         ax.set_title(f"{lugar(c)} · {mes} de cada año\n{mes.capitalize()} de {anio}: {rel}",
                      loc="left", fontsize=12, fontweight="bold", color="#1d1d1f")
         fig.text(0.99, 0.005, pie + f" · estación {c['estacion']} ({c['indicativo']})", ha="right", fontsize=7, color="#6e6e73")
