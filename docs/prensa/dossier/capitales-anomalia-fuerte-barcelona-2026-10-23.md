@@ -1,12 +1,12 @@
-# Barcelona ya ha recogido en 23 días de octubre el 202 % de la lluvia de todo un octubre normal
+# Barcelona lleva 28 días de más de 32 °C en 2026, 18,7 veces su normal
 
-**Dato:** 181,5 mm hasta el día 23 · normal hasta hoy 72,5 mm · normal del mes completo 89,8 mm  
+**Dato:** 28 días · normal 1991-2020: 1,5  
 **Fecha del dato:** 23 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Barcelona  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- 250 % de lo normal para estas fechas del mes.
+- Media 1951-1980: 0.1 días al año · media 1996-2025: 3.1.
 
 ## Fuente y método
 - **Fuente:** ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0
