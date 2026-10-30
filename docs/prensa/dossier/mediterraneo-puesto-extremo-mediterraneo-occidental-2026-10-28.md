@@ -6,7 +6,7 @@
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Al menos 80 días de 2026 han sido récord para su fecha en la serie desde 1981; otros 4 días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).
+- Al menos 81 días de 2026 han sido récord para su fecha en la serie desde 1981; otros 4 días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).
 - Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.
 - 22,8 °C es lo normal en esta zona para un 6 de octubre (media 1991-2020).
 
@@ -18,7 +18,6 @@
 ## Límites (decirlos antes de que los descubran)
 - Los últimos ~14 días de OISST son la versión preliminar (NRT) y la final puede corregirlos: en esos días un récord o un puesto por menos de 0,1 °C no se da por cierto.
 - Media de una caja de mar abierto, no la temperatura de una playa concreta.
-- La copia de NOAA OISST descargada tiene días sueltos en 2026: un año con hueco solo cuenta en el puesto si sus días vecinos quedan claramente por debajo; si alguno podría superar el valor, no se publica el puesto.
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/dana/
