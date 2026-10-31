@@ -12,7 +12,10 @@ están en el repositorio (nada de APIs, nada de claves):
 Escribe docs/tu-capital/:
   <slug>.json · <slug>.csv · <slug>.png (1600x900) · <slug>-franjas.png (1600x400)
   index.json · nacional.json     (patrocinio.json lo escribe una persona: aquí solo se lee)
+  nacional-ranking.png (1600x900) · nacional-franjas.png (1600x900) · nacional-nota.md
 
+Versión 1.2.0 · 31-10-2026 · nota nacional «Las capitales que más se han calentado desde 1970»: nota larga en
+nacional.json (campo «nota») y en nacional-nota.md, gráfico de ranking y franjas por capital para medios.
 Versión 1.1.0 · 31-10-2026 · control de homogeneidad desde 1979 (ERA5 anterior a 1979 es una retroextensión
 preliminar; solo se comparan décadas completas con >= 8 años comunes).
 
@@ -645,6 +648,238 @@ def nota_nacional(caps: list[dict], generado_fecha: date) -> dict:
 
 
 # ----------------------------------------------------------------------------
+# nota nacional larga y gráficos para medios (1.2.0)
+# ----------------------------------------------------------------------------
+PRENSA = "calentamientoglobal.es/prensa/tu-capital/"
+GRIS_HUECO = "#5f6b75"   # años sin los 12 meses válidos (gris neutro: no se confunde con el azul)
+
+
+def lista_y(xs) -> str:
+    xs = [str(x) for x in xs]
+    if not xs:
+        return ""
+    return xs[0] if len(xs) == 1 else ", ".join(xs[:-1]) + " y " + xs[-1]
+
+
+def cal_txt(c: dict) -> str:
+    return f"{f1(c['tendencia']['calentamiento'])} °C"
+
+
+def agrupar_cal(lst: list[dict]) -> str:
+    """«Zamora (2,5 °C), Madrid, Tarragona y Valencia (2,4 °C cada una)»: los empates van juntos."""
+    grupos, previo = [], None
+    for c in lst:
+        v = c["tendencia"]["calentamiento"]
+        if grupos and v == previo:
+            grupos[-1].append(c)
+        else:
+            grupos.append([c])
+        previo = v
+    trozos = []
+    for g in grupos:
+        if len(g) == 1:
+            trozos.append(f"{g[0]['ciudad']} ({cal_txt(g[0])})")
+        else:
+            trozos.append(f"{lista_y(c['ciudad'] for c in g)} ({cal_txt(g[0])} cada una)")
+    return lista_y(trozos)
+
+
+def anios_txt(anios: list[int]) -> str:
+    return lista_y(sorted(anios))
+
+
+def desde70_ordenadas(caps: list[dict]) -> list[dict]:
+    xs = [c for c in caps if c["tendencia"]["afirmada"] and c["tendencia"]["desde"] == INICIO_TENDENCIA]
+    return sorted(xs, key=lambda c: (-c["tendencia"]["calentamiento"], c["ciudad"]))
+
+
+def nota_larga(caps: list[dict], datos: dict, hoy: date) -> dict | None:
+    """Nota de prensa de 350-450 palabras, solo con lo medido (sin atribución con modelos)."""
+    ini = INICIO_TENDENCIA
+    d70 = desde70_ordenadas(caps)
+    if len(d70) < 10 or datos.get("calentamiento_medio_desde_1970") is None:
+        return None
+    posibles = [c for c in caps if c["tendencia"]["calculada"] and c["tendencia"]["desde"] == ini]
+    medio = f1(datos["calentamiento_medio_desde_1970"])
+    corte = d70[9]["tendencia"]["calentamiento"]
+    top = [c for c in d70 if c["tendencia"]["calentamiento"] >= corte]
+
+    titular = (f"{len(d70)} capitales se han calentado una media de {medio} °C desde {ini}; "
+               f"{lista_y(c['ciudad'] for c in top[:3])}, las que más")
+    entradilla = (f"De las {len(posibles)} capitales con serie de temperatura de AEMET desde {ini} o antes, {len(d70)} se han "
+                  f"calentado de forma estadísticamente significativa entre {ini} y {ANIO_CIERRE}: {medio} °C de media, según "
+                  f"los valores climatológicos de AEMET calculados por calentamientoglobal.es ({fecha_larga(hoy)}).")
+
+    # 1 · ranking
+    p1 = f"{top[0]['ciudad']} encabeza la lista, con {cal_txt(top[0])} más que en {ini}, seguida de {agrupar_cal(top[1:5])}. "
+    p1 += ("Completan las diez primeras " if len(top) == 10 else "Completan la lista ") + agrupar_cal(top[5:]) + ". "
+    dudosas = [c for c in posibles if c["homogeneidad"]["estado"] == "dudosa"]
+    no_sig = [c for c in posibles if c["homogeneidad"]["estado"] != "dudosa" and not c["tendencia"]["significativa"]]
+    if dudosas:
+        p1 += (f"{lista_y(c['ciudad'] for c in dudosas)} {'queda' if len(dudosas) == 1 else 'quedan'} fuera: su serie tiene "
+               f"desde {DESDE_ERA5} un salto que puede deberse a un cambio en la estación. ")
+    if no_sig:
+        p1 += f"En {lista_y(c['ciudad'] for c in no_sig)} la tendencia no es significativa. "
+    post = sorted([c for c in caps if c["tendencia"]["afirmada"] and c["tendencia"]["desde"] > ini],
+                  key=lambda c: -c["tendencia"]["calentamiento"])[:2]
+    if post:
+        p1 += (f"{lista_y(c['ciudad'] + ' (' + cal_txt(c) + ' desde ' + str(c['tendencia']['desde']) + ')' for c in post)} "
+               f"no entran porque su serie empieza después de {ini}.")
+
+    # 2 · el año más cálido
+    n22 = sum(1 for c in caps if any(a >= 2022 for a in c["mas_calido"]["anios"]))
+    cuenta: dict[int, int] = {}
+    for c in caps:
+        for a in c["mas_calido"]["anios"]:
+            cuenta[a] = cuenta.get(a, 0) + 1
+    recientes = sorted([(n, a) for a, n in cuenta.items() if a >= 2022], key=lambda x: (-x[0], -x[1]))
+    p2 = f"En {n22} de las {len(caps)} capitales con serie publicada, el año más cálido (solo o empatado) es 2022 o posterior"
+    if recientes:
+        p2 += f": {recientes[0][1]} lo es en {recientes[0][0]}" + "".join(f"; {a}, en {n}" for n, a in recientes[1:])
+    p2 += ". "
+    exc = [c for c in caps if not any(a >= 2022 for a in c["mas_calido"]["anios"])]
+    for c in exc:
+        mc = c["mas_calido"]
+        p2 += (f"{'La excepción es' if len(exc) == 1 else 'Una excepción es'} {c['ciudad']}, cuyo récord sigue en "
+               f"{anios_txt(mc['anios'])} ({f1(mc['tm'])} °C)")
+        faltan = [y for y in c["huecos"] if y >= 2022]
+        if faltan:
+            p2 += f"; {anios_txt(faltan)} no {'cuenta' if len(faltan) == 1 else 'cuentan'} en su serie por falta de algún mes válido"
+        p2 += ". "
+
+    # 3 · el año en curso
+    ecs = [c for c in caps if c["en_curso"] and c["en_curso"]["estimacion_tm"] is not None]
+    p3 = ""
+    if ecs:
+        hastas = sorted(c["en_curso"]["hasta"] for c in ecs)
+        d1, d2 = date.fromisoformat(hastas[0]), date.fromisoformat(hastas[-1])
+        rango = (f"entre el {d1.day} y el {fecha_larga(d2)}" if (d1.month, d1.year) == (d2.month, d2.year)
+                 else f"entre el {fecha_larga(d1)} y el {fecha_larga(d2)}")
+        rec = [c for c in ecs if c["en_curso"]["seria_record"]]
+        top5 = [c for c in ecs if c["en_curso"]["puesto_si_acaba_asi"] <= 5]
+        anio = ecs[0]["en_curso"]["anio"]
+        p3 = f"Con los datos diarios validados de AEMET hasta fechas {rango}, según la estación, "
+        if rec:
+            p3 += (f"{len(rec)} capitales van camino de cerrar {anio} como su año más cálido: la horquilla del 90 % de la "
+                   f"estimación queda entera al menos {f1(MARGEN_RECORD)} °C por encima de su récord. ")
+            ej = sorted(rec, key=lambda c: -(c["en_curso"]["estimacion_min"] - c["mas_calido"]["tm"]))[:2]
+            p3 += lista_y(
+                f"{c['ciudad']} rondaría los {f1(c['en_curso']['estimacion_tm'])} °C (entre {f1(c['en_curso']['estimacion_min'])} "
+                f"y {f1(c['en_curso']['estimacion_max'])}), frente a {f1(c['mas_calido']['tm'])} °C en {anios_txt(c['mas_calido']['anios'])}"
+                for c in ej).replace("), frente", ") frente") + ". "
+        else:
+            p3 += f"ninguna capital tiene todavía la horquilla de la estimación de {anio} por encima de su récord. "
+        p3 += (f"En conjunto, {len(top5)} de las {len(ecs)} van camino de uno de sus cinco años más cálidos. Son estimaciones que "
+               f"el resto del año puede mover.")
+
+    # 4 · método
+    refs = [c for c in caps if c["tipo"] == "referencia"]
+    metodo = (f"Método: media de los 12 meses de cada año con los valores mensuales de AEMET (solo años "
+              f"completos); anomalía frente a la normal {NORMAL[0]}-{NORMAL[1]} de cada estación; tendencia por mínimos "
+              f"cuadrados desde {ini}, solo si t ≥ 2 y si la serie pasa el control de homogeneidad frente a ERA5 desde "
+              f"{DESDE_ERA5} (sin saltos de más de {f1(UMBRAL_SALTO)} °C entre décadas completas). ")
+    if refs:
+        metodo += "Estaciones de referencia: " + lista_y(f"{c['estacion']} para {c['ciudad']}" for c in refs) + ". "
+    metodo += f"La estimación del año en curso sale de una regresión con los años desde {NORMAL[0]}, con intervalo del 90 %."
+    licencia = (f"Datos y gráficos con licencia {LICENCIA}: se pueden reproducir citando «calentamientoglobal.es con datos "
+                f"de AEMET» y enlazando a https://{PRENSA}")
+
+    parrafos = [p.strip() for p in (p1, p2, p3) if p.strip()]
+    cuerpo = [entradilla] + parrafos + [metodo, licencia]
+    n_pal = palabras(titular) + sum(palabras(x) for x in cuerpo)
+    if not 350 <= n_pal <= 450:
+        log(f"   aviso: la nota nacional tiene {n_pal} palabras (objetivo 350-450)")
+    md = f"# {titular}\n\n*{fecha_larga(hoy)} · calentamientoglobal.es con datos de AEMET*\n\n" + "\n\n".join(cuerpo) + "\n"
+    return {"titular": titular, "fecha": hoy.isoformat(), "entradilla": entradilla, "parrafos": parrafos,
+            "metodo": metodo, "licencia": licencia, "palabras": n_pal, "markdown": md,
+            "n_mas_calido_2022_o_despues": n22,
+            "ranking_desde_1970": [{"slug": c["slug"], "ciudad": c["ciudad"], "calentamiento": c["tendencia"]["calentamiento"]}
+                                   for c in d70]}
+
+
+def dibujar_nacional(caps: list[dict], escala: float, carpeta: Path):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+
+    plt.rcParams["font.family"] = "DejaVu Sans"
+    ini = INICIO_TENDENCIA
+    d70 = desde70_ordenadas(caps)
+    if not d70:
+        return
+    pie_n = f"{PRENSA} · datos AEMET · cálculo de calentamientoglobal.es · {LICENCIA}"
+
+    # --- ranking 1600x900
+    vals = [c["tendencia"]["calentamiento"] for c in d70]
+    med = sum(vals) / len(vals)
+    fig = plt.figure(figsize=(16, 9), dpi=100, facecolor=FONDO)
+    ax = fig.add_axes([0.16, 0.11, 0.80, 0.72], facecolor=FONDO)
+    ys = list(range(len(d70)))[::-1]
+    for y, c in zip(ys, d70):
+        v = c["tendencia"]["calentamiento"]
+        ax.barh(y, v, height=0.72, color=color_franja(min(v, escala - 1e-6), escala), lw=0, zorder=3)
+        ax.text(v + 0.04, y, f"+{f1(v)} °C", color=TEXTO, fontsize=12, va="center", zorder=6,
+                bbox={"facecolor": FONDO, "edgecolor": "none", "pad": 3})
+    ax.axvline(med, color=ACENTO, lw=1.6, ls="--", zorder=1)
+    ax.text(med, len(d70) - 0.35, f" media: {f1(r1(med))} °C", color=ACENTO, fontsize=13, va="bottom", ha="left")
+    ax.set_yticks(ys)
+    ax.set_yticklabels([c["ciudad"] for c in d70], color=TEXTO, fontsize=12.5)
+    ax.set_ylim(-0.7, len(d70) - 0.1)
+    ax.set_xlim(0, max(vals) * 1.13)
+    ax.tick_params(axis="y", length=0)
+    ax.set_xticks([])
+    for s in ax.spines.values():
+        s.set_visible(False)
+    fig.text(0.02, 0.945, f"Las capitales que más se han calentado desde {ini}", color=TEXTO, fontsize=26,
+             fontweight="bold", va="center")
+    fig.text(0.02, 0.895, (f"Calentamiento de la temperatura media anual entre {ini} y {ANIO_CIERRE} (tendencia lineal) · "
+                           f"{len(d70)} capitales con tendencia significativa y serie homogénea"),
+             color=SEC, fontsize=14, va="center")
+    fig.text(0.02, 0.04, pie_n, color=SEC, fontsize=13, va="center")
+    fig.savefig(carpeta / "nacional-ranking.png", dpi=100, facecolor=FONDO)
+    plt.close(fig)
+
+    # --- franjas por capital 1600x900
+    otras = sorted([c for c in caps if c["tendencia"]["calculada"] and c["tendencia"]["desde"] == ini
+                    and not c["tendencia"]["afirmada"]], key=lambda c: c["ciudad"])
+    filas = d70 + otras
+    fin = max(c["fin"] for c in filas)
+    fig = plt.figure(figsize=(16, 9), dpi=100, facecolor=FONDO)
+    ax = fig.add_axes([0.14, 0.13, 0.78, 0.71], facecolor=FONDO)
+    n = len(filas)
+    for i, c in enumerate(filas):
+        y = n - 1 - i
+        ax.add_patch(Rectangle((ini - 0.5, y + 0.06), fin - ini + 1, 0.88, color=GRIS_HUECO, lw=0))
+        for f in c["serie"]:
+            if ini <= f["anio"] <= fin:
+                ax.add_patch(Rectangle((f["anio"] - 0.5, y + 0.06), 1, 0.88, color=color_franja(f["anomalia"], escala), lw=0))
+        etiqueta = c["ciudad"] + ("" if c["tendencia"]["afirmada"] else " *")
+        ax.text(ini - 1.2, y + 0.5, etiqueta, color=TEXTO, fontsize=11.5, va="center", ha="right")
+        derecha = f"+{f1(c['tendencia']['calentamiento'])} °C" if c["tendencia"]["afirmada"] else "·"
+        ax.text(fin + 1.0, y + 0.5, derecha, color=SEC, fontsize=11, va="center", ha="left")
+    ax.text(fin + 1.0, n + 0.25, f"desde {ini}", color=SEC, fontsize=11, va="bottom", ha="left")
+    ax.set_xlim(ini - 0.5, fin + 0.5)
+    ax.set_ylim(0, n)
+    ax.set_yticks([])
+    ax.set_xticks([y for y in range(ini, fin + 1) if y % 10 == 0] + ([fin] if fin % 10 else []))
+    ax.tick_params(axis="x", colors=TEXTO, labelsize=12, length=0)
+    for s in ax.spines.values():
+        s.set_visible(False)
+    fig.text(0.02, 0.945, f"Cada capital, año a año desde {ini}", color=TEXTO, fontsize=26, fontweight="bold", va="center")
+    fig.text(0.02, 0.895, (f"Cada franja es un año · azul: más fresco, rojo: más cálido que la normal {NORMAL[0]}-{NORMAL[1]} "
+                           f"de cada estación · escala común ±{f1(escala)} °C"),
+             color=SEC, fontsize=14, va="center")
+    nota_pie = "gris: año sin los 12 meses válidos"
+    if otras:
+        nota_pie = f"* sin cifra de calentamiento: la serie tiene un salto frente a ERA5 desde {DESDE_ERA5} o la tendencia no es significativa · " + nota_pie
+    fig.text(0.02, 0.075, nota_pie, color=SEC, fontsize=12, va="center")
+    fig.text(0.02, 0.035, pie_n, color=SEC, fontsize=13, va="center")
+    fig.savefig(carpeta / "nacional-franjas.png", dpi=100, facecolor=FONDO)
+    plt.close(fig)
+
+
+# ----------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--solo", default="", help="slugs separados por comas (pruebas)")
@@ -700,8 +935,17 @@ def main():
     if not solo:
         escribir_json(SALIDA / "index.json", idx, indent=1)
         nac = nota_nacional(caps, HOY)
+        larga = nota_larga(caps, nac, HOY)
+        if larga:
+            nac["n_mas_calido_2022_o_despues"] = larga.pop("n_mas_calido_2022_o_despues")
+            nac["ranking_desde_1970"] = larga.pop("ranking_desde_1970")
+        nac["nota"] = larga
         nac["generado"] = generado
         escribir_json(SALIDA / "nacional.json", nac, indent=1)
+        if larga:
+            (SALIDA / "nacional-nota.md").write_text(larga["markdown"], encoding="utf-8")
+        if not args.sin_png:
+            dibujar_nacional(caps, escala, SALIDA)
 
     # tabla de control
     log(f"\nEscala de franjas: ±{escala} °C · capitales publicadas: {len(caps)} · no publicadas: {len(no_pub)}")
