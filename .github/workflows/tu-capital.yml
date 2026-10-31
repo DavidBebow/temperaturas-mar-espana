@@ -1,0 +1,63 @@
+name: Tu capital, año a año
+
+# «Tu capital, año a año» (scripts/tu_capital.py): serie larga de temperatura media anual de cada capital con
+# estación AEMET, franjas, tendencia, 2026 hasta hoy y estimación del cierre. Sin claves ni APIs: lee archivo/.
+# Sale tras «Balance del mes, capital a capital» y «Series diarias largas de AEMET» (cron de red a las 07:50 UTC).
+# Escribe docs/tu-capital/ (JSON, CSV, PNG, index.json, nacional.json). patrocinio.json no se toca.
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Balance del mes, capital a capital", "Series diarias largas de AEMET"]
+    types: [completed]
+  schedule:
+    - cron: "50 7 * * *"   # red: 07:50 UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tu-capital
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  tu-capital:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install "matplotlib==3.9.*"
+
+      - name: Calcular las series
+        run: python scripts/tu_capital.py
+
+      - name: Guardar
+        if: success()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs/tu-capital
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "tu-capital: series anuales $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
