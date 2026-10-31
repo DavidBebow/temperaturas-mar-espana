@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>El clima de tu capital, año a año</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent}
+body{font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#e8f1f8;-webkit-text-size-adjust:100%}
+.panel{max-width:1120px;margin:0 auto;padding:30px 28px 22px;border-radius:28px;background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);overflow:hidden}
+.bg{font-family:"Bricolage Grotesque",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#bfe6ff;margin:0 0 8px;font-weight:600}
+h2{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(26px,4.2vw,40px);line-height:1.1;margin:0 0 12px;color:#e8f1f8}
+.lead{color:#e8f1f8;margin:0 0 20px;max-width:860px;font-size:17px}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(191,230,255,.16);border-radius:22px;padding:16px 18px}
+.stripes{position:relative;margin:0 0 6px}
+.stripes svg{display:block;width:100%;height:150px;border-radius:14px}
+.stlab{display:flex;justify-content:space-between;font-size:13px;color:#9fb6c8;margin:0 2px 18px;gap:8px}
+.stlab b{color:#ff7a45;font-weight:600}
+.tip{position:absolute;pointer-events:none;background:#0c2133;border:1px solid rgba(191,230,255,.3);border-radius:10px;padding:6px 10px;font-size:13px;white-space:nowrap;display:none;z-index:5;color:#e8f1f8;transform:translate(-50%,-100%);top:-6px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 18px}
+.cards .card .k{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9fb6c8;margin:0 0 6px}
+.cards .card .v{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:30px;line-height:1.1;color:#e8f1f8}
+.cards .card .v.hot{color:#ff7a45}
+.cards .card .s{font-size:13px;color:#9fb6c8;margin-top:6px}
+.cards.c3{grid-template-columns:repeat(3,1fr)}.cards.c2{grid-template-columns:repeat(2,1fr)}
+.chart{margin:0 0 18px}
+.chart h3,.top h3{font-family:"Bricolage Grotesque",sans-serif;font-size:18px;margin:0 0 10px;color:#e8f1f8;font-weight:600}
+.chart .scroll{overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:640px;height:auto}
+.leg{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:#9fb6c8;margin-top:8px}
+.leg i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.top{margin:0 0 18px}
+.top ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.top li{background:rgba(255,255,255,.06);border:1px solid rgba(191,230,255,.12);border-radius:16px;padding:10px 12px}
+.top li .y{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:24px;line-height:1.1}
+.top li .t{font-size:13px;color:#9fb6c8}
+.top li .p{font-size:12px;color:#9fb6c8}
+.top li.n{border-color:rgba(255,122,69,.5)}
+.top li .tag{display:inline-block;font-size:11px;color:#ff7a45;margin-left:4px}
+.note{font-size:13.5px;color:#9fb6c8;margin:0 0 6px;max-width:900px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;padding-top:16px;border-top:1px solid rgba(191,230,255,.16)}
+.bar .lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9fb6c8;margin-right:4px}
+.btn{font:600 14px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#0c2133;background:#bfe6ff;border:0;border-radius:999px;padding:10px 16px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{background:#d8f0ff}
+.btn.sec{background:rgba(255,255,255,.08);color:#e8f1f8;border:1px solid rgba(191,230,255,.3)}
+.btn.sec:hover{background:rgba(255,255,255,.14)}
+.ok{font-size:13px;color:#bfe6ff;opacity:0;transition:opacity .2s}
+.ok.on{opacity:1}
+.emb{display:none;margin-top:12px}
+.emb.on{display:block}
+.emb textarea{width:100%;height:132px;background:#0c2133;color:#e8f1f8;border:1px solid rgba(191,230,255,.3);border-radius:14px;padding:12px;font:12.5px/1.45 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+.emb p{font-size:13px;color:#9fb6c8;margin:8px 0}
+.err{padding:30px;color:#e8f1f8}
+@media (max-width:820px){.cards,.cards.c3,.cards.c2{grid-template-columns:repeat(2,1fr)}.top ol{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.panel{padding:22px 16px 18px;border-radius:22px}.cards .card .v{font-size:26px}.stripes svg{height:120px}}
+</style>
+</head>
+<body>
+<div id="app"><div class="panel"><p class="eyebrow">Observatorio climático · serie larga</p><p class="lead">Cargando…</p></div></div>
+<script>
+(function(){
+var BASE="https://davidbebow.github.io/temperaturas-mar-espana/tu-capital/";
+var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+var slug=(new URLSearchParams(location.search).get("p")||"").replace(/[^a-z0-9-]/g,"");
+var app=document.getElementById("app");
+function fmt(x,d){return (x==null||isNaN(x))?"":Number(x).toFixed(d==null?1:d).replace(".",",")}
+function sgn(x){return (x>0?"+":(x<0?"−":""))+fmt(Math.abs(x))}
+function fecha(iso){var p=iso.split("-");return +p[2]+" de "+MESES[+p[1]-1]+" de "+p[0]}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function altura(){try{parent.postMessage({cgTuCapitalAltura:document.documentElement.scrollHeight,slug:slug},"*")}catch(e){}}
+window.addEventListener("resize",altura);window.addEventListener("load",altura);
+if(!slug){app.innerHTML='<div class="panel"><p class="err">Falta el parámetro ?p=</p></div>';return}
+var v="?v="+Date.now();
+Promise.all([fetch(BASE+slug+".json"+v).then(function(r){if(!r.ok)throw 0;return r.json()}),fetch(BASE+"index.json"+v).then(function(r){return r.json()})]).then(function(a){pinta(a[0],a[1])}).catch(function(){app.innerHTML='<div class="panel"><p class="err">No se han podido cargar los datos de esta capital.</p></div>'});
+
+function color(an,pal,esc_){var n=pal.length,i=Math.floor((an/esc_+1)/2*n);if(i<0)i=0;if(i>n-1)i=n-1;return pal[i]}
+
+function pinta(d,idx){
+  var pal=idx.paleta_franjas,E=d.escala_franjas,S=d.serie;
+  var y0=d.inicio,y1=d.fin,by={};S.forEach(function(r){by[r.anio]=r});
+  var ncol=y1-y0+1,W=1000,H=150,cw=W/ncol,svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img" aria-label="Franjas de calentamiento de '+esc(d.ciudad)+' de '+y0+' a '+y1+'">';
+  for(var y=y0;y<=y1;y++){var r=by[y];svg+='<rect data-y="'+y+'" x="'+((y-y0)*cw).toFixed(3)+'" y="0" width="'+(cw+.6).toFixed(3)+'" height="'+H+'" fill="'+(r?color(r.anomalia,pal,E):"#2a4a63")+'"/>'}
+  svg+='</svg>';
+  var cal=d.mas_calido,tend=d.tendencia||{},hom=d.homogeneidad||{},ec=d.en_curso;
+  var c2,c2s;
+  if(tend.afirmada){c2=sgn(tend.calentamiento)+" °C";c2s="desde "+tend.desde+" ("+fmt(tend.pendiente_decada)+" °C por década)"}
+  else if(hom.estado==="dudosa"){c2="Serie con salto";c2s="posible cambio de estación hacia los años "+(hom.salto_decada||"")+"; no damos tendencia"}
+  else if(tend.significativa===false){c2="Tendencia no significativa";c2s="desde "+tend.desde+" la serie no permite afirmarla"}
+  else{c2="Sin tendencia";c2s="serie demasiado corta o sin control"}
+  var cards='<div class="card"><p class="k">Año más cálido</p><div class="v">'+cal.anio+(cal.empate?'*':'')+'</div><div class="s">'+fmt(cal.tm)+' °C de media'+(cal.empate?' · empata a una décima':'')+'</div></div>';
+  cards+='<div class="card"><p class="k">Calentamiento</p><div class="v'+(tend.afirmada?' hot':'')+'" style="'+(tend.afirmada?'':'font-size:21px')+'">'+c2+'</div><div class="s">'+c2s+'</div></div>';
+  if(ec&&ec.anomalia!=null){
+    cards+='<div class="card"><p class="k">2026 hasta el '+fecha(ec.hasta).replace(" de 2026","")+'</p><div class="v hot">'+sgn(ec.anomalia)+' °C</div><div class="s">sobre la normal 1991-2020 ('+ec.dias+' días con dato)</div></div>';
+    if(ec.estimacion_tm!=null)cards+='<div class="card"><p class="k">Si acaba así</p><div class="v">'+fmt(ec.estimacion_tm)+' °C</div><div class="s">horquilla 90 %: '+fmt(ec.estimacion_min)+'–'+fmt(ec.estimacion_max)+' °C · puesto '+ec.puesto_si_acaba_asi+(ec.seria_record?' · sería récord':'')+'</div></div>'}
+  var top='';d.top10.forEach(function(t){top+='<li'+(t.anio>=2020?' class="n"':'')+'><span class="y">'+t.anio+'</span>'+(t.anio>=2000?'<span class="tag">desde 2000</span>':'')+'<div class="t">'+fmt(t.tm)+' °C'+(t.empate?' · empate':'')+'</div><div class="p">puesto '+t.puesto+'</div></li>'});
+  var nota=(d.tipo==="referencia"?'Estación de referencia: '+esc(d.estacion)+' (indicativo '+esc(d.indicativo)+'), que representa a la provincia de '+esc(d.provincia)+'. ':'Estación de AEMET: '+esc(d.estacion)+' (indicativo '+esc(d.indicativo)+'). ')+(d.huecos&&d.huecos.length?'Años sin dato completo (en gris): '+d.huecos.join(", ")+'. ':'')+esc(d.textos.metodo_corto);
+  var u=d.urls;
+  var emb='<iframe src="'+BASE+'embed.html?p='+slug+'" width="100%" height="520" style="border:0" loading="lazy" title="El clima de '+esc(d.ciudad)+' año a año · calentamientoglobal.es"></iframe><p style="font:13px/1.4 sans-serif;margin:6px 0 0">Gráfico: <a href="'+u.pagina+'">El clima de '+esc(d.ciudad)+', año a año · CalentamientoGlobal.es</a> · datos AEMET · CC BY 4.0</p>';
+  var cita='CalentamientoGlobal.es (2026). El clima de '+d.ciudad+', año a año desde '+d.inicio+', con datos de AEMET. '+u.pagina+' · CC BY 4.0';
+  app.innerHTML='<div class="panel"><p class="eyebrow">Observatorio climático · serie larga</p><h2>El clima de '+esc(d.ciudad)+', año a año desde '+d.inicio+'</h2><p class="lead">'+esc(d.textos.resumen)+'</p>'+
+  '<div class="stripes card" style="padding:12px">'+svg+'<div class="tip" id="tip"></div></div><div class="stlab"><span>'+y0+'</span><span>más cálido: <b>'+cal.anio+'</b></span><span>'+y1+'</span></div>'+
+  '<div class="cards c'+(ec&&ec.estimacion_tm!=null?4:(ec&&ec.anomalia!=null?3:2))+'">'+cards+'</div>'+
+  '<div class="chart card"><h3>Temperatura media anual</h3><div class="scroll" id="gr"></div><div class="leg"><span><i style="background:#bfe6ff"></i>media anual</span><span><i style="background:#9fb6c8;height:2px"></i>normal 1991-2020 ('+fmt(d.normal_tm)+' °C)</span>'+(tend.afirmada?'<span><i style="background:#ff7a45"></i>tendencia</span>':'')+(ec&&ec.estimacion_tm!=null?'<span><i style="background:#ff7a45;height:8px;width:8px;border-radius:50%"></i>2026 si acaba así (horquilla 90 %)</span>':'')+'</div></div>'+
+  '<div class="top"><h3>Los 10 años más cálidos</h3><ol>'+top+'</ol></div>'+
+  '<p class="note">'+nota+'</p><p class="note">'+esc(d.fuente)+' · Licencia '+esc(d.licencia)+' · franjas al estilo de las de Ed Hawkins, escala común ±'+fmt(E)+' °C para todas las capitales.</p>'+
+  '<div class="bar"><span class="lbl">Reutiliza</span><a class="btn" href="'+u.png+'" download="'+slug+'-temperatura-anual.png">Descargar PNG</a><a class="btn" href="'+u.csv+'" download="'+slug+'-temperatura-anual.csv">Descargar CSV</a><button class="btn sec" id="bi" type="button">Insertar</button><button class="btn sec" id="bc" type="button">Citar</button><span class="ok" id="ok" role="status">Copiado</span></div>'+
+  '<div class="emb" id="emb"><p>Pega este código en tu web. Incluye el gráfico y el enlace a la fuente; deben ir juntos.</p><textarea id="ta" readonly></textarea><button class="btn" id="cp" type="button">Copiar código</button></div></div>';
+  document.getElementById("ta").value=emb;
+  grafico(d,S);
+  // tooltip franjas
+  var st=app.querySelector(".stripes"),tip=document.getElementById("tip");
+  function show(e){var t=e.target;if(!t.getAttribute||!t.getAttribute("data-y")){tip.style.display="none";return}
+    var y=+t.getAttribute("data-y"),r=by[y],cx=(e.touches?e.touches[0].clientX:e.clientX),b=st.getBoundingClientRect();
+    tip.innerHTML=r?'<b>'+y+'</b> · '+fmt(r.tm)+' °C ('+sgn(r.anomalia)+')':'<b>'+y+'</b> · sin dato completo';
+    tip.style.left=Math.max(60,Math.min(b.width-60,cx-b.left))+"px";tip.style.display="block"}
+  st.addEventListener("mousemove",show);st.addEventListener("click",show);st.addEventListener("mouseleave",function(){tip.style.display="none"});
+  var ok=document.getElementById("ok"),to;
+  function copia(txt){var f=function(){ok.classList.add("on");clearTimeout(to);to=setTimeout(function(){ok.classList.remove("on")},1800)};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(f,function(){fallback(txt);f()})}else{fallback(txt);f()}}
+  function fallback(txt){var t=document.createElement("textarea");t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(t)}
+  document.getElementById("bi").onclick=function(){document.getElementById("emb").classList.toggle("on");altura()};
+  document.getElementById("cp").onclick=function(){copia(emb)};
+  document.getElementById("bc").onclick=function(){copia(cita)};
+  altura();setTimeout(altura,400);setTimeout(altura,1500);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(altura);
+}
+
+function grafico(d,S){
+  var W=1000,H=330,L=48,R=18,T=16,B=30,ec=d.en_curso,tend=d.tendencia||{};
+  var vals=S.map(function(r){return r.tm});
+  if(ec&&ec.estimacion_tm!=null){vals.push(ec.estimacion_min,ec.estimacion_max)}
+  vals.push(d.normal_tm);
+  var mn=Math.floor(Math.min.apply(null,vals)-.3),mx=Math.ceil(Math.max.apply(null,vals)+.3);
+  var x0=d.inicio,x1=ec&&ec.estimacion_tm!=null?d.fin+2:d.fin;
+  function X(y){return L+(y-x0)/(x1-x0)*(W-L-R)}function Y(t){return T+(mx-t)/(mx-mn)*(H-T-B)}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Temperatura media anual de '+esc(d.ciudad)+'">';
+  var step=(mx-mn)>8?2:1;
+  for(var t=mn;t<=mx;t+=step){s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(t)+'" y2="'+Y(t)+'" stroke="rgba(191,230,255,.12)"/><text x="'+(L-8)+'" y="'+(Y(t)+4)+'" fill="#9fb6c8" font-size="12" text-anchor="end">'+t+'</text>'}
+  var ys=[];for(var y=Math.ceil(x0/10)*10;y<=d.fin;y+=10)ys.push(y);
+  if(ys.length&&ys[0]-x0>3)ys.unshift(x0);else if(!ys.length)ys.push(x0);
+  ys.forEach(function(y){s+='<text x="'+X(y)+'" y="'+(H-8)+'" fill="#9fb6c8" font-size="12" text-anchor="middle">'+y+'</text>'});
+  s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(d.normal_tm)+'" y2="'+Y(d.normal_tm)+'" stroke="#9fb6c8" stroke-dasharray="5 5"/>';
+  var pts='',seg=[],prev=null;
+  S.forEach(function(r){if(prev!=null&&r.anio!==prev+1){pts+=seg.length>1?'<polyline fill="none" stroke="#bfe6ff" stroke-width="1.6" points="'+seg.join(" ")+'"/>':'';seg=[]}seg.push(X(r.anio).toFixed(1)+","+Y(r.tm).toFixed(1));prev=r.anio});
+  if(seg.length>1)pts+='<polyline fill="none" stroke="#bfe6ff" stroke-width="1.6" points="'+seg.join(" ")+'"/>';
+  s+=pts;
+  S.forEach(function(r){s+='<circle cx="'+X(r.anio).toFixed(1)+'" cy="'+Y(r.tm).toFixed(1)+'" r="3.2" fill="#bfe6ff"><title>'+r.anio+': '+fmt(r.tm)+' °C</title></circle>'});
+  if(tend.afirmada){var de=tend.desde,sub=S.filter(function(r){return r.anio>=de});
+    if(sub.length>5){var n=sub.length,mx_=0,my=0;sub.forEach(function(r){mx_+=r.anio;my+=r.tm});mx_/=n;my/=n;var sxy=0,sxx=0;sub.forEach(function(r){sxy+=(r.anio-mx_)*(r.tm-my);sxx+=(r.anio-mx_)*(r.anio-mx_)});var b=sxy/sxx,a=my-b*mx_;
+      s+='<line x1="'+X(sub[0].anio)+'" x2="'+X(d.fin)+'" y1="'+Y(a+b*sub[0].anio)+'" y2="'+Y(a+b*d.fin)+'" stroke="#ff7a45" stroke-width="2.2"/>'}}
+  if(ec&&ec.estimacion_tm!=null){var xx=X(d.fin+2);
+    s+='<line x1="'+xx+'" x2="'+xx+'" y1="'+Y(ec.estimacion_min)+'" y2="'+Y(ec.estimacion_max)+'" stroke="#ff7a45" stroke-width="2.4"/><line x1="'+(xx-6)+'" x2="'+(xx+6)+'" y1="'+Y(ec.estimacion_min)+'" y2="'+Y(ec.estimacion_min)+'" stroke="#ff7a45" stroke-width="2.4"/><line x1="'+(xx-6)+'" x2="'+(xx+6)+'" y1="'+Y(ec.estimacion_max)+'" y2="'+Y(ec.estimacion_max)+'" stroke="#ff7a45" stroke-width="2.4"/><circle cx="'+xx+'" cy="'+Y(ec.estimacion_tm)+'" r="5" fill="#ff7a45"><title>2026 si acaba así: '+fmt(ec.estimacion_tm)+' °C</title></circle><text x="'+xx+'" y="'+(H-8)+'" fill="#ff7a45" font-size="12" text-anchor="middle">2026</text>'}
+  s+='</svg>';
+  document.getElementById("gr").innerHTML=s;
+}
+})();
+</script>
+</body>
+</html>
