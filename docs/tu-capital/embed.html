@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>El clima de tu capital, año a año · CalentamientoGlobal.es</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent}
+body{font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#e8f1f8}
+.panel{padding:22px 22px 16px;border-radius:22px;background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);overflow:hidden}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#bfe6ff;margin:0 0 6px;font-weight:600}
+h2{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(22px,4.4vw,30px);line-height:1.12;margin:0 0 12px}
+.stripes{position:relative}
+.stripes svg{display:block;width:100%;height:170px;border-radius:12px}
+.stlab{display:flex;justify-content:space-between;font-size:12.5px;color:#9fb6c8;margin:6px 2px 12px}
+.stlab b{color:#ff7a45;font-weight:600}
+.line{margin:0 0 12px;font-size:15px}
+.line strong{font-family:"Bricolage Grotesque",sans-serif;font-size:18px}
+.hot{color:#ff7a45}
+.tip{position:absolute;pointer-events:none;background:#0c2133;border:1px solid rgba(191,230,255,.3);border-radius:10px;padding:5px 9px;font-size:12.5px;white-space:nowrap;display:none;z-index:5;transform:translate(-50%,-100%);top:-4px}
+.pie{font-size:12.5px;color:#9fb6c8;margin:0;padding-top:10px;border-top:1px solid rgba(191,230,255,.16);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between}
+.pie a{color:#bfe6ff}
+.pie img{max-height:34px;max-width:130px;display:block}
+</style>
+</head>
+<body>
+<div id="app"><div class="panel"><p class="eyebrow">Observatorio climático · serie larga</p></div></div>
+<script>
+(function(){
+var BASE="https://davidbebow.github.io/temperaturas-mar-espana/tu-capital/";
+var slug=(new URLSearchParams(location.search).get("p")||"").replace(/[^a-z0-9-]/g,"");
+var app=document.getElementById("app");
+function fmt(x){return Number(x).toFixed(1).replace(".",",")}
+function sgn(x){return (x>0?"+":(x<0?"−":""))+fmt(Math.abs(x))}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function altura(){try{parent.postMessage({cgTuCapitalAltura:document.documentElement.scrollHeight,slug:slug},"*")}catch(e){}}
+window.addEventListener("resize",altura);window.addEventListener("load",altura);
+if(!slug){app.innerHTML='<div class="panel">Falta el parámetro ?p=</div>';return}
+var v="?v="+Date.now();
+Promise.all([fetch(BASE+slug+".json"+v).then(function(r){if(!r.ok)throw 0;return r.json()}),fetch(BASE+"index.json"+v).then(function(r){return r.json()}),fetch(BASE+"patrocinio.json"+v).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}})]).then(function(a){pinta(a[0],a[1],a[2]||{})}).catch(function(){app.innerHTML='<div class="panel">No se han podido cargar los datos.</div>'});
+function color(an,pal,E){var n=pal.length,i=Math.floor((an/E+1)/2*n);return pal[Math.max(0,Math.min(n-1,i))]}
+function pinta(d,idx,pat){
+  var pal=idx.paleta_franjas,E=d.escala_franjas,S=d.serie,y0=d.inicio,y1=d.fin,by={};S.forEach(function(r){by[r.anio]=r});
+  var n=y1-y0+1,W=1000,H=170,cw=W/n,svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img" aria-label="Franjas de calentamiento de '+esc(d.ciudad)+' de '+y0+' a '+y1+'">';
+  for(var y=y0;y<=y1;y++){var r=by[y];svg+='<rect data-y="'+y+'" x="'+((y-y0)*cw).toFixed(3)+'" y="0" width="'+(cw+.6).toFixed(3)+'" height="'+H+'" fill="'+(r?color(r.anomalia,pal,E):"#2a4a63")+'"/>'}
+  svg+='</svg>';
+  var c=d.mas_calido,t=d.tendencia||{},h=d.homogeneidad||{},ec=d.en_curso;
+  var l='Año más cálido: <strong>'+c.anio+'</strong> ('+fmt(c.tm)+' °C)';
+  if(t.afirmada)l+=' · <strong class="hot">'+sgn(t.calentamiento)+' °C</strong> desde '+t.desde;
+  else if(h.estado==="dudosa")l+=' · serie con salto, sin tendencia';
+  else if(t.significativa===false)l+=' · tendencia no significativa';
+  if(ec&&ec.estimacion_tm!=null)l+=' · 2026, si acaba así: <strong>'+fmt(ec.estimacion_tm)+' °C</strong> (puesto '+ec.puesto_si_acaba_asi+')';
+  var sp=pat[slug],logo=(sp&&sp.logo_url)?'<a href="'+esc(sp.url||"#")+'" target="_blank" rel="noopener sponsored"><img src="'+esc(sp.logo_url)+'" alt="'+esc(sp.nombre||"")+'"></a>':'';
+  app.innerHTML='<div class="panel"><p class="eyebrow">Observatorio climático · serie larga</p><h2>El clima de '+esc(d.ciudad)+', año a año desde '+y0+'</h2><div class="stripes">'+svg+'<div class="tip" id="tip"></div></div><div class="stlab"><span>'+y0+'</span><span>más cálido: <b>'+c.anio+'</b></span><span>'+y1+'</span></div><p class="line">'+l+'</p><p class="pie"><span>Fuente: <a href="'+esc(d.urls.pagina)+'" target="_blank" rel="noopener">calentamientoglobal.es</a> · datos AEMET · CC BY 4.0</span>'+logo+'</p></div>';
+  var st=app.querySelector(".stripes"),tip=document.getElementById("tip");
+  function show(e){var tg=e.target;if(!tg.getAttribute||!tg.getAttribute("data-y")){tip.style.display="none";return}
+    var yy=+tg.getAttribute("data-y"),r=by[yy],b=st.getBoundingClientRect();
+    tip.innerHTML=r?'<b>'+yy+'</b> · '+fmt(r.tm)+' °C ('+sgn(r.anomalia)+')':'<b>'+yy+'</b> · sin dato completo';
+    tip.style.left=Math.max(60,Math.min(b.width-60,e.clientX-b.left))+"px";tip.style.display="block"}
+  st.addEventListener("mousemove",show);st.addEventListener("click",show);st.addEventListener("mouseleave",function(){tip.style.display="none"});
+  altura();setTimeout(altura,400);setTimeout(altura,1500);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(altura);
+}
+})();
+</script>
+</body>
+</html>
