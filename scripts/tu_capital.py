@@ -13,6 +13,9 @@ Escribe docs/tu-capital/:
   <slug>.json · <slug>.csv · <slug>.png (1600x900) · <slug>-franjas.png (1600x400)
   index.json · nacional.json     (patrocinio.json lo escribe una persona: aquí solo se lee)
 
+Versión 1.1.0 · 31-10-2026 · control de homogeneidad desde 1979 (ERA5 anterior a 1979 es una retroextensión
+preliminar; solo se comparan décadas completas con >= 8 años comunes).
+
 Uso: python scripts/tu_capital.py [--solo slug,slug] [--sin-png]
 Variables: TUCAPITAL_HOY=AAAA-MM-DD (ensayos).
 Licencia de los datos publicados: CC BY 4.0 (la información de partida es de AEMET).
@@ -56,9 +59,11 @@ MIN_ANIOS_NORMAL_PARCIAL = 24
 COBERTURA_DIAS = 0.90
 MIN_ANIOS_REGRESION = 20
 UMBRAL_SALTO = 0.5                  # °C: salto entre décadas (o entre bloques de 15 años) en estación − ERA5
-MIN_ANIOS_DECADA = 5
+MIN_ANIOS_DECADA = 8                # años comunes con ERA5 para comparar una década (solo décadas completas)
+MIN_ANIOS_TRAMO = 12                # años comunes en cada tramo de 15 años
 MIN_DIAS_ERA5 = 350
-MIN_ANIOS_ERA5 = 20
+MIN_ANIOS_ERA5 = 15                 # años comunes con ERA5 desde DESDE_ERA5 para poder hacer el control
+DESDE_ERA5 = 1979                   # ERA5 anterior a 1979 es una retroextensión preliminar
 MARGEN_RECORD = 0.2
 
 # código INE de provincia → slug de la página de WordPress (sin «cambio-climatico-en-»)
@@ -200,19 +205,24 @@ def era5_anual(cod: str) -> dict[int, float] | None:
 
 
 def homogeneidad(cod: str, serie: dict[int, dict]) -> dict:
+    """Control estación − ERA5 solo desde DESDE_ERA5; décadas completas con >= MIN_ANIOS_DECADA años comunes."""
+    base = {"desde": DESDE_ERA5}
     era = era5_anual(cod)
     if era is None:
-        return {"estado": "sin control", "salto_decada": None, "era5_disponible": False, "diferencia_media": None,
-                "anios_comparados": 0, "por_decada": {}, "motivo": "no hay fichero ERA5 de la provincia"}
-    dif = {y: (s["tx"] + s["tn"]) / 2 - era[y] for y, s in serie.items() if y in era}
+        return {**base, "estado": "sin control", "salto_decada": None, "era5_disponible": False,
+                "diferencia_media": None, "anios_comparados": 0, "por_decada": {},
+                "motivo": "no hay fichero ERA5 de la provincia"}
+    dif = {y: (s["tx"] + s["tn"]) / 2 - era[y] for y, s in serie.items() if y in era and y >= DESDE_ERA5}
     if len(dif) < MIN_ANIOS_ERA5:
-        return {"estado": "sin control", "salto_decada": None, "era5_disponible": True,
+        return {**base, "estado": "sin control", "salto_decada": None, "era5_disponible": True,
                 "diferencia_media": r2(media(dif.values())) if dif else None, "anios_comparados": len(dif),
-                "por_decada": {}, "motivo": f"solo {len(dif)} años en común con ERA5 (mínimo {MIN_ANIOS_ERA5})"}
+                "por_decada": {},
+                "motivo": f"solo {len(dif)} años en común con ERA5 desde {DESDE_ERA5} (mínimo {MIN_ANIOS_ERA5}): sin control de homogeneidad"}
     por = {}
     for y, d in dif.items():
         por.setdefault(y // 10 * 10, []).append(d)
-    dec = {k: sum(v) / len(v) for k, v in por.items() if len(v) >= MIN_ANIOS_DECADA}
+    # solo décadas completas (ya cerradas) con años comunes suficientes: la de 2020 queda fuera hasta tener 8
+    dec = {k: sum(v) / len(v) for k, v in por.items() if len(v) >= MIN_ANIOS_DECADA and k + 9 <= ANIO_CIERRE}
     salto, mayor = None, 0.0
     ks = sorted(dec)
     for a, b in zip(ks, ks[1:]):
@@ -224,15 +234,15 @@ def homogeneidad(cod: str, serie: dict[int, dict]) -> dict:
     motivo = None
     if salto is not None:
         motivo = f"la diferencia estación − ERA5 cambia {mayor:.2f} °C entre la década de {salto - 10} y la de {salto}"
-    # últimos 15 años frente a los 15 anteriores
+    # últimos 15 años frente a los 15 anteriores (también desde DESDE_ERA5, con >= MIN_ANIOS_TRAMO en cada tramo)
     ult = [d for y, d in dif.items() if ANIO_CIERRE - 14 <= y <= ANIO_CIERRE]
     ant = [d for y, d in dif.items() if ANIO_CIERRE - 29 <= y <= ANIO_CIERRE - 15]
-    if len(ult) >= 10 and len(ant) >= 10:
+    if len(ult) >= MIN_ANIOS_TRAMO and len(ant) >= MIN_ANIOS_TRAMO:
         c = abs(sum(ult) / len(ult) - sum(ant) / len(ant))
         if c > UMBRAL_SALTO and salto is None:
             salto = (ANIO_CIERRE - 14) // 10 * 10
             motivo = f"la diferencia estación − ERA5 de los últimos 15 años cambia {c:.2f} °C frente a los 15 anteriores"
-    return {"estado": "dudosa" if salto is not None else "ok", "salto_decada": salto, "era5_disponible": True,
+    return {**base, "estado": "dudosa" if salto is not None else "ok", "salto_decada": salto, "era5_disponible": True,
             "diferencia_media": r2(media(dif.values())), "anios_comparados": len(dif),
             "por_decada": {str(k): r2(v) for k, v in sorted(dec.items())}, "motivo": motivo}
 
