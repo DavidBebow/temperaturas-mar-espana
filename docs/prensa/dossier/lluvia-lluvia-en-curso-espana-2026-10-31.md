@@ -1,12 +1,12 @@
 # La estación de AEMET de Polinya (Valencia) lleva 44,6 mm el 31 de octubre hasta las 18:00; la de Sollana (Valencia), 34,8 mm
 
-**Dato:** 44,6 mm de 0:00 a 18:00 (hora local) del 31 de octubre, la cifra más alta de las 232 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 44,6 mm de 0:00 a 18:00 (hora local) del 31 de octubre, la cifra más alta de las 236 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Las que más: Polinya (Valencia): 44,6 mm · Sollana (Valencia): 34,8 mm · Santanyí (Illes Balears): 19,9 mm · Oliva (Valencia): 13,8 mm · Miramar (Valencia): 9,2 mm.
+- Las que más: Polinya (Valencia): 44,6 mm · Sollana (Valencia): 34,8 mm · Santanyí (Illes Balears): 19,9 mm · Oliva (Valencia): 13,8 mm · Escorca-Son Torrella (Illes Balears): 12,8 mm.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData · observación convencional
@@ -15,7 +15,7 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 18:00»).
-- La comparación es entre las 232 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (997 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 236 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (997 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
