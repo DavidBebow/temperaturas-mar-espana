@@ -144,9 +144,19 @@ def main():
                 pg.wait_for_timeout(cfg.get("espera_ms", 3000))
                 completa = bool(cfg.get("completa"))
                 if completa:
-                    alto_doc = pg.evaluate("Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)")
-                    completa = alto_doc <= TOPE_ALTO
-                png = pg.screenshot(full_page=completa, type="png")
+                    # La banda de fuente es position:fixed: para que quede al final de la imagen hay que
+                    # hacer la ventana tan alta como el documento (tope de 2.400 px) y capturar la ventana.
+                    medir = "Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)"
+                    alto_doc = pg.evaluate(medir)
+                    if alto_doc > cfg["alto"] and alto_doc <= TOPE_ALTO:
+                        for _ in range(2):  # una segunda pasada por si la altura cambia al redimensionar
+                            pg.set_viewport_size({"width": cfg["ancho"], "height": int(alto_doc)})
+                            pg.wait_for_timeout(700)
+                            nuevo = pg.evaluate(medir)
+                            if nuevo == alto_doc or nuevo > TOPE_ALTO:
+                                break
+                            alto_doc = nuevo
+                png = pg.screenshot(full_page=False, type="png")
                 datos, (w, hh) = optimizar(png)
                 (out / (clave + ".png")).write_bytes(datos)
                 capturas[clave] = {"url": URL_RELEASE + clave + ".png", "fecha": hoy,
