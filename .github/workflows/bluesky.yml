@@ -1,0 +1,66 @@
+name: El dato del día en Bluesky
+
+on:
+  schedule:
+    - cron: "40 7 * * *"    # mañana: 08:40 peninsular en invierno (09:40 en verano)
+    - cron: "40 17 * * *"   # tarde: solo récords
+  workflow_dispatch:
+    inputs:
+      turno:
+        description: "Turno"
+        type: choice
+        options: [manana, tarde]
+        default: manana
+      seco:
+        description: "Modo seco (elige y compone, no publica)"
+        type: boolean
+        default: true
+      perfil:
+        description: "Subir el perfil (nombre, descripción, avatar) y salir"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bluesky
+  cancel-in-progress: false
+
+jobs:
+  bluesky:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests pillow
+
+      - name: Publicar el dato del día
+        env:
+          BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+          BLUESKY_TURNO: ${{ github.event_name == 'workflow_dispatch' && inputs.turno || (github.event.schedule == '40 17 * * *' && 'tarde' || 'manana') }}
+          BLUESKY_SECO: ${{ github.event_name == 'workflow_dispatch' && inputs.seco && '1' || '' }}
+          BLUESKY_PERFIL: ${{ github.event_name == 'workflow_dispatch' && inputs.perfil && '1' || '' }}
+        run: python3 scripts/bluesky.py
+
+      - name: Guardar el registro de publicados
+        if: always()
+        run: |
+          git config user.name  "bluesky-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/bluesky/*.json
+          if ! git diff --cached --quiet; then
+            CLAVE=$(python3 -c "import json;print(json.load(open('docs/bluesky/ultimo.json'))['clave'])")
+            git commit -m "bluesky: ${CLAVE}"
+            git pull --rebase --autostash
+            git push
+          else
+            echo "Sin cambios en el registro."
+          fi
