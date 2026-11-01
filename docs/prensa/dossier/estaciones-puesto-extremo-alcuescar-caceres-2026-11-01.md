@@ -1,6 +1,6 @@
 # Alcuescar (Cáceres) iguala hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 24,8 °C entre las 15:00 y las 16:00 frente a los 24,8 °C de 2015
 
-**Dato:** Medido por AEMET en su estación de Alcuescar, a 467 m, máxima de 24,8 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 24,8 °C (7 de noviembre de 2015) · récord absoluto de la estación: 43,2 °C (12 de agosto de 2025) · día en curso, con observaciones hasta las 19:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Alcuescar, a 467 m, máxima de 24,8 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 24,8 °C (7 de noviembre de 2015) · récord absoluto de la estación: 43,2 °C (12 de agosto de 2025) · día en curso, con observaciones hasta las 20:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Alcuescar (Cáceres)  
 **Citabilidad:** media · **Exclusivo:** sí

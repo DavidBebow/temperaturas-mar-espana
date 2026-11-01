@@ -1,6 +1,6 @@
 # Muiños (Ourense) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 24 °C entre las 14:00 y las 15:00 frente a los 22,3 °C de 2020
 
-**Dato:** Medido por AEMET en su estación de Muiños, a 730 m, máxima de 24 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 22,3 °C (19 de noviembre de 2020) · récord absoluto de la estación: 39,7 °C (14 de julio de 2022) · día en curso, con observaciones hasta las 16:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Muiños, a 730 m, máxima de 24 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 22,3 °C (19 de noviembre de 2020) · récord absoluto de la estación: 39,7 °C (14 de julio de 2022) · día en curso, con observaciones hasta las 20:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Muiños (Ourense)  
 **Citabilidad:** alta · **Exclusivo:** sí
