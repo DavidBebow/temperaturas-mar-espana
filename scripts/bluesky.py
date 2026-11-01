@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bluesky.py 1.0.0 · 1-11-2026
+"""bluesky.py 1.0.1 · 1-11-2026
 
 «El dato del día» de calentamientoglobal.es en Bluesky (protocolo AT, sin librerías).
 Publica como máximo un post por la mañana y, si salta un récord, otro por la tarde.
@@ -57,7 +57,7 @@ try:
 except ImportError:  # pragma: no cover
     ZoneInfo = None
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 RAIZ = Path(__file__).resolve().parent.parent
 DOCS = RAIZ / "docs"
 DIR_REG = DOCS / "bluesky"
@@ -702,9 +702,9 @@ def perfil():
         rec.update({k: x for k, x in v.get("value", {}).items() if k in ("banner",)})
         swap = v.get("cid")
     rec["displayName"] = "Calentamiento Global · Observatorio climático"
-    rec["description"] = ("Cuenta automatizada: un dato climático de España al día, medido por AEMET, MITECO y "
-                          "NOAA y calculado por calentamientoglobal.es. Libre para publicar con CC BY 4.0. "
-                          "Humanos y datos a medida: contacto@calentamientoglobal.es")
+    rec["description"] = ("Un dato climático de España cada día, medido por AEMET, MITECO y NOAA y calculado por "
+                          "calentamientoglobal.es. Libre con CC BY 4.0. contacto@calentamientoglobal.es\n"
+                          "#ClimaEspaña #CambioClimático #Temperaturas #Lluvia #Embalses #Récords")
     assert len(rec["description"]) <= 256, len(rec["description"])
     rec["avatar"] = avatar
     body = {"repo": did, "collection": "app.bsky.actor.profile", "rkey": "self", "record": rec}
