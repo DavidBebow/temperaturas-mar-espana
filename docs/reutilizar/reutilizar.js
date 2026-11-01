@@ -1,4 +1,4 @@
-/*! reutilizar.js 1.0.0 · 1-11-2026 · calentamientoglobal.es · CC BY 4.0 */
+/*! reutilizar.js 1.0.1 · 1-11-2026 · calentamientoglobal.es · CC BY 4.0 */
 (function () {
   'use strict';
   var BASE0 = 'https://davidbebow.github.io/temperaturas-mar-espana/';
@@ -257,8 +257,8 @@
     if (window.innerHeight < 220) pos = 'arriba-derecha';
     var cls = { 'abajo-centro': 'pab-c', 'abajo-izquierda': 'pab-i', 'abajo-derecha': 'pab-d', 'arriba-derecha': 'par-d' }[pos] || 'pab-c';
     var pil = document.createElement('button');
-    pil.type = 'button'; pil.className = 'pil ' + cls; pil.textContent = '⤓ Reutilizar';
-    pil.setAttribute('aria-label', 'Reutilizar: descargar, insertar o citar ' + T.titulo);
+    pil.type = 'button'; pil.className = 'pil ' + cls; pil.textContent = '⤓ Datos · Insertar · Citar';
+    pil.setAttribute('aria-label', 'Datos, insertar y citar: descargar, insertar o citar ' + T.titulo);
     sr.appendChild(pil);
     var abierto = null;
 
@@ -270,7 +270,7 @@
       evento(T, 'propio', 'abrir');
       var v = document.createElement('div'); v.className = 'vel'; v.addEventListener('click', cierra);
       var p = document.createElement('div'); p.className = 'pan f ' + cls;
-      p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-label', 'Reutilizar ' + T.titulo);
+      p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-label', 'Datos, insertar y citar ' + T.titulo);
       var csv = construyeCSV(T);
       p.innerHTML =
         '<div class="cab"><h2>' + esc(T.titulo) + '</h2><button type="button" class="x" aria-label="Cerrar">×</button></div>' +
