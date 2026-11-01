@@ -1,4 +1,4 @@
-/*! reutilizar.js 1.0.1 · 1-11-2026 · calentamientoglobal.es · CC BY 4.0 */
+/*! reutilizar.js 1.1.0 · 1-11-2026 · calentamientoglobal.es · CC BY 4.0 */
 (function () {
   'use strict';
   var BASE0 = 'https://davidbebow.github.io/temperaturas-mar-espana/';
@@ -169,6 +169,8 @@
     return '﻿' + out.join('\n') + '\n';
   }
   function nombreBase(T) { return T.id + (T.slug ? '-' + T.slug : ''); }
+  // El índice del bloque F usa claves sin tildes (a_coruña -> a_coruna), igual que los nombres de los PNG.
+  function clavePng(T) { return nombreBase(T).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, ''); }
 
   /* ---------- Textos de inserción y cita ---------- */
   function urlWidget(T) {
@@ -290,10 +292,20 @@
       }
       // PNG del día: solo si el índice del bloque F tiene entrada para esta herramienta/variante.
       getJSON(T.base + 'capturas/indice.json?v=' + HOY).then(function (ix) {
-        var e = ix && ix.capturas && (ix.capturas[nombreBase(T)] || ix.capturas[T.id]);
+        var e = ix && ix.capturas && (ix.capturas[clavePng(T)] || ix.capturas[T.id]);
         if (!e || !e.url || !abierto) return;
         var a = botonEnlace('PNG del día', e.url, '', 'png', true);
         fd.insertBefore(a, fd.firstChild);
+        // Miniatura de la captura del día encima de los botones (ancho 100 %; si falla la carga, se quita).
+        var th = document.createElement('a'); th.href = e.url; th.target = '_blank'; th.rel = 'noopener';
+        th.setAttribute('aria-label', 'Abrir la captura del día en tamaño completo');
+        th.style.cssText = 'display:block;margin:0 0 10px;border-radius:12px;overflow:hidden;border:1px solid rgba(191,230,255,.16);line-height:0';
+        var im = document.createElement('img'); im.src = e.url; im.loading = 'lazy'; im.alt = 'Captura del día: ' + T.titulo;
+        im.style.cssText = 'width:100%;height:auto;display:block';
+        im.addEventListener('error', function () { th.remove(); });
+        th.appendChild(im);
+        th.addEventListener('click', function () { evento(T, 'propio', 'descarga', { formato: 'png' }); });
+        var sd = p.querySelector('#s-d'); sd.insertBefore(th, sd.querySelector('#f-d'));
       }).catch(function () {});
       if (csv) {
         var bc = document.createElement('button'); bc.type = 'button'; bc.className = 'b s'; bc.textContent = 'CSV';
