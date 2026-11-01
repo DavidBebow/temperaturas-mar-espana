@@ -1,6 +1,6 @@
 # Verín (Ourense) iguala hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 24,7 °C entre las 15:00 y las 16:00 frente a los 24,7 °C de 2007
 
-**Dato:** Medido por AEMET en su estación de Verín, a 380 m, máxima de 24,7 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 24,7 °C (5 de noviembre de 2007) · récord absoluto de la estación: 42,7 °C (22 de agosto de 2023) · día en curso, con observaciones hasta las 19:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Verín, a 380 m, máxima de 24,7 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 24,7 °C (5 de noviembre de 2007) · récord absoluto de la estación: 42,7 °C (22 de agosto de 2023) · día en curso, con observaciones hasta las 23:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Verín (Ourense)  
 **Citabilidad:** alta · **Exclusivo:** sí

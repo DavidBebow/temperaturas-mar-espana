@@ -1,6 +1,6 @@
 # Trujillo (Cáceres) iguala hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 22,5 °C entre las 15:00 y las 16:00 frente a los 22,5 °C de 2020
 
-**Dato:** Medido por AEMET en su estación de Trujillo, a 523 m, máxima de 22,5 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 22,5 °C (18 de noviembre de 2020) · récord absoluto de la estación: 42,7 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 22:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Trujillo, a 523 m, máxima de 22,5 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 22,5 °C (18 de noviembre de 2020) · récord absoluto de la estación: 42,7 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 23:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Trujillo (Cáceres)  
 **Citabilidad:** media · **Exclusivo:** sí
