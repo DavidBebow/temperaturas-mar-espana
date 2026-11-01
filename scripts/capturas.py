@@ -54,7 +54,9 @@ def variantes(h):
         return out
     if h.get("parametro"):  # plantilla con parámetro: provincia.html?p=<slug>
         idx = json.loads((DOCS / "provincias" / "index.json").read_text(encoding="utf-8"))
-        return [(s, w, {h["parametro"]: s}) for s in sorted(idx["provincias"])]
+        lista = idx["provincias"]
+        slugs = sorted(x["slug"] for x in lista) if isinstance(lista, list) else sorted(lista)
+        return [(s, w, {h["parametro"]: s}) for s in slugs]
     return [(None, w, {})]
 
 
