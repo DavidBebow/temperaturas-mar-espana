@@ -1,6 +1,6 @@
 # Valverde del Camino (Huelva) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 26,8 °C entre las 14:00 y las 15:00 frente a los 26,6 °C de 2020
 
-**Dato:** Medido por AEMET en su estación de Valverde del Camino, a 280 m, máxima de 26,8 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 26,6 °C (2 de noviembre de 2020) · récord absoluto de la estación: 44,4 °C (15 de agosto de 2021) · día en curso, con observaciones hasta las 18:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Valverde del Camino, a 280 m, máxima de 26,8 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 26,6 °C (2 de noviembre de 2020) · récord absoluto de la estación: 44,4 °C (15 de agosto de 2021) · día en curso, con observaciones hasta las 19:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Valverde del Camino (Huelva)  
 **Citabilidad:** alta · **Exclusivo:** sí
