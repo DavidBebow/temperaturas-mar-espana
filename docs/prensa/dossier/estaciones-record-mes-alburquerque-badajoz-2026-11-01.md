@@ -1,12 +1,12 @@
-# Alburquerque (Badajoz) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 26 °C entre las 14:00 y las 15:00 frente a los 25,2 °C de 2010
+# Alburquerque (Badajoz) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 26,5 °C entre las 15:00 y las 16:00 frente a los 25,2 °C de 2010
 
-**Dato:** Medido por AEMET en su estación de Alburquerque, a 283 m, máxima de 26 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 25,2 °C (4 de noviembre de 2010) · récord absoluto de la estación: 45,1 °C (3 de agosto de 2018) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Alburquerque, a 283 m, máxima de 26,5 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 25,2 °C (4 de noviembre de 2010) · récord absoluto de la estación: 45,1 °C (3 de agosto de 2018) · día en curso, con observaciones hasta las 16:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Alburquerque (Badajoz)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 0,8 °C.
+- Supera el récord anterior en 1,3 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2008.
 
 ## Fuente y método
