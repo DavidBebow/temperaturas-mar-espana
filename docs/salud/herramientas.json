@@ -47,6 +47,7 @@
     {"id": "clima_directo", "nombre": "El clima, en directo", "familia": "Directo", "archivo": "estado/clima_directo.json", "campo_fecha": ["generado"], "ventana_h": 5, "workflow": "clima-directo.yml", "cadencia": "cada 2 h", "pagina": "https://calentamientoglobal.es/clima-en-directo/", "fuente": "GDELT · Google News · Bluesky"},
     {"id": "temporales", "nombre": "Temporales en directo", "familia": "Directo", "archivo": "estado/temporales.json", "campo_fecha": [], "ventana_h": 3, "workflow": "temporal-directo.yml", "cadencia": "cada 30 min", "guardas": {"clave_existe": "episodios"}, "pagina": "https://calentamientoglobal.es/temporales/", "fuente": "AEMET · 112 · medios"},
     {"id": "climate_radar", "nombre": "Climate Radar (Telegram)", "familia": "Directo", "archivo": "docs/radar_seen.json", "campo_fecha": ["updated"], "ventana_h": 4, "workflow": "climate-radar.yml", "cadencia": "cada hora", "pagina": null, "fuente": "GDELT · Reddit · YouTube · Bluesky"},
+    {"id": "bluesky", "nombre": "El dato del día en Bluesky", "familia": "Difusión", "archivo": "docs/bluesky/ultimo.json", "campo_fecha": ["fecha"], "ventana_h": 72, "workflow": "bluesky.yml", "cadencia": "diaria, si hay dato", "pagina": null, "fuente": "Cálculo propio"},
     {"id": "publicar_resumenes", "nombre": "Publicación de resúmenes en WordPress", "familia": "Web", "archivo": null, "campo_fecha": [], "ventana_h": 30, "workflow": "publicar_resumenes.yml", "cadencia": "dos veces al día", "pagina": null, "fuente": "WordPress REST"}
   ]
 }
