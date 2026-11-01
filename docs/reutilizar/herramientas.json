@@ -1,0 +1,730 @@
+{
+ "_": "Catálogo de la capa Reutilizar · v1.0.0 · 1-11-2026",
+ "ga4": "G-9NCKRTBW58",
+ "base": "https://davidbebow.github.io/temperaturas-mar-espana/",
+ "herramientas": [
+  {
+   "id": "avisos",
+   "widget": "avisos.html",
+   "titulo": "Avisos meteorológicos activos en España",
+   "pagina": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "json": "avisos.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "AEMET · MeteoAlarm",
+   "fuente_corta": "AEMET",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "boyas",
+   "widget": "boyas.html",
+   "titulo": "Temperatura del mar en las boyas de España",
+   "pagina": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
+   "json": "boyas_actual.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "Copernicus Marine In Situ",
+   "fuente_corta": "Copernicus Marine",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "calidad_aire",
+   "widget": "calidad_aire.html",
+   "titulo": "Calidad del aire en España",
+   "pagina": "https://calentamientoglobal.es/calidad-del-aire/",
+   "json": "calidad_aire.json",
+   "campo_fecha": [
+    "ultima_actualizacion"
+   ],
+   "fuente": "Open-Meteo · CAMS",
+   "fuente_corta": "Open-Meteo · CAMS",
+   "alto_embed": 840,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "calor_mortalidad",
+   "widget": "calor-mortalidad.html",
+   "titulo": "Muertes por calor en España",
+   "pagina": "https://calentamientoglobal.es/muertes-por-calor-espana/",
+   "json": "calor_mortalidad.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "MoMo · ISCIII",
+   "fuente_corta": "MoMo · ISCIII",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "canicula",
+   "widget": "canicula_mapa.html",
+   "titulo": "Canícula en España ahora",
+   "pagina": "https://calentamientoglobal.es/canicula-en-espana-ahora/",
+   "json": "canicula.json",
+   "campo_fecha": [
+    "ultima_actualizacion"
+   ],
+   "fuente": "Open-Meteo · ERA5",
+   "fuente_corta": "Open-Meteo · ERA5",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "contador_desastres",
+   "widget": "contador-desastres.html",
+   "titulo": "Cuánto le cuesta a España el cambio climático",
+   "pagina": "https://calentamientoglobal.es/cuanto-le-cuesta-a-espana-el-cambio-climatico-en-euros/",
+   "json": "desastres_eventos_norm.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "Consorcio de Compensación de Seguros · EEA",
+   "fuente_corta": "Consorcio de Compensación de Seguros",
+   "alto_embed": 2220,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "desertificacion",
+   "widget": "desertificacion.html",
+   "titulo": "Desertificación: mapa interactivo",
+   "pagina": "https://calentamientoglobal.es/desertificacion-mapa-interactivo-causas-que-es/",
+   "json": "desertificacion.json",
+   "campo_fecha": [],
+   "fuente": "UNCCD · Copernicus",
+   "fuente_corta": "UNCCD",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "deshielo_polos",
+   "widget": "deshielo-polos.html",
+   "titulo": "Deshielo de los polos",
+   "pagina": "https://calentamientoglobal.es/deshielo-de-los-polos/",
+   "json": "deshielo.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "NSIDC",
+   "fuente_corta": "NSIDC",
+   "alto_embed": 2400,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "dias32",
+   "widget": "dias32-provincias.html",
+   "titulo": "Días por encima de 32 °C por provincia",
+   "pagina": "https://calentamientoglobal.es/dias-mas-de-32-grados-por-provincia/",
+   "json": "dias32.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "ERA5 · Copernicus (modelo fijo)",
+   "fuente_corta": "ERA5 · Copernicus",
+   "alto_embed": 2400,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "antartida",
+   "widget": "el-tiempo-antartida.html",
+   "titulo": "El tiempo en la Antártida",
+   "pagina": "https://calentamientoglobal.es/el-tiempo-en-la-antartida/",
+   "campo_fecha": [],
+   "fuente": "Open-Meteo",
+   "fuente_corta": "Open-Meteo",
+   "alto_embed": 2400,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "embalses",
+   "widget": "embalses.html",
+   "titulo": "Embalses de España: nivel y evolución",
+   "pagina": "https://calentamientoglobal.es/embalses-espana/",
+   "json": "embalses.json",
+   "campo_fecha": [
+    "actualizado",
+    "ultima_actualizacion"
+   ],
+   "fuente": "MITECO · Boletín Hidrológico Semanal",
+   "fuente_corta": "MITECO",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "embalses_provincia",
+   "widget": "embalses/{slug}.html",
+   "alt": [
+    "embalses/provincia.html"
+   ],
+   "parametro": "p",
+   "titulo": "Embalses de la provincia",
+   "titulo_de": {
+    "json": "embalses/{slug}.json",
+    "campo": "provincia",
+    "plantilla": "Embalses de {valor}"
+   },
+   "csv_ruta": "embalses",
+   "pagina_de": {
+    "json": "embalses/{slug}.json",
+    "campo": "url_web"
+   },
+   "json": "embalses/{slug}.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "MITECO · Boletín Hidrológico Semanal",
+   "fuente_corta": "MITECO",
+   "alto_embed": 2140,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": true,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "embalses_ficha",
+   "widget": "embalses/ficha.html",
+   "parametro": "e",
+   "titulo": "Ficha de embalse",
+   "titulo_de": {
+    "json": "embalses/fichas/{slug}.json",
+    "campo": "nombre",
+    "plantilla": "Embalse de {valor}"
+   },
+   "pagina_de": {
+    "json": "embalses/fichas/{slug}.json",
+    "campo": "url_web"
+   },
+   "json": "embalses/fichas/{slug}.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "MITECO · Boletín Hidrológico Semanal",
+   "fuente_corta": "MITECO",
+   "alto_embed": 1460,
+   "posicion": "abajo-centro"
+  },
+  {
+   "id": "emisiones_co2",
+   "widget": "emisiones_co2.html",
+   "titulo": "Emisiones de CO₂ por país",
+   "pagina": "https://calentamientoglobal.es/emisiones-co2-por-pais/",
+   "json": "emisiones_co2.json",
+   "campo_fecha": [
+    "ultima_actualizacion"
+   ],
+   "fuente": "Carbon Monitor · Global Carbon Project",
+   "fuente_corta": "Carbon Monitor",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "firma_climatica",
+   "widget": "firma-climatica.html",
+   "titulo": "La firma climática de hoy",
+   "pagina": "https://calentamientoglobal.es/firma-climatica/",
+   "json": "firma_climatica.json",
+   "campo_fecha": [
+    "generado_utc"
+   ],
+   "fuente": "Open-Meteo · ERA5",
+   "fuente_corta": "Open-Meteo · ERA5",
+   "alto_embed": 2400,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "grados_dia",
+   "widget": "grados-dia-calefaccion-refrigeracion.html",
+   "titulo": "Grados-día de calefacción y refrigeración en España",
+   "pagina": "https://calentamientoglobal.es/grados-dia-calefaccion-refrigeracion-en-espana/",
+   "json": "grados-dia.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "ERA5 · Copernicus (archivo de las capitales)",
+   "fuente_corta": "ERA5 · Copernicus",
+   "alto_embed": 920,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "incendios",
+   "widget": "incendios.html",
+   "titulo": "Incendios forestales en España en tiempo real",
+   "pagina": "https://calentamientoglobal.es/incendios-forestales-espana-tiempo-real/",
+   "json": "incendios.json",
+   "campo_fecha": [
+    "ultima_actualizacion"
+   ],
+   "fuente": "NASA FIRMS",
+   "fuente_corta": "NASA FIRMS",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "superficie_incendios",
+   "widget": "superficie-incendios.html",
+   "titulo": "Superficie quemada en España",
+   "pagina": "https://calentamientoglobal.es/superficie-quemada-espana/",
+   "json": "superficie_incendios.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "EFFIS · Copernicus",
+   "fuente_corta": "EFFIS",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "inundaciones",
+   "widget": "inundaciones.html",
+   "titulo": "Mapa de inundación costera de España",
+   "pagina": "https://calentamientoglobal.es/mapa-inundacion-costera-espana/",
+   "campo_fecha": [],
+   "fuente": "Modelo de elevación SRTM · escenarios IPCC AR6",
+   "fuente_corta": "SRTM · IPCC AR6",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "lluvias",
+   "widget": "lluvias.html",
+   "titulo": "Lluvias en España",
+   "pagina": "https://calentamientoglobal.es/lluvias-en-espana/",
+   "json": "lluvias_municipios.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "AEMET OpenData · Open-Meteo · ERA5",
+   "fuente_corta": "AEMET",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "municipio_2050",
+   "widget": "municipio-2050.html",
+   "titulo": "Tu municipio en 2050",
+   "pagina": "https://calentamientoglobal.es/tu-municipio-en-2050/",
+   "json": "municipios.json",
+   "campo_fecha": [],
+   "fuente": "Open-Meteo Climate · CMIP6",
+   "fuente_corta": "Open-Meteo Climate",
+   "alto_embed": 1000,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "nivel_mar",
+   "widget": "nivel_mar.html",
+   "titulo": "Nivel del mar en España ahora",
+   "pagina": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
+   "json": "nivel_mar.json",
+   "campo_fecha": [
+    "ultima_actualizacion"
+   ],
+   "fuente": "Copernicus Marine · DUACS",
+   "fuente_corta": "Copernicus Marine",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "noches_tropicales",
+   "widget": "noches_tropicales.html",
+   "titulo": "Noches tropicales en España",
+   "pagina": "https://calentamientoglobal.es/noches-tropicales-espana/",
+   "json": "temperaturas_nocturnas.json",
+   "campo_fecha": [
+    "ultima_actualizacion"
+   ],
+   "fuente": "AEMET OpenData",
+   "fuente_corta": "AEMET",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "oceano",
+   "widget": "oceano.html",
+   "titulo": "Ola de calor marina en tiempo real",
+   "pagina": "https://calentamientoglobal.es/mapa-en-tiempo-real-ola-de-calor-marino/",
+   "json": "oceano.json",
+   "campo_fecha": [
+    "fecha"
+   ],
+   "fuente": "NOAA OISST",
+   "fuente_corta": "NOAA OISST",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "provincia",
+   "widget": "provincia.html",
+   "parametro": "p",
+   "titulo": "Cambio climático en la provincia",
+   "titulo_de": {
+    "json": "provincias/{slug}.json",
+    "campo": "provincia",
+    "plantilla": "Cambio climático en {valor}"
+   },
+   "pagina_patron": "https://calentamientoglobal.es/cambio-climatico-en-{slug}/",
+   "alias_slug": {
+    "la-coruna": "a-coruna",
+    "coruna": "a-coruna",
+    "vizcaya": "bizkaia",
+    "guipuzcoa": "gipuzkoa",
+    "araba": "alava",
+    "islas-baleares": "baleares",
+    "tenerife": "santa-cruz-de-tenerife",
+    "sc-tenerife": "santa-cruz-de-tenerife",
+    "rioja": "la-rioja"
+   },
+   "json": "provincias/{slug}.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "AEMET, MITECO, Copernicus y MoMo · cálculo de calentamientoglobal.es",
+   "fuente_corta": "AEMET, MITECO, Copernicus y MoMo",
+   "alto_embed": 1900,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": true,
+    "espera_ms": 3500
+   }
+  },
+  {
+   "id": "viento",
+   "widget": "viento.html",
+   "titulo": "Mapa del viento en España",
+   "pagina": "https://calentamientoglobal.es/mapa-viento-espana/",
+   "json": "viento.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "Open-Meteo",
+   "fuente_corta": "Open-Meteo",
+   "alto_embed": 900,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "dana_cabecera",
+   "widget": "dana/cabecera.html",
+   "titulo": "DANA: situación actual",
+   "pagina": "https://calentamientoglobal.es/dana/",
+   "json": "dana/temporada.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "NCEP · ECMWF · Copernicus",
+   "fuente_corta": "NCEP · ECMWF",
+   "alto_embed": 720,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   },
+   "pastilla": false
+  },
+  {
+   "id": "dana_detector",
+   "widget": "dana/detector.html",
+   "titulo": "Detector de DANA: previsión del ECMWF",
+   "pagina": "https://calentamientoglobal.es/dana/",
+   "json": "dana/prevision.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "ECMWF IFS, datos abiertos (CC BY 4.0)",
+   "fuente_corta": "ECMWF",
+   "alto_embed": 1000,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "dana_temporada",
+   "widget": "dana/temporada.html",
+   "titulo": "Temporada de DANAs",
+   "pagina": "https://calentamientoglobal.es/dana/",
+   "json": "dana/temporada.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "NCEP · ECMWF · Copernicus",
+   "fuente_corta": "NCEP · ECMWF",
+   "alto_embed": 2400,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "dana_historia",
+   "widget": "dana/historia.html",
+   "titulo": "Historia de las DANAs en España",
+   "pagina": "https://calentamientoglobal.es/dana/",
+   "json": "dana/historicas.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "Fuentes históricas contrastadas · AEMET",
+   "fuente_corta": "AEMET",
+   "alto_embed": 860,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "amazonia_rios",
+   "widget": "amazonia/rios.html",
+   "titulo": "Los ríos de la Amazonía",
+   "pagina": "https://calentamientoglobal.es/amazonia/",
+   "json": "amazonia/caudales.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "GloFAS · Open-Meteo",
+   "fuente_corta": "GloFAS",
+   "alto_embed": 1000,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "amazonia_fuego",
+   "widget": "amazonia/fuego.html",
+   "titulo": "Fuego en la Amazonía",
+   "pagina": "https://calentamientoglobal.es/amazonia/",
+   "json": "amazonia/fuego.json",
+   "campo_fecha": [
+    "actualizado"
+   ],
+   "fuente": "INPE",
+   "fuente_corta": "INPE",
+   "alto_embed": 1520,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "caudal",
+   "widget": "caudal/index.html",
+   "titulo": "Caudal de los ríos de España",
+   "pagina": "https://calentamientoglobal.es/caudal-rios-espana-mapa/",
+   "json": "caudal/hoy.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "GloFAS v4 · Copernicus · SAIH",
+   "fuente_corta": "GloFAS",
+   "alto_embed": 900,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "records",
+   "widget": "records/records.html",
+   "titulo": "Récords de temperatura en España",
+   "pagina": "https://calentamientoglobal.es/records-de-temperatura/",
+   "json": "records/hoy.json",
+   "campo_fecha": [
+    "generado"
+   ],
+   "fuente": "AEMET OpenData",
+   "fuente_corta": "AEMET",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  },
+  {
+   "id": "glaciares",
+   "widget": "glaciares/mapa.html",
+   "titulo": "Estado de los glaciares",
+   "pagina": "https://calentamientoglobal.es/glaciares-estado/",
+   "json": "glaciares/indice.json",
+   "campo_fecha": [],
+   "fuente": "WGMS",
+   "fuente_corta": "WGMS",
+   "alto_embed": 700,
+   "posicion": "abajo-centro",
+   "captura": {
+    "ancho": 1600,
+    "alto": 900,
+    "completa": false,
+    "espera_ms": 3000
+   }
+  }
+ ]
+}
