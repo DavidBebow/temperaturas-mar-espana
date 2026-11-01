@@ -1,0 +1,40 @@
+# 6 estaciones de AEMET ya superan hoy, 1 de noviembre, su récord de temperatura máxima para un mes de noviembre
+
+**Dato:** Medido por AEMET: Badajoz 28 °C (anterior 26,7 °C, 2009); Valverde del Camino (Huelva) 26,8 °C (anterior 26,6 °C, 2020); Alburquerque (Badajoz) 26 °C (anterior 25,2 °C, 2010); Alajar (Huelva) 25,9 °C (anterior 25,7 °C, 2023); Alosno, Tharsis (Huelva) 25,9 °C (anterior 25,7 °C, 2013); Zarza la Mayor (Cáceres) 24 °C (anterior 23,9 °C, 2010)  
+**Fecha del dato:** 1 de noviembre de 2026  
+**Ámbito:** nacional · **Territorio:** España  
+**Citabilidad:** media · **Exclusivo:** sí
+
+## Contexto
+- Territorios: Alajar (Huelva), Alburquerque (Badajoz), Alosno, Tharsis (Huelva), Badajoz, Valverde del Camino (Huelva) y Zarza la Mayor (Cáceres).
+- Cada uno comparado contra su propia serie desde al menos 2009.
+
+## Territorio a territorio
+
+| Territorio | Dato | Dossier local |
+|---|---|---|
+| Alajar (Huelva) | Medido por AEMET en su estación de Alajar, a 572 m, máxima de 25,9 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 25,7 °C (17 de noviembre de 2023) · récord absoluto de la estación: 43,8 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 15:00 (hora local) | [estaciones-record-mes-alajar-huelva-2026-11-01](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-alajar-huelva-2026-11-01.md) |
+| Alburquerque (Badajoz) | Medido por AEMET en su estación de Alburquerque, a 283 m, máxima de 26 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 25,2 °C (4 de noviembre de 2010) · récord absoluto de la estación: 45,1 °C (3 de agosto de 2018) · día en curso, con observaciones hasta las 15:00 (hora local) | [estaciones-record-mes-alburquerque-badajoz-2026-11-01](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-alburquerque-badajoz-2026-11-01.md) |
+| Alosno, Tharsis (Huelva) | Medido por AEMET en su estación de Alosno, Tharsis, a 276 m, máxima de 25,9 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 25,7 °C (12 de noviembre de 2013) · récord absoluto de la estación: 43,1 °C (3 de agosto de 2018) · día en curso, con observaciones hasta las 15:00 (hora local) | [estaciones-record-mes-alosno-tharsis-huelva-2026-11-01](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-alosno-tharsis-huelva-2026-11-01.md) |
+| Badajoz | Medido por AEMET en su estación de Badajoz, a 174 m, máxima de 28 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 26,7 °C (1 de noviembre de 2009) · récord absoluto de la estación: 46 °C (4 de agosto de 2018) · día en curso, con observaciones hasta las 15:00 (hora local) | [estaciones-record-mes-badajoz-2026-11-01](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-badajoz-2026-11-01.md) |
+| Valverde del Camino (Huelva) | Medido por AEMET en su estación de Valverde del Camino, a 280 m, máxima de 26,8 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 26,6 °C (2 de noviembre de 2020) · récord absoluto de la estación: 44,4 °C (15 de agosto de 2021) · día en curso, con observaciones hasta las 15:00 (hora local) | [estaciones-record-mes-valverde-del-camino-huelva-2026-11-01](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-valverde-del-camino-huelva-2026-11-01.md) |
+| Zarza la Mayor (Cáceres) | Medido por AEMET en su estación de Zarza la Mayor, a 336 m, máxima de 24 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 23,9 °C (4 de noviembre de 2010) · récord absoluto de la estación: 44,2 °C (3 de agosto de 2018) · día en curso, con observaciones hasta las 15:00 (hora local) | [estaciones-record-mes-zarza-la-mayor-caceres-2026-11-01](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-zarza-la-mayor-caceres-2026-11-01.md) |
+
+## Fuente y método
+- **Fuente:** AEMET OpenData · observación y valores climatológicos extremos
+- **Serie desde:** al menos 2009
+- **Método:** Máxima diaria de la estación (día de 0 a 24 h UTC) obtenida de la observación horaria que publica AEMET OpenData (campo «tamax», extremo de cada hora), comparada con los valores climatológicos extremos mensuales y absolutos que AEMET publica para esa estación (tabla consultada el 26 de octubre de 2026).
+
+## Límites (decirlos antes de que los descubran)
+- Observación en tiempo real, sin validar: AEMET revisa el dato en 2-4 días y puede corregirlo. El observatorio vuelve a comprobarlo con el valor validado y marca el hallazgo como confirmado o lo retira.
+- El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 26 de octubre de 2026; AEMET la actualiza con retraso.
+- OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2009.
+- Día en curso: la cifra puede cambiar hasta la medianoche (hora UTC). Citar siempre con la hora.
+- Serie corta: la estación tiene menos de 20 años de extremos conocidos.
+- Cada estación se compara con su propia tabla de valores extremos; no es un recuento de toda la red: en otras estaciones de AEMET pudo haber más récords.
+
+## Enlaces
+- Página: https://calentamientoglobal.es/records-de-temperatura/
+
+## Atribución
+Observatorio climático de calentamientoglobal.es, a partir de AEMET OpenData · observación y valores climatológicos extremos. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
