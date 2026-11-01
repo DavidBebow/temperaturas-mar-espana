@@ -73,7 +73,7 @@ function fmt(x,d){return (x==null||isNaN(x))?"":Number(x).toFixed(d==null?1:d).r
 function sgn(x){return (x>0?"+":(x<0?"−":""))+fmt(Math.abs(x))}
 function fecha(iso){var p=iso.split("-");return +p[2]+" de "+MESES[+p[1]-1]+" de "+p[0]}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-function altura(){try{parent.postMessage({cgTuCapitalAltura:document.documentElement.scrollHeight,slug:slug},"*")}catch(e){}}
+function altura(){try{parent.postMessage({cgTuCapitalAltura:Math.ceil(app.getBoundingClientRect().height)+16,slug:slug},"*")}catch(e){}}
 window.addEventListener("resize",altura);window.addEventListener("load",altura);
 if(!slug){app.innerHTML='<div class="panel"><p class="err">Falta el parámetro ?p=</p></div>';return}
 var v="?v="+Date.now();
