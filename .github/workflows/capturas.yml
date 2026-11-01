@@ -1,0 +1,86 @@
+name: Capturas diarias de las herramientas
+# Capa «Reutilizar» (bloque F): foto PNG del día de cada herramienta del observatorio.
+# Los PNG van a la release «capturas» (no engordan el repo); solo se commitea docs/capturas/indice.json.
+# Minuto raro a propósito (06:50 UTC): evita la cola de las 07:00 en punto.
+on:
+  schedule:
+    - cron: '50 6 * * *'
+  workflow_dispatch:
+    inputs:
+      solo:
+        description: 'Solo estos ids del catálogo (separados por comas, p. ej. embalses). Vacío = todas.'
+        required: false
+        default: ''
+
+concurrency:
+  group: capturas-herramientas
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  capturas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar Playwright y Pillow
+        run: |
+          pip install playwright pillow
+          playwright install --with-deps chromium
+
+      - name: Capturar
+        run: python3 scripts/capturas.py --solo "${{ github.event.inputs.solo }}"
+
+      - name: Subir PNG a la release «capturas»
+        run: |
+          gh release view capturas >/dev/null 2>&1 || gh release create capturas \
+            --title "Capturas diarias de las herramientas" \
+            --notes "PNG del día de cada herramienta del observatorio. Se sobrescriben a diario." \
+            --prerelease
+          shopt -s nullglob
+          ficheros=(capturas_out/*.png)
+          echo "PNG a subir: ${#ficheros[@]}"
+          if [ ${#ficheros[@]} -gt 0 ]; then
+            # por lotes de 25 para no saturar la API
+            for ((i=0; i<${#ficheros[@]}; i+=25)); do
+              gh release upload capturas "${ficheros[@]:i:25}" --clobber
+            done
+          fi
+
+      - name: Commitear el índice si cambia
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/capturas/indice.json
+          if git diff --cached --quiet; then
+            echo "Índice sin cambios"
+          else
+            git commit -m "capturas: índice del día $(date -u +%F)"
+            git pull --rebase origin main
+            git push
+          fi
+
+      - name: Resumen de fallos
+        if: always()
+        run: |
+          if [ -f capturas_out/fallos.json ]; then
+            python3 - <<'E'
+          import json
+          f=json.load(open('capturas_out/fallos.json'))
+          print('fallos:',len(f))
+          for x in f: print('-',x['clave'],':',x['motivo'])
+          E
+          fi
