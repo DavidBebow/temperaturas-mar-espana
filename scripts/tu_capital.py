@@ -11,9 +11,10 @@ están en el repositorio (nada de APIs, nada de claves):
 
 Escribe docs/tu-capital/:
   <slug>.json · <slug>.csv · <slug>.png (1600x900) · <slug>-franjas.png (1600x400)
-  index.json · nacional.json     (patrocinio.json lo escribe una persona: aquí solo se lee)
+  index.json · nacional.json · franjas.json · nacional.csv     (patrocinio.json lo escribe una persona: aquí solo se lee)
   nacional-ranking.png (1600x900) · nacional-franjas.png (1600x900) · nacional-nota.md
 
+Versión 1.3.0 · 1-11-2026 · index enriquecido, franjas.json, nacional.csv, frase del día (hub /tu-capital/).
 Versión 1.2.0 · 31-10-2026 · nota nacional «Las capitales que más se han calentado desde 1970»: nota larga en
 nacional.json (campo «nota») y en nacional-nota.md, gráfico de ranking y franjas por capital para medios.
 Versión 1.1.0 · 31-10-2026 · control de homogeneidad desde 1979 (ERA5 anterior a 1979 es una retroextensión
@@ -880,6 +881,125 @@ def dibujar_nacional(caps: list[dict], escala: float, carpeta: Path):
 
 
 # ----------------------------------------------------------------------------
+# hub /tu-capital/ (1.3.0)
+# ----------------------------------------------------------------------------
+BASELINE = DOCS / "records" / "baseline.json"
+
+
+def coordenadas_estaciones() -> dict[str, tuple[float, float]]:
+    """lat, lon de cada estación AEMET por indicativo (docs/records/baseline.json)."""
+    b = leer_json(BASELINE) or {}
+    out = {}
+    for grupo in ("estaciones", "inventario_sin_extremos"):
+        for ide, v in (b.get(grupo) or {}).items():
+            if isinstance(v, dict) and v.get("lat") is not None and v.get("lon") is not None:
+                out[ide] = (float(v["lat"]), float(v["lon"]))
+    return out
+
+
+def puesto_con(c: dict, valor: float) -> int:
+    """Puesto que ocuparía un año cerrado con esa media (1 = el más cálido); empate = mismo puesto."""
+    v = r1(valor)
+    return 1 + sum(1 for f in c["serie"] if f["tm"] > v)
+
+
+def en_curso_resumen(c: dict) -> dict | None:
+    ec = c["en_curso"]
+    if not ec:
+        return None
+    out = {k: ec[k] for k in ("hasta", "dias", "anomalia", "estimacion_tm", "estimacion_min", "estimacion_max",
+                              "puesto_si_acaba_asi")}
+    if ec["estimacion_tm"] is None:
+        out.update({"puesto_peor": None, "puesto_mejor": None, "seria_record": None, "camino_top5": None})
+    else:
+        peor = puesto_con(c, ec["estimacion_min"])
+        out.update({"puesto_peor": peor, "puesto_mejor": puesto_con(c, ec["estimacion_max"]),
+                    "seria_record": ec["seria_record"], "camino_top5": peor <= 5})
+    return out
+
+
+def entrada_index(c: dict, coords: dict) -> dict:
+    t = c["tendencia"]
+    lat, lon = coords.get(c["indicativo"], (None, None))
+    if lat is None:
+        log(f"   aviso: sin coordenadas para {c['ciudad']} ({c['indicativo']})")
+    return {
+        "slug": c["slug"], "ciudad": c["ciudad"], "provincia": c["provincia"], "inicio": c["inicio"], "fin": c["fin"],
+        "anios_validos": c["anios_validos"], "normal_tm": c["normal_tm"],
+        "mas_calido": {"anio": c["mas_calido"]["anio"], "tm": c["mas_calido"]["tm"], "empate": c["mas_calido"]["empate"]},
+        "calentamiento": t["calentamiento"] if t["afirmada"] else None,
+        "significativa": t["significativa"], "homogeneidad": c["homogeneidad"]["estado"],
+        "tendencia": {"desde": t["desde"], "calentamiento": t["calentamiento"], "significativa": t["significativa"],
+                      "afirmada": t["afirmada"]},
+        "estimacion_tm": c["en_curso"]["estimacion_tm"] if c["en_curso"] else None,
+        "puesto_si_acaba_asi": c["en_curso"]["puesto_si_acaba_asi"] if c["en_curso"] else None,
+        "en_curso": en_curso_resumen(c),
+        "lat": lat, "lon": lon, "url_pagina": PAGINA.format(slug=c["slug"]),
+    }
+
+
+def resumen_hub(entradas: list[dict]) -> dict:
+    """Cifras del marcador: se calculan una vez y las usan index.json y nacional.json."""
+    con = [e for e in entradas if e["en_curso"] and e["en_curso"]["estimacion_tm"] is not None]
+    hastas = sorted(e["en_curso"]["hasta"] for e in entradas if e["en_curso"])
+    return {
+        "fecha_datos_min": hastas[0] if hastas else None,
+        "fecha_datos_max": hastas[-1] if hastas else None,
+        "n_con_en_curso": len(con),
+        "n_camino_de_record": sum(1 for e in con if e["en_curso"]["seria_record"]),
+        "n_camino_top5": sum(1 for e in con if e["en_curso"]["camino_top5"]),
+    }
+
+
+def frase_dia(r: dict) -> str | None:
+    if not r["fecha_datos_max"] or not r["n_con_en_curso"]:
+        return None
+    f = fecha_larga(date.fromisoformat(r["fecha_datos_max"]))
+    cuantas = (f"de las {r['n_con_en_curso']} capitales con datos de {ANIO_ENCURSO}" if r["n_con_en_curso"] >= 30
+               else f"de las capitales con datos de {ANIO_ENCURSO}")
+    return (f"A {f}, {r['n_camino_de_record']} {cuantas} van camino de cerrar el año como el más cálido de su serie "
+            f"y {r['n_camino_top5']} entre los cinco más cálidos, según los valores diarios de AEMET calculados "
+            f"por calentamientoglobal.es")
+
+
+def escribir_franjas(caps: list[dict], escala: float, p: Path):
+    ini = min(c["inicio"] for c in caps)
+    fin = max(c["fin"] for c in caps)
+    anios = list(range(ini, fin + 1))
+    out = {"anios": anios, "escala": escala, "capitales": {}}
+    for c in sorted(caps, key=lambda c: (c["inicio"], c["ciudad"])):
+        por = {f["anio"]: f["anomalia"] for f in c["serie"]}
+        out["capitales"][c["slug"]] = [por.get(a) for a in anios]
+    p.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+
+
+def escribir_nacional_csv(caps: list[dict], p: Path):
+    cab = ["slug", "ciudad", "provincia", "inicio", "fin", "normal_tm", "mas_calido_anio", "mas_calido_tm",
+           "calentamiento_desde_1970", "significativa", "homogeneidad", f"anomalia_{ANIO_ENCURSO}_hasta", "hasta",
+           "estimacion_tm", "estimacion_min", "estimacion_max", "puesto_si_acaba_asi", "seria_record",
+           "tendencia_desde", "calentamiento_tendencia"]
+    lin = [f"# Fuente: AEMET, cálculo de calentamientoglobal.es, {LICENCIA}, https://calentamientoglobal.es/tu-capital/",
+           ",".join(cab)]
+
+    def v(x):
+        if x is None:
+            return ""
+        if isinstance(x, bool):
+            return "si" if x else "no"
+        return str(x)
+    for c in sorted(caps, key=lambda c: c["ciudad"]):
+        t, ec = c["tendencia"], c["en_curso"] or {}
+        d70 = t["afirmada"] and t["desde"] == INICIO_TENDENCIA
+        fila = [c["slug"], c["ciudad"], c["provincia"], c["inicio"], c["fin"], c["normal_tm"], c["mas_calido"]["anio"],
+                c["mas_calido"]["tm"], t["calentamiento"] if d70 else None, t["significativa"],
+                c["homogeneidad"]["estado"], ec.get("anomalia"), ec.get("hasta"), ec.get("estimacion_tm"),
+                ec.get("estimacion_min"), ec.get("estimacion_max"), ec.get("puesto_si_acaba_asi"), ec.get("seria_record"),
+                t["desde"], t["calentamiento"] if t["afirmada"] else None]
+        lin.append(",".join('"' + v(x) + '"' if "," in v(x) else v(x) for x in fila))
+    p.write_text("\n".join(lin) + "\n", encoding="utf-8")
+
+
+# ----------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--solo", default="", help="slugs separados por comas (pruebas)")
@@ -919,16 +1039,13 @@ def main():
         if not args.sin_png:
             dibujar(c, escala, SALIDA, pat)
 
+    coords = coordenadas_estaciones()
+    entradas = [entrada_index(c, coords) for c in caps]
+    resumen = resumen_hub(entradas)
     idx = {
         "generado": generado, "escala_franjas": escala, "paleta_franjas": PALETA, "fuente": FUENTE, "licencia": LICENCIA,
-        "capitales": [{
-            "slug": c["slug"], "ciudad": c["ciudad"], "provincia": c["provincia"], "inicio": c["inicio"],
-            "mas_calido": {"anio": c["mas_calido"]["anio"], "tm": c["mas_calido"]["tm"], "empate": c["mas_calido"]["empate"]},
-            "calentamiento": c["tendencia"]["calentamiento"] if c["tendencia"]["afirmada"] else None,
-            "significativa": c["tendencia"]["significativa"], "homogeneidad": c["homogeneidad"]["estado"],
-            "estimacion_tm": c["en_curso"]["estimacion_tm"] if c["en_curso"] else None,
-            "puesto_si_acaba_asi": c["en_curso"]["puesto_si_acaba_asi"] if c["en_curso"] else None,
-        } for c in caps],
+        **resumen,
+        "capitales": entradas,
         "sin_serie": [{"cod": k, "provincia": PROVINCIA[k], "texto": v} for k, v in sorted(SIN_SERIE.items())],
         "no_publicadas": no_pub,
     }
@@ -940,8 +1057,12 @@ def main():
             nac["n_mas_calido_2022_o_despues"] = larga.pop("n_mas_calido_2022_o_despues")
             nac["ranking_desde_1970"] = larga.pop("ranking_desde_1970")
         nac["nota"] = larga
+        nac.update(resumen)
+        nac["frase_dia"] = frase_dia(resumen)
         nac["generado"] = generado
         escribir_json(SALIDA / "nacional.json", nac, indent=1)
+        escribir_franjas(caps, escala, SALIDA / "franjas.json")
+        escribir_nacional_csv(caps, SALIDA / "nacional.csv")
         if larga:
             (SALIDA / "nacional-nota.md").write_text(larga["markdown"], encoding="utf-8")
         if not args.sin_png:
