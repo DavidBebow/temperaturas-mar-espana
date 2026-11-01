@@ -1,12 +1,12 @@
-# Zarza la Mayor (Cáceres) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 24,4 °C entre las 15:00 y las 16:00 frente a los 23,9 °C de 2010
+# Zarza la Mayor (Cáceres) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 24,6 °C entre las 16:00 y las 17:00 frente a los 23,9 °C de 2010
 
-**Dato:** Medido por AEMET en su estación de Zarza la Mayor, a 336 m, máxima de 24,4 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 23,9 °C (4 de noviembre de 2010) · récord absoluto de la estación: 44,2 °C (3 de agosto de 2018) · día en curso, con observaciones hasta las 16:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Zarza la Mayor, a 336 m, máxima de 24,6 °C el 1 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 23,9 °C (4 de noviembre de 2010) · récord absoluto de la estación: 44,2 °C (3 de agosto de 2018) · día en curso, con observaciones hasta las 17:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Zarza la Mayor (Cáceres)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 0,5 °C.
+- Supera el récord anterior en 0,7 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2008.
 
 ## Fuente y método

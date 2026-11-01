@@ -1,12 +1,12 @@
-# Xinzo de Limia (Ourense) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 23,5 °C entre las 15:00 y las 16:00 frente a los 23,4 °C de 2010
+# Xinzo de Limia (Ourense) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 23,8 °C entre las 16:00 y las 17:00 frente a los 23,4 °C de 2010
 
-**Dato:** Medido por AEMET en su estación de Xinzo de Limia, a 616 m, máxima de 23,5 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 23,4 °C (4 de noviembre de 2010) · récord absoluto de la estación: 41,5 °C (14 de julio de 2022) · día en curso, con observaciones hasta las 16:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Xinzo de Limia, a 616 m, máxima de 23,8 °C el 1 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 23,4 °C (4 de noviembre de 2010) · récord absoluto de la estación: 41,5 °C (14 de julio de 2022) · día en curso, con observaciones hasta las 17:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Xinzo de Limia (Ourense)  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 0,1 °C.
+- Supera el récord anterior en 0,4 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2004.
 
 ## Fuente y método
