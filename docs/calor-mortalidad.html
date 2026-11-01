@@ -687,5 +687,6 @@ fetch(JSON_URL, { cache: 'no-store' })
   .then(j => { if(j && j.verano_actual){ D = Object.assign({}, PREVIEW, j); ajustarPestanas(); pintar(); } })
   .catch(e => console.warn('[calor-mortalidad] se mantiene la copia local:', e));
 </script>
+<script src="https://davidbebow.github.io/temperaturas-mar-espana/reutilizar/reutilizar.js" defer></script>
 </body>
 </html>
