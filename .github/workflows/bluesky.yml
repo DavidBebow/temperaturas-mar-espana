@@ -19,6 +19,18 @@ on:
         description: "Subir el perfil (nombre, descripción, avatar) y salir"
         type: boolean
         default: false
+      solo:
+        description: "Manual: solo este candidato (a..f, h = embalses de la provincia más llamativa). Vacío = normal"
+        type: string
+        default: ""
+      forzar:
+        description: "Manual: embalses fuera de martes/miércoles"
+        type: boolean
+        default: false
+      puntos_min:
+        description: "Manual: umbral de puntos para las historias (vacío = 90)"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -48,6 +60,9 @@ jobs:
           BLUESKY_TURNO: ${{ github.event_name == 'workflow_dispatch' && inputs.turno || (github.event.schedule == '40 17 * * *' && 'tarde' || 'manana') }}
           BLUESKY_SECO: ${{ github.event_name == 'workflow_dispatch' && inputs.seco && '1' || '' }}
           BLUESKY_PERFIL: ${{ github.event_name == 'workflow_dispatch' && inputs.perfil && '1' || '' }}
+          BLUESKY_SOLO: ${{ github.event_name == 'workflow_dispatch' && inputs.solo || '' }}
+          BLUESKY_FORZAR: ${{ github.event_name == 'workflow_dispatch' && inputs.forzar && '1' || '' }}
+          BLUESKY_PUNTOS_MIN: ${{ github.event_name == 'workflow_dispatch' && inputs.puntos_min || '' }}
         run: python3 scripts/bluesky.py
 
       - name: Guardar el registro de publicados
