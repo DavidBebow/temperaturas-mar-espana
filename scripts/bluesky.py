@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bluesky.py 1.0.1 · 1-11-2026
+"""bluesky.py 1.0.2 · 1-11-2026
 
 «El dato del día» de calentamientoglobal.es en Bluesky (protocolo AT, sin librerías).
 Publica como máximo un post por la mañana y, si salta un récord, otro por la tarde.
@@ -38,9 +38,12 @@ VARIABLES DE ENTORNO
   BLUESKY_PERFIL=1  sube el perfil (nombre, descripción, avatar), imprime el DID y sale
   Solo para pruebas: BLUESKY_FECHA=AAAA-MM-DD, BLUESKY_SOLO=a..f, BLUESKY_REPETIR=1
   (ignora publicados), BLUESKY_SALTAR=clave1,clave2, BLUESKY_PUNTOS_MIN=<n>.
+  Manual desde el workflow: solo=a..h, forzar (embalses fuera de martes/miércoles), puntos_min.
+  h) Embalses de la provincia con mayor diferencia frente a su media de diez años (solo manual).
 """
 import io
 import json
+import unicodedata
 import os
 import re
 import sys
@@ -57,7 +60,7 @@ try:
 except ImportError:  # pragma: no cover
     ZoneInfo = None
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 RAIZ = Path(__file__).resolve().parent.parent
 DOCS = RAIZ / "docs"
 DIR_REG = DOCS / "bluesky"
@@ -72,7 +75,7 @@ LIMITE_TEXTO = 300
 OBJETIVO_TEXTO = 295        # margen: len() cuenta puntos de código, no grafemas
 MAX_IMG = 950_000           # bytes; el límite de Bluesky es ~976 KB
 MAX_ALT = 1000
-PUNTOS_MIN = float(os.getenv("BLUESKY_PUNTOS_MIN", "90"))
+PUNTOS_MIN = float(os.getenv("BLUESKY_PUNTOS_MIN") or "90")
 SERIE_MIN_ANIOS = 0         # 0 = sin filtro. Si se pone p. ej. 30, los récords de estaciones con
                             # menos años de serie no se publican (decisión editorial pendiente).
 
@@ -80,6 +83,7 @@ SECO = os.getenv("BLUESKY_SECO") == "1"
 PERFIL = os.getenv("BLUESKY_PERFIL") == "1"
 TURNO = os.getenv("BLUESKY_TURNO", "manana")
 SOLO = os.getenv("BLUESKY_SOLO", "").lower()
+FORZAR = os.getenv("BLUESKY_FORZAR") == "1"   # embalses: ignora el día de la semana (publicación manual)
 REPETIR = os.getenv("BLUESKY_REPETIR") == "1"
 SALTAR = {s for s in os.getenv("BLUESKY_SALTAR", "").split(",") if s}
 
@@ -397,14 +401,14 @@ def cand_puntos():
 
 
 def cand_embalses():
-    if HOY.weekday() not in (1, 2):
+    if not FORZAR and HOY.weekday() not in (1, 2):
         return None
     e = leer("embalses.json")
     if not e or not e.get("nacional") or not e.get("boletin_fecha"):
         return None
     b = dt.date.fromisoformat(e["boletin_fecha"])
     lunes = HOY - dt.timedelta(days=HOY.weekday())
-    if not (lunes <= b <= HOY):
+    if not FORZAR and not (lunes <= b <= HOY):
         return None
     clave = "embalses-" + e["boletin_fecha"]
     if clave in _pub():
@@ -423,6 +427,37 @@ def cand_embalses():
                 url=e.get("url_web_nacional") or WEB + "/embalses-espana/", tags=["#clima", "#embalses"],
                 img=img, alt_desc=alt_desc, alt_frase=obl[0], fuente="MITECO",
                 og=("Embalses de España: nivel y evolución", obl[0]))
+
+
+def cand_embalses_provincia():
+    """Solo manual (SOLO=h): la provincia (>= 1.000 hm3) con mayor diferencia frente a su media de diez años."""
+    e = leer("embalses.json")
+    if not e or not e.get("boletin_fecha"):
+        return None
+    prov = [p for p in e.get("provincias", []) if p.get("datos_disponibles")
+            and p.get("capacidad_total_hm3", 0) >= 1000 and p.get("pct_media_10a") is not None
+            and p.get("pct_hace_1a") is not None]
+    if not prov:
+        return None
+    p = max(prov, key=lambda x: abs(x["pct"] - x["pct_media_10a"]))
+    b = dt.date.fromisoformat(e["boletin_fecha"])
+    clave = f"embalses-{p['slug']}-{e['boletin_fecha']}"
+    if clave in _pub():
+        return None
+    obl = [f"Los embalses de {p['nombre']} están al {num(p['pct'])} % de su capacidad "
+           f"({num(p['volumen_total_hm3'], 0)} de {num(p['capacidad_total_hm3'], 0)} hm³) en el boletín del {fecha_es(b)}.",
+           "Datos: MITECO · cálculo propio."]
+    opc = [f"Hace un año: {num(p['pct_hace_1a'])} %; media de diez años: {num(p['pct_media_10a'])} %."]
+    slug = unicodedata.normalize("NFD", p["slug"]).encode("ascii", "ignore").decode().replace("-", "_")
+    c = _captura("embalses_provincia-" + slug)
+    img, alt_desc = None, ""
+    if c:
+        img = ("url", c[0])
+        alt_desc = f"captura de la herramienta «{c[1] or 'Embalses de ' + p['nombre']}» con los datos del {fecha_es(c[2])}"
+    return dict(letra="h", clave=clave, emoji="💧", obl=obl, opc=opc,
+                url=p.get("url_web") or WEB + "/embalses-espana/", tags=["#clima", "#embalses"],
+                img=img, alt_desc=alt_desc, alt_frase=obl[0], fuente="MITECO",
+                og=(f"Embalses de {p['nombre']}: nivel y evolución", obl[0]))
 
 
 def cand_tu_capital():
@@ -450,10 +485,11 @@ def cand_tu_capital():
 ORDEN_MANANA = [("a", cand_balance), ("b", cand_record), ("c", cand_exclusiva),
                 ("d", cand_puntos), ("e", cand_embalses), ("f", cand_tu_capital)]
 ORDEN_TARDE = [("b", cand_record)]
+EXTRA = [("h", cand_embalses_provincia)]   # solo con SOLO=h
 
 
 def elegir():
-    for letra, fn in (ORDEN_TARDE if TURNO == "tarde" else ORDEN_MANANA):
+    for letra, fn in (ORDEN_TARDE if TURNO == "tarde" else ORDEN_MANANA) + (EXTRA if SOLO == "h" else []):
         if SOLO and letra != SOLO:
             continue
         c = fn()
