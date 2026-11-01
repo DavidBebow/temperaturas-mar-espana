@@ -1,6 +1,6 @@
 # Barrios de Luna, Miñera (León) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 22,9 °C entre las 15:00 y las 16:00 frente a los 22,6 °C de 2013
 
-**Dato:** Medido por AEMET en su estación de Barrios de Luna, Miñera, a 1120 m, máxima de 22,9 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 22,6 °C (11 de noviembre de 2013) · récord absoluto de la estación: 37,2 °C (14 de julio de 2022) · día en curso, con observaciones hasta las 20:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Barrios de Luna, Miñera, a 1120 m, máxima de 22,9 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 22,6 °C (11 de noviembre de 2013) · récord absoluto de la estación: 37,2 °C (14 de julio de 2022) · día en curso, con observaciones hasta las 00:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Barrios de Luna, Miñera (León)  
 **Citabilidad:** media · **Exclusivo:** sí

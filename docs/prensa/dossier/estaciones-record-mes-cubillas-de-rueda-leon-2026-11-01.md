@@ -1,6 +1,6 @@
 # Cubillas de Rueda (León) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 20,4 °C entre las 15:00 y las 16:00 frente a los 20,3 °C de 2010
 
-**Dato:** Medido por AEMET en su estación de Cubillas de Rueda, a 916 m, máxima de 20,4 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 20,3 °C (5 de noviembre de 2010) · récord absoluto de la estación: 38,1 °C (17 de julio de 2022) · día en curso, con observaciones hasta las 20:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Cubillas de Rueda, a 916 m, máxima de 20,4 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 20,3 °C (5 de noviembre de 2010) · récord absoluto de la estación: 38,1 °C (17 de julio de 2022) · día en curso, con observaciones hasta las 00:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Cubillas de Rueda (León)  
 **Citabilidad:** media · **Exclusivo:** sí

@@ -1,6 +1,6 @@
 # Bustillo del Páramo (León) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 21,3 °C entre las 16:00 y las 17:00 frente a los 21,2 °C de 2015
 
-**Dato:** Medido por AEMET en su estación de Bustillo del Páramo, a 850 m, máxima de 21,3 °C el 1 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 21,2 °C (8 de noviembre de 2015) · récord absoluto de la estación: 37,7 °C (17 de julio de 2022) · día en curso, con observaciones hasta las 20:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Bustillo del Páramo, a 850 m, máxima de 21,3 °C el 1 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 21,2 °C (8 de noviembre de 2015) · récord absoluto de la estación: 37,7 °C (17 de julio de 2022) · día en curso, con observaciones hasta las 00:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Bustillo del Páramo (León)  
 **Citabilidad:** media · **Exclusivo:** sí
