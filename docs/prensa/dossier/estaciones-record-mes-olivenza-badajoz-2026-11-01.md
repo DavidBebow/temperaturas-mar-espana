@@ -1,6 +1,6 @@
 # Olivenza (Badajoz) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 26,1 °C entre las 16:00 y las 17:00 frente a los 26 °C de 2009
 
-**Dato:** Medido por AEMET en su estación de Olivenza, a 275 m, máxima de 26,1 °C el 1 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 26 °C (1 de noviembre de 2009) · récord absoluto de la estación: 45,5 °C (13 de julio de 2022) · día en curso, con observaciones hasta las 17:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Olivenza, a 275 m, máxima de 26,1 °C el 1 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 26 °C (1 de noviembre de 2009) · récord absoluto de la estación: 45,5 °C (13 de julio de 2022) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Olivenza (Badajoz)  
 **Citabilidad:** media · **Exclusivo:** sí
