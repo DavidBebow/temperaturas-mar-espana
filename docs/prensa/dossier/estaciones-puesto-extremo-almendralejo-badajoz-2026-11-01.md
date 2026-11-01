@@ -1,6 +1,6 @@
 # Almendralejo (Badajoz) iguala hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 24,9 °C entre las 15:00 y las 16:00 frente a los 24,9 °C de 2009
 
-**Dato:** Medido por AEMET en su estación de Almendralejo, a 371 m, máxima de 24,9 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 24,9 °C (16 de noviembre de 2009) · récord absoluto de la estación: 43,9 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 20:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Almendralejo, a 371 m, máxima de 24,9 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 24,9 °C (16 de noviembre de 2009) · récord absoluto de la estación: 43,9 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 22:00 (hora local)  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Almendralejo (Badajoz)  
 **Citabilidad:** media · **Exclusivo:** sí
