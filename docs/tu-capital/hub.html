@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Tu capital, año a año: las 45 capitales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent}
+body{font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#e8f1f8;-webkit-text-size-adjust:100%}
+a{color:#bfe6ff}
+.panel{max-width:1120px;margin:0 auto;padding:30px 28px 64px;border-radius:28px;background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);overflow:hidden}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#bfe6ff;margin:0 0 8px;font-weight:600}
+h2{font-family:"Bricolage Grotesque",-apple-system,sans-serif;font-weight:700;font-size:clamp(26px,4.2vw,40px);line-height:1.1;margin:0 0 12px;color:#e8f1f8}
+h3{font-family:"Bricolage Grotesque",-apple-system,sans-serif;font-weight:600;font-size:20px;line-height:1.2;margin:0 0 6px;color:#e8f1f8}
+section{margin:0 0 40px}
+.sub{color:#9fb6c8;margin:0 0 14px;max-width:860px;font-size:15px}
+.note{font-size:13.5px;color:#9fb6c8;margin:10px 0 0;max-width:900px}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(191,230,255,.16);border-radius:22px;padding:16px 18px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 16px}
+.cards .k{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9fb6c8;margin:0 0 6px}
+.cards .v{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:38px;line-height:1.05;color:#e8f1f8}
+.cards .v small{font-size:20px;font-weight:600;color:#9fb6c8}
+.cards .v.hot{color:#ff7a45}
+.cards .s{font-size:13px;color:#9fb6c8;margin-top:6px}
+.rec{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 12px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.rec::-webkit-scrollbar{height:8px}.rec::-webkit-scrollbar-thumb{background:rgba(191,230,255,.25);border-radius:4px}
+.rc{flex:0 0 190px;scroll-snap-align:start;display:flex;flex-direction:column;gap:2px;text-decoration:none;color:#e8f1f8;background:rgba(255,255,255,.06);border:1px solid rgba(255,122,69,.45);border-radius:18px;padding:12px 14px}
+.rc:hover{background:rgba(255,255,255,.1)}
+.rc .n{font-weight:600;font-size:15px}
+.rc .e{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:28px;line-height:1.1;color:#ff7a45}
+.rc .h{font-size:13px;color:#e8f1f8}
+.rc .r{font-size:12px;color:#9fb6c8}
+.seg{display:inline-flex;gap:4px;padding:4px;border-radius:22px;background:rgba(255,255,255,.06);border:1px solid rgba(191,230,255,.16);flex-wrap:wrap}
+.seg button{font:inherit;font-size:13.5px;color:#9fb6c8;background:none;border:0;border-radius:999px;padding:7px 14px;cursor:pointer}
+.seg button[aria-pressed=true]{background:#bfe6ff;color:#0c2133;font-weight:600}
+.map-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:0 0 12px}
+#map{height:540px;border-radius:22px;border:1px solid rgba(191,230,255,.16);background:#0c2133;overflow:hidden}
+.leaflet-container{font:inherit;background:#0c2133}
+.leaflet-popup-content-wrapper{background:#0c2133;color:#e8f1f8;border:1px solid rgba(191,230,255,.3);border-radius:14px}
+.leaflet-popup-tip{background:#0c2133}
+.leaflet-popup-content{margin:12px 14px;font-size:13.5px;line-height:1.45}
+.leaflet-popup-content b{font-family:"Bricolage Grotesque",sans-serif;font-size:17px}
+.leaflet-popup-content a{font-weight:600}
+.leaflet-container a.leaflet-popup-close-button{color:#9fb6c8}
+.leaflet-tooltip{background:#0c2133;color:#e8f1f8;border:1px solid rgba(191,230,255,.3);border-radius:8px;box-shadow:none}
+.leaflet-tooltip-top:before{border-top-color:rgba(191,230,255,.3)}
+.leaflet-control-attribution{background:rgba(12,33,51,.85)!important;color:#9fb6c8!important;font-size:10px!important}
+.leaflet-control-attribution a{color:#bfe6ff!important}
+.lg{background:rgba(12,33,51,.92);border:1px solid rgba(191,230,255,.25);border-radius:14px;padding:10px 12px;color:#e8f1f8;font-size:12px;line-height:1.35;max-width:210px}
+.lg b{display:block;font-size:12.5px;margin-bottom:6px}
+.lg .gr{display:flex;height:10px;border-radius:5px;overflow:hidden}.lg .gr i{flex:1}
+.lg .tk{display:flex;justify-content:space-between;color:#9fb6c8;margin:3px 0 6px}
+.lg .sw{display:flex;align-items:center;gap:6px;color:#9fb6c8}
+.lg .sw i{width:12px;height:12px;border-radius:50%;background:#8aa0b1;border:2px solid #e8f1f8;flex:none}
+.fr-wrap{position:relative}
+.fr-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:18px}
+.fr-in{min-width:780px;padding:4px 0}
+.fr-row{display:flex;align-items:center;height:16px;margin:0 0 2px}
+.fr-n{flex:0 0 176px;position:sticky;left:0;z-index:2;background:#0c2133;font-size:12.5px;line-height:16px;color:#9fb6c8;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px}
+.fr-n small{color:#6f889b;font-size:11px;margin-left:4px}
+.fr-n.on{color:#e8f1f8;font-weight:600}
+.fr-b{flex:1;height:14px;border-radius:3px;cursor:crosshair;touch-action:pan-x pan-y}
+.fr-axis{position:relative;height:18px;margin-top:6px}
+.fr-axis span{position:absolute;top:0;font-size:11px;color:#9fb6c8;transform:translateX(-50%)}
+.fr-axis span:before{content:"";position:absolute;left:50%;top:-6px;height:4px;border-left:1px solid rgba(191,230,255,.4)}
+.tip{position:absolute;pointer-events:none;background:#0c2133;border:1px solid rgba(191,230,255,.3);border-radius:10px;padding:6px 10px;font-size:13px;white-space:nowrap;display:none;z-index:5;color:#e8f1f8;transform:translate(-50%,-125%)}
+.fr-leg{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 0;font-size:12.5px;color:#9fb6c8}
+.fr-leg .gr{display:flex;height:10px;width:190px;border-radius:5px;overflow:hidden}.fr-leg .gr i{flex:1}
+.fr-leg .h{display:inline-block;width:14px;height:10px;border-radius:2px;background:#2a4a63;vertical-align:middle;margin-right:4px}
+.rk-list{position:relative;--nw:176px;margin:6px 0 0}
+.rk-row{display:grid;grid-template-columns:var(--nw) 1fr;align-items:center;height:28px}
+.rk-n{font-size:14px;color:#e8f1f8;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px}
+.rk-n:hover{color:#bfe6ff}
+.rk-t{position:relative;height:18px;z-index:1}
+.rk-b{position:absolute;left:0;top:0;bottom:0;border-radius:0 6px 6px 0;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
+.rk-v{font-size:13px;font-weight:700;line-height:18px}
+.rk-mean{z-index:0;position:absolute;top:-4px;bottom:0;border-left:2px dashed #bfe6ff;left:calc(var(--nw) + (100% - var(--nw)) * var(--p));pointer-events:none}
+.rk-mean span{position:absolute;top:-18px;left:6px;font-size:12px;color:#bfe6ff;white-space:nowrap}
+.rk-list{padding-top:20px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0 0}
+.two h4{font-family:"Bricolage Grotesque",sans-serif;font-size:16px;margin:0 0 8px;color:#e8f1f8}
+.two ul{list-style:none;margin:0;padding:0;font-size:13.5px}
+.two li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid rgba(191,230,255,.1)}
+.two li:first-child{border-top:0}
+.two li a{color:#e8f1f8;text-decoration:none;font-weight:600;white-space:nowrap}
+.two li span{color:#9fb6c8;text-align:right}
+.tb-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:0 0 12px}
+.btn{display:inline-block;font:inherit;font-size:13.5px;font-weight:600;color:#0c2133;background:#bfe6ff;border-radius:999px;padding:8px 16px;text-decoration:none;border:0;cursor:pointer}
+.tb-scroll{overflow-x:auto;border-radius:18px;border:1px solid rgba(191,230,255,.16);-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:960px;font-size:13.5px}
+th,td{padding:6px 8px;text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:#0c2133;z-index:1}
+thead th{background:#0c2133;position:sticky;top:0;font-weight:600;color:#9fb6c8;border-bottom:1px solid rgba(191,230,255,.2);padding:0}
+thead th button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;width:100%;text-align:inherit;padding:10px 8px;font-weight:600}
+thead th[aria-sort=ascending] button:after{content:" ▲";font-size:10px;color:#bfe6ff}
+thead th[aria-sort=descending] button:after{content:" ▼";font-size:10px;color:#bfe6ff}
+thead th[aria-sort] button{color:#e8f1f8}
+tbody td{border-top:1px solid rgba(191,230,255,.07)}
+td a{color:#e8f1f8;font-weight:600;text-decoration:none}
+td a:hover{color:#bfe6ff}
+td .sm{margin-left:6px;font-size:11.5px;color:#9fb6c8;font-weight:400}
+td .rcd{color:#ff7a45;font-weight:600}
+.dim{color:#6f889b}
+.foot{font-size:13px;color:#9fb6c8;border-top:1px solid rgba(191,230,255,.14);padding-top:14px;margin:0}
+.foot a{color:#bfe6ff}
+.err{padding:30px;text-align:center;color:#ff7a45}
+@media(max-width:760px){
+ .panel{padding:22px 16px 64px;border-radius:22px}
+ .cards{grid-template-columns:1fr}
+ .cards .v{font-size:32px}
+ #map{height:440px}
+ .seg{display:flex;width:100%}.seg button{flex:1 1 auto;padding:8px 10px}
+ .lg{max-width:150px;font-size:11px;padding:8px 10px}.lg .nt{display:none}
+ .two{grid-template-columns:1fr}
+ .rk-list{--nw:120px}
+ .rk-n{font-size:13px}
+ .fr-n{flex-basis:124px}
+}
+</style>
+</head>
+<body>
+<div class="panel" id="panel">
+<div id="app"><p class="sub">Cargando las 45 capitales…</p></div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+'use strict';
+var V='?v='+Date.now();
+var WEB='https://calentamientoglobal.es';
+var MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+var NOFRANJA='#2a4a63';
+function f1(n){return (Math.round(n*10)/10).toFixed(1).replace('.',',');}
+function sg(n){var r=Math.round(n*10)/10;return (r>0?'+':r<0?'−':'')+f1(Math.abs(r));}
+function fecha(iso){var p=String(iso).slice(0,10).split('-');return parseInt(p[2],10)+' de '+MES[parseInt(p[1],10)-1]+' de '+p[0];}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function $(s,r){return (r||document).querySelector(s);}
+function send(){
+  try{
+    var h=Math.ceil($('#panel').getBoundingClientRect().height);
+    parent.postMessage({cgTuCapitalAltura:h,slug:'hub'},'*');
+  }catch(e){}
+}
+function get(u){return fetch(u+V).then(function(r){if(!r.ok)throw new Error(u+' '+r.status);return r.json();});}
+
+Promise.all([get('index.json'),get('nacional.json'),get('franjas.json')]).then(function(r){init(r[0],r[1],r[2]);}).catch(function(e){
+  $('#app').innerHTML='<p class="err">No se han podido cargar los datos ('+esc(e.message)+'). Prueba de nuevo en unos minutos.</p>';send();
+});
+
+function init(IX,NA,FR){
+  var PAL=IX.paleta_franjas,ESC=IX.escala_franjas,CAP=IX.capitales;
+  var ANIO=parseInt(String(IX.fecha_datos_max||NA.fecha_datos_max||'').slice(0,4),10)||new Date().getFullYear();
+  function col(a){var i=Math.floor((a+ESC)/(2*ESC)*16);return PAL[Math.min(Math.max(i,0),15)];}
+  function ec(c){return c.en_curso&&c.en_curso.estimacion_tm!=null?c.en_curso:null;}
+  function motivo(c){
+    if(c.homogeneidad==='dudosa')return 'Posible cambio en la estación: salto frente a ERA5 desde 1979';
+    if(c.inicio>=1985)return 'Serie de '+c.anios_validos+' años desde '+c.inicio+': corta para una tendencia fiable';
+    return 'La tendencia no es estadísticamente significativa';
+  }
+  var html='';
+
+  /* 1 · Marcador */
+  var rec=CAP.filter(function(c){return ec(c)&&ec(c).seria_record;}).sort(function(a,b){
+    return (ec(b).estimacion_tm-b.mas_calido.tm)-(ec(a).estimacion_tm-a.mas_calido.tm);});
+  html+='<section id="marcador"><p class="eyebrow">Observatorio climático · serie larga</p>'+
+  '<h2>¿Acabará '+ANIO+' como el año más cálido en tu capital?</h2>'+
+  '<p class="sub">La media de lo que va de '+ANIO+' frente a la normal 1991-2020 de cada capital, proyectada hasta el 31 de diciembre. Las cifras se recalculan cada día con los valores de AEMET.</p>'+
+  '<div class="cards">'+
+   '<div class="card"><p class="k">Camino de su año más cálido</p><div class="v hot">'+IX.n_camino_de_record+' <small>de '+IX.n_con_en_curso+'</small></div><p class="s">capitales cuya estimación queda por encima de su récord</p></div>'+
+   '<div class="card"><p class="k">Entre sus cinco más cálidos</p><div class="v">'+IX.n_camino_top5+' <small>de '+IX.n_con_en_curso+'</small></div><p class="s">incluso en la parte baja de la horquilla</p></div>'+
+   '<div class="card"><p class="k">Datos validados hasta</p><div class="v" style="font-size:28px">'+esc(fecha(IX.fecha_datos_max))+'</div><p class="s">según la estación, entre el '+esc(fecha(IX.fecha_datos_min).replace(/ de \d{4}$/,''))+' y esa fecha</p></div>'+
+  '</div>';
+  if(rec.length){
+    html+='<div class="rec" id="rec">'+rec.map(function(c){var e=ec(c);
+      return '<a class="rc" href="'+esc(c.url_pagina)+'" target="_top">'+
+        '<span class="n">'+esc(c.ciudad)+'</span>'+
+        '<span class="e">'+f1(e.estimacion_tm)+' °C</span>'+
+        '<span class="h">'+f1(e.estimacion_min)+'-'+f1(e.estimacion_max)+' °C</span>'+
+        '<span class="r">Récord: '+f1(c.mas_calido.tm)+' °C ('+c.mas_calido.anio+(c.mas_calido.empate?', empatado':'')+')</span></a>';}).join('')+'</div>';
+  }else{
+    html+='<p class="note">Ninguna capital tiene todavía la horquilla de la estimación por encima de su récord.</p>';
+  }
+  html+='<p class="note">Cómo se estima: regresión entre la anomalía de cada año hasta la misma fecha y su media anual (años desde 1991) aplicada a lo que va de '+ANIO+'; la horquilla es el intervalo del 90 %. «Camino de récord» exige que toda la horquilla quede al menos 0,2 °C por encima del récord. Son estimaciones: el resto del año puede moverlas. <a href="'+WEB+'/metodologia/" target="_top">Metodología</a>.</p></section>';
+
+  /* 2 · Mapa */
+  html+='<section id="mapa"><div class="map-tools"><div><h3>El mapa de las 45 capitales</h3><p class="sub" style="margin:0">Pulsa un punto para ver su ficha y entrar en su página.</p></div>'+
+  '<div class="seg" id="seg-mode"><button type="button" data-m="cal" aria-pressed="true">Calentamiento desde 1970</button><button type="button" data-m="now" aria-pressed="false">'+ANIO+' hasta hoy frente a lo normal</button></div></div>'+
+  '<div id="map" role="application" aria-label="Mapa de las 45 capitales"></div>'+
+  '<div class="seg" id="seg-zone" style="margin-top:10px"><button type="button" data-z="pen" aria-pressed="true">Península y Baleares</button><button type="button" data-z="can" aria-pressed="false">Canarias</button></div></section>';
+
+  /* 3 · Franjas */
+  var AN=FR.anios,N=AN.length;
+  var orden=CAP.slice().sort(function(a,b){return a.inicio-b.inicio||a.ciudad.localeCompare(b.ciudad,'es');});
+  function grad(arr){
+    var w=100/N,s=[];
+    for(var i=0;i<N;i++){var v=arr[i],c=(v==null)?NOFRANJA:col(v);s.push(c+' '+(i*w).toFixed(3)+'% '+((i+1)*w).toFixed(3)+'%');}
+    return 'linear-gradient(to right,'+s.join(',')+')';
+  }
+  html+='<section id="franjas"><h3>Las 45 franjas: cada capital, año a año</h3>'+
+  '<p class="sub">Cada franja es un año: azul, más fresco; rojo, más cálido que la normal 1991-2020 de su estación. Escala común de ±'+f1(ESC)+' °C. Las series más largas, arriba.</p>'+
+  '<div class="fr-wrap" id="fr-wrap"><div class="fr-scroll"><div class="fr-in">';
+  orden.forEach(function(c){
+    html+='<div class="fr-row" data-s="'+esc(c.slug)+'"><a class="fr-n" href="'+esc(c.url_pagina)+'" target="_top">'+esc(c.ciudad)+'<small>'+c.inicio+'</small></a>'+
+    '<div class="fr-b" style="background:'+grad(FR.capitales[c.slug]||[])+'" aria-label="Franjas de '+esc(c.ciudad)+'"></div></div>';
+  });
+  var ticks='';
+  for(var y=Math.ceil(AN[0]/10)*10;y<=AN[N-1];y+=10){ticks+='<span style="left:'+(((y-AN[0]+0.5)/N)*100).toFixed(2)+'%">'+y+'</span>';}
+  html+='<div class="fr-row"><span class="fr-n"></span><div class="fr-axis fr-b" style="background:none;cursor:default">'+ticks+'</div></div>';
+  html+='</div></div><div class="tip" id="tip"></div></div>'+
+  '<div class="fr-leg"><span>−'+f1(ESC)+' °C</span><div class="gr">'+PAL.map(function(c){return '<i style="background:'+c+'"></i>';}).join('')+'</div><span>+'+f1(ESC)+' °C</span><span><i class="h"></i>sin los 12 meses válidos</span></div></section>';
+
+  /* 4 · Ranking */
+  var RK=(NA.ranking_desde_1970||[]).slice().sort(function(a,b){return b.calentamiento-a.calentamiento;});
+  var vmax=RK.length?RK[0].calentamiento*1.14:1,med=NA.calentamiento_medio_desde_1970;
+  var urlDe={};CAP.forEach(function(c){urlDe[c.slug]=c.url_pagina;});
+  html+='<section id="ranking"><h3>Las capitales que más se han calentado desde 1970</h3>'+
+  '<p class="sub">Calentamiento de la temperatura media anual entre 1970 y '+(CAP[0]?Math.max.apply(null,CAP.map(function(c){return c.fin;})):'')+' (tendencia lineal). Solo capitales con serie desde 1970 o antes, tendencia significativa y estación sin saltos: '+RK.length+' de '+NA.n_serie_desde_1970+'.</p>'+
+  '<div class="rk-list" style="--p:'+(med/vmax).toFixed(4)+'">'+
+  RK.map(function(r){var w=(r.calentamiento/vmax*100).toFixed(2);
+    return '<div class="rk-row"><a class="rk-n" href="'+esc(urlDe[r.slug]||'#')+'" target="_top">'+esc(r.ciudad)+'</a><div class="rk-t"><div class="rk-b" style="width:'+w+'%;background:'+col(r.calentamiento)+'"><span class="rk-v" style="color:'+(r.calentamiento>=ESC*(2*12/16-1)?'#fff':'#0c2133')+'">+'+f1(r.calentamiento)+' °C</span></div></div></div>';}).join('')+
+  '<div class="rk-mean"><span>media '+f1(med)+' °C</span></div></div>';
+  var post=CAP.filter(function(c){return c.tendencia.afirmada&&c.tendencia.desde>1970;}).sort(function(a,b){return b.tendencia.calentamiento-a.tendencia.calentamiento;});
+  var sin=CAP.filter(function(c){return !c.tendencia.afirmada;}).sort(function(a,b){return a.ciudad.localeCompare(b.ciudad,'es');});
+  html+='<div class="two"><div class="card"><h4>Las demás con tendencia significativa ('+post.length+')</h4><ul>'+
+   post.map(function(c){return '<li><a href="'+esc(c.url_pagina)+'" target="_top">'+esc(c.ciudad)+'</a><span>+'+f1(c.tendencia.calentamiento)+' °C desde '+c.tendencia.desde+'</span></li>';}).join('')+
+   '</ul><p class="note" style="margin-top:8px">Su serie empieza después de 1970, así que no entran en el ranking.</p></div>'+
+   '<div class="card"><h4>Sin tendencia afirmada ('+sin.length+')</h4><ul>'+
+   sin.map(function(c){return '<li><a href="'+esc(c.url_pagina)+'" target="_top">'+esc(c.ciudad)+'</a><span>'+esc(motivo(c))+'</span></li>';}).join('')+
+   '</ul></div></div>';
+  var ss=(IX.sin_serie||[]).map(function(s){return s.provincia;}),np=(IX.no_publicadas||[]).map(function(s){return s.ciudad;});
+  if(ss.length||np.length){
+    html+='<p class="note">Sin serie larga en su estación: '+esc(ss.join(', '))+(np.length?'. Con serie insuficiente, sin publicar: '+esc(np.join(' y '))+'.':'.')+'</p>';
+  }
+  html+='</section>';
+
+  /* 5 · Tabla */
+  html+='<section id="tabla"><div class="tb-head"><div><h3>Las 45 capitales en una tabla</h3><p class="sub" style="margin:0">Ordena por cualquier columna; cada ciudad enlaza con su página.</p></div>'+
+  '<a class="btn" href="nacional.csv" download="tu-capital-nacional.csv">Descargar CSV</a></div>'+
+  '<div class="tb-scroll"><table id="tb"><thead><tr></tr></thead><tbody></tbody></table></div></section>';
+
+  /* 6 · Pie */
+  html+='<p class="foot">Fuente: '+esc(IX.fuente)+' · licencia '+esc(IX.licencia)+'. Series anuales hasta el último año completo; '+ANIO+' con datos hasta el '+esc(fecha(IX.fecha_datos_max))+'. '+
+  '<a href="'+WEB+'/prensa/tu-capital/" target="_top">Nota de prensa</a> · <a href="'+WEB+'/metodologia/" target="_top">Metodología</a> · <a href="https://calentamientoglobal.es/" target="_top">calentamientoglobal.es</a></p>';
+
+  $('#app').innerHTML=html;
+
+  /* mapa */
+  var map,layer=[],modo='cal',leg;
+  function initMap(){
+    map=L.map('map',{scrollWheelZoom:false,dragging:!L.Browser.mobile,tap:false,zoomSnap:0.5,worldCopyJump:false});
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri · AEMET',maxZoom:10}).addTo(map);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:10}).addTo(map);
+    CAP.forEach(function(c){
+      if(c.lat==null||c.lon==null)return;
+      var m=L.circleMarker([c.lat,c.lon],{radius:9,weight:2,fillOpacity:.88});
+      m.bindTooltip(esc(c.ciudad),{direction:'top',offset:[0,-6]});
+      m.bindPopup(function(){return popup(c);},{maxWidth:280});
+      m.addTo(map);layer.push({c:c,m:m});
+    });
+    leg=L.control({position:'bottomright'});
+    leg.onAdd=function(){this._d=L.DomUtil.create('div','lg');L.DomEvent.disableClickPropagation(this._d);return this._d;};
+    leg.addTo(map);
+    zona('pen');setModo('cal');
+  }
+  function valor(c){
+    if(modo==='cal')return c.tendencia.afirmada?c.tendencia.calentamiento:null;
+    return c.en_curso?c.en_curso.anomalia:null;
+  }
+  function setModo(m){
+    modo=m;
+    var vs=CAP.map(valor).filter(function(v){return v!=null;}),mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs);
+    layer.forEach(function(o){
+      var v=valor(o.c);
+      if(v==null){o.m.setStyle({fillColor:'#8aa0b1',color:'#e8f1f8',weight:2});o.m.setRadius(9);}
+      else{o.m.setStyle({fillColor:col(v),color:'rgba(12,33,51,.9)',weight:1.5});o.m.setRadius(9+(mx>mn?(v-mn)/(mx-mn):0)*9);}
+    });
+    var ticks=[0,0.25,0.5,0.75,1].map(function(t){return sg(-ESC+2*ESC*t);});
+    var d=leg._d;
+    d.innerHTML='<b>'+(m==='cal'?'Calentamiento 1970-'+Math.max.apply(null,CAP.map(function(c){return c.fin;})):ANIO+' hasta hoy frente a 1991-2020')+' (°C)</b>'+
+      '<div class="gr">'+PAL.map(function(c){return '<i style="background:'+c+'"></i>';}).join('')+'</div>'+
+      '<div class="tk"><span>'+ticks[0]+'</span><span>0</span><span>'+ticks[4]+'</span></div>'+
+      (m==='cal'?'<div class="sw"><i></i>sin tendencia afirmada</div>':'')+
+      '<div class="sw nt" style="margin-top:4px">El tamaño crece con el valor</div>';
+    $('#seg-mode').querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-m')===m?'true':'false');});
+    send();
+  }
+  function popup(c){
+    var e=ec(c),h='<b>'+esc(c.ciudad)+'</b><br>';
+    if(modo==='cal'){
+      h+=c.tendencia.afirmada?'Calentamiento desde '+c.tendencia.desde+': <b style="font-size:14px">'+sg(c.tendencia.calentamiento)+' °C</b><br>':'<span style="color:#9fb6c8">Sin tendencia afirmada: '+esc(motivo(c))+'</span><br>';
+    }else{
+      h+=c.en_curso?ANIO+' hasta el '+esc(fecha(c.en_curso.hasta).replace(/ de \d{4}$/,''))+': <b style="font-size:14px">'+sg(c.en_curso.anomalia)+' °C</b> frente a lo normal<br>':'Sin datos suficientes de '+ANIO+'<br>';
+    }
+    h+='Año más cálido: '+c.mas_calido.anio+' ('+f1(c.mas_calido.tm)+' °C'+(c.mas_calido.empate?', empatado':'')+')<br>';
+    if(e)h+=ANIO+' si acaba así: '+f1(e.estimacion_tm)+' °C ('+f1(e.estimacion_min)+'-'+f1(e.estimacion_max)+') · puesto '+e.puesto_si_acaba_asi+(e.seria_record?' · <span style="color:#ff7a45">récord</span>':'')+'<br>';
+    h+='<a href="'+esc(c.url_pagina)+'" target="_top">Ver '+esc(c.ciudad)+', año a año →</a>';
+    return h;
+  }
+  function zona(z){
+    if(z==='can'){map.setView([28.25,-15.85],8);}
+    else{
+      var pts=CAP.filter(function(c){return c.lat!=null&&c.lat>33;}).map(function(c){return [c.lat,c.lon];});
+      map.fitBounds(pts,{padding:[24,24]});
+    }
+    $('#seg-zone').querySelectorAll('button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-z')===z?'true':'false');});
+  }
+  if(window.L){initMap();}else{$('#map').innerHTML='<p class="err">No se ha podido cargar el mapa.</p>';}
+  $('#seg-mode').addEventListener('click',function(ev){var b=ev.target.closest('button');if(b&&window.L)setModo(b.getAttribute('data-m'));});
+  $('#seg-zone').addEventListener('click',function(ev){var b=ev.target.closest('button');if(b&&window.L)zona(b.getAttribute('data-z'));});
+
+  /* franjas: tooltip y resaltado */
+  var wrap=$('#fr-wrap'),tip=$('#tip');
+  function anomTxt(a){return a==null?'sin los 12 meses válidos':sg(a)+' °C frente a la normal';}
+  wrap.addEventListener('pointermove',function(ev){
+    var b=ev.target.closest('.fr-b');
+    if(!b||b.classList.contains('fr-axis')){tip.style.display='none';return;}
+    var row=b.parentNode,s=row.getAttribute('data-s'),r=b.getBoundingClientRect(),i=Math.floor((ev.clientX-r.left)/r.width*N);
+    if(i<0||i>=N){tip.style.display='none';return;}
+    var arr=FR.capitales[s]||[],c=CAP.filter(function(x){return x.slug===s;})[0];
+    tip.innerHTML=esc(c.ciudad)+' · <b>'+AN[i]+'</b>: '+anomTxt(arr[i]);
+    var w=wrap.getBoundingClientRect();
+    tip.style.left=Math.min(Math.max(ev.clientX-w.left,90),w.width-90)+'px';
+    tip.style.top=(row.getBoundingClientRect().top-w.top)+'px';
+    tip.style.display='block';
+  });
+  wrap.addEventListener('pointerleave',function(){tip.style.display='none';});
+  wrap.querySelectorAll('.fr-row[data-s]').forEach(function(row){
+    var n=row.querySelector('.fr-n');
+    row.addEventListener('pointerenter',function(){n.classList.add('on');});
+    row.addEventListener('pointerleave',function(){n.classList.remove('on');});
+  });
+
+  /* tabla */
+  var COLS=[
+    {k:'ciudad',t:'Ciudad',s:function(c){return c.ciudad;},txt:true},
+    {k:'inicio',t:'Desde',s:function(c){return c.inicio;}},
+    {k:'normal',t:'Normal 1991-2020',s:function(c){return c.normal_tm;}},
+    {k:'record',t:'Año más cálido',s:function(c){return c.mas_calido.tm;}},
+    {k:'cal',t:'Calentamiento',s:function(c){return c.tendencia.afirmada?c.tendencia.calentamiento:null;}},
+    {k:'now',t:ANIO+' hasta hoy',s:function(c){return c.en_curso?c.en_curso.anomalia:null;}},
+    {k:'est',t:'Estimación '+ANIO,s:function(c){return ec(c)?ec(c).estimacion_tm:null;}},
+    {k:'pue',t:'Puesto si acaba así',s:function(c){return ec(c)?ec(c).puesto_si_acaba_asi:null;}}
+  ];
+  function celda(k,c){
+    var e=ec(c);
+    if(k==='ciudad')return '<a href="'+esc(c.url_pagina)+'" target="_top">'+esc(c.ciudad)+'</a>';
+    if(k==='inicio')return c.inicio;
+    if(k==='normal')return f1(c.normal_tm)+' °C';
+    if(k==='record')return f1(c.mas_calido.tm)+' °C<span class="sm">'+c.mas_calido.anio+(c.mas_calido.empate?' (empate)':'')+'</span>';
+    if(k==='cal')return c.tendencia.afirmada?sg(c.tendencia.calentamiento)+' °C<span class="sm">desde '+c.tendencia.desde+'</span>':'<span class="dim" title="'+esc(motivo(c))+'">·</span>';
+    if(k==='now')return c.en_curso?sg(c.en_curso.anomalia)+' °C<span class="sm">hasta el '+parseInt(c.en_curso.hasta.slice(8,10),10)+'/'+parseInt(c.en_curso.hasta.slice(5,7),10)+'</span>':'<span class="dim">·</span>';
+    if(k==='est')return e?f1(e.estimacion_tm)+' °C<span class="sm">'+f1(e.estimacion_min)+'-'+f1(e.estimacion_max)+'</span>':'<span class="dim">·</span>';
+    if(k==='pue')return e?e.puesto_si_acaba_asi+(e.seria_record?' <span class="rcd">· récord</span>':''):'<span class="dim">·</span>';
+  }
+  var ord={k:'ciudad',d:1};
+  function pinta(){
+    var col_=COLS.filter(function(c){return c.k===ord.k;})[0];
+    var rows=CAP.slice().sort(function(a,b){
+      var x=col_.s(a),y=col_.s(b);
+      if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;
+      var r=col_.txt?String(x).localeCompare(String(y),'es'):(x-y);
+      return r*ord.d||a.ciudad.localeCompare(b.ciudad,'es');
+    });
+    $('#tb tbody').innerHTML=rows.map(function(c){return '<tr>'+COLS.map(function(cc){return '<td>'+celda(cc.k,c)+'</td>';}).join('')+'</tr>';}).join('');
+    $('#tb thead tr').innerHTML=COLS.map(function(cc){
+      var a=cc.k===ord.k?(ord.d>0?'ascending':'descending'):null;
+      return '<th'+(a?' aria-sort="'+a+'"':'')+' style="'+(cc.k==='ciudad'?'text-align:left':'')+'"><button type="button" data-k="'+cc.k+'" style="'+(cc.k==='ciudad'?'text-align:left':'text-align:right')+'">'+esc(cc.t)+'</button></th>';}).join('');
+    send();
+  }
+  $('#tb thead').addEventListener('click',function(ev){
+    var b=ev.target.closest('button');if(!b)return;
+    var k=b.getAttribute('data-k');
+    if(ord.k===k)ord.d=-ord.d;else{ord.k=k;ord.d=(k==='ciudad'||k==='inicio'||k==='pue')?1:-1;}
+    pinta();
+  });
+  pinta();
+
+  send();
+  window.addEventListener('resize',send);
+  window.addEventListener('load',send);
+  if(window.ResizeObserver){new ResizeObserver(send).observe($('#panel'));}
+  if(map)setTimeout(function(){map.invalidateSize();send();},300);
+}
+})();
+</script>
+<script src="https://davidbebow.github.io/temperaturas-mar-espana/reutilizar/reutilizar.js" defer></script>
+</body>
+</html>
