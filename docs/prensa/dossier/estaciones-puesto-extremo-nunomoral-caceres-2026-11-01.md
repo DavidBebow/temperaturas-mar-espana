@@ -1,6 +1,6 @@
 # Nuñomoral (Cáceres) igualó el 1 de noviembre con 25 °C su récord de temperatura máxima para un mes de noviembre (anterior: 25 °C, 3 de noviembre de 2010)
 
-**Dato:** Medido por AEMET en su estación de Nuñomoral, a 470 m, máxima de 25 °C el 1 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 25 °C (3 de noviembre de 2010) · récord absoluto de la estación: 42,2 °C (14 de julio de 2022) · 23 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Nuñomoral, a 470 m, máxima de 25 °C el 1 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 25 °C (3 de noviembre de 2010) · récord absoluto de la estación: 42,2 °C (14 de julio de 2022) · 24 de 24 horas del día con observación  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Nuñomoral (Cáceres)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -18,7 +18,6 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 26 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2008.
-- Al día le faltan 1 horas de observación en OpenData: la máxima real pudo ser mayor (citar «al menos»).
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces
