@@ -1,6 +1,6 @@
-# Villablino (León) ya supera hoy, 1 de noviembre, su récord de máxima para un mes de noviembre: 24,1 °C entre las 14:00 y las 15:00 frente a los 23,3 °C de 2024
+# Villablino (León) alcanzó el 1 de noviembre al menos 24,1 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Villablino, a 958 m, máxima de 24,1 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 23,3 °C (2 de noviembre de 2024) · récord absoluto de la estación: 39,3 °C (23 de agosto de 2023) · día en curso, con observaciones hasta las 00:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Villablino, a 958 m, máxima de 24,1 °C el 1 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 23,3 °C (2 de noviembre de 2024) · récord absoluto de la estación: 39,3 °C (23 de agosto de 2023) · 22 de 24 horas del día con observación  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Villablino (León)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -19,7 +19,7 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 26 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2010.
-- Día en curso: la cifra puede cambiar hasta la medianoche (hora UTC). Citar siempre con la hora.
+- Al día le faltan 2 horas de observación en OpenData: la máxima real pudo ser mayor (citar «al menos»).
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces

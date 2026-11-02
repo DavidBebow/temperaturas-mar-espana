@@ -1,14 +1,14 @@
-# El Mediterráneo español tuvo su segundo 30 de octubre más cálido desde 1981: 22,5 °C, 1,9 °C por encima de lo normal
+# El Mediterráneo español tuvo uno de sus tres 31 de octubre más cálidos desde 1981: 22,4 °C, 1,9 °C por encima de lo normal
 
-**Dato:** 22,53 °C · puesto 2 de 46 años para la fecha · récord 22,93 °C (2022) · normal 1991-2020 20,61 °C (+1,92)  
-**Fecha del dato:** 30 de octubre de 2026  
+**Dato:** 22,40 °C · dato preliminar de NOAA: queda a 0,07 °C del de 2016 (22,33 °C), menos de lo que puede corregirse, así que no se puede decir cuál es más alto · normal 1991-2020 20,51 °C (+1,89)  
+**Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** Mediterráneo occidental  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Al menos 82 días de 2026 han sido récord para su fecha en la serie desde 1981; otros 3 días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).
+- Al menos 82 días de 2026 han sido récord para su fecha en la serie desde 1981; otros 2 días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).
 - Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.
-- 22,5 °C es lo normal en esta zona para un 10 de octubre (media 1991-2020).
+- 22,4 °C es lo normal en esta zona para un 11 de octubre (media 1991-2020).
 
 ## Fuente y método
 - **Fuente:** NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E
@@ -21,8 +21,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/dana/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-30.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-30.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-31.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-10-31.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
