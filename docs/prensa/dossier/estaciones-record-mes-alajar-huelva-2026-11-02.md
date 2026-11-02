@@ -1,6 +1,6 @@
 # Alajar (Huelva) ya supera hoy, 2 de noviembre, su récord de máxima para un mes de noviembre: 25,8 °C entre las 14:00 y las 15:00 frente a los 25,7 °C de 2023
 
-**Dato:** Medido por AEMET en su estación de Alajar, a 572 m, máxima de 25,8 °C el 2 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 25,7 °C (17 de noviembre de 2023) · récord absoluto de la estación: 43,8 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 19:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Alajar, a 572 m, máxima de 25,8 °C el 2 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 25,7 °C (17 de noviembre de 2023) · récord absoluto de la estación: 43,8 °C (14 de agosto de 2021) · día en curso, con observaciones hasta las 20:00 (hora local)  
 **Fecha del dato:** 2 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Alajar (Huelva)  
 **Citabilidad:** media · **Exclusivo:** sí

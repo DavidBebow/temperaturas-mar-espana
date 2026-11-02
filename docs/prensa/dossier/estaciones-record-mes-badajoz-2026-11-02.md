@@ -1,6 +1,6 @@
 # Badajoz ya supera hoy, 2 de noviembre, su récord de máxima para un mes de noviembre: 27,6 °C entre las 16:00 y las 17:00 frente a los 26,7 °C de 2009
 
-**Dato:** Medido por AEMET en su estación de Badajoz, a 174 m, máxima de 27,6 °C el 2 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 26,7 °C (1 de noviembre de 2009) · récord absoluto de la estación: 46 °C (4 de agosto de 2018) · día en curso, con observaciones hasta las 19:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Badajoz, a 174 m, máxima de 27,6 °C el 2 de noviembre (entre las 16:00 y las 17:00, hora local) · récord anterior de noviembre en la estación: 26,7 °C (1 de noviembre de 2009) · récord absoluto de la estación: 46 °C (4 de agosto de 2018) · día en curso, con observaciones hasta las 20:00 (hora local)  
 **Fecha del dato:** 2 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Badajoz  
 **Citabilidad:** alta · **Exclusivo:** sí
