@@ -1,12 +1,12 @@
-# Quintana del Castillo, Villameca (León) alcanzó el 1 de noviembre 21,1 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
+# Alburquerque (Badajoz) alcanzó el 1 de noviembre 26,5 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Quintana del Castillo, Villameca, a 995 m, máxima de 21,1 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 20,3 °C (4 de noviembre de 2010) · récord absoluto de la estación: 37,5 °C (14 de julio de 2022) · 24 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Alburquerque, a 283 m, máxima de 26,5 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 25,2 °C (4 de noviembre de 2010) · récord absoluto de la estación: 45,1 °C (3 de agosto de 2018) · 24 de 24 horas del día con observación  
 **Fecha del dato:** 1 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Quintana del Castillo, Villameca (León)  
+**Ámbito:** provincial · **Territorio:** Alburquerque (Badajoz)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 0,8 °C.
+- Supera el récord anterior en 1,3 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2008.
 
 ## Fuente y método
@@ -23,8 +23,8 @@
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/records-de-temperatura/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-quintana-del-castillo-villameca-leon-2026-11-01.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-quintana-del-castillo-villameca-leon-2026-11-01.png
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-alburquerque-badajoz-2026-11-01.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/estaciones-record-mes-alburquerque-badajoz-2026-11-01.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET OpenData · observación y valores climatológicos extremos. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
