@@ -1,6 +1,6 @@
-# El Granado (Huelva) alcanzó el 1 de noviembre al menos 29,4 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
+# El Granado (Huelva) alcanzó el 1 de noviembre 29,4 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de El Granado, a 60 m, máxima de 29,4 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 28,6 °C (6 de noviembre de 2007) · récord absoluto de la estación: 46,8 °C (4 de agosto de 2018) · 23 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de El Granado, a 60 m, máxima de 29,4 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 28,6 °C (6 de noviembre de 2007) · récord absoluto de la estación: 46,8 °C (4 de agosto de 2018) · 24 de 24 horas del día con observación  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** El Granado (Huelva)  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -19,7 +19,6 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 26 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2004.
-- Al día le faltan 1 horas de observación en OpenData: la máxima real pudo ser mayor (citar «al menos»).
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/records-de-temperatura/
