@@ -1,6 +1,6 @@
 # Quintana del Castillo, Villameca (León) ya supera hoy, 2 de noviembre, su récord de máxima para un mes de noviembre: 20,5 °C entre las 15:00 y las 16:00 frente a los 20,3 °C de 2010
 
-**Dato:** Medido por AEMET en su estación de Quintana del Castillo, Villameca, a 995 m, máxima de 20,5 °C el 2 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 20,3 °C (4 de noviembre de 2010) · récord absoluto de la estación: 37,5 °C (14 de julio de 2022) · día en curso, con observaciones hasta las 17:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Quintana del Castillo, Villameca, a 995 m, máxima de 20,5 °C el 2 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 20,3 °C (4 de noviembre de 2010) · récord absoluto de la estación: 37,5 °C (14 de julio de 2022) · día en curso, con observaciones hasta las 21:00 (hora local)  
 **Fecha del dato:** 2 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Quintana del Castillo, Villameca (León)  
 **Citabilidad:** media · **Exclusivo:** sí
