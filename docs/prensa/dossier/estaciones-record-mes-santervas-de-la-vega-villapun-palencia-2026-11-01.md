@@ -1,6 +1,6 @@
-# Santervás de la Vega, Villapún (Palencia) alcanzó el 1 de noviembre al menos 20,4 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
+# Santervás de la Vega, Villapún (Palencia) alcanzó el 1 de noviembre 20,4 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Santervás de la Vega, Villapún, a 985 m, máxima de 20,4 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 19,8 °C (2 de noviembre de 2016) · récord absoluto de la estación: 37,8 °C (14 de julio de 2022) · 22 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Santervás de la Vega, Villapún, a 985 m, máxima de 20,4 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 19,8 °C (2 de noviembre de 2016) · récord absoluto de la estación: 37,8 °C (14 de julio de 2022) · 24 de 24 horas del día con observación  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Santervás de la Vega, Villapún (Palencia)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -19,7 +19,6 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 26 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2009.
-- Al día le faltan 2 horas de observación en OpenData: la máxima real pudo ser mayor (citar «al menos»).
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces
