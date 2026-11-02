@@ -1,12 +1,12 @@
-# Alosno, Tharsis (Huelva) ya supera hoy, 2 de noviembre, su récord de máxima para un mes de noviembre: 25,9 °C entre las 13:00 y las 14:00 frente a los 25,7 °C de 2013
+# Alosno, Tharsis (Huelva) ya supera hoy, 2 de noviembre, su récord de máxima para un mes de noviembre: 26,3 °C entre las 14:00 y las 15:00 frente a los 25,7 °C de 2013
 
-**Dato:** Medido por AEMET en su estación de Alosno, Tharsis, a 276 m, máxima de 25,9 °C el 2 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 25,7 °C (12 de noviembre de 2013) · récord absoluto de la estación: 43,1 °C (3 de agosto de 2018) · día en curso, con observaciones hasta las 14:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Alosno, Tharsis, a 276 m, máxima de 26,3 °C el 2 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 25,7 °C (12 de noviembre de 2013) · récord absoluto de la estación: 43,1 °C (3 de agosto de 2018) · día en curso, con observaciones hasta las 15:00 (hora local)  
 **Fecha del dato:** 2 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Alosno, Tharsis (Huelva)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 0,2 °C.
+- Supera el récord anterior en 0,6 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2009.
 
 ## Fuente y método
