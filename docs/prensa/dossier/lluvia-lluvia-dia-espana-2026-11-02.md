@@ -1,6 +1,6 @@
 # La estación de AEMET de Tarragona Fac. Geografia (Tarragona) recogió 54,4 mm en las 24 horas hasta las 8:00 del 3 de noviembre; la de Agaete-Casco (Las Palmas), 30,6 mm
 
-**Dato:** 54,4 mm entre las 8:00 del 2 y las 8:00 del 3 de noviembre (hora peninsular), la cifra más alta de las 386 estaciones de AEMET con las 24 horas que sigue el mapa · 2 superaron los 30 mm  
+**Dato:** 54,4 mm entre las 8:00 del 2 y las 8:00 del 3 de noviembre (hora peninsular), la cifra más alta de las 381 estaciones de AEMET con las 24 horas que sigue el mapa · 2 superaron los 30 mm  
 **Fecha del dato:** 2 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -14,7 +14,7 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación de observación convencional, en el día pluviométrico de AEMET (de 07:00 a 07:00 UTC), el de sus valores diarios. Solo estaciones con las 24 horas.
 
 ## Límites (decirlos antes de que los descubran)
-- La comparación es entre las 386 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (992 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 381 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (992 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Lluvia de cada estación: en el resto del término municipal pudo llover más o menos.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
