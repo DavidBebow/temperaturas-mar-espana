@@ -1,12 +1,12 @@
-# La estación de AEMET de Sitges Vallcarca (Barcelona) lleva 29,6 mm el 3 de noviembre hasta las 18:00; la de Ibiza/Es Codolá (Illes Balears), 24,6 mm
+# La estación de AEMET de Ibiza/Es Codolá (Illes Balears) lleva 24,6 mm el 3 de noviembre hasta las 20:00; la de Eivissa (Illes Balears), 23,4 mm
 
-**Dato:** 29,6 mm de 0:00 a 18:00 (hora local) del 3 de noviembre, la cifra más alta de las 235 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 24,6 mm de 0:00 a 20:00 (hora local) del 3 de noviembre, la cifra más alta de las 236 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 3 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Las que más: Sitges Vallcarca (Barcelona): 29,6 mm · Ibiza/Es Codolá (Illes Balears): 24,6 mm · Eivissa (Illes Balears): 23,1 mm · Sant Antoni de Portmany (Illes Balears): 14,4 mm · Valls (Tarragona): 14,4 mm.
+- Las que más: Ibiza/Es Codolá (Illes Balears): 24,6 mm · Eivissa (Illes Balears): 23,4 mm · Valls (Tarragona): 18,6 mm · Sant Antoni de Portmany (Illes Balears): 14,4 mm · Miramar (Valencia): 12 mm.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData · observación convencional
@@ -14,8 +14,8 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación, desde las 0:00 hasta la última hora cerrada en toda la red. Solo estaciones con todas esas horas.
 
 ## Límites (decirlos antes de que los descubran)
-- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 18:00»).
-- La comparación es entre las 235 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (992 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 20:00»).
+- La comparación es entre las 236 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (992 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
