@@ -1,12 +1,12 @@
 # La estación de AEMET de Sitges Vallcarca (Barcelona) lleva 28,6 mm el 3 de noviembre hasta las 10:00
 
-**Dato:** 28,6 mm de 0:00 a 10:00 (hora local) del 3 de noviembre, la cifra más alta de las 216 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 28,6 mm de 0:00 a 10:00 (hora local) del 3 de noviembre, la cifra más alta de las 234 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 3 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Las que más: Sitges Vallcarca (Barcelona): 28,6 mm · Palma-Portopí (Illes Balears): 5,1 mm · Palma-Universitat (Illes Balears): 5 mm · Barcelona Aeropuerto (Barcelona): 3,7 mm · Sóller (Illes Balears): 3,7 mm.
+- Las que más: Sitges Vallcarca (Barcelona): 28,6 mm · Valls (Tarragona): 11,6 mm · Ibiza/Es Codolá (Illes Balears): 10,1 mm · Eivissa (Illes Balears): 10 mm · Sant Antoni de Portmany (Illes Balears): 6,8 mm.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData · observación convencional
@@ -15,7 +15,7 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 10:00»).
-- La comparación es entre las 216 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (992 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 234 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (992 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
