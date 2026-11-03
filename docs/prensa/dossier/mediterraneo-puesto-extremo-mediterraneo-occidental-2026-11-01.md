@@ -6,7 +6,7 @@
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Al menos 82 días de 2026 han sido récord para su fecha en la serie desde 1981; otros 2 días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).
+- Al menos 81 días de 2026 han sido récord para su fecha en la serie desde 1981; otros 2 días lo superan por un margen que no se puede certificar (dato preliminar o hueco en la fuente).
 - Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.
 - 22,3 °C es lo normal en esta zona para un 12 de octubre (media 1991-2020).
 
