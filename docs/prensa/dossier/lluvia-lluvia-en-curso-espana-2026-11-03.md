@@ -1,12 +1,12 @@
-# La estación de AEMET de Tarragona Fac. Geografia (Tarragona) lleva 45,4 mm el 3 de noviembre hasta las 11:00
+# La estación de AEMET de Ibiza/Es Codolá (Illes Balears) lleva 24 mm el 3 de noviembre hasta las 12:00; la de Eivissa (Illes Balears), 22,5 mm
 
-**Dato:** 45,4 mm de 0:00 a 11:00 (hora local) del 3 de noviembre, la cifra más alta de las 239 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 24 mm de 0:00 a 12:00 (hora local) del 3 de noviembre, la cifra más alta de las 232 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 3 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Las que más: Tarragona Fac. Geografia (Tarragona): 45,4 mm · Ibiza/Es Codolá (Illes Balears): 19,3 mm · Eivissa (Illes Balears): 15,5 mm · Valls (Tarragona): 13,2 mm · Sant Antoni de Portmany (Illes Balears): 13,1 mm.
+- Las que más: Ibiza/Es Codolá (Illes Balears): 24 mm · Eivissa (Illes Balears): 22,5 mm · Sant Antoni de Portmany (Illes Balears): 14 mm · Valls (Tarragona): 13,4 mm · Llanes (Asturias): 6,6 mm.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData · observación convencional
@@ -14,8 +14,8 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación, desde las 0:00 hasta la última hora cerrada en toda la red. Solo estaciones con todas esas horas.
 
 ## Límites (decirlos antes de que los descubran)
-- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 11:00»).
-- La comparación es entre las 239 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (992 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 12:00»).
+- La comparación es entre las 232 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (992 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
