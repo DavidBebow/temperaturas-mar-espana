@@ -1,6 +1,6 @@
 # Peñausende (Zamora) ya ha bajado hoy, 4 de noviembre, por debajo de su récord de mínima para un mes de noviembre: -2,8 °C entre las 07:00 y las 08:00 frente a los -2,1 °C de 2021
 
-**Dato:** Medido por AEMET en su estación de Peñausende, a 1003 m, mínima de -2,8 °C el 4 de noviembre (entre las 07:00 y las 08:00, hora local) · récord anterior de noviembre en la estación: -2,1 °C (28 de noviembre de 2021) · récord absoluto de la estación: -5,9 °C (4 de abril de 2022) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Peñausende, a 1003 m, mínima de -2,8 °C el 4 de noviembre (entre las 07:00 y las 08:00, hora local) · récord anterior de noviembre en la estación: -2,1 °C (28 de noviembre de 2021) · récord absoluto de la estación: -5,9 °C (4 de abril de 2022) · día en curso, con observaciones hasta las 16:00 (hora local)  
 **Fecha del dato:** 4 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Peñausende (Zamora)  
 **Citabilidad:** media · **Exclusivo:** sí
