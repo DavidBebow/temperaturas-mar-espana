@@ -3,8 +3,7 @@ name: Actualizar canicula
 on:
   schedule:
     # Dos veces al día en verano: 14:00 y 19:00 UTC (~16h y ~21h en España peninsular)
-    - cron: '0 14 * * *'
-    - cron: '0 19 * * *'
+    - cron: '0 14 * 6-9 *'   # 5-11-2026: solo de junio a septiembre
   workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña Actions
 
 env:

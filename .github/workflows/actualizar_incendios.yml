@@ -1,15 +1,10 @@
 name: Actualizar incendios
 on:
   schedule:
-    # 8 actualizaciones al día · horas en UTC (verano peninsular = UTC+2)
-    - cron: '0 4 * * *'    # 06:00 hora peninsular
+    # 3 actualizaciones al día (5-11-2026; eran 8) · horas en UTC (verano peninsular = UTC+2)
     - cron: '0 7 * * *'    # 09:00 hora peninsular
-    - cron: '0 10 * * *'   # 12:00 hora peninsular
-    - cron: '0 12 * * *'   # 14:00 hora peninsular
     - cron: '0 14 * * *'   # 16:00 hora peninsular
-    - cron: '0 16 * * *'   # 18:00 hora peninsular
     - cron: '0 19 * * *'   # 21:00 hora peninsular
-    - cron: '30 22 * * *'  # 00:30 hora peninsular (día siguiente)
   workflow_dispatch:
 concurrency:
   group: actualizar-incendios

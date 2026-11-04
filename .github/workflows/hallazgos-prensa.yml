@@ -25,7 +25,7 @@ on:
     # Cada hora (18-10-2026): la lluvia de AEMET por estación y los avisos se rehacen a :01 y :31; a :47 el
     # parte ya lleva la hora cerrada más reciente. Las series lentas (capitales, Mediterráneo, embalses) entran
     # en la primera pasada después de actualizarse.
-    - cron: "47 * * * *"
+    - cron: "47 */3 * * *"
 
 permissions:
   contents: write
@@ -39,6 +39,18 @@ env:
 
 jobs:
   detectar:
+    # 5-11-2026 (ahorro de ejecuciones): de la cadena de la lluvia (cada media hora) solo corre una pasada cada
+    # 3 horas (las que salen en los primeros minutos de las 00, 03, 06… UTC); el resto, «skipped» sin runner.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      contains(github.event.workflow_run.created_at, 'T00:0') ||
+      contains(github.event.workflow_run.created_at, 'T03:0') ||
+      contains(github.event.workflow_run.created_at, 'T06:0') ||
+      contains(github.event.workflow_run.created_at, 'T09:0') ||
+      contains(github.event.workflow_run.created_at, 'T12:0') ||
+      contains(github.event.workflow_run.created_at, 'T15:0') ||
+      contains(github.event.workflow_run.created_at, 'T18:0') ||
+      contains(github.event.workflow_run.created_at, 'T21:0')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del repositorio

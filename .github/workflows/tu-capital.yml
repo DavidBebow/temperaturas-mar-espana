@@ -26,6 +26,11 @@ env:
 
 jobs:
   tu-capital:
+    # 5-11-2026 (ahorro de ejecuciones): solo tras el balance (que ya va dos veces al día); no tras cada pasada de
+    # «Series diarias largas de AEMET».
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.name == 'Balance del mes, capital a capital'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

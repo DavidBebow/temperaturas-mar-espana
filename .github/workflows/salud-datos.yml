@@ -7,7 +7,7 @@ name: Salud de los datos
 on:
   workflow_dispatch:
   schedule:
-    - cron: "55 * * * *"   # cada hora, a y 55, después de la mayoría de pasadas
+    - cron: "55 */3 * * *"   # cada hora, a y 55, después de la mayoría de pasadas
 
 permissions:
   contents: write

@@ -9,8 +9,7 @@ name: Actualizar días de más de 32 grados (estaciones AEMET)
 
 on:
   schedule:
-    - cron: "40 12 * * *"   # 14:40 peninsular en verano, después de las noches tropicales
-    - cron: "40 0 * * *"    # segunda pasada nocturna mientras se completa el archivo
+    - cron: "40 12 * 5-10 *"   # 5-11-2026: solo de mayo a octubre ·   # 14:40 peninsular en verano, después de las noches tropicales
   workflow_dispatch:
 
 concurrency:

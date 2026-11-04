@@ -11,7 +11,7 @@ name: Actualizar temperatura actual boyas
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 6,13,20 * * *"     # 06:00, 13:00 y 20:00 UTC
+    - cron: "0 6,17 * * *"     # 5-11-2026: dos al día (06:00 y 17:00 UTC)
 permissions:
   contents: write
 env:

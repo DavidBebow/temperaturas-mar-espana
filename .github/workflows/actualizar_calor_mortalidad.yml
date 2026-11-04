@@ -10,7 +10,6 @@ on:
   schedule:
     # 2 veces al dia. Horas en UTC (verano peninsular = UTC+2)
     - cron: '30 6 * * *'    # 08:30 hora peninsular
-    - cron: '30 16 * * *'   # 18:30 hora peninsular
   workflow_dispatch:
 concurrency:
   group: actualizar-calor-mortalidad

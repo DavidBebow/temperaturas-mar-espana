@@ -2,12 +2,7 @@ name: Actualizar nivel del mar
 
 on:
   schedule:
-    - cron: '1 22 * * *'
-    - cron: '1 23 * * *'
-    - cron: '0 7 * * *'
-    - cron: '0 8 * * *'
-    - cron: '0 12 * * *'
-    - cron: '0 13 * * *'
+    - cron: '0 8 * * *'    # 5-11-2026: una vez al día (el dato de Copernicus es diario)
   workflow_dispatch:
 
 env:

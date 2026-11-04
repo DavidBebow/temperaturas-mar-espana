@@ -16,7 +16,7 @@ on:
   schedule:
     # Dos pasadas: la de 00Z de ECMWF sale en abierto hacia las 08 UTC y la de
     # 12Z hacia las 20 UTC. Fuera de la hora en punto, que GitHub va atascado.
-    - cron: '41 8,20 * * *'
+    - cron: '41 8 * * *'   # 5-11-2026: una al día
   workflow_dispatch:
     inputs:
       modo:

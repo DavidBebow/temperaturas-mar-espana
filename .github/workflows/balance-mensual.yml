@@ -40,6 +40,12 @@ env:
 
 jobs:
   balance:
+    # 5-11-2026 (ahorro de ejecuciones): de la cadena de la lluvia solo se aprovechan las pasadas que salen entre las
+    # 06:00 y las 06:09 y entre las 18:00 y las 18:09 UTC (dos al día); el resto quedan «skipped» sin gastar runner.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      contains(github.event.workflow_run.created_at, 'T06:0') ||
+      contains(github.event.workflow_run.created_at, 'T18:0')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

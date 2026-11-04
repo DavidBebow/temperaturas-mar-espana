@@ -6,7 +6,6 @@ on:
   schedule:
     # 2 veces al dia. Horas en UTC (verano peninsular = UTC+2)
     - cron: '0 6 * * *'    # 08:00 hora peninsular
-    - cron: '0 16 * * *'   # 18:00 hora peninsular
   workflow_dispatch:
 concurrency:
   group: actualizar-superficie
