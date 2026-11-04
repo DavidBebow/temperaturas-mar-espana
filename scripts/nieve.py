@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -91,7 +91,7 @@ OM_ARCHIVO = "https://archive-api.open-meteo.com/v1/archive"
 OM_PREVISION = "https://api.open-meteo.com/v1/forecast"
 GEOJSON_URL = ("https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/"
                "spain-provinces.geojson")
-IMS_URL = "https://noaadata.apps.nsidc.org/NOAA/G02156/4km/{y}/ims{y}{d:03d}_4km_v{v}.asc.gz"
+IMS_URL = "https://noaadata.apps.nsidc.org/NOAA/G02156/4km/{y}/ims{y}{d:03d}_00UTC_4km_v{v}.asc.gz"
 
 INICIO = date(1971, 8, 1)
 CORTE = date(2025, 8, 1)          # lo anterior va a historico.csv.gz; lo posterior, a reciente.csv
@@ -384,11 +384,12 @@ def era_descargar(pts: list, d0: date, d1: date) -> dict:
     """ERA5-Land diario de varios puntos: {id: {fecha: (nieve_cm, espesor_cm)}}."""
     p = {"latitude": ",".join(f"{x['lat']:.3f}" for x in pts), "longitude": ",".join(f"{x['lon']:.3f}" for x in pts),
          "start_date": d0.isoformat(), "end_date": d1.isoformat(), "daily": "snowfall_sum", "hourly": "snow_depth",
-         "models": "era5_land", "timezone": "Europe/Madrid"}
+         "timezone": "Europe/Madrid"}   # mezcla ERA5-Land/ERA5 de Open-Meteo (con «era5_land» no da la nieve caída)
     r = om(OM_ARCHIVO, p)
     if isinstance(r, dict):
         r = [r]
-    if r and all(not any(v is not None for v in (x.get("daily") or {}).get("snowfall_sum") or []) for x in r):
+    if "models" in p and r and all(not any(v is not None for v in (x.get("daily") or {}).get("snowfall_sum") or [])
+                                    for x in r):
         log(f"  AVISO: ERA5-Land no da nieve para {d0}-{d1}; se prueba con la mezcla ERA5/ERA5-Land de Open-Meteo")
         p.pop("models")
         r = om(OM_ARCHIVO, p)
@@ -716,9 +717,11 @@ def descargar(url: str, intentos: int = 3) -> bytes | None:
 
 
 def ims_archivo(d: date) -> bytes | None:
-    doy = d.timetuple().tm_yday
+    """El archivo del día D+1 a las 00 UTC es el análisis del día D (su cabecera dice «Julian day … D»)."""
+    f = d + timedelta(days=1)
+    doy = f.timetuple().tm_yday
     for v in ("1.3", "1.2", "1.1"):
-        b = descargar(IMS_URL.format(y=d.year, d=doy, v=v))
+        b = descargar(IMS_URL.format(y=f.year, d=doy, v=v))
         if b:
             return b
     return None
