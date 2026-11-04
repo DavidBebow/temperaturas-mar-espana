@@ -1,6 +1,6 @@
 # Jerez de los Caballeros (Badajoz) alcanzó el 1 de noviembre 26,1 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Jerez de los Caballeros, a 381 m, máxima de 26,1 °C el 1 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 25,8 °C (18 de noviembre de 2020) · récord absoluto de la estación: 45,4 °C (13 de julio de 2017) · 24 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Jerez de los Caballeros, a 381 m, máxima de 26,1 °C el 1 de noviembre (hora de la máxima: 14:30) · récord anterior de noviembre en la estación: 25,8 °C (18 de noviembre de 2020) · récord absoluto de la estación: 45,4 °C (13 de julio de 2017) · valor climatológico diario validado por AEMET: 26,1 °C  
 **Fecha del dato:** 1 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Jerez de los Caballeros (Badajoz)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -15,7 +15,7 @@
 - **Método:** Máxima diaria de la estación (día de 0 a 24 h UTC) obtenida de la observación horaria que publica AEMET OpenData (campo «tamax», extremo de cada hora), comparada con los valores climatológicos extremos mensuales y absolutos que AEMET publica para esa estación (tabla consultada el 26 de octubre de 2026).
 
 ## Límites (decirlos antes de que los descubran)
-- Observación en tiempo real, sin validar: AEMET revisa el dato en 2-4 días y puede corregirlo. El observatorio vuelve a comprobarlo con el valor validado y marca el hallazgo como confirmado o lo retira.
+- Confirmado con el valor climatológico diario validado por AEMET (26,1 °C el 1 de noviembre).
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 26 de octubre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2007.
