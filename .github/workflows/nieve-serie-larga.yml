@@ -33,6 +33,8 @@ jobs:
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
+        with:
+          ref: main   # lo último de main, no el commit con el que se lanzó (evita choques con la pasada anterior)
 
       - name: Configurar Python
         uses: actions/setup-python@v5
@@ -56,7 +58,8 @@ jobs:
           fi
           git commit -m "nieve: serie larga $(date -u +'%Y-%m-%d %H:%M') UTC"
           for i in 1 2 3 4 5 6; do
-            git pull --rebase --autostash && git push && exit 0
+            git pull --rebase -X theirs --autostash && git push && exit 0
+            git rebase --abort 2>/dev/null || true
             sleep $((i*5))
           done
           exit 1
