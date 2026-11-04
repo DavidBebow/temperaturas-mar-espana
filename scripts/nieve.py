@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.1.2"
+VERSION = "1.1.3"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -1522,7 +1522,7 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv .cgnv-prev .cgnv-psub{font-size:15px;color:var(--p-sub);margin:0 0 14px;max-width:none}
 .cgnv-tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -6px;padding:0 6px}
 .cgnv-tp{border-collapse:separate;border-spacing:3px;width:100%;min-width:700px;font-size:13.5px}
-.cgnv-tp th{font-weight:600;color:var(--p-mut);text-align:center;padding:2px 0 6px;white-space:nowrap}
+.cgnv-tp th,.cgnv-tp td{border:0!important;padding:0}.cgnv-tp th{font-weight:600;color:var(--p-mut);text-align:center;padding:2px 0 6px;white-space:nowrap}
 .cgnv-tp th b{display:block;color:var(--p-txt);font-size:14px}
 .cgnv-tp th.cgnv-fin{color:#ffd2bf}
 .cgnv-tp td{text-align:center;border-radius:8px;height:38px;min-width:36px;background:#11293d;color:#0c2133;font-weight:700}
