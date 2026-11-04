@@ -1,6 +1,6 @@
-# Tarragona recogió el 3 de noviembre 50,8 mm, la mayor lluvia para esa fecha desde 1940
+# Tarragona recogió el 3 de noviembre 48,2 mm, la mayor lluvia para esa fecha desde 1940
 
-**Dato:** 50,8 mm en un día · récord anterior para la fecha 13,9 mm (2011)  
+**Dato:** 48,2 mm en un día · récord anterior para la fecha 13,9 mm (2011)  
 **Fecha del dato:** 3 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Tarragona  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -13,7 +13,7 @@
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
 - Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
-- COMPROBAR antes de enviar: supera el récord anterior en 3,7 veces, demasiado para un análisis; confirmar con la estación de AEMET.
+- COMPROBAR antes de enviar: supera el récord anterior en 3,5 veces, demasiado para un análisis; confirmar con la estación de AEMET.
 - La lluvia de un análisis es una media de celda: el pluviómetro local puede dar más o menos.
 - COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad.
 
