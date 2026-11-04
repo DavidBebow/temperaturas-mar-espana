@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -490,7 +490,7 @@ def modo_clima(presupuesto: float) -> None:
             hechas += 1
             log(f"  {p['id']}: {d0.year}-{d1.year} ({validos} días)")
             escribir(ARCHIVO / "era5land_estado.json", json.dumps(est, indent=1, sort_keys=True))
-            time.sleep(3)
+            time.sleep(w / 9)   # no pasar de unas 600 por minuto
     _clima_fin(est, hechas)
 
 
@@ -519,8 +519,11 @@ def actualizar_reciente() -> None:
     for p, d0 in lote:
         grupos.setdefault(d0, []).append(p)
     for d0, ps in sorted(grupos.items()):
-        for i in range(0, len(ps), 20):
-            trozo = ps[i:i + 20]
+        # Open-Meteo admite unas 600 «peticiones» por minuto: cada lote pesa días/14 por punto, así que se ajusta
+        w1 = peso((HOY - d0).days + 1, 2)
+        n_lote = max(1, min(20, int(400 // w1)))
+        for i in range(0, len(ps), n_lote):
+            trozo = ps[i:i + n_lote]
             try:
                 nuevo = era_descargar(trozo, d0, HOY)
             except Limite as ex:
@@ -536,7 +539,7 @@ def actualizar_reciente() -> None:
                         serie[f] = v
                 era_guardar(p["id"], serie, "reciente")
                 n += 1
-            time.sleep(2)
+            time.sleep(max(2, w1 * len(trozo) / 9))
     log(f"ERA5-Land reciente: {n} puntos al día")
 
 
@@ -565,7 +568,7 @@ def descargar_prevision() -> dict:
             r = [r]
         for x, res in zip(trozo, r):
             out["puntos"][x["id"]] = recortar_prevision(res)
-        time.sleep(2)
+        time.sleep(15)   # cada lote pesa unas 120 peticiones: así no se pasa de 600 por minuto
     log(f"Previsión: {len(out['puntos'])} de {len(PUNTOS)} puntos")
     return out
 
