@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.1.3"
+VERSION = "1.1.5"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -1489,6 +1489,7 @@ font:17px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Aria
 .cgnv h3{font-size:18px;line-height:1.35;margin:0;font-weight:700}
 .cgnv p{margin:0 0 14px;max-width:70ch}
 .cgnv-svg{display:block;width:100%;height:auto;overflow:visible}
+.cgnv .cgnv-img{display:block;width:100%;height:auto;max-width:none;margin:0;border-radius:0}
 .cgnv-svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 .cgnv-m{display:none}
 .cgnv-panel{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);column-gap:40px;
@@ -1604,6 +1605,21 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-tabla{font-size:14.5px}.cgnv-escala i{width:70px}.cgnv-metodo{padding:18px 16px 6px}}
 @media(prefers-reduced-motion:reduce){.cgnv *{transition:none!important}}
 </style>"""
+
+
+def img_svg(nombre: str, svg: str, alt: str) -> str:
+    """WordPress filtra el SVG en línea del bloque del día (meta cg_ssr_html): el gráfico se guarda como archivo en
+    GitHub Pages (docs/nieve/graf/) y el bloque lo enseña con <img>. El ?v= cambia solo si cambia el dibujo."""
+    m = __import__("re").search(r'viewBox="0 0 (\d+) (\d+)"', svg)
+    w, hh = (m.group(1), m.group(2)) if m else ("760", "300")
+    svg = svg.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'
+                      'Segoe UI,Roboto,Helvetica,Arial,sans-serif" ', 1)
+    # los enlaces no funcionan dentro de una imagen: se quitan
+    svg = __import__("re").sub(r"</?a\b[^>]*>", "", svg)
+    svg = '<?xml version="1.0" encoding="UTF-8"?>' + svg
+    escribir(SALIDA / "graf" / f"{nombre}.svg", svg)
+    return (f'<img class="cgnv-img" src="{PAGES}/nieve/graf/{nombre}.svg?v={h(svg)[:10]}" width="{w}" height="{hh}" '
+            f'alt="{esc(alt)}" loading="lazy" decoding="async">')
 
 
 def faq_jsonld(preguntas: list) -> str:
@@ -2061,10 +2077,12 @@ def ssr_prov(px: dict, sat: dict) -> str:
         prov_txt = (f" Los últimos días, desde el {fd(o['provisional_desde'], False)}, son provisionales."
                     if o.get("provisional_desde") else "")
         p.append('<div class="cgnv-graf-p"><figure><h3>Nieve acumulada esta temporada</h3>'
-                 + svg_acumulado(mo, True) +
+                 + img_svg(f"{px['slug']}-acumulado", svg_acumulado(mo, True),
+                           f"Nieve acumulada esta temporada en {mo['nombre']} frente a un año normal") +
                  f"<figcaption>Línea blanca: esta temporada. Discontinua: un año normal (1991-2021); la banda, 8 de cada "
                  f"10 temporadas.{esc(prov_txt)}</figcaption></figure>"
-                 '<figure><h3>Espesor de nieve en el suelo</h3>' + svg_espesor(mo, True) +
+                 '<figure><h3>Espesor de nieve en el suelo</h3>' + img_svg(f"{px['slug']}-espesor", svg_espesor(mo, True),
+                                                                          f"Espesor de nieve en {mo['nombre']} esta temporada") +
                  "<figcaption>Línea blanca: esta temporada. Zona azul: el espesor de un año normal, día a día "
                  "(mediana de 1991 a 2021).</figcaption></figure></div>")
     p.append("</div>")
@@ -2338,8 +2356,9 @@ def ssr_hub(pxs: list, xs: list, sat: dict, macs: list) -> str:
     # mapa
     vals = {px["slug"]: hoy.get(px["slug"]) for px in pxs}
     top = sorted([(v, px) for px in pxs for v in [vals[px["slug"]]] if v is not None and v >= 0.5], key=lambda z: -z[0])
-    p.append('<div class="cgnv-mapaw"><div>' + svg_mapa(vals, "Parte de cada provincia cubierta de nieve hoy, según el "
-                                                              "satélite IMS de la NOAA") + "</div>")
+    p.append('<div class="cgnv-mapaw"><div>' + img_svg("mapa-hoy", svg_mapa(vals, "Parte de cada provincia cubierta de "
+                                                                          "nieve hoy, según el satélite IMS de la NOAA"),
+                                                     "Mapa de la nieve en España hoy, provincia a provincia") + "</div>")
     p.append('<div class="cgnv-top"><h2 class="cgnv-panel-h2">Dónde hay nieve hoy: las provincias más blancas</h2>')
     if top:
         p.append("<ol>" + "".join(f'<li><a href="/nieve/{esc(px["slug"])}/">{esc(px["provincia"])}</a><b>{esc(pct(v))}</b></li>'
@@ -2394,8 +2413,11 @@ def ssr_hub(pxs: list, xs: list, sat: dict, macs: list) -> str:
     p.append("</div>")
     if sat.get("serie") and any(v is not None for v in sat["serie"]):
         p.append('<div class="cgnv-graf-p" style="grid-template-columns:1fr"><figure><h3>España cubierta de nieve, día a día'
-                 '</h3><div class="cgnv-d">' + svg_sat_temporada(sat) + '</div><div class="cgnv-m">'
-                 + svg_sat_temporada(sat, True) + "</div><figcaption>Línea blanca: esta temporada. Discontinua: la mediana de "
+                 '</h3><div class="cgnv-d">' + img_svg("satelite-temporada", svg_sat_temporada(sat),
+                                                       "Parte de España cubierta de nieve cada día de esta temporada")
+                 + '</div><div class="cgnv-m">' + img_svg("satelite-temporada-m", svg_sat_temporada(sat, True),
+                                                          "Parte de España cubierta de nieve cada día de esta temporada")
+                 + "</div><figcaption>Línea blanca: esta temporada. Discontinua: la mediana de "
                  f"los inviernos desde {SAT_DESDE}; la banda, 8 de cada 10 inviernos. Fuente: NOAA IMS, 4 km."
                  "</figcaption></figure></div>")
     p.append("</div>")
@@ -2566,7 +2588,7 @@ def publicar(pxs: list, xs: list, sat: dict, macs: list, forzar: bool) -> None:
                     "rank_math_description": "Dónde hay nieve hoy en España según el satélite, la cota de nieve de los "
                                              "próximos días y dónde va a nevar en 15 días según cuatro modelos. Mapa por "
                                              "provincias y por macizos."},
-                   listos >= 40)
+                   True)   # 4-11-2026: el hub va publicado desde el primer día (lo pidió David)
     if not hub_id:
         log("No se pudo crear la página /nieve/")
         sys.exit(1)
