@@ -1,0 +1,62 @@
+name: "Nieve: serie larga"
+
+# Baja de Open-Meteo, por tandas de 18 años, la serie diaria de ERA5-Land de 1971 a 2025 (nieve caída y espesor) de los
+# 106 puntos de scripts/nieve.py: primero las montañas, después las estaciones de esquí y por último las capitales.
+# Cada punto pesa unas 1.400 peticiones en el cómputo gratuito de Open-Meteo, así que va un punto por pasada, cada hora.
+# Si Open-Meteo dice que se ha llegado al límite, para sin error y sigue en la siguiente. Cuando todo está bajado, la
+# pasada termina en segundos (se puede desactivar entonces).
+
+on:
+  workflow_dispatch:
+    inputs:
+      presupuesto:
+        description: "Peticiones de Open-Meteo que puede gastar esta pasada"
+        default: "1500"
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nieve-fondo
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  serie:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bajar una tanda
+        env:
+          PRESUPUESTO: ${{ github.event.inputs.presupuesto || '1500' }}
+        run: python scripts/nieve.py --clima --presupuesto "$PRESUPUESTO"
+
+      - name: Guardar
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A archivo/nieve
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "nieve: serie larga $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            sleep $((i*5))
+          done
+          exit 1

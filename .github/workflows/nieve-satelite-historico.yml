@@ -1,0 +1,66 @@
+name: "Nieve: satélite histórico"
+
+# Rellena la serie diaria de superficie nevada (NOAA IMS, 4 km, NSIDC G02156) de los inviernos pasados, de octubre a
+# mayo, desde 2005: unos 5.000 archivos, que se bajan en tandas de unos 400 por pasada, del invierno más reciente al más
+# antiguo. Con ella se calcula lo normal de cada fecha en /nieve/. Cuando no falta nada, la pasada termina en segundos
+# (se puede desactivar entonces).
+
+on:
+  workflow_dispatch:
+    inputs:
+      desde:
+        description: "Primer invierno (año de otoño)"
+        default: "2005"
+      max:
+        description: "Días como máximo en esta pasada"
+        default: "400"
+  schedule:
+    - cron: "50 1-23/2 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nieve-fondo
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  historico:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bajar una tanda de días
+        env:
+          DESDE: ${{ github.event.inputs.desde || '2005' }}
+          MAX: ${{ github.event.inputs.max || '400' }}
+          CG_LIMITE_S: "3000"
+        run: python scripts/nieve.py --satelite-historico --desde "$DESDE" --max "$MAX"
+
+      - name: Guardar
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A archivo/nieve
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "nieve: satélite histórico $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            sleep $((i*5))
+          done
+          exit 1

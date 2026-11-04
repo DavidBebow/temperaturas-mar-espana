@@ -1,0 +1,73 @@
+name: Nieve en España
+
+# Páginas /nieve/ y /nieve/<provincia>/ de calentamientoglobal.es (scripts/nieve.py).
+# Tres veces al día, cuando ya ha salido la pasada de 00Z o 12Z del ECMWF y el satélite IMS del día anterior:
+#   · añade los últimos días del satélite IMS de la NOAA (superficie nevada, 4 km);
+#   · refresca ERA5-Land reciente (nieve caída y espesor) y la previsión de ECMWF, ICON, ARPEGE y GFS (Open-Meteo);
+#   · deja docs/nieve/ (JSON y CSV para descargar) y publica en WordPress el contenido fijo (solo si cambia) y el
+#     bloque del día (meta cg_ssr_html).
+# Cada página se queda en borrador hasta que su serie larga 1971-2025 está completa («Nieve: serie larga»).
+# Necesita los secretos WP_USER y WP_APP_AGOSTO, los mismos que «Heladas en cada capital».
+
+on:
+  workflow_dispatch:
+    inputs:
+      forzar:
+        description: "Reescribir el contenido de todas las páginas aunque no haya cambiado"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "40 6,13,19 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nieve
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  nieve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Satélite, datos, previsión y publicación
+        env:
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
+          FORZAR: ${{ github.event.inputs.forzar }}
+        run: |
+          ARGS="--satelite --publicar"
+          if [ "$FORZAR" = "true" ]; then ARGS="$ARGS --forzar"; fi
+          python scripts/nieve.py $ARGS
+
+      - name: Guardar
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs/nieve archivo/nieve
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "nieve: $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
