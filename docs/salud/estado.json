@@ -1,18 +1,57 @@
 {
- "generado": "2026-11-03T23:49:55Z",
- "generado_legible": "04/11/2026 00:49",
+ "generado": "2026-11-04T04:11:03Z",
+ "generado_legible": "04/11/2026 05:11",
  "repositorio": "DavidBebow/temperaturas-mar-espana",
  "api_github_ok": true,
  "general": "aviso",
  "resumen": {
   "total": 47,
-  "al_dia": 45,
-  "ok": 44,
+  "al_dia": 44,
+  "ok": 43,
   "estatico": 1,
-  "aviso": 2,
+  "aviso": 3,
   "error": 0
  },
  "herramientas": [
+  {
+   "id": "lluvia_municipios",
+   "nombre": "Lluvia diaria por municipio",
+   "familia": "Agua",
+   "archivo": "docs/lluvias_municipios.json",
+   "workflow": "actualizar_lluvias_municipios.yml",
+   "cadencia": "cada hora",
+   "ventana_h": 3,
+   "pagina": "https://calentamientoglobal.es/lluvias-en-espana/",
+   "fuente": "AEMET OpenData (pluviómetros)",
+   "estado": "aviso",
+   "motivo": "el último run del workflow falló (2 seguidos), aunque el dato está al día",
+   "detalles": [
+    "el último run del workflow falló (2 seguidos)"
+   ],
+   "generado": "2026-11-04T03:01:59Z",
+   "generado_legible": "04/11/2026 04:01",
+   "generado_origen": "campo «generado»",
+   "horas": 1.15,
+   "dato_del": "2026-11-04",
+   "bytes": 222705,
+   "run": {
+    "ultimo": {
+     "conclusion": "failure",
+     "fecha": "2026-11-04T04:03:12Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41770636671",
+     "evento": "workflow_run",
+     "numero": 2035
+    },
+    "ultimo_ok": {
+     "conclusion": "success",
+     "fecha": "2026-11-04T03:02:14Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41764457658",
+     "evento": "workflow_run",
+     "numero": 2033
+    },
+    "fallos_seguidos": 2
+   }
+  },
   {
    "id": "dias32",
    "nombre": "Días de más de 32 grados: tendencia (ERA5)",
@@ -32,7 +71,7 @@
    "generado": "2026-10-01T11:11:05Z",
    "generado_legible": "01/10/2026 13:11",
    "generado_origen": "campo «actualizado»",
-   "horas": 804.65,
+   "horas": 809.0,
    "dato_del": null,
    "bytes": 164450,
    "run": {
@@ -74,14 +113,14 @@
    "pagina": "https://calentamientoglobal.es/temperatura-del-planeta/",
    "fuente": "Climate Reanalyzer · ERA5",
    "estado": "aviso",
-   "motivo": "lleva 31 h sin refrescar (ventana 30 h)",
+   "motivo": "lleva 36 h sin refrescar (ventana 30 h)",
    "detalles": [
     "el último run del workflow falló (1 seguido)"
    ],
    "generado": "2026-11-02T16:29:36Z",
    "generado_legible": "02/11/2026 17:29",
    "generado_origen": "campo «actualizado»",
-   "horas": 31.34,
+   "horas": 35.69,
    "dato_del": "2026-10-31",
    "bytes": 834,
    "run": {
@@ -118,7 +157,7 @@
    "generado": "2026-11-03T23:26:00Z",
    "generado_legible": "04/11/2026 00:26",
    "generado_origen": "campo «generado»",
-   "horas": 0.4,
+   "horas": 4.75,
    "dato_del": null,
    "bytes": 224297,
    "run": {
@@ -155,7 +194,7 @@
    "generado": "2026-11-03T20:39:00Z",
    "generado_legible": "03/11/2026 21:39",
    "generado_origen": "campo «generado»",
-   "horas": 3.18,
+   "horas": 7.53,
    "dato_del": "2026-11-03",
    "bytes": 936018,
    "run": {
@@ -192,7 +231,7 @@
    "generado": "2026-11-03T21:14:00Z",
    "generado_legible": "03/11/2026 22:14",
    "generado_origen": "campo «actualizado»",
-   "horas": 2.6,
+   "horas": 6.95,
    "dato_del": "2026-10-27",
    "bytes": 25561,
    "run": {
@@ -229,7 +268,7 @@
    "generado": "2026-11-03T22:03:33Z",
    "generado_legible": "03/11/2026 23:03",
    "generado_origen": "último run correcto",
-   "horas": 1.77,
+   "horas": 6.12,
    "dato_del": null,
    "bytes": 19737026,
    "run": {
@@ -266,7 +305,7 @@
    "generado": "2026-11-03T14:13:19Z",
    "generado_legible": "03/11/2026 15:13",
    "generado_origen": "campo «ultima_actualizacion»",
-   "horas": 9.61,
+   "horas": 13.96,
    "dato_del": "02/11/2026",
    "bytes": 39291,
    "run": {
@@ -300,12 +339,12 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T23:39:44Z",
-   "generado_legible": "04/11/2026 00:39",
+   "generado": "2026-11-04T04:04:42Z",
+   "generado_legible": "04/11/2026 05:04",
    "generado_origen": "campo «generado»",
-   "horas": 0.17,
-   "dato_del": "2026-11-03",
-   "bytes": 260288,
+   "horas": 0.11,
+   "dato_del": "2026-11-04",
+   "bytes": 262405,
    "run": {
     "ultimo": {
      "conclusion": "success",
@@ -320,43 +359,6 @@
      "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41653817393",
      "evento": "schedule",
      "numero": 31
-    },
-    "fallos_seguidos": 0
-   }
-  },
-  {
-   "id": "lluvia_municipios",
-   "nombre": "Lluvia diaria por municipio",
-   "familia": "Agua",
-   "archivo": "docs/lluvias_municipios.json",
-   "workflow": "actualizar_lluvias_municipios.yml",
-   "cadencia": "cada hora",
-   "ventana_h": 3,
-   "pagina": "https://calentamientoglobal.es/lluvias-en-espana/",
-   "fuente": "AEMET OpenData (pluviómetros)",
-   "estado": "ok",
-   "motivo": null,
-   "detalles": [],
-   "generado": "2026-11-03T23:31:56Z",
-   "generado_legible": "04/11/2026 00:31",
-   "generado_origen": "campo «generado»",
-   "horas": 0.3,
-   "dato_del": null,
-   "bytes": 142840,
-   "run": {
-    "ultimo": {
-     "conclusion": "success",
-     "fecha": "2026-11-03T23:32:05Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41739819278",
-     "evento": "workflow_run",
-     "numero": 2024
-    },
-    "ultimo_ok": {
-     "conclusion": "success",
-     "fecha": "2026-11-03T23:32:05Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41739819278",
-     "evento": "workflow_run",
-     "numero": 2024
     },
     "fallos_seguidos": 0
    }
@@ -377,7 +379,7 @@
    "generado": "2026-11-03T22:12:09Z",
    "generado_legible": "03/11/2026 23:12",
    "generado_origen": "campo «ultima_actualizacion»",
-   "horas": 1.63,
+   "horas": 5.98,
    "dato_del": null,
    "bytes": 32440,
    "run": {
@@ -411,12 +413,12 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T20:28:14Z",
-   "generado_legible": "03/11/2026 21:28",
+   "generado": "2026-11-03T23:49:44Z",
+   "generado_legible": "04/11/2026 00:49",
    "generado_origen": "campo «ultima_actualizacion»",
-   "horas": 3.36,
+   "horas": 4.36,
    "dato_del": null,
-   "bytes": 529045,
+   "bytes": 529058,
    "run": {
     "ultimo": {
      "conclusion": "success",
@@ -451,7 +453,7 @@
    "generado": "2026-11-03T22:24:54Z",
    "generado_legible": "03/11/2026 23:24",
    "generado_origen": "campo «generado_utc»",
-   "horas": 1.42,
+   "horas": 5.77,
    "dato_del": "2026-11-03",
    "bytes": 15440,
    "run": {
@@ -490,7 +492,7 @@
    "generado": "2026-11-03T20:03:47Z",
    "generado_legible": "03/11/2026 21:03",
    "generado_origen": "campo «generado»",
-   "horas": 3.77,
+   "horas": 8.12,
    "dato_del": null,
    "bytes": 94266,
    "run": {
@@ -537,7 +539,7 @@
    "generado": "2026-10-18T00:00:00Z",
    "generado_legible": "18/10/2026 02:00",
    "generado_origen": "campo «generado»",
-   "horas": 407.83,
+   "horas": 412.18,
    "dato_del": "2025-12-31",
    "bytes": 60406,
    "run": {
@@ -579,7 +581,7 @@
    "generado": "2026-11-03T00:00:00Z",
    "generado_legible": "03/11/2026 01:00",
    "generado_origen": "campo «actualizado»",
-   "horas": 23.83,
+   "horas": 28.18,
    "dato_del": null,
    "bytes": 202920,
    "run": {
@@ -624,7 +626,7 @@
    "generado": "2026-11-03T18:07:26Z",
    "generado_legible": "03/11/2026 19:07",
    "generado_origen": "campo «ultima_actualizacion»",
-   "horas": 5.71,
+   "horas": 10.06,
    "dato_del": "2026-11-02",
    "bytes": 1246588,
    "run": {
@@ -675,7 +677,7 @@
    "generado": "2026-11-03T22:30:41Z",
    "generado_legible": "03/11/2026 23:30",
    "generado_origen": "campo «fecha»",
-   "horas": 1.32,
+   "horas": 5.67,
    "dato_del": null,
    "bytes": 682,
    "run": {
@@ -709,26 +711,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T23:47:39Z",
-   "generado_legible": "04/11/2026 00:47",
+   "generado": "2026-11-04T03:49:09Z",
+   "generado_legible": "04/11/2026 04:49",
    "generado_origen": "campo «updated»",
-   "horas": 0.04,
+   "horas": 0.36,
    "dato_del": null,
    "bytes": 160056,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T23:47:46Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41741643658",
+     "fecha": "2026-11-04T03:49:14Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41769222551",
      "evento": "schedule",
-     "numero": 911
+     "numero": 912
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T23:47:46Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41741643658",
+     "fecha": "2026-11-04T03:49:14Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41769222551",
      "evento": "schedule",
-     "numero": 911
+     "numero": 912
     },
     "fallos_seguidos": 0
    }
@@ -746,26 +748,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T20:27:36Z",
-   "generado_legible": "03/11/2026 21:27",
+   "generado": "2026-11-04T01:54:35Z",
+   "generado_legible": "04/11/2026 02:54",
    "generado_origen": "campo «generado»",
-   "horas": 3.37,
+   "horas": 2.27,
    "dato_del": null,
-   "bytes": 278457,
+   "bytes": 278447,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T20:29:07Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41712181033",
+     "fecha": "2026-11-04T01:55:38Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41756970150",
      "evento": "schedule",
-     "numero": 242
+     "numero": 243
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T20:29:07Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41712181033",
+     "fecha": "2026-11-04T01:55:38Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41756970150",
      "evento": "schedule",
-     "numero": 242
+     "numero": 243
     },
     "fallos_seguidos": 0
    }
@@ -783,26 +785,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T23:32:02Z",
-   "generado_legible": "04/11/2026 00:32",
+   "generado": "2026-11-04T04:01:53Z",
+   "generado_legible": "04/11/2026 05:01",
    "generado_origen": "último run correcto",
-   "horas": 0.3,
+   "horas": 0.15,
    "dato_del": null,
-   "bytes": 14168,
+   "bytes": 14215,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T23:32:02Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41739819331",
+     "fecha": "2026-11-04T04:01:53Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41770636647",
      "evento": "workflow_run",
-     "numero": 1828
+     "numero": 1839
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T23:32:02Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41739819331",
+     "fecha": "2026-11-04T04:01:53Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41770636647",
      "evento": "workflow_run",
-     "numero": 1828
+     "numero": 1839
     },
     "fallos_seguidos": 0
    }
@@ -820,26 +822,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T21:23:34Z",
-   "generado_legible": "03/11/2026 22:23",
+   "generado": "2026-11-04T02:34:03Z",
+   "generado_legible": "04/11/2026 03:34",
    "generado_origen": "campo «ultima_actualizacion»",
-   "horas": 2.44,
+   "horas": 1.62,
    "dato_del": null,
-   "bytes": 106855,
+   "bytes": 44650,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T21:23:41Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41721163514",
+     "fecha": "2026-11-04T02:34:09Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41761436024",
      "evento": "schedule",
-     "numero": 1330
+     "numero": 1332
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T21:23:41Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41721163514",
+     "fecha": "2026-11-04T02:34:09Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41761436024",
      "evento": "schedule",
-     "numero": 1330
+     "numero": 1332
     },
     "fallos_seguidos": 0
    }
@@ -857,12 +859,12 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [
-    "el proceso corrió bien hace 2 h pero el dato no cambió"
+    "el proceso corrió bien hace 7 h pero el dato no cambió"
    ],
    "generado": "2026-07-27T00:00:00Z",
    "generado_legible": "27/07/2026 02:00",
    "generado_origen": "campo «actualizado»",
-   "horas": 2399.83,
+   "horas": 2404.18,
    "dato_del": null,
    "bytes": 3253,
    "run": {
@@ -899,7 +901,7 @@
    "generado": "2026-11-02T00:00:00Z",
    "generado_legible": "02/11/2026 01:00",
    "generado_origen": "campo «generado»",
-   "horas": 47.83,
+   "horas": 52.18,
    "dato_del": null,
    "bytes": 59449,
    "run": {
@@ -933,26 +935,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T13:31:00Z",
-   "generado_legible": "03/11/2026 14:31",
+   "generado": "2026-11-04T00:23:00Z",
+   "generado_legible": "04/11/2026 01:23",
    "generado_origen": "campo «generado»",
-   "horas": 10.32,
+   "horas": 3.8,
    "dato_del": null,
-   "bytes": 5736,
+   "bytes": 5735,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T13:31:35Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41644444743",
+     "fecha": "2026-11-04T00:23:34Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41745855531",
      "evento": "schedule",
-     "numero": 313
+     "numero": 314
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T13:31:35Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41644444743",
+     "fecha": "2026-11-04T00:23:34Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41745855531",
      "evento": "schedule",
-     "numero": 313
+     "numero": 314
     },
     "fallos_seguidos": 0
    }
@@ -970,26 +972,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T16:32:00Z",
-   "generado_legible": "03/11/2026 17:32",
+   "generado": "2026-11-04T00:52:00Z",
+   "generado_legible": "04/11/2026 01:52",
    "generado_origen": "campo «generado»",
-   "horas": 7.3,
-   "dato_del": "2026-11-01",
-   "bytes": 25780,
+   "horas": 3.32,
+   "dato_del": "2026-11-02",
+   "bytes": 25802,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T16:32:54Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41674639574",
+     "fecha": "2026-11-04T00:52:22Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41749849473",
      "evento": "schedule",
-     "numero": 67
+     "numero": 68
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T16:32:54Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41674639574",
+     "fecha": "2026-11-04T00:52:22Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41749849473",
      "evento": "schedule",
-     "numero": 67
+     "numero": 68
     },
     "fallos_seguidos": 0
    },
@@ -1012,26 +1014,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T20:00:07Z",
-   "generado_legible": "03/11/2026 21:00",
+   "generado": "2026-11-04T02:54:47Z",
+   "generado_legible": "04/11/2026 03:54",
    "generado_origen": "campo «ultima_actualizacion»",
-   "horas": 3.83,
+   "horas": 1.27,
    "dato_del": null,
-   "bytes": 14333,
+   "bytes": 14332,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T20:00:15Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41708099106",
+     "fecha": "2026-11-04T02:54:53Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41763646391",
      "evento": "schedule",
-     "numero": 1081
+     "numero": 1083
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T20:00:15Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41708099106",
+     "fecha": "2026-11-04T02:54:53Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41763646391",
      "evento": "schedule",
-     "numero": 1081
+     "numero": 1083
     },
     "fallos_seguidos": 0
    }
@@ -1052,7 +1054,7 @@
    "generado": "2026-11-03T13:56:14Z",
    "generado_legible": "03/11/2026 14:56",
    "generado_origen": "último run correcto",
-   "horas": 9.89,
+   "horas": 14.25,
    "dato_del": "2026-11-01",
    "bytes": 2566,
    "run": {
@@ -1088,26 +1090,26 @@
    "detalles": [
     "23 puntos con el dato preliminar de la NOAA"
    ],
-   "generado": "2026-11-03T18:07:56Z",
-   "generado_legible": "03/11/2026 19:07",
+   "generado": "2026-11-04T00:27:31Z",
+   "generado_legible": "04/11/2026 01:27",
    "generado_origen": "campo «ultima_actualizacion»",
-   "horas": 5.7,
+   "horas": 3.73,
    "dato_del": "2026-11-02",
    "bytes": 18872,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T18:16:38Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41690391694",
+     "fecha": "2026-11-04T00:33:01Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41746919513",
      "evento": "schedule",
-     "numero": 401
+     "numero": 402
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T18:16:38Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41690391694",
+     "fecha": "2026-11-04T00:33:01Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41746919513",
      "evento": "schedule",
-     "numero": 401
+     "numero": 402
     },
     "fallos_seguidos": 0
    },
@@ -1138,7 +1140,7 @@
    "generado": "2026-11-03T22:25:07Z",
    "generado_legible": "03/11/2026 23:25",
    "generado_origen": "campo «actualizado»",
-   "horas": 1.41,
+   "horas": 5.77,
    "dato_del": "2026-11-03",
    "bytes": 45845,
    "run": {
@@ -1175,7 +1177,7 @@
    "generado": "2026-11-03T22:25:14Z",
    "generado_legible": "03/11/2026 23:25",
    "generado_origen": "campo «actualizado»",
-   "horas": 1.41,
+   "horas": 5.76,
    "dato_del": "2026-11-03",
    "bytes": 496148,
    "run": {
@@ -1212,7 +1214,7 @@
    "generado": "2026-11-02T00:00:00Z",
    "generado_legible": "02/11/2026 01:00",
    "generado_origen": "campo «actualizado»",
-   "horas": 47.83,
+   "horas": 52.18,
    "dato_del": null,
    "bytes": 315,
    "run": {
@@ -1249,7 +1251,7 @@
    "generado": "2026-11-01T11:41:01Z",
    "generado_legible": "01/11/2026 12:41",
    "generado_origen": "último run correcto",
-   "horas": 60.15,
+   "horas": 64.5,
    "dato_del": null,
    "bytes": 3485,
    "run": {
@@ -1286,7 +1288,7 @@
    "generado": "2026-11-03T17:18:40Z",
    "generado_legible": "03/11/2026 18:18",
    "generado_origen": "campo «actualizado»",
-   "horas": 6.52,
+   "horas": 10.87,
    "dato_del": null,
    "bytes": 11224,
    "run": {
@@ -1323,7 +1325,7 @@
    "generado": "2026-11-03T15:37:01Z",
    "generado_legible": "03/11/2026 16:37",
    "generado_origen": "campo «ultima_actualizacion»",
-   "horas": 8.21,
+   "horas": 12.57,
    "dato_del": null,
    "bytes": 62519,
    "run": {
@@ -1360,7 +1362,7 @@
    "generado": "2026-11-03T14:22:13Z",
    "generado_legible": "03/11/2026 15:22",
    "generado_origen": "último run correcto",
-   "horas": 9.46,
+   "horas": 13.81,
    "dato_del": null,
    "bytes": 114620,
    "run": {
@@ -1397,7 +1399,7 @@
    "generado": "2026-11-03T14:31:31Z",
    "generado_legible": "03/11/2026 15:31",
    "generado_origen": "campo «ultima_actualizacion»",
-   "horas": 9.31,
+   "horas": 13.66,
    "dato_del": null,
    "bytes": 4603,
    "run": {
@@ -1434,7 +1436,7 @@
    "generado": "2026-07-10T14:28:59Z",
    "generado_legible": "10/07/2026 16:28",
    "generado_origen": "último commit",
-   "horas": 2793.35,
+   "horas": 2797.7,
    "dato_del": null,
    "bytes": 1669538,
    "run": null
@@ -1455,7 +1457,7 @@
    "generado": "2026-11-03T21:38:18Z",
    "generado_legible": "03/11/2026 22:38",
    "generado_origen": "último run correcto",
-   "horas": 2.19,
+   "horas": 6.55,
    "dato_del": "2026-10-28",
    "bytes": 24154,
    "run": {
@@ -1489,26 +1491,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T23:31:00Z",
-   "generado_legible": "04/11/2026 00:31",
+   "generado": "2026-11-04T04:01:00Z",
+   "generado_legible": "04/11/2026 05:01",
    "generado_origen": "campo «generado»",
-   "horas": 0.32,
+   "horas": 0.17,
    "dato_del": null,
-   "bytes": 15299,
+   "bytes": 13824,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T23:31:20Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41739721152",
+     "fecha": "2026-11-04T04:01:21Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41770580037",
      "evento": "workflow_dispatch",
-     "numero": 2573
+     "numero": 2583
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T23:31:20Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41739721152",
+     "fecha": "2026-11-04T04:01:21Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41770580037",
      "evento": "workflow_dispatch",
-     "numero": 2573
+     "numero": 2583
     },
     "fallos_seguidos": 0
    }
@@ -1529,7 +1531,7 @@
    "generado": "2026-11-03T22:55:06Z",
    "generado_legible": "03/11/2026 23:55",
    "generado_origen": "último run correcto",
-   "horas": 0.91,
+   "horas": 5.27,
    "dato_del": null,
    "bytes": 2628251,
    "run": {
@@ -1563,26 +1565,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T16:28:16Z",
-   "generado_legible": "03/11/2026 17:28",
+   "generado": "2026-11-04T00:47:09Z",
+   "generado_legible": "04/11/2026 01:47",
    "generado_origen": "último run correcto",
-   "horas": 7.36,
+   "horas": 3.4,
    "dato_del": null,
-   "bytes": 979910,
+   "bytes": 984692,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T16:28:16Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41673401502",
+     "fecha": "2026-11-04T00:47:09Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41748830077",
      "evento": "schedule",
-     "numero": 69
+     "numero": 70
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T16:28:16Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41673401502",
+     "fecha": "2026-11-04T00:47:09Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41748830077",
      "evento": "schedule",
-     "numero": 69
+     "numero": 70
     },
     "fallos_seguidos": 0
    }
@@ -1600,26 +1602,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T16:31:00Z",
-   "generado_legible": "03/11/2026 17:31",
+   "generado": "2026-11-04T00:52:00Z",
+   "generado_legible": "04/11/2026 01:52",
    "generado_origen": "campo «generado»",
-   "horas": 7.32,
-   "dato_del": "2026-11-02",
-   "bytes": 11530,
+   "horas": 3.32,
+   "dato_del": "2026-11-03",
+   "bytes": 11531,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T16:32:54Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41674639574",
+     "fecha": "2026-11-04T00:52:22Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41749849473",
      "evento": "schedule",
-     "numero": 67
+     "numero": 68
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T16:32:54Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41674639574",
+     "fecha": "2026-11-04T00:52:22Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41749849473",
      "evento": "schedule",
-     "numero": 67
+     "numero": 68
     },
     "fallos_seguidos": 0
    }
@@ -1637,26 +1639,26 @@
    "estado": "ok",
    "motivo": null,
    "detalles": [],
-   "generado": "2026-11-03T21:52:00Z",
-   "generado_legible": "03/11/2026 22:52",
+   "generado": "2026-11-04T02:26:00Z",
+   "generado_legible": "04/11/2026 03:26",
    "generado_origen": "campo «generado»",
-   "horas": 1.97,
+   "horas": 1.75,
    "dato_del": null,
-   "bytes": 270931,
+   "bytes": 270876,
    "run": {
     "ultimo": {
      "conclusion": "success",
-     "fecha": "2026-11-03T21:52:33Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41725474479",
+     "fecha": "2026-11-04T02:27:15Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41760761428",
      "evento": "schedule",
-     "numero": 119
+     "numero": 120
     },
     "ultimo_ok": {
      "conclusion": "success",
-     "fecha": "2026-11-03T21:52:33Z",
-     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41725474479",
+     "fecha": "2026-11-04T02:27:15Z",
+     "url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41760761428",
      "evento": "schedule",
-     "numero": 119
+     "numero": 120
     },
     "fallos_seguidos": 0
    }
@@ -1679,7 +1681,7 @@
    "generado": "2026-11-03T20:41:00Z",
    "generado_legible": "03/11/2026 21:41",
    "generado_origen": "campo «generado»",
-   "horas": 3.15,
+   "horas": 7.5,
    "dato_del": null,
    "bytes": 4063,
    "run": {
@@ -1726,7 +1728,7 @@
    "generado": "2026-11-03T21:32:15Z",
    "generado_legible": "03/11/2026 22:32",
    "generado_origen": "último run correcto",
-   "horas": 2.29,
+   "horas": 6.65,
    "dato_del": null,
    "bytes": null,
    "run": {
@@ -1763,7 +1765,7 @@
    "generado": "2026-11-02T16:20:00Z",
    "generado_legible": "02/11/2026 17:20",
    "generado_origen": "campo «generado»",
-   "horas": 31.5,
+   "horas": 35.85,
    "dato_del": null,
    "bytes": 77624,
    "run": {
@@ -1800,7 +1802,7 @@
    "generado": "2026-11-03T21:17:48Z",
    "generado_legible": "03/11/2026 22:17",
    "generado_origen": "campo «generado»",
-   "horas": 2.54,
+   "horas": 6.89,
    "dato_del": null,
    "bytes": 84253,
    "run": {
@@ -1823,6 +1825,15 @@
   }
  ],
  "incidencias_recientes": [
+  {
+   "fecha": "2026-11-04T04:11:03Z",
+   "id": "lluvia_municipios",
+   "nombre": "Lluvia diaria por municipio",
+   "de": "ok",
+   "a": "aviso",
+   "motivo": "el último run del workflow falló (2 seguidos), aunque el dato está al día",
+   "run_url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41770636671"
+  },
   {
    "fecha": "2026-11-03T23:49:55Z",
    "id": "calidad_aire",
@@ -2083,15 +2094,6 @@
    "a": "ok",
    "motivo": null,
    "run_url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/41038227416"
-  },
-  {
-   "fecha": "2026-10-30T16:23:56Z",
-   "id": "calidad_aire",
-   "nombre": "Calidad del aire",
-   "de": "ok",
-   "a": "aviso",
-   "motivo": "lleva 19 h sin refrescar (ventana 16 h)",
-   "run_url": "https://github.com/DavidBebow/temperaturas-mar-espana/actions/runs/40958293941"
   }
  ],
  "pagina": "https://calentamientoglobal.es/estado-de-los-datos/",
