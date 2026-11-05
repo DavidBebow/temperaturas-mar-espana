@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.1.5"
+VERSION = "1.1.7"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -499,6 +499,16 @@ def _clima_fin(est: dict, hechas: int) -> None:
     total = len(PUNTOS) * len(TANDAS)
     hecho = sum(1 for p in PUNTOS for d0, _ in TANDAS if (est.get(p["id"]) or {}).get(d0.isoformat()))
     log(f"Serie larga: {hechas} tandas nuevas; {hecho} de {total} hechas ({100 * hecho / total:.0f} %)")
+    if hecho == total:
+        marcar_completo()
+
+
+def marcar_completo() -> None:
+    """Avisa al workflow (salida «completa=true») para que se desactive solo: ya no hace falta gastar ejecuciones."""
+    log("COMPLETO: no queda nada por bajar")
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+            fh.write("completa=true\n")
 
 
 def clima_completa(pid: str) -> bool:
@@ -1535,7 +1545,7 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-tp tr.cgnv-cota td{background:transparent;color:var(--p-sub);font-weight:600;font-size:12.5px;height:24px}
 .cgnv .cgnv-prev .cgnv-pie{font-size:13.5px;line-height:1.5;color:var(--p-mut);margin:14px 0 0;max-width:none}
 .cgnv-clave{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font-size:13.5px;color:var(--p-mut);margin:10px 0 0}
-.cgnv-escala i{display:inline-block;width:120px;height:10px;border-radius:5px;vertical-align:-1px;margin:0 8px;background:linear-gradient(90deg,#1f4d70,#3a7fb3,#8cc6ee,#d4eeff,#fff)}
+.cgnv-escala .cgnv-esc{display:inline-block;width:120px;height:10px;border-radius:5px;vertical-align:-1px;margin:0 8px;background:linear-gradient(90deg,#1f4d70,#3a7fb3,#8cc6ee,#d4eeff,#fff)}
 .cgnv-graf-p{grid-area:graf;margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .cgnv-graf-p figure{margin:0;background:var(--p-hondo);border-radius:22px;padding:20px 20px 14px}
 .cgnv .cgnv-graf-p h3{font-size:17px;color:#fff;margin:0 0 10px}
@@ -1588,10 +1598,19 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-metodo{margin:56px 0 12px;padding:22px 26px 10px;border-radius:20px;background:#f2f5f8;font-size:15px;color:#33414e}
 .cgnv-metodo p{max-width:none}
 .cgnv-mapa a path:hover{stroke:#fff;stroke-width:2}
+.cgnv .cgnv-img{display:block;width:100%;height:0;background-size:100% 100%;background-repeat:no-repeat}
+.cgnv-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.cgnv-graf-p .cgnv-fig{margin:0;background:var(--p-hondo);border-radius:22px;padding:20px 20px 14px}
+.cgnv .cgnv-graf-p .cgnv-cap{font-size:13.5px;color:var(--p-mut);margin:10px 0 0;max-width:none}
+.cgnv-mac .cgnv-dl{margin:10px 0 0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px}
+.cgnv-mac .cgnv-dt{color:var(--p-mut)}.cgnv-mac .cgnv-dd{margin:0;text-align:right;color:#fff;font-weight:600}
+.cgnv-mac .cgnv-dl.cgnv-cerca{grid-template-columns:1fr auto auto;gap:6px 12px}
+.cgnv-cerca .cgnv-dt:first-child+.cgnv-dd,.cgnv-cerca .cgnv-dt:first-child+.cgnv-dd+.cgnv-dd{color:var(--p-mut);font-weight:400;font-size:12.5px}
 @media(max-width:860px){.cgnv-panel{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "hoy" "cifras" "prev" "graf";grid-template-rows:repeat(5,auto);padding:28px 22px 24px}
 .cgnv-panel-hub{grid-template-areas:"intro" "hoy" "mapa" "prev" "macs" "graf";grid-template-rows:repeat(6,auto)}
 .cgnv-hoy{margin-top:24px}.cgnv h1{font-size:40px}.cgnv-graf-p{grid-template-columns:1fr}.cgnv-mapaw{grid-template-columns:1fr}}
 @media(max-width:600px){.cgnv{padding:12px 10px 4px;font-size:16.5px}
+.cgnv-graf-p .cgnv-fig{padding:14px 10px 10px}
 .cgnv-panel{padding:22px 14px 16px;border-radius:22px;background:radial-gradient(600px 400px at 90% -10%,#1d4a6e 0,#0c2133 60%)}
 .cgnv h1{font-size:31px}.cgnv .lede{font-size:17px}.cgnv h2{font-size:24px;margin-top:44px}
 .cgnv-hoy{padding:18px 18px}.cgnv-hoy-v b{font-size:46px}
@@ -1602,24 +1621,39 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-graf{padding:16px 12px 12px;border-radius:18px;margin-left:-4px;margin-right:-4px}
 .cgnv-svgw{overflow-x:auto;direction:rtl}.cgnv-svgw svg{min-width:600px;direction:ltr}
 .cgnv-antes{padding:16px 14px;gap:10px 12px}.cgnv-barra{height:34px}.cgnv-barra b{font-size:17px}
-.cgnv-tabla{font-size:14.5px}.cgnv-escala i{width:70px}.cgnv-metodo{padding:18px 16px 6px}}
+.cgnv-tabla{font-size:14.5px}.cgnv-escala .cgnv-esc{width:70px}.cgnv-metodo{padding:18px 16px 6px}}
 @media(prefers-reduced-motion:reduce){.cgnv *{transition:none!important}}
 </style>"""
 
 
 def img_svg(nombre: str, svg: str, alt: str) -> str:
-    """WordPress filtra el SVG en línea del bloque del día (meta cg_ssr_html): el gráfico se guarda como archivo en
-    GitHub Pages (docs/nieve/graf/) y el bloque lo enseña con <img>. El ?v= cambia solo si cambia el dibujo."""
-    m = __import__("re").search(r'viewBox="0 0 (\d+) (\d+)"', svg)
-    w, hh = (m.group(1), m.group(2)) if m else ("760", "300")
+    """WordPress pasa el bloque del día (meta cg_ssr_html) por una lista cerrada de etiquetas (cg-ssr-bloque.php):
+    no deja <svg> ni <img>. El gráfico se guarda como archivo en GitHub Pages (docs/nieve/graf/) y el bloque lo
+    pinta como fondo de un <div> (style sí pasa). El ?v= cambia solo si cambia el dibujo."""
+    import re as _re
+    m = _re.search(r'viewBox="0 0 (\d+) (\d+)"', svg)
+    w, hh = (int(m.group(1)), int(m.group(2))) if m else (760, 300)
     svg = svg.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'
                       'Segoe UI,Roboto,Helvetica,Arial,sans-serif" ', 1)
-    # los enlaces no funcionan dentro de una imagen: se quitan
-    svg = __import__("re").sub(r"</?a\b[^>]*>", "", svg)
+    svg = _re.sub(r"</?a\b[^>]*>", "", svg)   # los enlaces no funcionan dentro de una imagen
     svg = '<?xml version="1.0" encoding="UTF-8"?>' + svg
     escribir(SALIDA / "graf" / f"{nombre}.svg", svg)
-    return (f'<img class="cgnv-img" src="{PAGES}/nieve/graf/{nombre}.svg?v={h(svg)[:10]}" width="{w}" height="{hh}" '
-            f'alt="{esc(alt)}" loading="lazy" decoding="async">')
+    url = f"{PAGES}/nieve/graf/{nombre}.svg?v={h(svg)[:10]}"
+    return (f'<div class="cgnv-img" title="{esc(alt)}" style="background-image:url({url});padding-top:{100 * hh / w:.2f}%">'
+            f'</div><span class="cgnv-sr">{esc(alt)}</span>')
+
+
+def ssr_compatible(html_: str) -> str:
+    """Cambia las etiquetas que cg-ssr-bloque.php no deja pasar por otras que sí, con la misma clase visual."""
+    import re as _re
+    r = [(r"<figure>", '<div class="cgnv-fig">'), (r"</figure>", "</div>"),
+         (r"<figcaption>", '<p class="cgnv-cap">'), (r"</figcaption>", "</p>"),
+         (r'<dl class="([^"]*)">', r'<div class="cgnv-dl \1">'), (r"<dl>", '<div class="cgnv-dl">'), (r"</dl>", "</div>"),
+         (r"<dt>", '<span class="cgnv-dt">'), (r"</dt>", "</span>"),
+         (r"<dd>", '<span class="cgnv-dd">'), (r"</dd>", "</span>")]
+    for a, b in r:
+        html_ = _re.sub(a, b, html_)
+    return html_
 
 
 def faq_jsonld(preguntas: list) -> str:
@@ -1724,7 +1758,7 @@ def tabla_prevision(pv: dict, nombre: str, dias: int = 15) -> str:
     cotas.append("</tr>")
     return ('<div class="cgnv-tw"><table class="cgnv-tp"><thead>' + "".join(cab) + "</thead><tbody>" + "".join(filas)
             + "".join(cotas) + "</tbody></table></div>"
-            '<div class="cgnv-clave"><span class="cgnv-escala">cm de nieve nueva al día: 1<i></i>30 o más</span>'
+            '<div class="cgnv-clave"><span class="cgnv-escala">cm de nieve nueva al día: 1<span class="cgnv-esc"></span>30 o más</span>'
             '<span>· sin dato: el modelo no llega a ese día</span></div>')
 
 
@@ -2086,7 +2120,7 @@ def ssr_prov(px: dict, sat: dict) -> str:
                  "<figcaption>Línea blanca: esta temporada. Zona azul: el espesor de un año normal, día a día "
                  "(mediana de 1991 a 2021).</figcaption></figure></div>")
     p.append("</div>")
-    return "".join(p)
+    return ssr_compatible("".join(p))
 
 
 # Títulos según Keyword Planner (España, oct 2025 – sept 2026): «nieve en <capital/provincia>» manda (Madrid 27.100,
@@ -2421,7 +2455,7 @@ def ssr_hub(pxs: list, xs: list, sat: dict, macs: list) -> str:
                  f"los inviernos desde {SAT_DESDE}; la banda, 8 de cada 10 inviernos. Fuente: NOAA IMS, 4 km."
                  "</figcaption></figure></div>")
     p.append("</div>")
-    return "".join(p)
+    return ssr_compatible("".join(p))
 
 
 # ----------------------------------------------------------------------------------------------------------- salidas
@@ -2694,8 +2728,12 @@ def main() -> None:
         modo_clima(a.presupuesto)
         return
     if a.satelite_historico:
-        modo_satelite(fechas_historico(a.desde, a.max), limite_s=float(os.environ.get("CG_LIMITE_S", 3300)),
-                      destino=SAT_HIST)
+        pendientes = fechas_historico(a.desde, 100000)
+        log(f"Satélite histórico: {len(pendientes)} días pendientes desde {a.desde}")
+        if not pendientes:
+            marcar_completo()
+            return
+        modo_satelite(pendientes[:a.max], limite_s=float(os.environ.get("CG_LIMITE_S", 3300)), destino=SAT_HIST)
         return
     if a.satelite:
         modo_satelite([HOY - timedelta(days=k) for k in range(6, -1, -1)], limite_s=1200)
