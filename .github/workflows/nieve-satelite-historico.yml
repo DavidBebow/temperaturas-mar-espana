@@ -14,11 +14,15 @@ on:
       max:
         description: "Días como máximo en esta pasada"
         default: "400"
-  schedule:
-    - cron: "50 1-23/2 * * *"
+  # 5-11-2026: el cron de GitHub casi no salta en este repo (una pasada en toda la noche). Cuelga de la cadena
+  # fiable de los avisos (disparo externo a :00 y :30). Cuando ya no queda nada por bajar, se desactiva solo.
+  workflow_run:
+    workflows: ["Actualizar avisos meteorológicos"]
+    types: [completed]
 
 permissions:
   contents: write
+  actions: write   # para desactivarse solo al terminar
 
 concurrency:
   group: nieve-fondo
@@ -44,6 +48,7 @@ jobs:
           python-version: "3.12"
 
       - name: Bajar una tanda de días
+        id: bajar
         env:
           DESDE: ${{ github.event.inputs.desde || '2005' }}
           MAX: ${{ github.event.inputs.max || '400' }}
@@ -67,3 +72,9 @@ jobs:
             sleep $((i*5))
           done
           exit 1
+
+      - name: Desactivar este workflow si ya está todo
+        if: steps.bajar.outputs.completa == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow disable "nieve-satelite-historico.yml" --repo "${{ github.repository }}"

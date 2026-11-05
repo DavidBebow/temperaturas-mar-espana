@@ -16,6 +16,11 @@ on:
         description: "Reescribir el contenido de todas las páginas aunque no haya cambiado"
         type: boolean
         default: false
+  # 5-11-2026: el cron de GitHub no es fiable en este repo; sale tras los avisos de las 06:30, 13:30 y 19:30 UTC
+  # (filtro en el job) y el cron queda de red.
+  workflow_run:
+    workflows: ["Actualizar avisos meteorológicos"]
+    types: [completed]
   schedule:
     - cron: "40 6,13,19 * * *"
 
@@ -32,6 +37,11 @@ env:
 
 jobs:
   nieve:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      contains(github.event.workflow_run.created_at, 'T06:3') ||
+      contains(github.event.workflow_run.created_at, 'T13:3') ||
+      contains(github.event.workflow_run.created_at, 'T19:3')
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:

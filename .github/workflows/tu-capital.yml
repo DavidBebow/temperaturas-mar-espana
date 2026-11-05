@@ -30,7 +30,8 @@ jobs:
     # «Series diarias largas de AEMET».
     if: >-
       github.event_name != 'workflow_run' ||
-      github.event.workflow_run.name == 'Balance del mes, capital a capital'
+      (github.event.workflow_run.name == 'Balance del mes, capital a capital' &&
+       github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

@@ -2,7 +2,7 @@ name: "Nieve: serie larga"
 
 # Baja de Open-Meteo, por tandas de 18 años, la serie diaria de ERA5-Land de 1971 a 2025 (nieve caída y espesor) de los
 # 106 puntos de scripts/nieve.py: primero las montañas, después las estaciones de esquí y por último las capitales.
-# Cada punto pesa unas 1.400 peticiones en el cómputo gratuito de Open-Meteo, así que va un punto por pasada, cada hora.
+# Cada punto pesa unas 1.400 peticiones en el cómputo gratuito de Open-Meteo, así que van dos puntos por pasada (~3.000), cada media hora.
 # Si Open-Meteo dice que se ha llegado al límite, para sin error y sigue en la siguiente. Cuando todo está bajado, la
 # pasada termina en segundos (se puede desactivar entonces).
 
@@ -11,12 +11,16 @@ on:
     inputs:
       presupuesto:
         description: "Peticiones de Open-Meteo que puede gastar esta pasada"
-        default: "1500"
-  schedule:
-    - cron: "17 * * * *"
+        default: "3000"
+  # 5-11-2026: el cron de GitHub casi no salta en este repo (una pasada en toda la noche). Cuelga de la cadena
+  # fiable de los avisos (disparo externo a :00 y :30). Cuando ya no queda nada por bajar, se desactiva solo.
+  workflow_run:
+    workflows: ["Actualizar avisos meteorológicos"]
+    types: [completed]
 
 permissions:
   contents: write
+  actions: write   # para desactivarse solo al terminar
 
 concurrency:
   group: nieve-fondo
@@ -42,8 +46,9 @@ jobs:
           python-version: "3.12"
 
       - name: Bajar una tanda
+        id: bajar
         env:
-          PRESUPUESTO: ${{ github.event.inputs.presupuesto || '1500' }}
+          PRESUPUESTO: ${{ github.event.inputs.presupuesto || '3000' }}
         run: python scripts/nieve.py --clima --presupuesto "$PRESUPUESTO"
 
       - name: Guardar
@@ -63,3 +68,9 @@ jobs:
             sleep $((i*5))
           done
           exit 1
+
+      - name: Desactivar este workflow si ya está todo
+        if: steps.bajar.outputs.completa == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow disable "nieve-serie-larga.yml" --repo "${{ github.repository }}"
