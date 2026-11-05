@@ -18,7 +18,7 @@ concurrency:
 jobs:
   directo:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -34,7 +34,13 @@ jobs:
           python-version: "3.12"
 
       - name: Dependencias
-        run: pip install --quiet requests feedparser
+        # 5-11-2026: ctranslate2 + sentencepiece para traducir en el runner (Argos), sin API de pago
+        run: pip install --quiet requests feedparser ctranslate2 sentencepiece
+      - name: Modelos de traducción (caché)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/cg-argos
+          key: argos-v1
 
       # El mapa y el gazetteer se generan UNA vez y se quedan commiteados.
       # Van en datos/, fuera de docs/, para que Pages no los sirva.
@@ -64,6 +70,7 @@ jobs:
           CD_WINDOW_HOURS: "12"
           CD_MIN_SCORE: "5"
           CD_MAX_NUEVOS: "60"
+          CD_GAZETTEER: datos/gazetteer.json
         run: |
           python clima-scripts/clima_directo_recopilar.py \
             --estado estado/clima_directo.json \
