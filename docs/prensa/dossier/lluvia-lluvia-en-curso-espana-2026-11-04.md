@@ -1,12 +1,12 @@
-# La estación de AEMET de Murcia/San Javier (Murcia) lleva 28,3 mm el 4 de noviembre hasta las 22:00; la de Miramar (Valencia), 27,6 mm
+# La estación de AEMET de Murcia/San Javier (Murcia) lleva 30,1 mm el 4 de noviembre hasta las 23:00; la de Miramar (Valencia), 27,6 mm
 
-**Dato:** 28,3 mm de 0:00 a 22:00 (hora local) del 4 de noviembre, la cifra más alta de las 171 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 30,1 mm de 0:00 a 23:00 (hora local) del 4 de noviembre, la cifra más alta de las 242 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 4 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Las que más: Murcia/San Javier (Murcia): 28,3 mm · Miramar (Valencia): 27,6 mm · Torre Pacheco (Murcia): 18,2 mm · Cartagena (Murcia): 11,7 mm · Águilas (Murcia): 8,3 mm.
+- Las que más: Murcia/San Javier (Murcia): 30,1 mm · Miramar (Valencia): 27,6 mm · Formentera (Illes Balears): 26,6 mm · Oliva (Valencia): 25,6 mm · Torre Pacheco (Murcia): 18,2 mm.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData · observación convencional
@@ -14,8 +14,8 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación, desde las 0:00 hasta la última hora cerrada en toda la red. Solo estaciones con todas esas horas.
 
 ## Límites (decirlos antes de que los descubran)
-- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 22:00»).
-- La comparación es entre las 171 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (997 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 23:00»).
+- La comparación es entre las 242 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (997 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
