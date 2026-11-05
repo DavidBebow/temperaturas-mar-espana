@@ -43,12 +43,22 @@ jobs:
           COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUS_USER }}
           COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
         run: python privado/boyas_actual.py
+      # 5-11-2026: lo normal para estas fechas con el histórico DIARIO del privado (los mismos 7 días de cada año). Solo
+      # se publican las medias de esa semana por año, no la serie diaria. Si falla, la sala usa la interpolación mensual.
+      - name: Lo normal para estas fechas (histórico diario)
+        continue-on-error: true
+        env:
+          BOYAS_DATOS: privado/datos/boyas_historico.json
+          BOYAS_ACTUAL: docs/boyas_actual.json
+          BOYAS_FECHAS: docs/boyas_fechas.json
+        run: python scripts/boyas_fechas.py
       - name: Publicar temperatura actual
         id: publicar                                    # ← IndexNow: id para leer el output
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add docs/boyas_actual.json
+          [ -f docs/boyas_fechas.json ] && git add docs/boyas_fechas.json
           if git diff --cached --quiet; then
             echo "Sin cambios"
             echo "changed=false" >> "$GITHUB_OUTPUT"   # ← IndexNow: sin cambios
