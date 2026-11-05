@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -3041,6 +3041,230 @@ class WP:
         return r[0] if r else None
 
 
+# ------------------------------------------------------------------------- la nieve en las páginas de El tiempo
+# Un bloque «Nieve en X: ¿va a nevar?» en cada /el-tiempo/<provincia>/<municipio>/ y en cada /el-tiempo/<provincia>/.
+# Lo pinta en servidor el snippet «CG · Nieve en El tiempo» (cg-nieve-en-el-tiempo.php) con docs/nieve/tiempo/<prov>.json,
+# que se escribe aquí tres veces al día. La altitud de cada municipio (Copernicus DEM vía la API de elevación de
+# Open-Meteo) se pide una vez y se guarda en archivo/nieve/municipios_alt.json.
+MUNI_MAPA = RAIZ / "docs" / "municipios_mapa.json"
+MUNI_ALT = ARCHIVO / "municipios_alt.json"
+TIEMPO = SALIDA / "tiempo"
+OM_ELEVACION = "https://api.open-meteo.com/v1/elevation"
+CSS_TIEMPO = """<style>
+.cgnt{max-width:860px;margin:30px auto 8px;background:radial-gradient(700px 300px at 92% -20%,#1d4a6e 0,#0c2133 62%);color:#e8f1f8;
+border-radius:22px;padding:24px 26px 20px;font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;box-sizing:border-box}
+.cgnt *{box-sizing:border-box}
+.cgnt h2{font-size:24px;line-height:1.2;margin:0 0 8px;color:#fff;font-weight:750;letter-spacing:-.01em}
+.cgnt p{margin:0 0 12px;color:#b9cddc}.cgnt p b{color:#fff}
+.cgnt a{color:#bfe6ff;text-decoration-thickness:1px;text-underline-offset:3px}.cgnt a:hover{color:#fff}
+.cgnt-va{font-size:17.5px;color:#e8f1f8!important}
+.cgnt-sem{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:4px 0 6px}
+.cgnt-d{background:#132f45;border-radius:12px;padding:8px 4px;text-align:center;font-size:13px;color:#8fa9bd;line-height:1.3}
+.cgnt-d b{display:block;color:#e8f1f8;font-size:13.5px}
+.cgnt-d span{display:block;margin-top:4px;font-weight:700;color:#e8f1f8;font-size:13.5px}
+.cgnt-d.cgnt-seco span{color:#5f7a90;font-weight:400}
+.cgnt-d.cgnt-nv{background:#d4eeff;color:#24608f}.cgnt-d.cgnt-nv b,.cgnt-d.cgnt-nv span{color:#0c2133}
+.cgnt-ley{font-size:12.5px;color:#8fa9bd;margin:0 0 16px}
+.cgnt h3{font-size:16px;color:#fff;margin:6px 0 10px;font-weight:700}
+.cgnt-cerca{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:0 0 14px}
+.cgnt-m{background:#132f45;border-radius:16px;padding:13px 15px;font-size:14px;color:#b9cddc}
+.cgnt-m a.cgnt-mn{display:block;color:#fff;font-weight:700;font-size:15.5px;text-decoration:none;line-height:1.25}
+.cgnt-m a.cgnt-mn:hover{text-decoration:underline}
+.cgnt-m small{display:block;color:#8fa9bd;font-size:12.5px;margin-bottom:6px}
+.cgnt-m strong{display:block;font-size:22px;color:#fff;line-height:1.15;font-weight:760}
+.cgnt-dato{font-size:14.5px!important;margin:0 0 8px!important}
+.cgnt-enl{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;padding:0;list-style:none}
+.cgnt-enl li{margin:0}.cgnt-enl a{display:inline-block;background:#163a55;border-radius:999px;padding:7px 14px;font-size:14px;text-decoration:none;color:#e8f1f8}
+.cgnt-enl a:hover{background:#1f4d70;color:#fff}
+.cgnt-pie{font-size:12.5px!important;color:#8fa9bd!important;margin:12px 0 0!important}
+@media(max-width:600px){.cgnt{padding:18px 14px 16px;border-radius:18px;margin-left:-4px;margin-right:-4px}.cgnt h2{font-size:21px}
+.cgnt-sem{gap:4px}.cgnt-d{padding:7px 2px;font-size:11.5px}.cgnt-d b,.cgnt-d span{font-size:12px}}
+</style>"""
+
+
+def km(a: float, b: float, c: float, d: float) -> float:
+    p = math.pi / 180
+    h = math.sin((c - a) * p / 2) ** 2 + math.cos(a * p) * math.cos(c * p) * math.sin((d - b) * p / 2) ** 2
+    return 12742 * math.asin(math.sqrt(h))
+
+
+def municipios_tiempo(red: bool = True) -> list:
+    """Los municipios con página de El tiempo (los de municipios_mapa.json) con su altitud."""
+    d = leer_json(MUNI_MAPA, {})
+    cs = d.get("campos") or []
+    ms = [dict(zip(cs, m)) for m in d.get("municipios") or []]
+    alt = leer_json(MUNI_ALT, {})
+    faltan = [m for m in ms if m["ine"] not in alt]
+    if faltan and red:
+        for k in range(0, len(faltan), 100):
+            t = faltan[k:k + 100]
+            try:
+                r = om(OM_ELEVACION, {"latitude": ",".join(f"{m['lat']:.4f}" for m in t),
+                                      "longitude": ",".join(f"{m['lon']:.4f}" for m in t)})
+                for m, e in zip(t, r.get("elevation") or []):
+                    if e is not None:
+                        alt[m["ine"]] = round(e)
+            except Exception as e:   # sin altitud no se dice si puede nevar en el pueblo; el resto del bloque sale igual
+                log(f"Altitud de municipios: {e}")
+                break
+            time.sleep(1)
+        escribir(MUNI_ALT, json.dumps(alt, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+    for m in ms:
+        m["alt"] = alt.get(m["ine"])
+        if m["alt"] is None and not red:
+            m["alt"] = 650   # --demo
+        m["prov_slug"] = m["ruta"].split("/")[0]
+    return ms
+
+
+def punto_local(lat: float, lon: float, alt, xs: list) -> dict:
+    """El punto vigilado que mejor representa el tiempo del lugar: cerca y a una altitud parecida."""
+    a = alt if alt is not None else 500
+    return min(xs, key=lambda x: km(lat, lon, x["lat"], x["lon"]) + abs(x["alt"] - a) / 10)
+
+
+def url_nieve_prov(slug: str, pub: dict) -> str:
+    if (pub.get(slug) or {}).get("estado") == "publish":
+        return f"/nieve/{slug}/"
+    return ""
+
+
+def bloque_tiempo(nombre: str, lat: float, lon: float, alt, slug: str, xs: list, sat: dict, pub: dict,
+                  es_prov: bool = False, capital: dict | None = None, monte: dict | None = None) -> str:
+    px_prov = next(p[1] for p in PROVINCIAS if p[0] == slug)
+    loc = punto_local(lat, lon, alt, [x for x in xs if x["prevision"].get("dias")])
+    pv = loc["prevision"]
+    dias = pv["dias"][:7]
+    cota = (pv.get("cota") or [])[:7]
+    pre = (pv.get("precip") or [None] * 7)[:7]
+    donde = f"la provincia de {px_prov}" if es_prov else nombre
+    out = ['<section class="cgnt" id="nieve">',
+           f"<h2>{'Nieve en la provincia de ' + esc(px_prov) if es_prov else 'Nieve en ' + esc(nombre) + ': ¿va a nevar?'}</h2>"]
+    # ¿nevará?
+    lluvia = [(j, f, c) for j, (f, c, p) in enumerate(zip(dias, cota, pre)) if p is not None and p >= 1 and c is not None]
+    if alt is not None and lluvia:
+        nieve = [(j, f, c) for j, f, c in lluvia if c <= alt + 100]
+        if nieve:
+            j, f, c = nieve[0]
+            d = date.fromisoformat(f)
+            cuando = "hoy" if d == HOY else "mañana" if d == HOY + timedelta(days=1) else f"el {dia_semana(d)} {d.day}"
+            t = (f"Puede nevar en {donde} {cuando}: los modelos sitúan la cota de nieve hacia los {entero(c)} metros y "
+                 f"{'la capital' if es_prov else nombre} está a {entero(alt)} m.")
+            if len(nieve) > 1:
+                t += f" Hay {len(nieve)} días con nieve posible esta semana."
+        else:
+            c = min(c for _j, _f, c in lluvia)
+            t = (f"No se espera nieve en {donde} en los próximos 7 días: la cota más baja prevista en la zona es de "
+                 f"{entero(c)} metros y {'la capital' if es_prov else nombre} está a {entero(alt)} m.")
+    elif lluvia:
+        t = f"La cota de nieve más baja prevista en la zona esta semana es de {entero(min(c for _j, _f, c in lluvia))} metros."
+    else:
+        t = (f"Los modelos no prevén precipitación en la zona de {donde} en los próximos 7 días, así que tampoco "
+             f"nieve.")
+    if es_prov and monte is not None:
+        t = (f"{va_a_nevar(monte)} En la capital, a {entero(alt)} m: "
+             + (t.split(":", 1)[0].replace(f"en {donde} ", "").replace(f"en {donde}", "").strip().lower() + "." if alt is not None
+                and lluvia else "sin precipitación prevista." if not lluvia else "sin dato de altitud."))
+    out.append(f'<p class="cgnt-va">{esc(t)}</p>')
+    if dias:
+        out.append('<div class="cgnt-sem">')
+        for j, f in enumerate(dias):
+            d = date.fromisoformat(f)
+            c, p = (cota[j] if j < len(cota) else None), (pre[j] if j < len(pre) else None)
+            seco = p is None or p < 1 or c is None
+            nv = (not seco) and alt is not None and c <= alt + 100
+            out.append(f'<div class="cgnt-d{" cgnt-seco" if seco else ""}{" cgnt-nv" if nv else ""}"><b>'
+                       f'{"hoy" if d == HOY else DIAS_C[d.weekday()] + " " + str(d.day)}</b>'
+                       f'<span>{"seco" if seco else entero(c) + " m"}</span></div>')
+        out.append("</div>")
+        out.append(f'<p class="cgnt-ley">Cota de nieve prevista los días con precipitación (mediana de ECMWF, ICON, ARPEGE y '
+                   f'GFS en {esc(loc["nombre"])}, {esc(entero(loc["alt"]))} m). En azul claro, los días en que la cota baja '
+                   f'hasta la altitud de {esc("la capital" if es_prov else nombre)}.</p>')
+    # satélite
+    s = (sat.get("hoy") or {}).get(slug)
+    if s is not None and sat.get("fecha"):
+        if s >= 0.5:
+            out.append(f'<p class="cgnt-dato">Según el satélite, el {esc(fd(sat["fecha"], False))} había nieve en el '
+                       f'<b>{esc(pct(s))}</b> de la provincia de {esc(px_prov)}.</p>')
+    # clima del lugar
+    if capital and capital["clima"].get("dias") is not None:
+        dd = capital["clima"]["dias"]
+        out.append('<p class="cgnt-dato">' + (
+            f"En un año normal nieva <b>{esc(num(dd) if dd < 10 else entero(dd))} días</b> en {esc(nombre)} (1 cm o más de "
+            f"nieve nueva, temporadas de 1991 a 2021)." if dd >= 0.5 else
+            f"En {esc(nombre)} casi nunca nieva: menos de un día al año de media (1991-2021).") + "</p>")
+    # montañas cerca
+    montes = sorted([x for x in xs if x["tipo"] in ("monte", "esqui")], key=lambda x: km(lat, lon, x["lat"], x["lon"]))
+    cerca = [x for x in montes if km(lat, lon, x["lat"], x["lon"]) <= 160][:3] or montes[:1]
+    if cerca:
+        out.append(f"<h3>{'Nieve en sus montañas' if es_prov else 'Nieve cerca de ' + esc(nombre)}</h3>"
+                   '<div class="cgnt-cerca">')
+        for x in cerca:
+            o, p2 = x["temporada"], x["prevision"]
+            e = o.get("esp")
+            dist = km(lat, lon, x["lat"], x["lon"])
+            out.append(f'<div class="cgnt-m"><a class="cgnt-mn" href="{esc(url_ficha(x["id"]))}">{esc(x["nombre"])}</a>'
+                       f'<small>{esc(entero(x["alt"]))} m · {esc(x["provincia"])}'
+                       + ("" if es_prov else f" · a {esc(entero(dist))} km") + "</small>"
+                       f'<strong>{esc(cm(e)) if e is not None and e >= 1 else "Sin nieve"}</strong>'
+                       f'{"de espesor hoy" if e is not None and e >= 1 else "en el suelo hoy"}'
+                       + (f" · normal: {esc(cm(o['esp_normal']))}" if o.get("esp_normal") else "")
+                       + f'<br>Próximos 7 días: <b>{esc(cm(p2.get("total7") or 0))}</b></div>')
+        out.append("</div>")
+        x0 = cerca[0]
+        if x0["clima"].get("primera") is not None:
+            out.append(f'<p class="cgnt-dato">La primera nevada del otoño suele llegar a {esc(x0["nombre"])} hacia el '
+                       f'<b>{esc(dia_mes(x0["clima"]["primera"]))}</b>.</p>')
+    # enlaces
+    enl = []
+    u = url_nieve_prov(slug, pub)
+    if u:
+        enl.append((u, f"Nieve en {px_prov}"))
+    macs = []
+    for x in [loc] + cerca:
+        m = x.get("macizo")
+        if m in MACIZO_PAG and m not in macs:
+            macs.append(m)
+    for m in macs[:2]:
+        enl.append((f"/nieve/{MACIZO_PAG[m]['slug']}/", f"Nieve en {MACIZO_PAG[m]['corto']}"))
+    if cerca:
+        enl.append((url_ficha(cerca[0]["id"]), f"Ficha de {cerca[0]['nombre']} para compartir"))
+    enl.append(("/nieve/", "Mapa de la nieve en España"))
+    out.append('<ul class="cgnt-enl">' + "".join(f'<li><a href="{esc(a)}">{esc(b)} →</a></li>' for a, b in enl) + "</ul>")
+    out.append('<p class="cgnt-pie">Cota de nieve: 300 m por debajo de la isoterma de 0 °C de cada modelo. Espesor y '
+               'nieve caída: ERA5-Land (Copernicus) y previsión de los modelos; superficie nevada: satélite IMS de la NOAA. '
+               'Se actualiza tres veces al día.</p></section>')
+    return "".join(out)
+
+
+def guardar_tiempo(pxs: list, xs: list, sat: dict, red: bool = True) -> None:
+    pub = leer_json(PUBLICADO, {})
+    ms = municipios_tiempo(red)
+    gen = AHORA.isoformat().replace("+00:00", "Z")
+    caps = {px["slug"]: px["capital"] for px in pxs}
+    n = 0
+    for px in pxs:
+        slug = px["slug"]
+        ca = px["capital"]
+        u = url_nieve_prov(slug, pub)
+        datos = {"v": 1, "version": VERSION, "generado": gen, "css": CSS_TIEMPO,
+                 "prov": bloque_tiempo(px["provincia"], ca["lat"], ca["lon"], ca["alt"], slug, xs, sat, pub, True, ca,
+                                       px["monte"]),
+                 "li": (f'<li><a href="{u}">Nieve en {esc(px["provincia"])}: espesor, cota y previsión</a></li>' if u else
+                        '<li><a href="/nieve/">Nieve en España: dónde hay nieve hoy y cota de nieve</a></li>'),
+                 "m": {}}
+        for m in ms:
+            if m["prov_slug"] != slug:
+                continue
+            es_cap = km(m["lat"], m["lon"], ca["lat"], ca["lon"]) <= 8
+            datos["m"][m["ruta"]] = bloque_tiempo(m["nombre"], m["lat"], m["lon"], m["alt"], slug, xs, sat, pub,
+                                                  False, caps[slug] if es_cap else None)
+            n += 1
+        escribir(TIEMPO / f"{slug}.json", json.dumps(datos, ensure_ascii=False, separators=(",", ":")))
+    log(f"El tiempo: bloque de nieve para {n} municipios y {len(pxs)} provincias")
+
+
+
 def h(s: str) -> str:
     return hashlib.sha256(s.encode("utf-8")).hexdigest()[:16]
 
@@ -3255,6 +3479,10 @@ def main() -> None:
         log("Faltan datos de demasiados puntos: no se escribe nada")
         sys.exit(1)
     guardar_datos(pxs, xs, sat, macs)
+    try:
+        guardar_tiempo(pxs, xs, sat, red=not a.demo)
+    except Exception as e:   # el bloque de El tiempo nunca para la herramienta de nieve
+        log(f"El tiempo: no se pudo escribir el bloque de nieve: {type(e).__name__}: {e}")
     if a.vista:
         d = Path(a.vista)
         d.mkdir(parents=True, exist_ok=True)
