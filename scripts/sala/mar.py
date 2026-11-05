@@ -295,13 +295,15 @@ def _version_boyas(R, cod, xs, nac, mes_pl, hid):
         # no se compara con un mes entero
         if x.get("modo") == "diaria" and x["dif"] > 0:
             y, v = x["clim_max"]
-            if x["n_por_debajo"] == len(x["clim"]):
+            # récord solo con margen: la semana actual es dato en tiempo real (sin el control de calidad del histórico)
+            if x["n_por_debajo"] == len(x["clim"]) and x["sem"] - v >= 0.3:
                 hechos.append(R.hecho("boya_rango", f"Es la semana más cálida para esas fechas en los {len(x['clim'])} años con dato de la boya "
                                       f"({x['y0']}-{x['y1']}): la más alta hasta ahora era la de {y}, con {R.d1(v)} °C.",
                                       FUENTE, [str(len(x["clim"])), x["y0"], x["y1"], y, f"{R.d1(v)} °C"], superlativo=True, record=True))
             else:
                 hechos.append(R.hecho("boya_rango", f"Supera esas mismas fechas de {x['n_por_debajo']} de los {len(x['clim'])} años con dato "
-                                      f"({x['y0']}-{x['y1']}); la más alta fue la de {y}, con {R.d1(v)} °C.",
+                                      f"({x['y0']}-{x['y1']}); la más alta {'hasta ahora ' if x['n_por_debajo'] == len(x['clim']) else ''}fue la de {y}, "
+                                      f"con {R.d1(v)} °C" + (", a menos de 0,3 °C de esta semana." if x["n_por_debajo"] == len(x["clim"]) else "."),
                                       FUENTE, [str(x["n_por_debajo"]), str(len(x["clim"])), x["y0"], x["y1"], y, f"{R.d1(v)} °C"], superlativo=True))
         else:
             hm = _hecho_mes_max(R, x, 0)
