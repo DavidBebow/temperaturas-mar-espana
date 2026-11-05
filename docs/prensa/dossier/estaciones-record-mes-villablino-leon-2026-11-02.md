@@ -1,12 +1,12 @@
-# Villablino (León) alcanzó el 2 de noviembre 24,7 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
+# Villablino (León) alcanzó el 2 de noviembre 25 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Villablino, a 958 m, máxima de 24,7 °C el 2 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 23,3 °C (2 de noviembre de 2024) · récord absoluto de la estación: 39,3 °C (23 de agosto de 2023) · 24 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Villablino, a 958 m, máxima de 25 °C el 2 de noviembre (hora de la máxima: 13:45) · récord anterior de noviembre en la estación: 23,3 °C (2 de noviembre de 2024) · récord absoluto de la estación: 39,3 °C (23 de agosto de 2023) · valor climatológico diario validado por AEMET: 25 °C  
 **Fecha del dato:** 2 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Villablino (León)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 1,4 °C.
+- Supera el récord anterior en 1,7 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2010.
 
 ## Fuente y método
@@ -15,7 +15,7 @@
 - **Método:** Máxima diaria de la estación (día de 0 a 24 h UTC) obtenida de la observación horaria que publica AEMET OpenData (campo «tamax», extremo de cada hora), comparada con los valores climatológicos extremos mensuales y absolutos que AEMET publica para esa estación (tabla consultada el 2 de noviembre de 2026).
 
 ## Límites (decirlos antes de que los descubran)
-- Observación en tiempo real, sin validar: AEMET revisa el dato en 2-4 días y puede corregirlo. El observatorio vuelve a comprobarlo con el valor validado y marca el hallazgo como confirmado o lo retira.
+- Confirmado con el valor climatológico diario validado por AEMET (25 °C el 2 de noviembre).
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 2 de noviembre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2010.
