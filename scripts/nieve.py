@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.5.0"
+VERSION = "1.5.1"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -1595,6 +1595,7 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-chip{justify-self:end;font-size:13.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:#163a55;color:var(--p-sub);white-space:nowrap}
 .cgnv-chip-baja{background:rgba(255,122,69,.18);color:#ffb08f}.cgnv-chip-sube{background:rgba(140,198,238,.2);color:#bfe6ff}
 .cgnv-fila-d{text-align:right;font-weight:700;font-size:15px;color:#fff}
+.cgnv .cgnv-fila-pend{opacity:.62}.cgnv-calc{font-size:13.5px;color:var(--p-mut);font-style:italic}
 .cgnv-h3{font-size:20px!important;color:var(--noche);margin:28px 0 10px!important}
 .cgnv-retrasos{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;margin:8px 0}
 .cgnv .cgnv-ret{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n d" "f f" "b b";gap:4px 12px;background:#0c2133;border-radius:18px;padding:14px 16px;text-decoration:none;color:var(--p-sub)}
@@ -2325,12 +2326,13 @@ def leyenda_mapa() -> str:
 
 
 def html_lista_provincias(pxs: list) -> str:
-    """La nieve de un año normal en la montaña de cada provincia, con barra, cambio y días de nieve en la capital."""
-    filas = sorted([px for px in pxs if px["monte"]["clima"].get("total") is not None],
-                   key=lambda p: -p["monte"]["clima"]["total"])
-    if not filas:
-        return ""
-    mx = max(p["monte"]["clima"]["total"] for p in filas) or 1
+    """La nieve de un año normal en la montaña de cada provincia, con barra, cambio y días de nieve en la capital.
+    Salen las 50 provincias: las que aún no tienen la serie entera (1971-hoy, homogénea con ERA5) van al final, sin cifras,
+    para no enseñar un normal o un cambio calculado a medias."""
+    listas = [px for px in pxs if px["monte"]["completo"] and px["monte"]["clima"].get("total") is not None]
+    filas = sorted(listas, key=lambda p: -p["monte"]["clima"]["total"])
+    pend = sorted([px for px in pxs if px not in listas], key=lambda p: p["provincia"])
+    mx = max([p["monte"]["clima"]["total"] for p in filas] + [1])
     out = ['<div class="cgnv-lista"><div class="cgnv-lista-c"><span>Provincia y montaña</span><span>Nieve en un año normal'
            '</span><span>Cambio</span><span>Días/año en la capital</span></div>']
     for px in filas:
@@ -2343,13 +2345,22 @@ def html_lista_provincias(pxs: list) -> str:
             sube = (c.get("t") or 0) >= 2 and c["pct"] > 0
             txt = ("+" if c["pct"] > 0 else "−") + entero(abs(c["pct"])) + " %"
             chip = f'<span class="cgnv-chip{" cgnv-chip-baja" if sig else " cgnv-chip-sube" if sube else ""}">{esc(txt)}</span>'
-        d = ca["clima"].get("dias")
+        d = ca["clima"].get("dias") if ca["completo"] else None
         out.append(f'<a class="cgnv-fila" href="/nieve/{esc(px["slug"])}/"><span class="cgnv-fila-n"><b>{esc(px["provincia"])}</b>'
                    f'<small>{esc(mo["nombre"])} · {esc(entero(mo["alt"]))} m</small></span>'
                    f'<span class="cgnv-fila-b"><i style="width:{max(2, 100 * mo["clima"]["total"] / mx):.0f}%"></i>'
                    f'<em>{esc(cm(mo["clima"]["total"]))}</em></span>{chip}'
                    f'<span class="cgnv-fila-d">{esc("—" if d is None else (num(d) if d < 10 else entero(d)))}</span></a>')
+    for px in pend:
+        mo = px["monte"]
+        out.append(f'<a class="cgnv-fila cgnv-fila-pend" href="/nieve/{esc(px["slug"])}/"><span class="cgnv-fila-n">'
+                   f'<b>{esc(px["provincia"])}</b><small>{esc(mo["nombre"])} · {esc(entero(mo["alt"]))} m</small></span>'
+                   '<span class="cgnv-fila-b"><span class="cgnv-calc">Calculando la serie desde 1971…</span></span>'
+                   '<span class="cgnv-chip">—</span><span class="cgnv-fila-d">—</span></a>')
     out.append("</div>")
+    if pend:
+        out.append(f'<p class="cgnv-nota">{len(filas)} de {len(pxs)} provincias con la serie completa. Las demás se van '
+                   'añadiendo solas a lo largo del día: cada montaña necesita la nieve de cada día desde 1971.</p>')
     return "".join(out)
 
 
@@ -2423,7 +2434,9 @@ def html_primera_hub(montes: list) -> str:
     tarde = [x for x in filas if x["cambio"]["primera"]["dias"] >= 3]
     sig = [x for x in tarde if (x["cambio"]["primera"].get("t") or 0) >= 2]
     out = ['<h2 id="primera-nevada">¿Llega más tarde la primera nevada? Historia de las primeras nevadas en España</h2>']
-    t = (f"En {len(tarde)} de las {len(filas)} montañas de referencia la primera nevada del otoño llega hoy más tarde que "
+    t = (f"En {len(tarde)} de las {len(filas)} montañas de referencia"
+         + (" que ya tienen la serie completa" if len(filas) < len(montes) else "")
+         + " la primera nevada del otoño llega hoy más tarde que "
          f"en 1971-1990")
     t += (f": de mediana, {entero(abs(med))} días {'más tarde' if med > 0 else 'antes'}." if abs(med) >= 1 else
           ", aunque de mediana la fecha apenas se ha movido.")
@@ -2502,7 +2515,7 @@ def html_hub(pxs: list, xs: list) -> str:
            '<div class="cgnv-mapaw">' + svg_mapa_hub() + leyenda_mapa() + '</div>',
            f'<div class="cg-ssr-slot">{ANCLA}</div>', "</div>"]
     out[0] = out[0].replace("</style>", css_mapa() + "\n</style>")
-    if con_clima:
+    if True:   # la lista sale siempre (las provincias sin serie completa, sin cifras)
         out.append("<h2>La nieve de un año normal, provincia a provincia</h2>")
         out.append("<p>Nieve caída en una temporada normal (1991-92 a 2020-21) en la montaña de referencia de cada provincia y "
                    "días de nieve al año en su capital. Y cómo ha cambiado entre 1971-1990 y 2006-2025.</p>")
@@ -2511,7 +2524,7 @@ def html_hub(pxs: list, xs: list) -> str:
                    'Son datos de modelo en celdas de unos 30 km: en las cumbres hay más nieve que la que se ve aquí.</p>')
         bajan = [x for x in con_clima if (x["cambio"].get("total") or {}).get("t") is not None
                  and x["cambio"]["total"]["t"] <= -2 and (x["cambio"]["total"].get("pct") or 0) < 0]
-        if bajan:
+        if bajan and len(con_clima) >= 25:   # con pocas montañas la frase «en N de las M» engaña
             out.append("<h2>¿Nieva menos que antes en España?</h2>")
             peor = sorted(bajan, key=lambda x: x["cambio"]["total"]["pct"])[:3]
             out.append(f"<p>En {len(bajan)} de las {len(con_clima)} montañas de referencia nieva hoy claramente menos que hace "
