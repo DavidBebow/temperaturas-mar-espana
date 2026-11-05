@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ficha de nieve para compartir · calentamientoglobal.es</title>
+<meta name="description" content="La nieve de cada estación y montaña de España en una imagen para compartir: espesor frente a lo normal, nieve nueva, previsión a 7 días con cota, viento y el mejor día para ir.">
+<meta name="robots" content="noindex,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--noche:#0c2133;--panel:#132f45;--txt:#e8f1f8;--sub:#b9cddc;--mut:#8fa9bd;--cristal:#bfe6ff;--brasa:#ff7a45}
+*{box-sizing:border-box}
+html,body{margin:0;background:#081826;color:var(--txt);font:16px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:1120px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
+h1{font:800 30px/1.1 "Bricolage Grotesque",Inter,sans-serif;margin:0 0 6px;color:#fff;letter-spacing:-.01em}
+.sub{color:var(--mut);margin:0 0 18px;font-size:15px}
+.lienzo{background:var(--noche);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+canvas{display:block;width:100%;height:auto}
+aside{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px}
+label{font-size:13px;color:var(--mut)}
+select{width:100%;font:inherit;color:var(--txt);background:var(--panel);border:1px solid #2a4a63;border-radius:12px;padding:11px 12px}
+button,.boton{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font:600 16px/1 Inter,sans-serif;border:0;border-radius:12px;padding:15px 14px;cursor:pointer;text-decoration:none;color:var(--noche);background:var(--cristal)}
+button.sec,.boton.sec{background:var(--panel);color:var(--txt);border:1px solid #2a4a63}
+button:hover,.boton:hover{filter:brightness(1.08)}
+button:focus-visible,.boton:focus-visible,select:focus-visible{outline:2px solid var(--brasa);outline-offset:2px}
+.nota{font-size:13px;color:var(--mut);margin:4px 0 0}
+#estado{min-height:20px;font-size:14px;color:var(--cristal)}
+a{color:var(--cristal)}
+@media(max-width:860px){main{grid-template-columns:1fr}aside{position:static}}
+</style>
+</head>
+<body>
+<main>
+  <section>
+    <h1 id="titulo">Ficha de nieve</h1>
+    <p class="sub" id="subt">Cargando los datos de hoy…</p>
+    <div class="lienzo"><canvas id="c" width="1080" height="1350" role="img" aria-label="Ficha de nieve"></canvas></div>
+  </section>
+  <aside>
+    <div><label for="sel">Estación, montaña o macizo</label><select id="sel"></select></div>
+    <button id="descargar" type="button">Descargar imagen</button>
+    <button id="compartir" type="button" class="sec">Compartir</button>
+    <button id="copiar" type="button" class="sec">Copiar enlace de la ficha</button>
+    <a id="pagina" class="boton sec" href="https://calentamientoglobal.es/nieve/">Ver la página completa</a>
+    <p id="estado" aria-live="polite"></p>
+    <p class="nota">Datos de modelo (ERA5-Land, ECMWF, ICON, ARPEGE y GFS) que se actualizan tres veces al día. No es el parte de pistas: para pistas y remontes, la web de cada estación. Licencia CC BY 4.0, citando a calentamientoglobal.es.</p>
+  </aside>
+</main>
+<script>
+(function(){
+"use strict";
+var DATOS="https://davidbebow.github.io/temperaturas-mar-espana/nieve/fichas.json";
+var W=1080,H=1350,c=document.getElementById("c"),x=c.getContext("2d");
+var MES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+var DSEM=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"],DC=["do","lu","ma","mi","ju","vi","sá"];
+var D=null,actual=null;
+function miles(n){var s=String(Math.round(Math.abs(n)));s=s.replace(/\B(?=(\d{3})+(?!\d))/g,".");return (n<0?"−":"")+s;}
+function num(v,dec){if(v==null)return "—";var r=Math.round(v*Math.pow(10,dec))/Math.pow(10,dec);var e=Math.trunc(Math.abs(r)),f=Math.abs(r)-e;var s=miles(r<0?-e:e);if(dec&&Math.round(f*Math.pow(10,dec))){s+=","+String(Math.round(f*Math.pow(10,dec))).padStart(dec,"0");}return s;}
+function cm(v){if(v==null)return "—";return (v>=10||Math.abs(v-Math.round(v))<0.05?miles(v):num(v,1))+" cm";}
+function fecha(f){var d=new Date(f+"T12:00:00");return d;}
+function hoyTxt(){var d=new Date();return DSEM[d.getDay()]+" "+d.getDate()+" de "+MES[d.getMonth()];}
+function fuente(px,peso,fam){return peso+" "+px+"px "+(fam==="b"?'"Bricolage Grotesque",Inter,sans-serif':'Inter,-apple-system,"Segoe UI",sans-serif');}
+function texto(t,X,Y,px,peso,col,fam,al){x.font=fuente(px,peso,fam);x.fillStyle=col;x.textAlign=al||"left";x.textBaseline="alphabetic";x.fillText(t,X,Y);return x.measureText(t).width;}
+function ajusta(t,ancho,px,peso,fam,min){var p=px,lim=min||Math.min(36,px*0.6);x.font=fuente(p,peso,fam);while(x.measureText(t).width>ancho&&p>lim){p-=1;x.font=fuente(p,peso,fam);}return p;}
+function caja(X,Y,w,h,r,col){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();x.fillStyle=col;x.fill();}
+function nieveCol(v){if(!v||v<0.5)return "#1d3a52";var p=Math.min(1,0.18+0.82*Math.log(1+v)/Math.log(31));var a=[[0,[31,77,112]],[.25,[58,127,179]],[.5,[140,198,238]],[.75,[212,238,255]],[1,[255,255,255]]];for(var i=1;i<a.length;i++){if(p<=a[i][0]){var f=(p-a[i-1][0])/(a[i][0]-a[i-1][0]);var c0=a[i-1][1],c1=a[i][1];return "rgb("+c0.map(function(k,j){return Math.round(k+f*(c1[j]-k));}).join(",")+")";}}return "#fff";}
+function fondo(){var g=x.createRadialGradient(W*.88,-H*.1,40,W*.88,-H*.1,H*1.05);g.addColorStop(0,"#1f5079");g.addColorStop(.6,"#0c2133");g.addColorStop(1,"#081826");x.fillStyle=g;x.fillRect(0,0,W,H);
+  // copos discretos
+  x.fillStyle="rgba(191,230,255,.08)";var s=[[880,140,10],[960,250,6],[1010,110,4],[820,300,5],[1000,380,8],[930,60,5]];s.forEach(function(p){x.beginPath();x.arc(p[0],p[1],p[2],0,7);x.fill();});}
+function cabecera(pre,nombre,linea){texto(pre,70,118,30,"600","#9fd2f3");var p=ajusta(nombre,W-140,104,"800","b",56);texto(nombre,70,214,p,"800","#ffffff","b");var q=ajusta(linea,W-140,32,"500",null,20);texto(linea,70,266,q,"500","#b9cddc");return 266;}
+function pie(url){caja(0,H-128,W,128,0,"rgba(8,24,38,.75)");var u=url.replace(/^https?:\/\//,"").replace(/\/$/,"");texto(u,70,H-74,ajusta(u,W-140-300,34,"700",null,20),"700","#ffffff");texto("Datos de modelo: ERA5-Land, ECMWF, ICON, ARPEGE y GFS · no es el parte de pistas",70,H-34,22,"400","#8fa9bd");texto("Calentamiento Global",W-70,H-74,26,"700","#bfe6ff","b","right");}
+function tiles(Y,items){var gap=22,w=(W-140-gap*2)/3,h=128;items.forEach(function(it,i){var X=70+i*(w+gap);caja(X,Y,w,h,22,"#132f45");var lp=ajusta(it[0],w-52,23,"500");texto(it[0],X+26,Y+44,lp,"500","#9fb6c8");var p=ajusta(it[1],w-52,50,"800","b");texto(it[1],X+26,Y+102,p,"800","#ffffff","b");});return Y+h;}
+function semana(Y,dias,tituloSem,conDonde){texto(tituloSem,70,Y+30,30,"700","#ffffff");Y+=48;var n=dias.length;if(!n){texto("Sin previsión disponible ahora mismo",70,Y+50,28,"500","#8fa9bd");return Y+80;}
+  var gap=12,w=(W-140-gap*(n-1))/n,B=96,HC=80+B+128,mx=Math.max(10,Math.max.apply(null,dias.map(function(d){return d.n||0;})));
+  dias.forEach(function(d,i){var X=70+i*(w+gap),f=fecha(d.f),cx=X+w/2;caja(X,Y,w,HC,18,i===0?"#1a3d5a":"#11293d");
+    var fin=f.getDay()===0||f.getDay()===6;texto(i===0?"hoy":DC[f.getDay()],cx,Y+34,23,"600",fin?"#ffd2bf":"#9fb6c8",null,"center");texto(String(f.getDate()),cx,Y+64,29,"800","#ffffff","b","center");
+    var v=d.n||0,bh=v>=0.5?Math.max(10,B*v/mx):4,base=Y+80+B;caja(X+w*.22,base-bh,w*.56,bh,8,nieveCol(v));
+    texto(v>=0.5?(v>=9.5?miles(v):num(v,1)):"–",cx,base+32,26,"800",v>=0.5?"#ffffff":"#5b7890","b","center");
+    texto(d.cota!=null&&d.cota<3500?miles(d.cota)+" m":"—",cx,base+62,19,"500","#bfe6ff",null,"center");
+    if(conDonde){if(d.donde&&v>=1){var t=d.donde.length>11?d.donde.slice(0,10)+"…":d.donde;texto(t,cx,base+90,17,"500","#8fa9bd",null,"center");}}
+    else{if(d.tn!=null&&d.tx!=null)texto(num(d.tn,0)+"/"+num(d.tx,0)+"°",cx,base+90,19,"500","#b9cddc",null,"center");
+      if(d.racha!=null&&d.racha>=50)texto("racha "+miles(d.racha),cx,base+116,16,"700","#ffb08f",null,"center");}});
+  texto(conDonde?"cm de nieve nueva donde más nieva · cota de nieve":"cm de nieve nueva al día · cota de nieve · mín/máx en °C",70,Y+HC+32,20,"400","#8fa9bd");return Y+HC+40;}
+function hero(Y,grande,linea1,linea2){caja(70,Y,W-140,214,28,"rgba(255,255,255,.06)");x.strokeStyle="rgba(191,230,255,.18)";x.lineWidth=2;x.stroke();
+  if(grande[1]){var wv=texto(grande[0],108,Y+136,136,"800","#ffffff","b");texto(grande[1],108+wv+22,Y+98,30,"600","#bfe6ff");}
+  else texto(grande[0],108,Y+128,112,"800","#ffffff","b");
+  if(linea1)texto(linea1,108,Y+174,28,"600","#bfe6ff");if(linea2)texto(linea2,108,Y+174+(linea1?0:0),26,"500","#b9cddc");return Y+214;}
+function aviso(Y,t1,t2){caja(70,Y,W-140,108,22,"rgba(255,122,69,.14)");x.strokeStyle="rgba(255,122,69,.55)";x.lineWidth=2;x.stroke();var p=ajusta(t1,W-200,34,"800","b");texto(t1,100,Y+48,p,"800","#ffffff","b");var q=ajusta(t2,W-200,25,"500");texto(t2,100,Y+86,q,"500","#ffd2bf");}
+function normalTxt(e,n){if(n==null)return "";if(n<1)return e!=null&&e>=1?"Lo normal hoy es no tener nieve":"Lo normal hoy: sin nieve";var t="Lo normal hoy: "+cm(n);if(e!=null){var r=e/n;t+=r>=1.1?" · un "+miles(100*(r-1))+" % más":r<=0.9?" · un "+miles(100*(1-r))+" % menos":" · lo normal";}return t;}
+function dibujaPunto(p){fondo();cabecera("NIEVE EN",p.nombre,miles(p.alt)+" m · "+(p.macizo_nombre?p.macizo_nombre+" · ":"")+p.provincia+" · "+hoyTxt());
+  var e=p.esp,y=300;
+  if(e!=null&&e>=1)hero(y,[cm(e),"de nieve en el suelo"],null,normalTxt(e,p.esp_normal));else hero(y,["Sin nieve",null],null,"en el suelo ahora mismo · "+normalTxt(e,p.esp_normal).replace(/^L/,"l"));
+  y=300+214+24;y=tiles(y,[["Nieve últimas 24 h",cm(p.n24||0)],["Últimos 7 días",cm(p.n7||0)],["Próximos 7 días",cm(p.total7||0)]]);
+  y+=30;y=semana(y,p.dias||[],"Los próximos 7 días",false);
+  var m=p.mejor,yA=H-128-24-108;
+  if(m){var f=fecha(m.f);aviso(yA,"Mejor día para ir: "+DSEM[f.getDay()]+" "+f.getDate(),m.motivo.charAt(0).toUpperCase()+m.motivo.slice(1));}
+  else{var pr=p.proxima;aviso(yA,pr?"Próxima nevada: "+DSEM[fecha(pr.f).getDay()]+" "+fecha(pr.f).getDate()+" ("+cm(pr.cm)+")":"Sin nevadas a la vista en 15 días",p.primera_normal?"En un año normal, la primera nevada llega hacia el "+p.primera_normal:"Datos de modelo, actualizados tres veces al día");}
+  pie(p.url);}
+function dibujaMacizo(m){fondo();cabecera("NIEVE EN",m.nombre,m.sub+" · "+hoyTxt());var e=m.esp_max,y=300;
+  if(e&&e.cm>=1)hero(y,[cm(e.cm),"en "+e.donde],null,"de nieve en el suelo, lo más alto"+(e.normal!=null?" · "+normalTxt(e.cm,e.normal).replace(/^L/,"l"):""));else hero(y,["Sin nieve",null],null,"en el suelo en ninguno de sus puntos");
+  y=300+214+24;y=tiles(y,[["Temporada"+(m.normal_media!=null?" · normal "+cm(m.normal_media):""),cm(m.acum_media)],["Nevado (satélite)",m.sat!=null?num(m.sat,m.sat>=10?0:1)+" %":"—"],["Próximos 7 días",cm(m.prev7&&m.prev7.cm||0)]]);
+  y+=30;y=semana(y,m.dias||[],"Donde más nieva cada día",true);
+  var top=(m.dias||[]).reduce(function(a,d){return (d.n||0)>(a?a.n:0)?d:a;},null),yA=H-128-24-108;
+  if(top&&top.n>=1){var f=fecha(top.f);aviso(yA,"Más nieve: "+DSEM[f.getDay()]+" "+f.getDate()+" en "+top.donde,cm(top.n)+" de nieve nueva ese día, según la mediana de cuatro modelos");}
+  else aviso(yA,"Sin nevadas importantes esta semana","Los modelos no ven más de 1 cm al día en ninguno de sus puntos");
+  pie(m.url);}
+function opciones(){var s=document.getElementById("sel"),porMac={};Object.keys(D.puntos).forEach(function(k){var p=D.puntos[k],m=p.macizo||"otros";(porMac[m]=porMac[m]||[]).push(p);});
+  var og=document.createElement("optgroup");og.label="Macizos";Object.keys(D.macizos).forEach(function(k){var o=document.createElement("option");o.value="m:"+k;o.textContent=D.macizos[k].nombre+" (todo el macizo)";og.appendChild(o);});s.appendChild(og);
+  Object.keys(porMac).forEach(function(m){var g=document.createElement("optgroup");g.label=m==="otros"?"Otros":(D.macizos[m]?D.macizos[m].nombre:m);porMac[m].sort(function(a,b){return b.alt-a.alt;}).forEach(function(p){var o=document.createElement("option");o.value="p:"+p.id;o.textContent=p.nombre+" · "+miles(p.alt)+" m";g.appendChild(o);});s.appendChild(g);});
+  s.addEventListener("change",function(){mostrar(s.value,true);});}
+function mostrar(v,push){var esM=v.indexOf("m:")===0,k=v.slice(2),obj=esM?D.macizos[k]:D.puntos[k];if(!obj){v=Object.keys(D.macizos)[0]?"m:"+Object.keys(D.macizos)[0]:"p:"+Object.keys(D.puntos)[0];return mostrar(v,push);}
+  actual={v:v,obj:obj,esM:esM};document.getElementById("sel").value=v;if(esM)dibujaMacizo(obj);else dibujaPunto(obj);
+  var nom=obj.nombre;document.getElementById("titulo").textContent="Nieve en "+nom+": ficha para compartir";document.title="Nieve en "+nom+" · ficha para compartir";
+  document.getElementById("subt").textContent=(esM?obj.sub:(miles(obj.alt)+" m · "+obj.provincia))+" · datos del "+hoyTxt();
+  document.getElementById("pagina").href=obj.url;c.setAttribute("aria-label","Ficha de nieve de "+nom+". "+(obj.frase||""));
+  if(push){var u=new URL(location.href);u.search=esM?"?m="+k:"?id="+k;history.replaceState(null,"",u.toString());}}
+function nombreArchivo(){return "nieve-"+actual.obj.nombre.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-"+new Date().toISOString().slice(0,10)+".png";}
+function estado(t){document.getElementById("estado").textContent=t;}
+document.getElementById("descargar").addEventListener("click",function(){c.toBlob(function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=nombreArchivo();document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},2000);estado("Imagen descargada.");},"image/png");});
+document.getElementById("compartir").addEventListener("click",function(){c.toBlob(function(b){var f=new File([b],nombreArchivo(),{type:"image/png"}),t="Nieve en "+actual.obj.nombre+" hoy";
+  if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:t,text:t+" · "+actual.obj.url}).catch(function(){});}
+  else if(navigator.share){navigator.share({title:t,url:location.href}).catch(function(){});}
+  else{copiar();estado("Tu navegador no comparte imágenes: enlace copiado. Usa «Descargar imagen» para la foto.");}},"image/png");});
+function copiar(){var u=location.href;if(navigator.clipboard){navigator.clipboard.writeText(u).then(function(){estado("Enlace copiado.");},function(){estado(u);});}else estado(u);}
+document.getElementById("copiar").addEventListener("click",copiar);
+var fuentes=Promise.all([document.fonts.load('800 100px "Bricolage Grotesque"'),document.fonts.load('600 30px Inter'),document.fonts.load('500 30px Inter'),document.fonts.load('700 30px Inter')]).catch(function(){});
+Promise.all([fetch(DATOS+"?t="+Date.now()).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();}),fuentes]).then(function(rs){D=rs[0];opciones();var q=new URLSearchParams(location.search);
+  mostrar(q.get("m")?"m:"+q.get("m"):q.get("id")?"p:"+q.get("id"):"m:pirineo",false);}).catch(function(e){document.getElementById("subt").textContent="No se han podido cargar los datos ("+e.message+"). Prueba a recargar la página.";});
+})();
+</script>
+</body>
+</html>
