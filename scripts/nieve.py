@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -96,7 +96,13 @@ IMS_URL = "https://noaadata.apps.nsidc.org/NOAA/G02156/4km/{y}/ims{y}{d:03d}_00U
 INICIO = date(1971, 8, 1)
 CORTE = date(2025, 8, 1)          # lo anterior va a historico.csv.gz; lo posterior, a reciente.csv
 TANDAS = [(date(1971, 8, 1), date(1989, 7, 31)), (date(1989, 8, 1), date(2007, 7, 31)),
-          (date(2007, 8, 1), date(2025, 7, 31))]
+          (date(2007, 8, 1), date(2025, 7, 31)),
+          # v1.5.0: la mezcla por defecto de Open-Meteo cambia de ERA5 (25 km) al análisis IFS de 9 km desde 2016-17,
+          # que da en la montaña dos o tres veces más nieve. Se vuelve a bajar ese tramo solo con ERA5 para que la
+          # serie sea homogénea; sin esto, los cambios entre 1971-1990 y 2006-2025 salían inflados (+64 % en Gorbea,
+          # cuando con ERA5 es −32 %).
+          (date(2016, 8, 1), date(2025, 7, 31))]
+REPARA = TANDAS[3]
 NORMAL = (1991, 2020)
 TRAMO1 = (1971, 1990)
 TRAMO2 = (2006, 2025)
@@ -384,24 +390,22 @@ def era_descargar(pts: list, d0: date, d1: date) -> dict:
     """ERA5-Land diario de varios puntos: {id: {fecha: (nieve_cm, espesor_cm)}}."""
     p = {"latitude": ",".join(f"{x['lat']:.3f}" for x in pts), "longitude": ",".join(f"{x['lon']:.3f}" for x in pts),
          "start_date": d0.isoformat(), "end_date": d1.isoformat(), "daily": "snowfall_sum", "hourly": "snow_depth",
-         "timezone": "Europe/Madrid"}   # mezcla ERA5-Land/ERA5 de Open-Meteo (con «era5_land» no da la nieve caída)
+         "timezone": "Europe/Madrid", "models": "era5,best_match"}
+    # Nieve caída solo de ERA5: es homogéneo de 1940 a hoy. La mezcla por defecto («best_match») pasa al IFS de 9 km
+    # desde 2016 (más nieve en la montaña por la resolución, no por el clima) y «era5_land» no da la nieve caída.
+    # El espesor sí sale de la mezcla: es ERA5-Land (homogéneo) más los últimos días, que ERA5-Land aún no tiene.
     r = om(OM_ARCHIVO, p)
     if isinstance(r, dict):
         r = [r]
-    if "models" in p and r and all(not any(v is not None for v in (x.get("daily") or {}).get("snowfall_sum") or [])
-                                    for x in r):
-        log(f"  AVISO: ERA5-Land no da nieve para {d0}-{d1}; se prueba con la mezcla ERA5/ERA5-Land de Open-Meteo")
-        p.pop("models")
-        r = om(OM_ARCHIVO, p)
-        if isinstance(r, dict):
-            r = [r]
     out = {}
     for x, res in zip(pts, r):
         dd = res.get("daily") or {}
         hh = res.get("hourly") or {}
-        nieve = dict(zip(dd.get("time") or [], dd.get("snowfall_sum") or []))
+        kn = next((k for k in dd if k.startswith("snowfall_sum") and "era5" in k and "land" not in k), "snowfall_sum")
+        ke = next((k for k in hh if k.startswith("snow_depth") and "best_match" in k), "snow_depth")
+        nieve = dict(zip(dd.get("time") or [], dd.get(kn) or []))
         esp = {}
-        for t, v in zip(hh.get("time") or [], hh.get("snow_depth") or []):
+        for t, v in zip(hh.get("time") or [], hh.get(ke) or []):
             if v is None:
                 continue
             f = t[:10]
@@ -486,6 +490,8 @@ def modo_clima(presupuesto: float) -> None:
             serie.update(nuevo)
             era_guardar(p["id"], serie, "historico")
             e[k] = AHORA.isoformat()[:19]
+            if d0 <= REPARA[0] and d1 >= REPARA[1]:   # este tramo ya se ha bajado con ERA5: no hay que repararlo
+                e[REPARA[0].isoformat()] = e[k]
             gastado += w
             hechas += 1
             log(f"  {p['id']}: {d0.year}-{d1.year} ({validos} días)")
@@ -517,10 +523,15 @@ def clima_completa(pid: str) -> bool:
 
 
 def actualizar_reciente() -> None:
-    """ERA5-Land desde el 1 de agosto de 2025 (o los últimos 25 días si ya está) de todos los puntos, por lotes."""
+    """ERA5 desde el 1 de agosto de 2025 (o los últimos 25 días si ya está) de todos los puntos, por lotes."""
+    est = era_estado()
+    rehacer = not est.get("_reciente_era5")   # v1.5.0: lo reciente se bajó con la mezcla de Open-Meteo; se rehace una vez
     lote, n = [], 0
     for p in PUNTOS:
         serie = era_leer(p["id"])
+        if rehacer:
+            era_guardar(p["id"], {f: v for f, v in serie.items() if f < CORTE.isoformat()}, "reciente")
+            serie = {}
         hay = [f for f, v in serie.items() if f >= CORTE.isoformat() and v[0] is not None]
         d0 = max(CORTE, date.fromisoformat(max(hay)) - timedelta(days=25)) if hay else CORTE
         lote.append((p, d0))
@@ -550,7 +561,11 @@ def actualizar_reciente() -> None:
                 era_guardar(p["id"], serie, "reciente")
                 n += 1
             time.sleep(max(2, w1 * len(trozo) / 9))
-    log(f"ERA5-Land reciente: {n} puntos al día")
+    log(f"ERA5 reciente: {n} puntos al día")
+    if rehacer and n == len(PUNTOS):
+        est = era_estado()
+        est["_reciente_era5"] = AHORA.isoformat()[:19]
+        escribir(ARCHIVO / "era5land_estado.json", json.dumps(est, indent=1, sort_keys=True))
 
 
 # -------------------------------------------------------------------------------------------------------- previsión
@@ -1061,7 +1076,7 @@ def calcular_punto(p: dict, prev: dict) -> dict:
             d1 = cambio["ultima"]["t1"] - cambio["primera"]["t1"]
             d2 = cambio["ultima"]["t2"] - cambio["primera"]["t2"]
             cambio["duracion"] = {"t1": d1, "t2": d2, "dias": d2 - d1}
-    x["cambio"] = cambio
+    x["cambio"] = cambio if x["completo"] else {}   # sin la serie entera (y homogénea) no se compara con 1971-1990
     # récords
     rec = {}
     if temps:
@@ -1955,13 +1970,13 @@ def preguntas_prov(px: dict) -> list:
         ev = evento(ult["f"])
         q.append((f"¿Cuándo nevó por última vez en {ca['nombre']}?",
                   f"El último día con al menos 1 cm de nieve nueva en {ca['nombre']} fue el {fd(ult['f'])}"
-                  + (f", con {ev}" if ev else "") + f": {cm(ult['cm'])}, según el reanálisis ERA5-Land."))
+                  + (f", con {ev}" if ev else "") + f": {cm(ult['cm'])}, según el reanálisis ERA5."))
     rd = ca["records"].get("dia_max")
     if rd:
         ev = evento(rd["f"])
         q.append((f"¿Cuál ha sido la mayor nevada en {ca['nombre']}?",
                   f"La del {fd(rd['f'])}" + (f", con {ev}" if ev else "") + f": {cm(rd['cm'])} de nieve en un día, la mayor "
-                  f"desde {ca['records']['desde']} en la serie de ERA5-Land."))
+                  f"desde {ca['records']['desde']} en la serie de ERA5."))
     if cm_.get("total") is not None:
         q.append((f"¿Cuánto nieva en {mo['nombre']}?",
                   f"En una temporada normal (1991-92 a 2020-21) caen unos {cm(cm_['total'])} de nieve en {mo['nombre']} "
@@ -2028,7 +2043,7 @@ def html_prov(px: dict) -> str:
         out.append(f"<p>{t}</p>")
         out.append('<figure class="cgnv-graf"><div class="cgnv-svgw">' + svg_temporadas(mo) + "</div>"
                    "<figcaption>Nieve caída cada temporada, de agosto a julio. Las barras claras son las de 1991 a 2021, las "
-                   "del año normal; la naranja, la temporada en curso hasta hoy. Fuente: ERA5-Land (Copernicus) vía "
+                   "del año normal; la naranja, la temporada en curso hasta hoy. Fuente: ERA5 (Copernicus) vía "
                    "Open-Meteo.</figcaption></figure>")
     fp = frase_primera(mo)
     if fp:
@@ -2041,7 +2056,7 @@ def html_prov(px: dict) -> str:
         out.append('<figure class="cgnv-graf"><div class="cgnv-svgw">' + svg_primera(mo) + "</div>"
                    "<figcaption>Cada barra va de la primera a la última nevada de una temporada (días con 1 cm o más de "
                    "nieve nueva); las claras son las de 1991 a 2021. Las líneas discontinuas marcan la fecha típica de la "
-                   "primera nevada en 1971-1990 y en 2006-2025. Fuente: ERA5-Land (Copernicus).</figcaption></figure>")
+                   "primera nevada en 1971-1990 y en 2006-2025. Fuente: ERA5 (Copernicus).</figcaption></figure>")
     fc = frase_cambio(mo)
     if fc:
         out.append(f"<h2>¿Nieva menos que antes en {esc(prov)}?</h2>")
@@ -2093,11 +2108,12 @@ def html_prov(px: dict) -> str:
     q = preguntas_prov(px)
     out.append(faq_html(q))
     out.append(
-        '<div class="cgnv-metodo"><p><b>Cómo se calcula.</b> La nieve caída y el espesor salen del reanálisis ERA5-Land de '
-        'Copernicus (ECMWF), una reconstrucción del tiempo de cada día desde 1950 en una rejilla de unos 9 km, descargado de '
+        '<div class="cgnv-metodo"><p><b>Cómo se calcula.</b> La nieve caída sale del reanálisis ERA5 de Copernicus (ECMWF), '
+        'una reconstrucción homogénea del tiempo de cada día desde 1940 en una rejilla de unos 30 km, y el espesor, de '
+        'ERA5-Land (unos 9 km), descargados de '
         'la API de archivo de Open-Meteo. Son datos de modelo, no de un nivómetro: en las cumbres suele haber más nieve y en '
         'el fondo de los valles, menos. Un día de nieve es un día con 1 cm o más de nieve nueva; cada temporada va del 1 de '
-        'agosto al 31 de julio, y «un año normal» es la media de 1991-92 a 2020-21. Los últimos días, que ERA5-Land tarda '
+        'agosto al 31 de julio, y «un año normal» es la media de 1991-92 a 2020-21. Los últimos días, que ERA5 tarda '
         'una semana en publicar, se completan con el análisis del ECMWF y se dan como provisionales. La superficie nevada '
         'es la del producto diario IMS de la NOAA (4 km), y la previsión, la de los modelos ECMWF, ICON, ARPEGE y GFS, que '
         'se actualiza dos veces al día; la cota de nieve se estima 300 m por debajo de la isoterma de 0 °C. Las temporadas '
@@ -2422,7 +2438,7 @@ def html_primera_hub(montes: list) -> str:
                'punto: en 2006-2025 · en naranja, retrasos significativos</span></div><figcaption>Cada fila es la montaña de '
                'referencia de una provincia y cada columna, un día de septiembre a junio: cuanto más blanco, en más temporadas '
                'de 1991 a 2021 nevó ese día (1 cm o más). A la derecha, cuántos días se ha movido la primera nevada. Pulsa en '
-               'una montaña para ver su provincia. Fuente: ERA5-Land (Copernicus).</figcaption></figure>')
+               'una montaña para ver su provincia. Fuente: ERA5 (Copernicus).</figcaption></figure>')
     top = sorted(tarde, key=lambda x: -x["cambio"]["primera"]["dias"])[:8]
     if top:
         out.append("<h3 class=\"cgnv-h3\">Donde más se ha retrasado</h3>")
@@ -2476,7 +2492,7 @@ def svg_desplazamiento(x: dict) -> str:
 
 def html_hub(pxs: list, xs: list) -> str:
     montes = [px["monte"] for px in pxs]
-    con_clima = [x for x in montes if x["clima"].get("total") is not None]
+    con_clima = [x for x in montes if x["clima"].get("total") is not None and x["completo"]]
     out = [CSS, '<div class="cgnv">', '<div class="cgnv-panel cgnv-panel-hub">',
            '<div class="cgnv-intro"><div class="cgnv-migas"><a href="/">Inicio</a><span>/</span>Nieve</div>'
            '<h1>Nieve en España:<span> dónde hay nieve hoy, cota de nieve y previsión de nevadas</span></h1>'
@@ -2492,7 +2508,7 @@ def html_hub(pxs: list, xs: list) -> str:
                    "días de nieve al año en su capital. Y cómo ha cambiado entre 1971-1990 y 2006-2025.</p>")
         out.append(html_lista_provincias(pxs))
         out.append('<p class="cgnv-nota">En rojo, las bajadas con una tendencia estadísticamente significativa desde 1971; en azul, las subidas. '
-                   'Son datos de modelo en celdas de unos 9 km: en las cumbres hay más nieve que la que se ve aquí.</p>')
+                   'Son datos de modelo en celdas de unos 30 km: en las cumbres hay más nieve que la que se ve aquí.</p>')
         bajan = [x for x in con_clima if (x["cambio"].get("total") or {}).get("t") is not None
                  and x["cambio"]["total"]["t"] <= -2 and (x["cambio"]["total"].get("pct") or 0) < 0]
         if bajan:
@@ -2527,13 +2543,13 @@ def html_hub(pxs: list, xs: list) -> str:
         top = max(con_clima, key=lambda x: x["clima"]["total"])
         q.insert(0, ("¿Cuánta nieve cae en una temporada normal?",
                      f"Depende mucho de la altitud. De las montañas de referencia, la más nevada es {top['nombre']} "
-                     f"({top['provincia']}), con unos {cm(top['clima']['total'])} por temporada (1991-2021, ERA5-Land)."))
+                     f"({top['provincia']}), con unos {cm(top['clima']['total'])} por temporada (1991-2021, ERA5)."))
     out.append(faq_html(q))
-    out.append('<div class="cgnv-metodo"><p><b>Cómo se calcula.</b> Tres fuentes abiertas: el reanálisis ERA5-Land de '
+    out.append('<div class="cgnv-metodo"><p><b>Cómo se calcula.</b> Tres fuentes abiertas: los reanálisis ERA5 y ERA5-Land de '
                'Copernicus (nieve caída y espesor, día a día desde 1971, en 106 puntos: cada capital, una montaña de referencia '
                'por provincia y seis estaciones de esquí más), el producto diario de superficie nevada IMS de la NOAA (4 km, '
                'desde 2005) y la previsión de los modelos ECMWF, ICON, ARPEGE y GFS a través de Open-Meteo. «Un año normal» es '
-               'la media de las temporadas de 1991-92 a 2020-21. Las cifras de ERA5-Land son de modelo, en celdas de unos 9 km, '
+               'la media de las temporadas de 1991-92 a 2020-21. Las cifras de nieve caída son de modelo, en celdas de unos 30 km, '
                'y sirven para comparar unos años con otros, no para saber cuánta nieve hay en una pista concreta. Datos en '
                f'<a href="{PAGES}/nieve/index.json">JSON</a> y <a href="{PAGES}/nieve/satelite.csv">CSV</a> (CC BY 4.0).</p>'
                '<p>Sigue con <a href="/heladas/">las heladas en cada ciudad</a>, <a href="/avisos-meteorologicos-activos/">'
@@ -2598,7 +2614,7 @@ def bloque_cerca(xs: list) -> str:
                      f'<dd>{esc(cm(e) if e is not None else "—")}</dd><dd>{"+" + esc(cm(p7)) if p7 >= 1 else "—"}</dd>')
         p.append("</dl></div>")
     p.append('</div><p class="cgnv-pnota">Espesor de nieve hoy en el suelo (modelo) y nieve nueva prevista para la próxima '
-             'semana. Son cifras de modelo en celdas de unos 9 km: para el estado de las pistas, el parte oficial de cada '
+             'semana. Son cifras de modelo en celdas de unos 30 km: para el estado de las pistas, el parte oficial de cada '
              'estación.</p>')
     return "".join(p)
 
@@ -2853,7 +2869,7 @@ def html_macizo(m: dict, xs: list, pxs: list) -> str:
                        f'<td>{esc(dia_mes(c["primera"]) if c.get("primera") is not None else "—")}</td><td{cls}>{esc(cam)}</td></tr>')
         out.append("</tbody></table>")
         out.append('<p class="cgnv-nota">En rojo, las bajadas con una tendencia estadísticamente significativa desde 1971; en azul, las subidas. '
-                   'Datos de ERA5-Land (Copernicus) en celdas de unos 9 km: en las cumbres hay más nieve.</p>')
+                   'Datos de ERA5 (Copernicus) en celdas de unos 30 km: en las cumbres hay más nieve.</p>')
         bajan = [x for x in con if (x["cambio"].get("total") or {}).get("t") is not None and x["cambio"]["total"]["t"] <= -2]
         if bajan:
             out.append(f"<h2>¿Nieva menos que antes en {esc(mp['corto'])}?</h2>")
@@ -2872,8 +2888,8 @@ def html_macizo(m: dict, xs: list, pxs: list) -> str:
           "No: son datos de modelo y de satélite, no el parte de la estación. Las pistas, los remontes y el estado de la "
           "nieve los da cada estación en su parte oficial.")]
     out.append(faq_html(q))
-    out.append('<div class="cgnv-metodo"><p><b>Cómo se calcula.</b> La nieve caída y el espesor salen del reanálisis '
-               'ERA5-Land de Copernicus (ECMWF), día a día desde 1971; los últimos días, del análisis del ECMWF. La parte '
+    out.append('<div class="cgnv-metodo"><p><b>Cómo se calcula.</b> La nieve caída sale del reanálisis '
+               'ERA5 de Copernicus (ECMWF) y el espesor, de ERA5-Land, día a día desde 1971; los últimos días, del análisis del ECMWF. La parte '
                'nevada del macizo es la del producto IMS de la NOAA (4 km) en un radio de unos 16 km alrededor de cada '
                'punto. La previsión es la mediana de ECMWF, ICON, ARPEGE y GFS; la cota de nieve, 300 m por debajo de la '
                'isoterma de 0 °C. Datos en <a href="' + PAGES + '/nieve/fichas.json">JSON</a> (CC BY 4.0).</p>'
@@ -2957,7 +2973,7 @@ def jsonld_macizo(m: dict) -> str:
 def guardar_datos(pxs: list, xs: list, sat: dict, macs: list) -> None:
     SALIDA.mkdir(parents=True, exist_ok=True)
     gen = AHORA.isoformat().replace("+00:00", "Z")
-    fuente = ("ERA5-Land (Copernicus/ECMWF) vía Open-Meteo · NOAA IMS 4 km (NSIDC G02156) · ECMWF, ICON, ARPEGE y GFS "
+    fuente = ("ERA5 (nieve caída) y ERA5-Land (espesor), Copernicus/ECMWF, vía Open-Meteo · NOAA IMS 4 km (NSIDC G02156) · ECMWF, ICON, ARPEGE y GFS "
               "vía Open-Meteo · cálculo de calentamientoglobal.es")
 
     def ficha(x):
@@ -3232,7 +3248,7 @@ def bloque_tiempo(nombre: str, lat: float, lon: float, alt, slug: str, xs: list,
     enl.append(("/nieve/", "Mapa de la nieve en España"))
     out.append('<ul class="cgnt-enl">' + "".join(f'<li><a href="{esc(a)}">{esc(b)} →</a></li>' for a, b in enl) + "</ul>")
     out.append('<p class="cgnt-pie">Cota de nieve: 300 m por debajo de la isoterma de 0 °C de cada modelo. Espesor y '
-               'nieve caída: ERA5-Land (Copernicus) y previsión de los modelos; superficie nevada: satélite IMS de la NOAA. '
+               'nieve caída: ERA5 y ERA5-Land (Copernicus) y previsión de los modelos; superficie nevada: satélite IMS de la NOAA. '
                'Se actualiza tres veces al día.</p></section>')
     return "".join(out)
 
@@ -3332,7 +3348,7 @@ def publicar(pxs: list, xs: list, sat: dict, macs: list, forzar: bool) -> None:
                    json.dumps({"@context": "https://schema.org", "@type": "Dataset",
                                "name": "Nieve en España: superficie nevada, nieve caída y previsión de nevadas",
                                "description": "Superficie nevada diaria por satélite (NOAA IMS), nieve caída y espesor de "
-                                              "cada temporada desde 1971 (ERA5-Land) y previsión de cuatro modelos a 15 días, "
+                                              "cada temporada desde 1971 (ERA5) y previsión de cuatro modelos a 15 días, "
                                               "por provincia y por macizo.",
                                "url": WEB + "/nieve/", "license": "https://creativecommons.org/licenses/by/4.0/",
                                "dateModified": AHORA.isoformat()[:10],
