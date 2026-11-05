@@ -1,8 +1,8 @@
 # 24 capitales se han calentado una media de 2,3 °C desde 1970; Cuenca, Barcelona y Albacete, las que más
 
-*4 de noviembre de 2026 · calentamientoglobal.es con datos de AEMET*
+*5 de noviembre de 2026 · calentamientoglobal.es con datos de AEMET*
 
-De las 26 capitales con serie de temperatura de AEMET desde 1970 o antes, 24 se han calentado de forma estadísticamente significativa entre 1970 y 2025: 2,3 °C de media, según los valores climatológicos de AEMET calculados por calentamientoglobal.es (4 de noviembre de 2026).
+De las 26 capitales con serie de temperatura de AEMET desde 1970 o antes, 24 se han calentado de forma estadísticamente significativa entre 1970 y 2025: 2,3 °C de media, según los valores climatológicos de AEMET calculados por calentamientoglobal.es (5 de noviembre de 2026).
 
 Cuenca encabeza la lista, con 3,3 °C más que en 1970, seguida de Barcelona (3,1 °C), Albacete (3,0 °C), Zaragoza (2,9 °C) y Málaga (2,6 °C). Completan las diez primeras Zamora (2,5 °C), Madrid, Tarragona y Valencia (2,4 °C cada una) y Soria (2,3 °C). Burgos y Sevilla quedan fuera: su serie tiene desde 1979 un salto que puede deberse a un cambio en la estación. Ciudad Real (3,6 °C desde 1971) y Castellón (2,8 °C desde 1976) no entran porque su serie empieza después de 1970.
 
