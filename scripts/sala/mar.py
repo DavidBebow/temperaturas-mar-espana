@@ -12,6 +12,7 @@ NOAA Coral Reef Watch (dos fuentes mezcladas y un recuento de rachas propio): qu
 """
 from __future__ import annotations
 
+import datetime
 import statistics as st
 
 SECCION = "mar"
@@ -53,6 +54,30 @@ def _meses_de(M, b, mm):
     return [(meses[i][:4], v) for i, v in enumerate(b.get("serie") or []) if i < len(meses) and meses[i][5:] == mm and v is not None]
 
 
+def _normal_fechas(M, b, fecha):
+    """5-11-2026: lo normal para la semana que acaba en `fecha` en la serie de la boya. Comparar 7 días de principios de
+    mes con la media del mes entero inflaba la diferencia (el mar se enfría a lo largo de noviembre: +4 °C en Cabo de
+    Palos). Para cada año, la media mensual se interpola linealmente entre los dos meses que rodean el centro de la
+    semana (cada media mensual, en el día 15). Devuelve ([(año, valor)], mes1, mes2) o None."""
+    c = datetime.date.fromisoformat(fecha) - datetime.timedelta(days=3)
+    if c.day >= 15:
+        a = datetime.date(c.year, c.month, 15)
+        z = datetime.date(c.year + (c.month == 12), c.month % 12 + 1, 15)
+    else:
+        z = datetime.date(c.year, c.month, 15)
+        a = datetime.date(c.year - (c.month == 1), (c.month - 2) % 12 + 1, 15)
+    t = (c - a).days / (z - a).days
+    meses = M.get("meses") or []
+    serie = {meses[i]: v for i, v in enumerate(b.get("serie") or []) if i < len(meses) and v is not None}
+    out = []
+    for y in range(int(meses[0][:4]) if meses else c.year, c.year):
+        d = c.year - y
+        k1, k2 = f"{a.year - d}-{a.month:02d}", f"{z.year - d}-{z.month:02d}"
+        if k1 in serie and k2 in serie:
+            out.append((str(y), serie[k1] * (1 - t) + serie[k2] * t))
+    return out, a.month, z.month
+
+
 def _boyas(R):
     A = (R.leer(R.DOCS / "boyas_actual.json", {}) or {}).get("boyas") or {}
     M = R.leer(R.DOCS / "boyas_mapa.json", {}) or {}
@@ -66,11 +91,12 @@ def _boyas(R):
         previos = [(y, v) for y, v in _meses_de(M, b, mm) if y < anio]
         x = {"k": k, "a": a, "b": b, "nombre": _nombre(k, a), "fecha": fecha, "mes": int(mm), "previos": previos,
              "n_meses": sum(1 for v in (b.get("serie") or []) if v is not None)}
-        if len(previos) >= MIN_MESES and a.get("temp_media_semana") is not None:
+        clim, m1, m2 = _normal_fechas(M, b, fecha) if fecha else ([], None, None)
+        if len(clim) >= MIN_MESES and a.get("temp_media_semana") is not None:
             sem = round(a["temp_media_semana"], 1)
-            media = round(st.mean(v for _, v in previos), 1)
-            x.update(sem=sem, media=media, dif=round(sem - media, 1), y0=previos[0][0], y1=previos[-1][0],
-                     n_por_debajo=sum(1 for _, v in previos if round(v, 1) < sem), mes_max=max(previos, key=lambda t: t[1]))
+            media = round(st.mean(v for _, v in clim), 1)
+            x.update(sem=sem, media=media, dif=round(sem - media, 1), y0=clim[0][0], y1=clim[-1][0], clim=clim, m1=m1, m2=m2,
+                     mes_max=max(previos, key=lambda t: t[1]) if previos else None)
         out.append(x)
     return out, M
 
@@ -80,10 +106,10 @@ def _hecho_semana(R, x, i):
     a, n = x["a"], x["nombre"]
     sobre = "por encima" if x["dif"] > 0 else "por debajo"
     dice = (f"{_de_la_boya(x['k'], n)[0].upper() + _de_la_boya(x['k'], n)[1:]} midió el agua a {R.d1(a['temp'])} °C el {R.dia(x['fecha'])}; de media, "
-            f"{R.d1(x['sem'])} °C en los últimos 7 días, {R.d1(abs(x['dif']))} °C {sobre} de la media de sus {len(x['previos'])} "
-            f"{MESES_PLURAL[x['mes'] - 1]} con dato ({x['y0']}-{x['y1']}), que es de {R.d1(x['media'])} °C.")
+            f"{R.d1(x['sem'])} °C en los últimos 7 días, {R.d1(abs(x['dif']))} °C {sobre} de lo normal para esas fechas en su serie: "
+            f"{R.d1(x['media'])} °C, la media de {len(x['clim'])} años con dato ({x['y0']}-{x['y1']}).")
     return R.hecho(f"boya_{i}", dice, FUENTE, [f"{R.d1(a['temp'])} °C", f"{R.d1(x['sem'])} °C", f"{R.d1(abs(x['dif']))} °C", f"{R.d1(x['media'])} °C",
-                                               str(len(x["previos"])), x["y0"], x["y1"]],
+                                               str(len(x["clim"])), x["y0"], x["y1"]],
                    lugar=n, liga=[f"{R.d1(x['sem'])} °C", f"{R.d1(abs(x['dif']))} °C"])
 
 
@@ -96,6 +122,8 @@ def _hecho_solo_dato(R, x, i):
 
 
 def _hecho_mes_max(R, x, i):
+    if not x.get("mes_max"):
+        return None
     y, v = x["mes_max"]
     return R.hecho(f"boya_mesmax_{i}", f"En {_de_la_boya(x['k'], x['nombre'])}, el {MESES_PLURAL[x['mes'] - 1][:-1]} más cálido de su serie fue el de {y}, "
                    f"con {R.d1(v)} °C de media.", FUENTE, [f"{R.d1(v)} °C", y], lugar=x["nombre"], superlativo=True)
@@ -110,7 +138,7 @@ def _grafico_dif(R, filas, nombre, titulo):
     neg = any(x["dif"] < 0 for x in filas)
     x0 = ml + ((W - ml - mr) * 0.25 if neg else 0)
     esc = (W - mr - x0 - 46) / mx
-    s = [R._t(W - mr + 12, 12, "7 días · mes", 11, R.GRIS),
+    s = [R._t(W - mr + 12, 12, "7 días · normal", 11, R.GRIS),
          f'<line x1="{x0:.1f}" x2="{x0:.1f}" y1="{mt - 4}" y2="{Hh - 28}" stroke="{R.TINTA}" stroke-width="1"></line>']
     for t in range(1, int(mx) + 1):
         s.append(f'<line x1="{x0 + t * esc:.1f}" x2="{x0 + t * esc:.1f}" y1="{mt - 4}" y2="{Hh - 28}" stroke="{R.RAYA}" stroke-width="1"></line>')
@@ -126,13 +154,14 @@ def _grafico_dif(R, filas, nombre, titulo):
         s.append(R._t(x0 + max(x["dif"], 0) * esc + 6, y + 16.5, f"{'+' if x['dif'] > 0 else ''}{R.d1(x['dif'])}", 12.5, R.TINTA, "start", 700 if dest else 500))
         s.append(R._t(W - mr + 12, y + 16.5, f"{R.d1(x['sem'])} · {R.d1(x['media'])}", 12, R.GRIS))
     svg = R._svg(W, Hh, titulo, s)
-    return R.guardar_grafico(nombre, svg, [(x["nombre"], x["fecha"], x["sem"], x["media"], x["dif"], len(x["previos"]), f"{x['y0']}-{x['y1']}") for x in filas],
-                             ["boya", "fecha", "media_7_dias_C", "media_del_mes_en_la_serie_C", "diferencia_C", "meses_con_dato", "periodo"], titulo, [],
-                             "Media de los últimos 7 días de cada boya frente a la media de ese mes en su propia serie (solo meses con dato; al menos 10). "
+    return R.guardar_grafico(nombre, svg, [(x["nombre"], x["fecha"], x["sem"], x["media"], x["dif"], len(x["clim"]), f"{x['y0']}-{x['y1']}") for x in filas],
+                             ["boya", "fecha", "media_7_dias_C", "normal_para_esas_fechas_C", "diferencia_C", "anios_con_dato", "periodo"], titulo, [],
+                             "Media de los últimos 7 días de cada boya frente a lo normal para esas fechas en su propia serie: la media de los años con dato, "
+                             "interpolando cada año entre las medias de los dos meses que rodean esas fechas (al menos 10 años). "
                              "Fuente: Puertos del Estado (vía Copernicus Marine). Cálculo: calentamientoglobal.es.")
 
 
-def _grafico_serie_mes(R, x, previos, nombre, titulo, marca=None, marca_txt=""):
+def _grafico_serie_mes(R, x, previos, nombre, titulo, marca=None, marca_txt="", leyenda="Media del mes, año a año", pie=None):
     """Barras año a año de un mes en la serie de una boya; opcional, una línea con el valor de ahora."""
     W, Hh, ml, mr, mt, mb = 640, 260, 40, 16, 24, 34
     vals = [v for _, v in previos] + ([marca] if marca is not None else [])
@@ -156,11 +185,11 @@ def _grafico_serie_mes(R, x, previos, nombre, titulo, marca=None, marca_txt=""):
         s.append(R._t(W - mr, Y(marca) - 6, marca_txt, 12, R.TINTA, "end", 700))
     s.append(R._t(ml, 14, "°C", 11, R.GRIS))
     svg = R._svg(W, Hh, titulo, s)
-    filas = [(y, v) for y, v in previos] + ([("ahora", marca)] if marca is not None else [])
-    return R.guardar_grafico(nombre, svg, filas, ["anio", "media_mensual_C"], titulo,
-                             [{"t": "banda", "c": "#E3A487", "l": "Media del mes, año a año"}] + ([{"t": "discontinua", "c": R.TINTA, "l": marca_txt}] if marca is not None else []),
-                             f"Media mensual de la temperatura del agua medida por {_de_la_boya(x['k'], x['nombre'])} (solo años con dato). "
-                             "Fuente: Puertos del Estado (vía Copernicus Marine). Cálculo: calentamientoglobal.es.")
+    filas = [(y, round(v, 2)) for y, v in previos] + ([("ahora", marca)] if marca is not None else [])
+    return R.guardar_grafico(nombre, svg, filas, ["anio", "temperatura_C"], titulo,
+                             [{"t": "banda", "c": "#E3A487", "l": leyenda}] + ([{"t": "discontinua", "c": R.TINTA, "l": marca_txt}] if marca is not None else []),
+                             pie or (f"Media mensual de la temperatura del agua medida por {_de_la_boya(x['k'], x['nombre'])} (solo años con dato). "
+                                     "Fuente: Puertos del Estado (vía Copernicus Marine). Cálculo: calentamientoglobal.es."))
 
 
 def _pl(titular, subtitulo, hechos):
@@ -189,8 +218,8 @@ def _historia_boyas(R, boyas):
     hechos = []
     if top:
         quien = (f"Las {len(comp)} boyas" if len(arriba) == len(comp) else f"{len(arriba)} de las {len(comp)} boyas")
-        hechos.append(R.hecho("boyas_n", f"{quien} de Puertos del Estado con al menos {MIN_MESES} {mes_pl} de serie midieron el agua en "
-                              f"los últimos 7 días por encima de la media de {mes} en su propia serie; en {len(uno)}, la diferencia fue de 1 °C o más.",
+        hechos.append(R.hecho("boyas_n", f"{quien} de Puertos del Estado con al menos {MIN_MESES} años de serie para estas fechas midieron el agua en "
+                              f"los últimos 7 días por encima de lo normal para esas fechas en su propia serie; en {len(uno)}, la diferencia fue de 1 °C o más.",
                               FUENTE, [str(len(arriba)), str(len(comp)), str(MIN_MESES), str(len(uno)), "1 °C"]))
     for i, x in enumerate(comp):
         hechos.append(_hecho_semana(R, x, i))
@@ -199,9 +228,9 @@ def _historia_boyas(R, boyas):
                           FUENTE, [f"{R.d1(calida['sem'])} °C"], lugar=calida["nombre"], superlativo=True, liga=[f"{R.d1(calida['sem'])} °C"]))
     x0 = comp[0]
     if x0["dif"] >= 0.5:
-        tit = f"Las boyas de Puertos del Estado miden el mar hasta {R.d1(x0['dif'])} °C por encima de su media de {mes}"
+        tit = f"Las boyas de Puertos del Estado miden el mar hasta {R.d1(x0['dif'])} °C por encima de lo normal para estas fechas"
     else:
-        tit = f"El mar en las boyas de Puertos del Estado, cerca de su media de {mes}"
+        tit = "El mar en las boyas de Puertos del Estado, cerca de lo normal para estas fechas"
     if top:
         trozos = [f"a {R.d1(x['sem'])} °C {_en(x['k'], x['nombre'])}" for x in top]
         sub = "De media en los últimos 7 días, el agua estuvo " + R.lista_y(trozos) + "."
@@ -213,19 +242,22 @@ def _historia_boyas(R, boyas):
     pl = {"titular": tit, "subtitulo": sub, "entradilla": orden[0]["dice"], "cuerpo": [h["dice"] for h in orden[1:]], "claves": [h["dice"] for h in orden[:3]]}
     if not _ok(R, pl, hechos, "boya a boya"):
         return None
-    cif = [{"n": f"+{R.d1(x0['dif'])} °C", "l": f"{x0['nombre']}: últimos 7 días frente a la media de sus {mes_pl}", "tono": "calor"},
-           {"n": f"{len(arriba)} de {len(comp)}", "l": f"boyas por encima de su media de {mes}", "tono": "calor"},
+    cif = [{"n": f"+{R.d1(x0['dif'])} °C", "l": f"{x0['nombre']}: últimos 7 días frente a lo normal para esas fechas", "tono": "calor"},
+           {"n": f"{len(arriba)} de {len(comp)}", "l": "boyas por encima de lo normal para estas fechas", "tono": "calor"},
            {"n": f"{R.d1(calida['sem'])} °C", "l": f"el agua más templada, en {calida['nombre']} (media de 7 días)", "tono": "calor"}]
     puntos = 38 + min(18, 6 * max(0.0, x0["dif"] - 0.5)) + (4 if len(top) >= 5 else 0)
     h = R.historia("mar_boyas", f"{R.HOY.isoformat()}-mar-boya-a-boya", "Mar · boya a boya", "calor", puntos, hechos, pl, cif, fuentes=FUENTE,
-                   metodo=(f"Media de los últimos 7 días de cada boya frente a la media de los {mes_pl} con dato de su propia serie (al menos {MIN_MESES}). "
+                   metodo=("Media de los últimos 7 días de cada boya frente a lo normal para esas fechas en su propia serie: para cada año con dato "
+                           "(al menos 10), la media mensual interpolada linealmente entre los dos meses que rodean el centro de la semana, con cada media "
+                           "mensual situada en el día 15. Así se tiene en cuenta que el mar se enfría (o se calienta) a lo largo del mes. "
                            "Las medias mensuales son las de los días con dato de cada mes."),
-                   limites=["Las series de las boyas tienen meses sin dato; la media de comparación usa solo los que tienen.",
+                   limites=["Las series de las boyas tienen meses sin dato; la comparación usa solo los años con los dos meses.",
                             "Es la temperatura del agua en la boya, no la de toda la costa.",
-                            "Una media de 7 días se compara con la media de un mes entero: es una referencia, no una anomalía climática oficial."],
+                            "Lo normal para unas fechas sale de medias mensuales interpoladas, no de los datos diarios de cada año: es una referencia, "
+                            "no una anomalía climática oficial."],
                    pagina=PAGINA)
     h["fecha"] = fecha
-    h["grafico"] = _grafico_dif(R, comp, h["id"], f"El mar en cada boya: últimos 7 días frente a la media de {mes_pl}")
+    h["grafico"] = _grafico_dif(R, comp, h["id"], "El mar en cada boya: últimos 7 días frente a lo normal para esas fechas")
     # versiones provinciales
     por_prov = {}
     for x in boyas:
@@ -249,23 +281,18 @@ def _version_boyas(R, cod, xs, nac, mes_pl, hid):
     for i, y in enumerate(xs):
         hechos.append(_hecho_semana(R, y, i) if "dif" in y else _hecho_solo_dato(R, y, i))
     if "dif" in x:
-        hechos.append(_hecho_mes_max(R, x, 0))
-        if x["dif"] > 0:
-            if x["n_por_debajo"] == len(x["previos"]):
-                # una semana no es un mes: se dice tal cual, sin hablar de récord (el mes se cierra el último día)
-                hechos.append(R.hecho("boya_rango", f"Ninguno de los {len(x['previos'])} {mes_pl} de su serie ({x['y0']}-{x['y1']}) tuvo una media mensual "
-                                      f"tan alta como la de estos últimos 7 días; la media del mes completo no se conocerá hasta que acabe {R.MESES[x['mes'] - 1]}.",
-                                      FUENTE, [str(len(x["previos"])), x["y0"], x["y1"]], superlativo=True))
-            else:
-                hechos.append(R.hecho("boya_rango", f"La media de los últimos 7 días supera la media mensual de {x['n_por_debajo']} de los {len(x['previos'])} "
-                                      f"{mes_pl} de su serie ({x['y0']}-{x['y1']}).", FUENTE, [str(x["n_por_debajo"]), str(len(x["previos"])), x["y0"], x["y1"]]))
+        # 5-11-2026: fuera el «ningún noviembre tuvo una media tan alta como estos 7 días»: una semana de principios de mes
+        # no se compara con un mes entero
+        hm = _hecho_mes_max(R, x, 0)
+        if hm:
+            hechos.append(hm)
     if nac:
         hechos.append(R.hecho("boyas_nac", "En el conjunto de España: " + nac["dice"][0].lower() + nac["dice"][1:], FUENTE, nac["valores"]))
     if "dif" in x and x["dif"] >= 0.5:
-        tit = f"El mar {_en(x['k'], x['nombre'])}, a {R.d1(x['sem'])} °C en los últimos 7 días: {R.d1(x['dif'])} °C más que su media de {R.MESES[x['mes'] - 1]}"
+        tit = f"El mar {_en(x['k'], x['nombre'])}, a {R.d1(x['sem'])} °C en los últimos 7 días: {R.d1(x['dif'])} °C más de lo normal para estas fechas"
         puntos = 34 + min(20, 7 * (x["dif"] - 0.5))
     elif "dif" in x:
-        tit = f"El mar {_en(x['k'], x['nombre'])}, a {R.d1(x['sem'])} °C de media en los últimos 7 días, cerca de su media de {R.MESES[x['mes'] - 1]}"
+        tit = f"El mar {_en(x['k'], x['nombre'])}, a {R.d1(x['sem'])} °C de media en los últimos 7 días, cerca de lo normal para estas fechas"
         puntos = 26
     else:
         tit = f"{_de_la_boya(x['k'], x['nombre'])[0].upper() + _de_la_boya(x['k'], x['nombre'])[1:]} mide el agua a {R.d1(x['a']['temp'])} °C"
@@ -278,13 +305,17 @@ def _version_boyas(R, cod, xs, nac, mes_pl, hid):
     cif = []
     if "dif" in x:
         cif = [{"n": f"{R.d1(x['sem'])} °C", "l": f"el agua en {x['nombre']}, media de los últimos 7 días", "tono": "calor"},
-               {"n": f"{'+' if x['dif'] > 0 else ''}{R.d1(x['dif'])} °C", "l": f"frente a la media de sus {len(x['previos'])} {mes_pl} ({x['y0']}-{x['y1']})", "tono": "calor"}]
+               {"n": f"{'+' if x['dif'] > 0 else ''}{R.d1(x['dif'])} °C", "l": f"frente a lo normal para esas fechas ({len(x['clim'])} años, {x['y0']}-{x['y1']})", "tono": "calor"}]
     else:
         cif = [{"n": f"{R.d1(x['a']['temp'])} °C", "l": f"el agua en {x['nombre']} el {R.dia(x['fecha'])}", "tono": "calor"}]
     v = {"provincia": R.nprov(cod), "slug": R.PROV[cod][1], "hechos": hechos, "plantilla": pl, "cifras": cif, "puntos": round(puntos, 1)}
     if "dif" in x:
-        v["grafico"] = _grafico_serie_mes(R, x, x["previos"], f"{hid}-{cod}", f"El agua en {x['nombre']} en {mes_pl[:-1]}, año a año",
-                                          marca=x["sem"], marca_txt=f"Últimos 7 días: {R.d1(x['sem'])} °C")
+        v["grafico"] = _grafico_serie_mes(R, x, x["clim"], f"{hid}-{cod}", f"El agua en {x['nombre']} en estas fechas, año a año",
+                                          marca=x["sem"], marca_txt=f"Últimos 7 días: {R.d1(x['sem'])} °C",
+                                          leyenda="Lo normal para estas fechas, año a año (interpolado)",
+                                          pie=(f"Temperatura del agua medida por {_de_la_boya(x['k'], x['nombre'])} para estas fechas en cada año con dato, "
+                                               f"interpolada entre sus medias de {R.MESES[x['m1'] - 1]} y {R.MESES[x['m2'] - 1]}; la línea, la media de los "
+                                               "últimos 7 días. Fuente: Puertos del Estado (vía Copernicus Marine). Cálculo: calentamientoglobal.es."))
     return v
 
 
