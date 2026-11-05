@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -1520,7 +1520,7 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv .lede{font-size:18.5px;line-height:1.55;margin:0;color:var(--p-sub);max-width:36em}
 .cgnv-panel .cg-ssr-slot,.cgnv-panel .cgnv-dia{display:contents}
 .cg-ssr-slot{visibility:hidden;font-size:0;line-height:0}
-.cg-ssr-slot .cgnv-hoy,.cg-ssr-slot .cgnv-cifras,.cg-ssr-slot .cgnv-prev,.cg-ssr-slot .cgnv-graf-p,.cg-ssr-slot .cgnv-mapaw,.cg-ssr-slot .cgnv-macs{visibility:visible;font-size:17px;line-height:1.55}
+.cg-ssr-slot .cgnv-hoy,.cg-ssr-slot .cgnv-cifras,.cg-ssr-slot .cgnv-prev,.cg-ssr-slot .cgnv-graf-p,.cg-ssr-slot .cgnv-top,.cg-ssr-slot .cgnv-macs{visibility:visible;font-size:17px;line-height:1.55}
 .cgnv-hoy{grid-area:hoy;align-self:end;background:rgba(255,255,255,.06);border:1px solid rgba(191,230,255,.16);border-radius:22px;padding:22px 24px}
 .cgnv .cgnv-hoy h2{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;font-weight:500;letter-spacing:0;color:var(--p-mut);margin:0}
 .cgnv .cgnv-hoy-v{margin:4px 0 8px;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
@@ -1559,9 +1559,38 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .cgnv-chips li{background:var(--p-cel);border-radius:999px;padding:7px 14px;font-size:15px;color:var(--p-sub)}
 .cgnv-chips li b{color:#fff;font-weight:700}.cgnv-chips li.cgnv-chip-n{background:#1f4d70}
-.cgnv-panel-hub{grid-template-areas:"intro hoy" "mapa mapa" "prev prev" "macs macs" "graf graf";grid-template-rows:repeat(5,auto)}
-.cgnv-mapaw{grid-area:mapa;margin-top:30px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:24px;align-items:center}
-.cgnv-mapaw .cgnv-top{font-size:15px;color:var(--p-sub)}
+.cgnv-panel-hub{grid-template-areas:"intro hoy" "mapa top" "prev prev" "macs macs" "graf graf";grid-template-rows:repeat(5,auto)}
+.cgnv-mapaw{grid-area:mapa;margin-top:30px;align-self:center}
+.cgnv-mapa a{cursor:pointer;outline:none}
+.cgnv-ley{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--p-mut);margin-top:10px}
+.cgnv-ley span{display:inline-flex;align-items:center;gap:6px}.cgnv-ley i{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid rgba(191,230,255,.25)}
+.cgnv-top{grid-area:top;margin-top:30px;align-self:center;font-size:15px;color:var(--p-sub)}
+.cgnv-macs-h{grid-column:1/-1;margin:4px 0 0!important}
+.cgnv-lista{margin:18px 0 10px;background:#0c2133;border-radius:24px;padding:12px 14px;color:var(--p-txt)}
+.cgnv-lista-c,.cgnv .cgnv-fila{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.6fr) 90px 120px;gap:14px;align-items:center}
+.cgnv-lista-c{font-size:12.5px;color:var(--p-mut);padding:6px 12px 8px;text-transform:uppercase;letter-spacing:.04em}
+.cgnv-lista-c span:nth-child(n+3){text-align:right}
+.cgnv .cgnv-fila{padding:10px 12px;border-radius:14px;text-decoration:none;color:var(--p-txt);border-top:1px solid rgba(191,230,255,.08)}
+.cgnv .cgnv-fila:hover,.cgnv .cgnv-fila:focus-visible{background:#163a55;color:#fff}
+.cgnv-fila-n b{display:block;font-family:"Bricolage Grotesque",-apple-system,"Segoe UI",sans-serif;font-size:17px;font-weight:700;color:#fff;line-height:1.2}
+.cgnv-fila-n small{display:block;font-size:13px;color:var(--p-mut);line-height:1.3}
+.cgnv-fila-b{display:flex;align-items:center;gap:10px}
+.cgnv-fila-b i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,#3a7fb3,#bfe6ff)}
+.cgnv-fila-b em{font-style:normal;font-weight:700;font-size:15px;color:#fff;white-space:nowrap}
+.cgnv-chip{justify-self:end;font-size:13.5px;font-weight:700;padding:4px 10px;border-radius:999px;background:#163a55;color:var(--p-sub);white-space:nowrap}
+.cgnv-chip-baja{background:rgba(255,122,69,.18);color:#ffb08f}.cgnv-chip-sube{background:rgba(140,198,238,.2);color:#bfe6ff}
+.cgnv-fila-d{text-align:right;font-weight:700;font-size:15px;color:#fff}
+.cgnv-h3{font-size:20px!important;color:var(--noche);margin:28px 0 10px!important}
+.cgnv-retrasos{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;margin:8px 0}
+.cgnv .cgnv-ret{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n d" "f f" "b b";gap:4px 12px;background:#0c2133;border-radius:18px;padding:14px 16px;text-decoration:none;color:var(--p-sub)}
+.cgnv .cgnv-ret:hover{background:#163a55}
+.cgnv-ret-n{grid-area:n;font-weight:700;color:#fff;font-size:16px;line-height:1.25}.cgnv-ret-n small{display:block;font-weight:400;font-size:13px;color:var(--p-mut)}
+.cgnv-ret-d{grid-area:d;font-family:"Bricolage Grotesque",sans-serif;font-size:24px;font-weight:760;color:#ff9a70;white-space:nowrap}
+.cgnv-ret-f{grid-area:f;font-size:14px}.cgnv-ret-f b{color:#fff}
+.cgnv-ret-b{grid-area:b;height:8px;border-radius:4px;background:#163a55;margin-top:4px}.cgnv-ret-b i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#bfe6ff,#ff7a45)}
+.cgnv-cal-n{cursor:pointer}a:hover .cgnv-cal-n{fill:#fff;text-decoration:underline}
+.cgnv-graf-des{max-width:860px}
+.cgnv .cgnv-graf figcaption a{color:#bfe6ff}
 .cgnv-top ol{margin:8px 0 0;padding:0;list-style:none;counter-reset:t}
 .cgnv-top li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid rgba(191,230,255,.12)}
 .cgnv-top li b{color:#fff}
@@ -1618,8 +1647,8 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-mac .cgnv-dl.cgnv-cerca{grid-template-columns:1fr auto auto;gap:6px 12px}
 .cgnv-cerca .cgnv-dt:first-child+.cgnv-dd,.cgnv-cerca .cgnv-dt:first-child+.cgnv-dd+.cgnv-dd{color:var(--p-mut);font-weight:400;font-size:12.5px}
 @media(max-width:860px){.cgnv-panel{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "hoy" "cifras" "prev" "graf";grid-template-rows:repeat(5,auto);padding:28px 22px 24px}
-.cgnv-panel-hub{grid-template-areas:"intro" "hoy" "mapa" "prev" "macs" "graf";grid-template-rows:repeat(6,auto)}
-.cgnv-hoy{margin-top:24px}.cgnv h1{font-size:40px}.cgnv-graf-p{grid-template-columns:1fr}.cgnv-mapaw{grid-template-columns:1fr}}
+.cgnv-panel-hub{grid-template-areas:"intro" "hoy" "mapa" "top" "prev" "macs" "graf";grid-template-rows:repeat(7,auto)}
+.cgnv-hoy{margin-top:24px}.cgnv h1{font-size:40px}.cgnv-graf-p{grid-template-columns:1fr}.cgnv-top{margin-top:18px}}
 @media(max-width:600px){.cgnv{padding:12px 10px 4px;font-size:16.5px}
 .cgnv-graf-p .cgnv-fig{padding:14px 10px 10px}
 .cgnv-panel{padding:22px 14px 16px;border-radius:22px;background:radial-gradient(600px 400px at 90% -10%,#1d4a6e 0,#0c2133 60%)}
@@ -1632,7 +1661,12 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-graf{padding:16px 12px 12px;border-radius:18px;margin-left:-4px;margin-right:-4px}
 .cgnv-svgw{overflow-x:auto;direction:rtl}.cgnv-svgw svg{min-width:600px;direction:ltr}
 .cgnv-antes{padding:16px 14px;gap:10px 12px}.cgnv-barra{height:34px}.cgnv-barra b{font-size:17px}
-.cgnv-tabla{font-size:14.5px}.cgnv-escala .cgnv-esc{width:70px}.cgnv-metodo{padding:18px 16px 6px}}
+.cgnv-tabla{font-size:14.5px}
+.cgnv-lista{padding:8px 6px;border-radius:18px}.cgnv-lista-c{display:none}
+.cgnv .cgnv-fila{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n c" "b d";gap:6px 10px;padding:12px 10px}
+.cgnv-fila-n{grid-area:n}.cgnv-fila-b{grid-area:b}.cgnv-chip{grid-area:c}.cgnv-fila-d{grid-area:d;font-size:13px;font-weight:400;color:var(--p-mut)}
+.cgnv-fila-d::after{content:" días de nieve en la capital"}
+.cgnv-retrasos{grid-template-columns:1fr}.cgnv-escala .cgnv-esc{width:70px}.cgnv-metodo{padding:18px 16px 6px}}
 @media(prefers-reduced-motion:reduce){.cgnv *{transition:none!important}}
 </style>"""
 
@@ -2000,6 +2034,10 @@ def html_prov(px: dict) -> str:
     if fp:
         out.append(f"<h2>¿Cuándo es la primera nevada en {esc(mo['nombre'])}?</h2>")
         out.append(f"<p>{esc(fp)}</p>")
+        if (mo["cambio"].get("primera") or {}).get("t1") is not None:
+            out.append('<figure class="cgnv-graf cgnv-graf-des">' + svg_desplazamiento(mo) + '<figcaption>Fecha típica (mediana) '
+                       'de la primera nevada del otoño en 1971-1990 y en 2006-2025. <a href="/nieve/#primera-nevada">Compárala '
+                       'con el resto de España</a>.</figcaption></figure>')
         out.append('<figure class="cgnv-graf"><div class="cgnv-svgw">' + svg_primera(mo) + "</div>"
                    "<figcaption>Cada barra va de la primera a la última nevada de una temporada (días con 1 cm o más de "
                    "nieve nueva); las claras son las de 1991 a 2021. Las líneas discontinuas marcan la fecha típica de la "
@@ -2225,6 +2263,217 @@ def resumen_macizos(xs: list, sat: dict) -> list:
     return out
 
 
+# ------------------------------------------------------------------------- hub: mapa pulsable, lista y primera nevada
+# El mapa va en el contenido fijo (SVG con un enlace por provincia, que WordPress deja pasar en el contenido) y el bloque
+# del día solo dice de qué color va cada provincia: un <span> oculto con una clase por provincia (cgnv-mc-<slug>-<nivel>)
+# y reglas .cgnv:has(.cgnv-mc-<slug>-<nivel>) .cgnv-p-<slug>{fill:…}. Así el mapa es pulsable sin reescribir la página
+# cada día. Sin :has() (navegadores muy viejos) el mapa sale en un solo color, pero sigue siendo pulsable.
+NIVELES_MAPA = [0.5, 5, 15, 30, 50]          # % de la provincia nevado: 0 · <5 · <15 · <30 · <50 · 50 o más
+COLORES_MAPA = [FONDO] + [color_nieve(min(1.0, 0.15 + v / 60)) for v in (2.5, 10, 22, 40, 60)]
+
+
+def nivel_mapa(v) -> int:
+    if v is None or v < NIVELES_MAPA[0]:
+        return 0
+    return sum(1 for u in NIVELES_MAPA if v >= u)
+
+
+def css_mapa() -> str:
+    r = [f".cgnv-p{{fill:{FONDO};stroke:#0c2133;stroke-width:1.2;transition:fill .2s}}",
+         ".cgnv-mapa a:hover .cgnv-p,.cgnv-mapa a:focus .cgnv-p{stroke:#fff;stroke-width:2.2}",
+         ".cgnv-mc{display:none}"]
+    for slug, *_ in PROVINCIAS:
+        for n in range(1, 6):
+            r.append(f".cgnv:has(.cgnv-mc-{slug}-{n}) .cgnv-p-{slug}{{fill:{COLORES_MAPA[n]}}}")
+    return "\n".join(r)
+
+
+def svg_mapa_hub() -> str:
+    trazos = mapa_trazos()
+    W, H = round(14.6 * math.cos(math.radians(40)) * 46), round(10.0 * 46)
+    s = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-labelledby="cgnv-maph" class="cgnv-svg cgnv-mapa">'
+         '<title id="cgnv-maph">Mapa de la nieve en España hoy: pulsa en una provincia para ver su página</title>',
+         f'<rect x="2" y="{(44 - 36.4) * 46:.0f}" width="{(5.3 * math.cos(math.radians(40)) * 46):.0f}" height="{2.6 * 46:.0f}" '
+         f'rx="8" fill="none" stroke="{REJILLA}" stroke-dasharray="4 4"/>']
+    for slug, prov, *_ in PROVINCIAS:
+        s.append(f'<a href="/nieve/{slug}/" aria-label="Nieve en {esc(prov)}"><path class="cgnv-p cgnv-p-{slug}" '
+                 f'd="{trazos.get(slug, "")}"><title>{esc(prov)}</title></path></a>')
+    s.append("</svg>")
+    return "".join(s)
+
+
+def leyenda_mapa() -> str:
+    et = ["sin nieve", "menos del 5 %", "5-15 %", "15-30 %", "30-50 %", "50 % o más"]
+    return ('<div class="cgnv-ley">' + "".join(f'<span><i style="background:{c}"></i>{e}</span>'
+                                               for c, e in zip(COLORES_MAPA, et)) + "</div>")
+
+
+def html_lista_provincias(pxs: list) -> str:
+    """La nieve de un año normal en la montaña de cada provincia, con barra, cambio y días de nieve en la capital."""
+    filas = sorted([px for px in pxs if px["monte"]["clima"].get("total") is not None],
+                   key=lambda p: -p["monte"]["clima"]["total"])
+    if not filas:
+        return ""
+    mx = max(p["monte"]["clima"]["total"] for p in filas) or 1
+    out = ['<div class="cgnv-lista"><div class="cgnv-lista-c"><span>Provincia y montaña</span><span>Nieve en un año normal'
+           '</span><span>Cambio</span><span>Días/año en la capital</span></div>']
+    for px in filas:
+        mo, ca = px["monte"], px["capital"]
+        c = mo["cambio"].get("total") or {}
+        if c.get("pct") is None:
+            chip = '<span class="cgnv-chip">—</span>'
+        else:
+            sig = (c.get("t") or 0) <= -2 and c["pct"] < 0
+            sube = (c.get("t") or 0) >= 2 and c["pct"] > 0
+            txt = ("+" if c["pct"] > 0 else "−") + entero(abs(c["pct"])) + " %"
+            chip = f'<span class="cgnv-chip{" cgnv-chip-baja" if sig else " cgnv-chip-sube" if sube else ""}">{esc(txt)}</span>'
+        d = ca["clima"].get("dias")
+        out.append(f'<a class="cgnv-fila" href="/nieve/{esc(px["slug"])}/"><span class="cgnv-fila-n"><b>{esc(px["provincia"])}</b>'
+                   f'<small>{esc(mo["nombre"])} · {esc(entero(mo["alt"]))} m</small></span>'
+                   f'<span class="cgnv-fila-b"><i style="width:{max(2, 100 * mo["clima"]["total"] / mx):.0f}%"></i>'
+                   f'<em>{esc(cm(mo["clima"]["total"]))}</em></span>{chip}'
+                   f'<span class="cgnv-fila-d">{esc("—" if d is None else (num(d) if d < 10 else entero(d)))}</span></a>')
+    out.append("</div>")
+    return "".join(out)
+
+
+def svg_calendario_primera(filas: list, movil: bool = False) -> str:
+    """El calendario de la nieve, montaña a montaña: cada día de la temporada coloreado según en cuántas temporadas de
+    1991 a 2021 nevó, con la fecha típica de la primera nevada en 1971-1990 (raya) y en 2006-2025 (punto)."""
+    sf = "-m" if movil else ""
+    if movil:
+        W, L, R, T, FH, G, F = 380, 112, 46, 30, 13, 5, 11.5
+    else:
+        W, L, R, T, FH, G, F = 860, 250, 74, 34, 14, 5, 13
+    lo, hi = indice(date(2021, 9, 1)), indice(date(2022, 6, 30))
+    AN = W - L - R
+    H = T + len(filas) * (FH + G) + 30
+    X = lambda i: L + AN * (min(max(i, lo), hi) - lo + 0.5) / (hi - lo + 1)
+    s = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-labelledby="cgnv-cal{sf}" class="cgnv-svg">'
+         f'<title id="cgnv-cal{sf}">Calendario de la nieve en {len(filas)} montañas de España y cuánto se ha movido la primera '
+         f'nevada entre 1971-1990 y 2006-2025</title>']
+    for m, lab in MESES_EJE:
+        i = indice(date(2021 if m >= 8 else 2022, m, 1))
+        if lo <= i <= hi and not (movil and m % 2 == 0):
+            s.append(f'<text x="{X(i + 14):.1f}" y="{T - 12}" font-size="{F}" text-anchor="middle" fill="{GRIS}">{lab}</text>')
+    s.append(f'<text x="{W}" y="{T - 12}" font-size="{F}" text-anchor="end" fill="{GRIS}">{"días" if movil else "cambio"}</text>')
+    for k, x in enumerate(filas):
+        y = T + k * (FH + G)
+        c, cp = x["clima"], x["cambio"]["primera"]
+        prob = [v or 0 for v in suave(c.get("prob") or [0] * 365, 3)]
+        nombre = x["nombre"]
+        lim = 15 if movil else 30
+        if len(nombre) > lim:
+            nombre = nombre[:lim - 1] + "…"
+        s.append(f'<a href="/nieve/{esc(x["prov"])}/"><text x="{L - 8}" y="{y + FH - 2}" font-size="{F}" text-anchor="end" '
+                 f'fill="{TINTA}" class="cgnv-cal-n">{esc(nombre)}</text></a>')
+        s.append(f'<rect x="{L}" y="{y}" width="{AN}" height="{FH}" rx="3" fill="#0f2a40"/>')
+        # tramos de color (rachas de días con el mismo color)
+        i = lo
+        while i <= hi:
+            p = prob[i]
+            if p < 0.01:
+                i += 1
+                continue
+            col = color_nieve(min(1.0, p / 0.4))
+            j = i
+            while j + 1 <= hi and prob[j + 1] >= 0.01 and color_nieve(min(1.0, prob[j + 1] / 0.4)) == col:
+                j += 1
+            s.append(f'<rect x="{X(i) - AN / (hi - lo + 1) / 2:.1f}" y="{y}" width="{(j - i + 1) * AN / (hi - lo + 1) + 0.4:.1f}" '
+                     f'height="{FH}" fill="{col}"/>')
+            i = j + 1
+        x1, x2 = X(cp["t1"]), X(cp["t2"])
+        col = BRASA if cp["dias"] >= 3 and (cp.get("t") or 0) >= 2 else "#ffffff"
+        s.append(f'<line x1="{x1:.1f}" x2="{x2:.1f}" y1="{y + FH / 2:.1f}" y2="{y + FH / 2:.1f}" stroke="{col}" stroke-width="2"/>'
+                 f'<line x1="{x1:.1f}" x2="{x1:.1f}" y1="{y - 1}" y2="{y + FH + 1}" stroke="{col}" stroke-width="2"/>'
+                 f'<circle cx="{x2:.1f}" cy="{y + FH / 2:.1f}" r="{3.6 if movil else 4.2}" fill="{col}" stroke="#0c2133" '
+                 f'stroke-width="1.2"><title>{esc(x["nombre"])}: primera nevada típica hacia el {esc(dia_mes(cp["t1"]))} en '
+                 f'1971-1990 y hacia el {esc(dia_mes(cp["t2"]))} en 2006-2025</title></circle>')
+        d = cp["dias"]
+        txt = "=" if abs(d) < 3 else (("+" if d > 0 else "−") + str(abs(d)) + (" d" if movil else " días"))
+        s.append(f'<text x="{W}" y="{y + FH - 2}" font-size="{F}" text-anchor="end" font-weight="700" '
+                 f'fill="{BRASA if d >= 3 and (cp.get("t") or 0) >= 2 else GRIS if abs(d) < 3 else TINTA}">{esc(txt)}</text>')
+    s.append("</svg>")
+    return "".join(s)
+
+
+def html_primera_hub(montes: list) -> str:
+    filas = sorted([x for x in montes if (x["cambio"].get("primera") or {}).get("t1") is not None],
+                   key=lambda x: x["cambio"]["primera"]["t2"])
+    if len(filas) < 3:
+        return ""
+    dl = [x["cambio"]["primera"]["dias"] for x in filas]
+    med = st.median(dl)
+    tarde = [x for x in filas if x["cambio"]["primera"]["dias"] >= 3]
+    sig = [x for x in tarde if (x["cambio"]["primera"].get("t") or 0) >= 2]
+    out = ['<h2 id="primera-nevada">¿Llega más tarde la primera nevada? Historia de las primeras nevadas en España</h2>']
+    t = (f"En {len(tarde)} de las {len(filas)} montañas de referencia la primera nevada del otoño llega hoy más tarde que "
+         f"en 1971-1990")
+    t += (f": de mediana, {entero(abs(med))} días {'más tarde' if med > 0 else 'antes'}." if abs(med) >= 1 else
+          ", aunque de mediana la fecha apenas se ha movido.")
+    if sig:
+        t += (f" En {len(sig)} el retraso es estadísticamente significativo, no ruido de unos pocos inviernos: "
+              + lista([f"{x['nombre']} ({x['cambio']['primera']['dias']} días)"
+                       for x in sorted(sig, key=lambda x: -x["cambio"]["primera"]["dias"])[:3]]) + ".")
+    out.append(f"<p>{esc(t)}</p>")
+    out.append('<figure class="cgnv-graf"><div class="cgnv-d">' + svg_calendario_primera(filas) + '</div><div class="cgnv-m">'
+               + svg_calendario_primera(filas, True) + '</div><div class="cgnv-clave"><span class="cgnv-escala">nevó en pocas '
+               'temporadas<span class="cgnv-esc"></span>en muchas</span><span>raya: primera nevada típica en 1971-1990 · '
+               'punto: en 2006-2025 · en naranja, retrasos significativos</span></div><figcaption>Cada fila es la montaña de '
+               'referencia de una provincia y cada columna, un día de septiembre a junio: cuanto más blanco, en más temporadas '
+               'de 1991 a 2021 nevó ese día (1 cm o más). A la derecha, cuántos días se ha movido la primera nevada. Pulsa en '
+               'una montaña para ver su provincia. Fuente: ERA5-Land (Copernicus).</figcaption></figure>')
+    top = sorted(tarde, key=lambda x: -x["cambio"]["primera"]["dias"])[:8]
+    if top:
+        out.append("<h3 class=\"cgnv-h3\">Donde más se ha retrasado</h3>")
+        mx = max(x["cambio"]["primera"]["dias"] for x in top)
+        out.append('<div class="cgnv-retrasos">')
+        for x in top:
+            cp = x["cambio"]["primera"]
+            out.append(f'<a class="cgnv-ret" href="/nieve/{esc(x["prov"])}/"><span class="cgnv-ret-n">{esc(x["nombre"])}'
+                       f'<small>{esc(x["provincia"])}</small></span><span class="cgnv-ret-f">{esc(dia_mes(cp["t1"]))} → '
+                       f'<b>{esc(dia_mes(cp["t2"]))}</b></span><span class="cgnv-ret-b"><i style="width:{100 * cp["dias"] / mx:.0f}%">'
+                       f'</i></span><span class="cgnv-ret-d">+{cp["dias"]} días</span></a>')
+        out.append('</div><p class="cgnv-nota">Fecha típica (mediana) de la primera nevada del otoño en 1971-1990 → en '
+                   '2006-2025.</p>')
+    return "".join(out)
+
+
+def svg_desplazamiento(x: dict) -> str:
+    """Una línea de septiembre a enero con la primera nevada típica de 1971-1990 y la de 2006-2025."""
+    cp = x["cambio"].get("primera")
+    if not cp:
+        return ""
+    W, H, L, R = 760, 120, 20, 20
+    lo, hi = indice(date(2021, 9, 1)), indice(date(2022, 1, 31))
+    lo = min(lo, cp["t1"] - 10, cp["t2"] - 10)
+    hi = max(hi, cp["t1"] + 10, cp["t2"] + 10)
+    X = lambda i: L + (W - L - R) * (i - lo) / (hi - lo)
+    y = 70
+    s = [f'<svg viewBox="0 0 {W} {H}" role="img" aria-labelledby="cgnv-des" class="cgnv-svg">'
+         f'<title id="cgnv-des">Primera nevada típica en {esc(x["nombre"])}: hacia el {esc(dia_mes(cp["t1"]))} en 1971-1990 y '
+         f'hacia el {esc(dia_mes(cp["t2"]))} en 2006-2025</title>',
+         f'<line x1="{L}" x2="{W - R}" y1="{y}" y2="{y}" stroke="{REJILLA}" stroke-width="2"/>']
+    for m, lab in MESES_EJE:
+        i = indice(date(2021 if m >= 8 else 2022, m, 1))
+        if lo <= i <= hi:
+            s.append(f'<line x1="{X(i):.1f}" x2="{X(i):.1f}" y1="{y - 5}" y2="{y + 5}" stroke="{REJILLA}"/>'
+                     f'<text x="{X(i) + 4:.1f}" y="{y + 26}" font-size="13" fill="{GRIS}">1 {lab}</text>')
+    x1, x2 = X(cp["t1"]), X(cp["t2"])
+    col = BRASA if abs(cp["dias"]) >= 3 else TINTA
+    s.append(f'<line x1="{x1:.1f}" x2="{x2:.1f}" y1="{y}" y2="{y}" stroke="{col}" stroke-width="5" stroke-linecap="round"/>'
+             f'<circle cx="{x1:.1f}" cy="{y}" r="8" fill="#0c2133" stroke="#bfe6ff" stroke-width="3"/>'
+             f'<circle cx="{x2:.1f}" cy="{y}" r="9" fill="#fff" stroke="{col}" stroke-width="3"/>')
+    izq = x1 <= x2
+    s.append(f'<text x="{x1:.1f}" y="{y - 22}" font-size="14" text-anchor="{"end" if izq else "start"}" fill="#bfe6ff">'
+             f'1971-1990: {esc(dia_mes(cp["t1"]))}</text>'
+             f'<text x="{x2:.1f}" y="{y - 22}" font-size="15" font-weight="700" text-anchor="{"start" if izq else "end"}" '
+             f'fill="#ffffff">2006-2025: {esc(dia_mes(cp["t2"]))}</text>')
+    s.append("</svg>")
+    return "".join(s)
+
+
+
 def html_hub(pxs: list, xs: list) -> str:
     montes = [px["monte"] for px in pxs]
     con_clima = [x for x in montes if x["clima"].get("total") is not None]
@@ -2234,24 +2483,15 @@ def html_hub(pxs: list, xs: list) -> str:
            '<p class="lede">El mapa de la nieve en España cada mañana, según el satélite; dónde va a nevar y a qué cota en los '
            'próximos 15 días, según cuatro modelos; y cuánta nieve ha caído esta temporada en cada montaña y en cada capital '
            'frente a los inviernos desde 1971.</p></div>',
+           '<div class="cgnv-mapaw">' + svg_mapa_hub() + leyenda_mapa() + '</div>',
            f'<div class="cg-ssr-slot">{ANCLA}</div>', "</div>"]
+    out[0] = out[0].replace("</style>", css_mapa() + "\n</style>")
     if con_clima:
         out.append("<h2>La nieve de un año normal, provincia a provincia</h2>")
         out.append("<p>Nieve caída en una temporada normal (1991-92 a 2020-21) en la montaña de referencia de cada provincia y "
                    "días de nieve al año en su capital. Y cómo ha cambiado entre 1971-1990 y 2006-2025.</p>")
-        out.append('<table class="cgnv-tabla"><thead><tr><th>Provincia</th><th>Montaña</th><th class="n">Nieve por '
-                   'temporada</th><th class="n">Cambio</th><th class="n">Días de nieve en la capital</th></tr></thead><tbody>')
-        for px in sorted(pxs, key=lambda p: -(p["monte"]["clima"].get("total") or 0)):
-            mo, ca = px["monte"], px["capital"]
-            c = mo["cambio"].get("total") or {}
-            ch = "—" if c.get("pct") is None else (("+" if c["pct"] > 0 else "−") + entero(abs(c["pct"])) + " %")
-            cls = ' class="n baja"' if c.get("pct") is not None and c["pct"] < 0 and (c.get("t") or 0) <= -2 else ' class="n"'
-            out.append(f'<tr><td><a href="/nieve/{esc(px["slug"])}/">{esc(px["provincia"])}</a></td><td>{esc(mo["nombre"])} '
-                       f'<span class="cgnv-nota">({entero(mo["alt"])} m)</span></td>'
-                       f'<td class="n">{esc(cm(mo["clima"].get("total")))}</td><td{cls}>{esc(ch)}</td>'
-                       f'<td class="n">{esc("—" if ca["clima"].get("dias") is None else num(ca["clima"]["dias"]))}</td></tr>')
-        out.append("</tbody></table>")
-        out.append('<p class="cgnv-nota">En rojo, los cambios con una tendencia estadísticamente significativa desde 1971. '
+        out.append(html_lista_provincias(pxs))
+        out.append('<p class="cgnv-nota">En rojo, las bajadas con una tendencia estadísticamente significativa desde 1971; en azul, las subidas. '
                    'Son datos de modelo en celdas de unos 9 km: en las cumbres hay más nieve que la que se ve aquí.</p>')
         bajan = [x for x in con_clima if (x["cambio"].get("total") or {}).get("t") is not None
                  and x["cambio"]["total"]["t"] <= -2 and (x["cambio"]["total"].get("pct") or 0) < 0]
@@ -2262,28 +2502,7 @@ def html_hub(pxs: list, xs: list) -> str:
                        f"cincuenta años, con una tendencia estadísticamente significativa. Donde más ha bajado: "
                        + esc(lista([f"{x['nombre']} ({x['provincia']}), un {entero(-x['cambio']['total']['pct'])} % menos"
                                     for x in peor])) + ".</p>")
-    primeras = [x for x in con_clima if (x["cambio"].get("primera") or {}).get("t") is not None]
-    tarde = sorted([x for x in primeras if x["cambio"]["primera"]["t"] >= 2 and x["cambio"]["primera"]["dias"] >= 3],
-                   key=lambda x: -x["cambio"]["primera"]["dias"])
-    if primeras:
-        out.append("<h2>¿Cuándo es la primera nevada?</h2>")
-        out.append("<p>La fecha típica de la primera nevada en cada montaña (días con 1 cm o más de nieve nueva, mediana de "
-                   "1991 a 2021) y cuántos días se ha movido entre 1971-1990 y 2006-2025.</p>")
-        out.append('<table class="cgnv-tabla"><thead><tr><th>Montaña</th><th>Primera nevada</th><th>Última nevada</th>'
-                   '<th class="n">Cambio de la primera</th></tr></thead><tbody>')
-        for x in sorted(primeras, key=lambda x: x["clima"]["primera"]):
-            cp = x["cambio"]["primera"]
-            sig = abs(cp["t"]) >= 2
-            ch = "igual" if abs(cp["dias"]) < 3 else (f"{abs(cp['dias'])} días {'más tarde' if cp['dias'] > 0 else 'antes'}")
-            out.append(f'<tr><td><a href="/nieve/{esc(x["prov"])}/">{esc(x["nombre"])}</a> <span class="cgnv-nota">'
-                       f'({esc(x["provincia"])})</span></td><td>{esc(dia_mes(x["clima"]["primera"]))}</td>'
-                       f'<td>{esc(dia_mes(x["clima"]["ultima"]))}</td>'
-                       f'<td class="n{" baja" if sig and cp["dias"] >= 3 else ""}">{esc(ch)}</td></tr>')
-        out.append("</tbody></table>")
-        if tarde:
-            out.append(f"<p>En {len(tarde)} montañas la primera nevada llega hoy claramente más tarde que hace cincuenta años, "
-                       f"con una tendencia estadísticamente significativa. Donde más: "
-                       + esc(lista([f"{x['nombre']}, {x['cambio']['primera']['dias']} días" for x in tarde[:3]])) + ".</p>")
+    out.append(html_primera_hub(montes))
     q = [("¿Dónde nieva más en España?",
           "En el Pirineo, la Cordillera Cantábrica y las cumbres de Sierra Nevada, el Sistema Central y el Sistema Ibérico. "
           "Por debajo de 1.000 metros, la nieve es escasa salvo en el norte de la Meseta, Soria, Teruel o Burgos."),
@@ -2406,17 +2625,16 @@ def ssr_hub(pxs: list, xs: list, sat: dict, macs: list) -> str:
     # mapa
     vals = {px["slug"]: hoy.get(px["slug"]) for px in pxs}
     top = sorted([(v, px) for px in pxs for v in [vals[px["slug"]]] if v is not None and v >= 0.5], key=lambda z: -z[0])
-    p.append('<div class="cgnv-mapaw"><div>' + img_svg("mapa-hoy", svg_mapa(vals, "Parte de cada provincia cubierta de "
-                                                                          "nieve hoy, según el satélite IMS de la NOAA"),
-                                                     "Mapa de la nieve en España hoy, provincia a provincia") + "</div>")
+    p.append('<span class="cgnv-mc ' + " ".join(f"cgnv-mc-{px['slug']}-{nivel_mapa(vals[px['slug']])}" for px in pxs)
+             + '"></span>')
     p.append('<div class="cgnv-top"><h2 class="cgnv-panel-h2">Dónde hay nieve hoy: las provincias más blancas</h2>')
     if top:
         p.append("<ol>" + "".join(f'<li><a href="/nieve/{esc(px["slug"])}/">{esc(px["provincia"])}</a><b>{esc(pct(v))}</b></li>'
                                   for v, px in top[:8]) + "</ol>")
     else:
         p.append("<p>Hoy no hay nieve apreciable en ninguna provincia según el satélite.</p>")
-    p.append('<p class="cgnv-pnota">Cuanto más blanca la provincia, más parte de su superficie está nevada. Pulsa en una '
-             'para ver su página.</p></div></div>')
+    p.append('<p class="cgnv-pnota">Cuanto más blanca la provincia en el mapa, más parte de su superficie está nevada. Pulsa en una '
+             'para ver su página.</p></div>')
     # previsión
     lugares = []
     for x in xs:
@@ -2447,8 +2665,7 @@ def ssr_hub(pxs: list, xs: list, sat: dict, macs: list) -> str:
     p.append(f'<p class="cgnv-pie">Previsión de ECMWF, ICON, ARPEGE y GFS. Actualizado el '
              f'{esc(fecha_larga(AHORA.astimezone(TZ).date(), False))} a las {AHORA.astimezone(TZ):%H:%M}.</p></div>')
     # macizos: cada tarjeta lleva a la página del macizo
-    p.append('<h2 class="cgnv-panel-h2" style="margin-top:22px;grid-column:1/-1">La nieve, macizo a macizo</h2>')
-    p.append('<div class="cgnv-macs">')
+    p.append('<div class="cgnv-macs"><h2 class="cgnv-panel-h2 cgnv-macs-h">La nieve, macizo a macizo</h2>')
     for m in macs:
         e = m["esp_max"]
         url = f"/nieve/{MACIZO_PAG[m['id']]['slug']}/"
@@ -2635,7 +2852,7 @@ def html_macizo(m: dict, xs: list, pxs: list) -> str:
                        f'<td class="n">{esc(entero(c["dias_suelo"]))}</td>'
                        f'<td>{esc(dia_mes(c["primera"]) if c.get("primera") is not None else "—")}</td><td{cls}>{esc(cam)}</td></tr>')
         out.append("</tbody></table>")
-        out.append('<p class="cgnv-nota">En rojo, los cambios con una tendencia estadísticamente significativa desde 1971. '
+        out.append('<p class="cgnv-nota">En rojo, las bajadas con una tendencia estadísticamente significativa desde 1971; en azul, las subidas. '
                    'Datos de ERA5-Land (Copernicus) en celdas de unos 9 km: en las cumbres hay más nieve.</p>')
         bajan = [x for x in con if (x["cambio"].get("total") or {}).get("t") is not None and x["cambio"]["total"]["t"] <= -2]
         if bajan:
