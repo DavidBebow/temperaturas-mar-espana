@@ -47,7 +47,9 @@ jobs:
       contains(github.event.workflow_run.created_at, 'T06:0') ||
       contains(github.event.workflow_run.created_at, 'T18:0')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 5-11-2026: con solo dos pasadas al día, cada una hace la completa (pide a AEMET los diarios del mes anterior) y
+    # la de las 06:02 se cortó a los 30 minutos. Margen hasta 55.
+    timeout-minutes: 55
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
