@@ -66,7 +66,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.1.7"
+VERSION = "1.2.0"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -563,7 +563,7 @@ def descargar_prevision() -> dict:
         p = {"latitude": ",".join(f"{x['lat']:.3f}" for x in trozo),
              "longitude": ",".join(f"{x['lon']:.3f}" for x in trozo),
              "elevation": ",".join(str(x["alt"]) for x in trozo),
-             "daily": "snowfall_sum,precipitation_sum,temperature_2m_max,temperature_2m_min",
+             "daily": "snowfall_sum,precipitation_sum,temperature_2m_max,temperature_2m_min,wind_gusts_10m_max",
              "hourly": "freezing_level_height,temperature_850hPa,precipitation,snow_depth",
              "models": mods, "forecast_days": 16, "past_days": 10, "timezone": "Europe/Madrid"}
         try:
@@ -594,6 +594,7 @@ def recortar_prevision(res: dict) -> dict:
         pr = dd.get(f"precipitation_sum_{mid}") or [None] * len(dias)
         tx = dd.get(f"temperature_2m_max_{mid}") or [None] * len(dias)
         tn = dd.get(f"temperature_2m_min_{mid}") or [None] * len(dias)
+        rv = dd.get(f"wind_gusts_10m_max_{mid}") or [None] * len(dias)
         fl = hh.get(f"freezing_level_height_{mid}") or [None] * len(hts)
         t8 = hh.get(f"temperature_850hPa_{mid}") or [None] * len(hts)
         hp = hh.get(f"precipitation_{mid}") or [None] * len(hts)
@@ -614,6 +615,7 @@ def recortar_prevision(res: dict) -> dict:
             "ll": [None if v is None else round(v, 1) for v in pr],
             "tx": [None if v is None else round(v, 1) for v in tx],
             "tn": [None if v is None else round(v, 1) for v in tn],
+            "rv": [None if v is None else round(v) for v in rv],
             "cota": [None if f not in cota else max(0, int(round(cota[f] / 100.0) * 100)) for f in dias],
             "esp": [None if f not in esp else round(esp[f], 1) for f in dias],
         }
@@ -1146,15 +1148,19 @@ def prevision_punto(pv: dict | None) -> dict:
         m = pv["m"].get(mid)
         if not m:
             continue
-        mods[mid] = {k: [m[k][j] for j in idx] for k in ("n", "ll", "tx", "tn", "cota")}
-    cons, cota_c, vistos = [], [], []
+        mods[mid] = {k: [(m.get(k) or [None] * len(m["n"]))[j] for j in idx] for k in ("n", "ll", "tx", "tn", "cota", "rv")}
+    cons, cota_c, vistos, txc, tnc, rvc, llc = [], [], [], [], [], [], []
+    med = lambda k, j, dec=1: (lambda vs: round(st.median(vs), dec) if vs else None)(
+        [mods[mid][k][j] for mid in mods if mods[mid][k][j] is not None])
     for j in range(len(dias)):
         vs = [mods[mid]["n"][j] for mid in mods if mods[mid]["n"][j] is not None]
         cs = [mods[mid]["cota"][j] for mid in mods if mods[mid]["cota"][j] is not None]
         cons.append(round(st.median(vs), 1) if vs else None)
         cota_c.append(int(st.median(cs)) // 100 * 100 if cs else None)
         vistos.append(sum(1 for v in vs if v >= UMBRAL_DIA))
+        txc.append(med("tx", j)); tnc.append(med("tn", j)); rvc.append(med("rv", j, 0)); llc.append(med("ll", j))
     return {"dias": dias, "modelos": mods, "consenso": cons, "cota": cota_c, "vistos": vistos,
+            "tx": txc, "tn": tnc, "racha": rvc, "precip": llc,
             "total7": round(sum(v or 0 for v in cons[:7]), 1), "total15": round(sum(v or 0 for v in cons[:15]), 1),
             "max_modelo15": round(max((sum(v or 0 for v in mods[mid]["n"][:15]) for mid in mods), default=0), 1)}
 
@@ -1564,6 +1570,11 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-mac{background:var(--p-cel);border-radius:18px;padding:16px 18px;font-size:14.5px;color:var(--p-sub)}
 .cgnv .cgnv-mac h3{font-size:17px;color:#fff;margin:0 0 2px}
 .cgnv-mac-s{font-size:13px;color:var(--p-mut);margin:0 0 10px}
+.cgnv .cgnv-mac-l{font-size:14.5px;color:var(--p-sub);margin:2px 0 0;max-width:none}
+.cgnv .cgnv-hoy .cgnv-enl{margin:12px 0 0;font-size:14.5px}
+.cgnv-tm td{color:var(--p-txt);font-weight:600;padding:0 8px;white-space:nowrap}.cgnv-tm th{padding:0 8px}
+.cgnv .cgnv-tm th.cgnv-mod a{color:#fff}
+.cgnv .cgnv-mac-a{font-size:14px;margin:12px 0 0;max-width:none}.cgnv .cgnv-mac h3 a{color:#fff;text-decoration:none}.cgnv .cgnv-mac h3 a:hover{text-decoration:underline}
 .cgnv-mac-n{display:block;font-size:28px;font-weight:760;color:#fff;line-height:1.1}
 .cgnv-mac dl{margin:10px 0 0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px}
 .cgnv-mac dt{color:var(--p-mut)}.cgnv-mac dl.cgnv-cerca{grid-template-columns:1fr auto auto;gap:6px 12px}.cgnv-cerca dt:first-child+dd,.cgnv-cerca dt:first-child+dd+dd{color:var(--p-mut);font-weight:400;font-size:12.5px}.cgnv-mac dd{margin:0;text-align:right;color:#fff;font-weight:600}
@@ -2085,7 +2096,12 @@ def ssr_prov(px: dict, sat: dict) -> str:
         sn = (sat.get("normal") or {}).get(px["slug"])
         p.append(f"<li>Superficie de la provincia nevada (satélite, {esc(fd(sat['fecha'], False))}): <b>{esc(pct(sv))}</b>"
                  + (f"; lo normal, {esc(pct(sn))}" if sn is not None else "") + "</li>")
-    p.append("</ul></div>")
+    p.append("</ul>")
+    enl = [f'<a href="{url_ficha(mo["id"])}">Ficha de {esc(mo["nombre"])} para compartir</a>']
+    if mo["macizo"] in MACIZO_PAG:
+        enl.append(f'<a href="/nieve/{MACIZO_PAG[mo["macizo"]]["slug"]}/">La nieve en {esc(MACIZO_PAG[mo["macizo"]]["corto"])}</a>')
+    enl += [f'<a href="{url_ficha(e["id"])}">Ficha de {esc(e["nombre"])}</a>' for e in px["extras"]]
+    p.append('<p class="cgnv-enl">' + " · ".join(enl) + "</p></div>")
     # cifras
     p.append('<div class="cgnv-cifras">')
     p.append(cifra(cm(o["ult7"]), f"de nieve en los últimos 7 días en {mo['nombre']}"))
@@ -2430,20 +2446,25 @@ def ssr_hub(pxs: list, xs: list, sat: dict, macs: list) -> str:
     p.append(bloque_cerca(xs))
     p.append(f'<p class="cgnv-pie">Previsión de ECMWF, ICON, ARPEGE y GFS. Actualizado el '
              f'{esc(fecha_larga(AHORA.astimezone(TZ).date(), False))} a las {AHORA.astimezone(TZ):%H:%M}.</p></div>')
-    # macizos
+    # macizos: cada tarjeta lleva a la página del macizo
+    p.append('<h2 class="cgnv-panel-h2" style="margin-top:22px;grid-column:1/-1">La nieve, macizo a macizo</h2>')
     p.append('<div class="cgnv-macs">')
     for m in macs:
         e = m["esp_max"]
-        p.append(f'<div class="cgnv-mac"><h3>{esc(m["nombre"])}</h3><p class="cgnv-mac-s">{esc(m["sub"])}</p>')
+        url = f"/nieve/{MACIZO_PAG[m['id']]['slug']}/"
+        p.append(f'<div class="cgnv-mac"><h3><a href="{url}">{esc(m["nombre"])}</a></h3><p class="cgnv-mac-s">{esc(m["sub"])}</p>')
         p.append(f'<span class="cgnv-mac-n">{esc(cm(e["cm"]) if e else "—")}</span>'
-                 + (f'de espesor en {esc(e["donde"])}' + (f" (normal: {esc(cm(e['normal']))})" if e.get("normal") is not None
-                                                          else "") if e else "espesor sin dato") + "<dl>")
+                 + '<p class="cgnv-mac-l">' + (f'de espesor en {esc(e["donde"])}'
+                                               + (f" (normal: {esc(cm(e['normal']))})" if e.get("normal") is not None else "")
+                                               if e else "espesor sin dato") + "</p><dl>")
         p.append(f"<dt>Caída esta temporada</dt><dd>{esc(cm(m['acum_media']))}"
                  + (f" <span style=\"color:#8fa9bd;font-weight:400\">/ {esc(cm(m['normal_media']))}</span>"
                     if m["normal_media"] is not None else "") + "</dd>")
         if m["sat"] is not None:
             p.append(f"<dt>Nevado hoy (satélite)</dt><dd>{esc(pct(m['sat']))}</dd>")
-        p.append(f"<dt>Próximos 7 días</dt><dd>{esc(cm(m['prev7']['cm']))}</dd></dl></div>")
+        p.append(f"<dt>Próximos 7 días</dt><dd>{esc(cm(m['prev7']['cm']))}</dd></dl>"
+                 f'<p class="cgnv-mac-a"><a href="{url}">Ver {esc(MACIZO_PAG[m["id"]]["corto"])} →</a> · '
+                 f'<a href="{PAGES}/nieve/ficha.html?m={m["id"]}">Ficha para compartir</a></p></div>')
     p.append("</div>")
     if sat.get("serie") and any(v is not None for v in sat["serie"]):
         p.append('<div class="cgnv-graf-p" style="grid-template-columns:1fr"><figure><h3>España cubierta de nieve, día a día'
@@ -2456,6 +2477,263 @@ def ssr_hub(pxs: list, xs: list, sat: dict, macs: list) -> str:
                  "</figcaption></figure></div>")
     p.append("</div>")
     return ssr_compatible("".join(p))
+
+
+# --------------------------------------------------------------------------------------------- macizos y fichas
+# Una página por macizo (/nieve/<slug>/) y una ficha para compartir por montaña, estación de esquí y macizo
+# (docs/nieve/ficha.html la dibuja con los datos de docs/nieve/fichas.json). Títulos según Keyword Planner
+# (España, oct 2025 – sept 2026): «nieve sierra nevada» 1.300 + «hay nieve en sierra nevada» 1.000 + «nieve en
+# sierra nevada» 1.900; «nieve pirineo» 720; «nieve sierra de madrid» 390; «nieve gredos» 170; «nieve teide» 1.900.
+MACIZO_PAG = {
+    "pirineo": {"slug": "pirineo", "corto": "el Pirineo", "titulo": "Nieve en el Pirineo",
+                "sub": "espesor, nevadas y previsión en Formigal, Baqueira, La Molina y Candanchú",
+                "rm": "Nieve en el Pirineo hoy: espesor y previsión a 15 días"},
+    "cantabrica": {"slug": "cordillera-cantabrica", "corto": "la Cordillera Cantábrica",
+                   "titulo": "Nieve en la Cordillera Cantábrica",
+                   "sub": "Alto Campoo, San Isidro, Valgrande-Pajares y Leitariegos",
+                   "rm": "Nieve en la Cordillera Cantábrica: espesor y previsión"},
+    "iberica": {"slug": "sistema-iberico", "corto": "el Sistema Ibérico", "titulo": "Nieve en el Sistema Ibérico",
+                "sub": "Moncayo, Javalambre, Valdelinares, Urbión y la Demanda",
+                "rm": "Nieve en el Sistema Ibérico: Javalambre, Moncayo y más"},
+    "central": {"slug": "sistema-central", "corto": "la sierra de Madrid y el Sistema Central",
+                "titulo": "Nieve en la sierra de Madrid y el Sistema Central",
+                "sub": "Navacerrada, Valdesquí, La Pinilla, Gredos y La Covatilla",
+                "rm": "Nieve en la sierra de Madrid: Navacerrada y Gredos"},
+    "nevada": {"slug": "sierra-nevada", "corto": "Sierra Nevada", "titulo": "¿Hay nieve en Sierra Nevada?",
+               "sub": "espesor, nevadas y previsión en Pradollano y Calar Alto",
+               "rm": "¿Hay nieve en Sierra Nevada? Espesor y previsión"},
+    "beticas": {"slug": "sierras-beticas", "corto": "las Sierras Béticas", "titulo": "Nieve en las Sierras Béticas",
+                "sub": "Cazorla, Grazalema, Sierra de las Nieves, Aitana y Revolcadores",
+                "rm": "Nieve en las Sierras Béticas: Cazorla, Grazalema"},
+    "galaico": {"slug": "galicia", "corto": "las montañas de Galicia", "titulo": "Nieve en Galicia",
+                "sub": "Manzaneda, Os Ancares y las sierras gallegas",
+                "rm": "Nieve en Galicia: Manzaneda y Os Ancares, previsión"},
+    "vasco": {"slug": "montes-vascos", "corto": "los montes vascos", "titulo": "Nieve en los montes vascos",
+              "sub": "Gorbea, Aralar y Urkiola", "rm": "Nieve en los montes vascos: Gorbea, Aralar, Urkiola"},
+    "morena": {"slug": "sierra-morena", "corto": "Sierra Morena", "titulo": "Nieve en Sierra Morena y los Montes de Toledo",
+               "sub": "Aracena, Tentudía, Sierra Madrona y los Montes de Toledo",
+               "rm": "Nieve en Sierra Morena y los Montes de Toledo"},
+    "canarias": {"slug": "canarias", "corto": "Canarias", "titulo": "Nieve en Canarias",
+                 "sub": "el Teide y el Pico de las Nieves", "rm": "Nieve en Canarias: el Teide y el Pico de las Nieves"},
+    "tramuntana": {"slug": "mallorca", "corto": "Mallorca", "titulo": "Nieve en Mallorca",
+                   "sub": "la Serra de Tramuntana", "rm": "Nieve en Mallorca: Serra de Tramuntana y previsión"},
+}
+
+
+def de(t: str) -> str:
+    """«de el Pirineo» → «del Pirineo»."""
+    return "del " + t[3:] if t.startswith("el ") else "de " + t
+
+
+def url_ficha(pid: str = "", macizo: str = "") -> str:
+    return f"{PAGES}/nieve/ficha.html?" + (f"m={macizo}" if macizo else f"id={pid}")
+
+
+def mejor_dia(x: dict) -> dict | None:
+    """El mejor día para ir esta semana: nieve recién caída (los dos días anteriores), poco viento, sin lluvia y sin
+    una nevada tan fuerte que cierre accesos. Solo si hay nieve en el suelo (o la va a haber) según el modelo."""
+    pv, o = x["prevision"], x["temporada"]
+    if not pv.get("dias"):
+        return None
+    cons = [v or 0.0 for v in pv["consenso"][:7]]
+    esp = (o.get("esp") or 0) + sum(cons)
+    if esp < 10:
+        return None
+    mejor, puntos = None, -1e9
+    for j, f in enumerate(pv["dias"][:7]):
+        fresca = sum(cons[max(0, j - 2):j])
+        racha = (pv.get("racha") or [None] * 7)[j] or 0
+        cota = pv["cota"][j]
+        lluvia = (pv.get("precip") or [0] * 7)[j] or 0
+        sc = 2 * fresca - (12 if racha >= 70 else 5 if racha >= 50 else 0) - (8 if cons[j] >= 15 else 0)
+        if lluvia >= 1 and cota is not None and cota > x["alt"]:
+            sc -= 10
+        if date.fromisoformat(f).weekday() >= 5:
+            sc += 0.5   # a igualdad, el fin de semana
+        if sc > puntos:
+            mejor, puntos = (f, fresca, racha), sc
+    f, fresca, racha = mejor
+    motivo = []
+    if fresca >= 3:
+        motivo.append(f"{cm(fresca)} de nieve recién caída")
+    if racha and racha < 40:
+        motivo.append("poco viento")
+    elif racha >= 50:
+        motivo.append(f"aunque con rachas de {entero(racha)} km/h")
+    return {"f": f, "motivo": lista(motivo) or "el día con mejores condiciones de la semana"}
+
+
+def ficha_punto(x: dict) -> dict:
+    o, pv, c = x["temporada"], x["prevision"], x["clima"]
+    dias = []
+    for j, f in enumerate(pv.get("dias", [])[:7]):
+        dias.append({"f": f, "n": pv["consenso"][j], "cota": pv["cota"][j], "tx": (pv.get("tx") or [None] * 16)[j],
+                     "tn": (pv.get("tn") or [None] * 16)[j], "racha": (pv.get("racha") or [None] * 16)[j]})
+    prox = next(({"f": f, "cm": v} for f, v in zip(pv.get("dias", []), pv.get("consenso", []))
+                 if v is not None and v >= UMBRAL_DIA), None)
+    mac = x["macizo"] if x["macizo"] in MACIZO_PAG else None   # Montes Torozos (Valladolid) no tiene página de macizo
+    return {"id": x["id"], "nombre": x["nombre"], "alt": x["alt"], "tipo": x["tipo"], "prov": x["prov"],
+            "provincia": x["provincia"], "macizo": mac, "macizo_nombre": MACIZOS[mac][0] if mac else None,
+            "url": f"{WEB}/nieve/{x['prov']}/",
+            "url_macizo": f"{WEB}/nieve/{MACIZO_PAG[mac]['slug']}/" if mac else None,
+            "esp": o.get("esp"), "esp_normal": o.get("esp_normal"), "n24": o.get("ult1"), "n7": o.get("ult7"),
+            "acum": o.get("acum"), "acum_normal": o.get("normal"), "ultima": o.get("ultima"),
+            "primera_normal": dia_mes(c["primera"]) if c.get("primera") is not None else None,
+            "total7": pv.get("total7"), "total15": pv.get("total15"), "proxima": prox, "dias": dias,
+            "mejor": mejor_dia(x), "frase": va_a_nevar(x)}
+
+
+def ficha_macizo(m: dict, xs: list) -> dict:
+    ps = sorted([x for x in xs if x["macizo"] == m["id"]], key=lambda x: -(x["temporada"].get("esp") or 0))
+    fs = [ficha_punto(x) for x in ps]
+    # «próximos 7 días» del macizo: el máximo de sus puntos cada día (donde más nieva)
+    dias = []
+    if fs and fs[0]["dias"]:
+        for j, d in enumerate(fs[0]["dias"]):
+            ns = [(f["dias"][j]["n"] or 0, f) for f in fs if len(f["dias"]) > j]
+            v, top = max(ns, key=lambda z: z[0])
+            cotas = [f["dias"][j]["cota"] for f in fs if len(f["dias"]) > j and f["dias"][j]["cota"] is not None]
+            dias.append({"f": d["f"], "n": v, "donde": top["nombre"], "cota": min(cotas) if cotas else None})
+    return {"id": m["id"], "nombre": m["nombre"], "sub": m["sub"], "url": f"{WEB}/nieve/{MACIZO_PAG[m['id']]['slug']}/",
+            "esp_max": m["esp_max"], "acum_media": m["acum_media"], "normal_media": m["normal_media"],
+            "sat": m["sat"], "sat_normal": m["sat_normal"], "prev7": m["prev7"], "dias": dias,
+            "puntos": [{k: f[k] for k in ("id", "nombre", "alt", "esp", "esp_normal", "n7", "total7")} for f in fs]}
+
+
+def macizo_puntos(mid: str, xs: list) -> list:
+    """Los puntos de montaña y esquí de un macizo, primero los de más altitud."""
+    return sorted([x for x in xs if x["macizo"] == mid], key=lambda x: -x["alt"])
+
+
+def html_macizo(m: dict, xs: list, pxs: list) -> str:
+    mp, ps = MACIZO_PAG[m["id"]], macizo_puntos(m["id"], xs)
+    provs = sorted({(x["prov"], x["provincia"]) for x in ps}, key=lambda z: z[1])
+    h1 = f"<h1>{esc(mp['titulo'])}:<span> {esc(mp['sub'])}</span></h1>"
+    lede = (f"Cuánta nieve hay hoy en {mp['corto']}, cuánta ha caído esta temporada frente a un año normal y si va a nevar "
+            f"en los próximos 15 días, montaña a montaña. Con una ficha de cada sitio para descargar y compartir.")
+    out = [CSS, '<div class="cgnv">', '<div class="cgnv-panel cgnv-panel-mac">',
+           f'<div class="cgnv-intro"><div class="cgnv-migas"><a href="/">Inicio</a><span>/</span><a href="/nieve/">Nieve</a>'
+           f'<span>/</span>{esc(MACIZOS[m["id"]][0])}</div>{h1}<p class="lede">{esc(lede)}</p></div>',
+           f'<div class="cg-ssr-slot">{ANCLA}</div>', "</div>"]
+    con = [x for x in ps if x["clima"].get("total") is not None]
+    if con:
+        out.append(f"<h2>¿Cuánto nieva en {esc(mp['corto'])}?</h2>")
+        top = max(con, key=lambda x: x["clima"]["total"])
+        out.append(f"<p>En una temporada normal (1991-92 a 2020-21), el sitio más nevado de {esc(mp['corto'])} entre los "
+                   f"que vigilamos es {esc(top['nombre'])} ({esc(entero(top['alt']))} m), con unos "
+                   f"<b>{esc(cm(top['clima']['total']))}</b> de nieve por temporada y el suelo nevado "
+                   f"{esc(entero(top['clima']['dias_suelo']))} días al año.</p>")
+        out.append('<table class="cgnv-tabla"><thead><tr><th>Lugar</th><th class="n">Altitud</th><th class="n">Nieve por '
+                   'temporada</th><th class="n">Días con nieve en el suelo</th><th>Primera nevada</th>'
+                   '<th class="n">Cambio desde 1971-1990</th></tr></thead><tbody>')
+        for x in con:
+            c, ch = x["clima"], x["cambio"].get("total") or {}
+            cam = "—" if ch.get("pct") is None else (("+" if ch["pct"] > 0 else "−") + entero(abs(ch["pct"])) + " %")
+            cls = ' class="n baja"' if ch.get("pct") is not None and ch["pct"] < 0 and (ch.get("t") or 0) <= -2 else ' class="n"'
+            out.append(f'<tr><td><a href="/nieve/{esc(x["prov"])}/">{esc(x["nombre"])}</a></td>'
+                       f'<td class="n">{esc(entero(x["alt"]))} m</td><td class="n">{esc(cm(c["total"]))}</td>'
+                       f'<td class="n">{esc(entero(c["dias_suelo"]))}</td>'
+                       f'<td>{esc(dia_mes(c["primera"]) if c.get("primera") is not None else "—")}</td><td{cls}>{esc(cam)}</td></tr>')
+        out.append("</tbody></table>")
+        out.append('<p class="cgnv-nota">En rojo, los cambios con una tendencia estadísticamente significativa desde 1971. '
+                   'Datos de ERA5-Land (Copernicus) en celdas de unos 9 km: en las cumbres hay más nieve.</p>')
+        bajan = [x for x in con if (x["cambio"].get("total") or {}).get("t") is not None and x["cambio"]["total"]["t"] <= -2]
+        if bajan:
+            out.append(f"<h2>¿Nieva menos que antes en {esc(mp['corto'])}?</h2>")
+            out.append("<p>" + esc(lista([frase_cambio(x) for x in bajan[:2]]).replace(". y ", ". ")) + "</p>")
+    q = [(f"¿Hay nieve ahora en {mp['corto']}?",
+          f"El bloque de arriba lo dice cada día: el espesor de nieve en cada montaña y estación de {mp['corto']}, "
+          f"comparado con lo normal en esta fecha, y qué parte del macizo ve nevada el satélite."),
+         (f"¿Va a nevar en {mp['corto']}?",
+          "La previsión de arriba junta cuatro modelos (ECMWF, ICON, ARPEGE y GFS) y se actualiza tres veces al día: "
+          "dónde va a nevar en los próximos 7 y 15 días, cuánto y a qué cota."),
+         ("¿Qué datos da la ficha para compartir?",
+          "La nieve que hay en el suelo frente a lo normal, la nieve nueva de las últimas 24 horas y de la semana, la "
+          "previsión de 7 días con la cota de nieve, la temperatura y el viento, y el mejor día para ir. Se descarga como "
+          "imagen para mandarla por WhatsApp o redes."),
+         ("¿Sirve para saber qué pistas están abiertas?",
+          "No: son datos de modelo y de satélite, no el parte de la estación. Las pistas, los remontes y el estado de la "
+          "nieve los da cada estación en su parte oficial.")]
+    out.append(faq_html(q))
+    out.append('<div class="cgnv-metodo"><p><b>Cómo se calcula.</b> La nieve caída y el espesor salen del reanálisis '
+               'ERA5-Land de Copernicus (ECMWF), día a día desde 1971; los últimos días, del análisis del ECMWF. La parte '
+               'nevada del macizo es la del producto IMS de la NOAA (4 km) en un radio de unos 16 km alrededor de cada '
+               'punto. La previsión es la mediana de ECMWF, ICON, ARPEGE y GFS; la cota de nieve, 300 m por debajo de la '
+               'isoterma de 0 °C. Datos en <a href="' + PAGES + '/nieve/fichas.json">JSON</a> (CC BY 4.0).</p>'
+               '<p>Sigue con <a href="/nieve/">la nieve en toda España</a>' + "".join(
+                   f', <a href="/nieve/{esc(sl)}/">la nieve en {esc(pr)}</a>' for sl, pr in provs) + ' o '
+               '<a href="/heladas/">las heladas</a>.</p></div>')
+    out.append("</div>")
+    out.append(faq_jsonld(q))
+    return "<!-- wp:html -->\n" + "\n".join(out) + "\n<!-- /wp:html -->"
+
+
+def ssr_macizo(m: dict, xs: list, sat: dict) -> str:
+    mp, ps = MACIZO_PAG[m["id"]], macizo_puntos(m["id"], xs)
+    e = m["esp_max"]
+    hay = bool(e and e["cm"] >= 1)
+    p = ['<div class="cgnv-dia"><div class="cgnv-hoy">', f'<h2>{esc(MACIZOS[m["id"]][0])} hoy</h2>',
+         f'<p class="cgnv-hoy-v"><b>{esc(cm(e["cm"]) if hay else "Sin nieve")}</b><span>'
+         + (f'de nieve en el suelo en {esc(e["donde"])}, lo más alto que vigilamos' if hay
+            else "en el suelo en ninguno de sus puntos, según el modelo")
+         + "</span></p><ul>"]
+    if hay and e.get("normal") is not None:
+        p.append(f"<li>Lo normal en esta fecha allí: <b>{esc(cm(e['normal']))}</b></li>")
+    p.append(f"<li>Nieve caída esta temporada (media del macizo): <b>{esc(cm(m['acum_media']))}</b>"
+             + (f"; normal, {esc(cm(m['normal_media']))}" if m["normal_media"] is not None else "") + "</li>")
+    if m["sat"] is not None:
+        p.append(f"<li>Superficie nevada según el satélite: <b>{esc(pct(m['sat']))}</b>"
+                 + (f"; lo normal, {esc(pct(m['sat_normal']))}" if m["sat_normal"] is not None else "") + "</li>")
+    p.append(f'</ul><p><a href="{url_ficha(macizo=m["id"])}">Descargar la ficha {esc(de(mp["corto"]))} para compartir</a></p></div>')
+    # tabla de hoy
+    p.append('<div class="cgnv-prev"><h2 class="cgnv-panel-h2">Montaña a montaña</h2><div class="cgnv-tw">'
+             '<table class="cgnv-tp cgnv-tm"><thead><tr><th class="cgnv-mod">Lugar</th><th>Espesor hoy</th><th>Normal hoy</th>'
+             '<th>Últimos 7 días</th><th>Próximos 7 días</th><th>Cota mañana</th><th>Ficha</th></tr></thead><tbody>')
+    for x in ps:
+        o, pv = x["temporada"], x["prevision"]
+        cota = pv["cota"][1] if len(pv.get("cota", [])) > 1 else None
+        p.append(f'<tr><th class="cgnv-mod"><a href="/nieve/{esc(x["prov"])}/">{esc(x["nombre"])}</a>'
+                 f'<small>{esc(entero(x["alt"]))} m · {esc(x["provincia"])}</small></th>'
+                 f'<td>{esc(cm(o.get("esp")) if o.get("esp") is not None else "—")}</td>'
+                 f'<td>{esc(cm(o.get("esp_normal")) if o.get("esp_normal") is not None else "—")}</td>'
+                 f'<td>{esc(cm(o.get("ult7") or 0))}</td><td>{esc(cm(pv.get("total7") or 0))}</td>'
+                 f'<td>{esc(entero(cota) + " m" if cota is not None and cota < 3500 else "—")}</td>'
+                 f'<td><a href="{url_ficha(x["id"])}">Ficha</a></td></tr>')
+    p.append("</tbody></table></div>")
+    top = max(ps, key=lambda x: x["prevision"].get("total15") or 0)
+    p.append(f'<h2 class="cgnv-panel-h2" style="margin-top:22px">¿Va a nevar en {esc(mp["corto"])}?</h2>')
+    p.append(f'<p class="cgnv-psub">{esc(va_a_nevar(top))}</p>')
+    md = mejor_dia(top)
+    if md:
+        d = date.fromisoformat(md["f"])
+        p.append(f'<p class="cgnv-psub">Mejor día para ir esta semana a {esc(top["nombre"])}: <b>el {esc(dia_semana(d))} '
+                 f'{d.day}</b> ({esc(md["motivo"])}).</p>')
+    p.append(f"<h3>Previsión de nieve y cota en {esc(top['nombre'])} ({esc(entero(top['alt']))} m), día a día</h3>")
+    p.append(tabla_prevision(top["prevision"], top["nombre"]))
+    p.append(f'<p class="cgnv-pie">Cifras de modelo en centímetros de nieve nueva por día. Actualizado el '
+             f'{esc(fecha_larga(AHORA.astimezone(TZ).date(), False))} a las {AHORA.astimezone(TZ):%H:%M}. Para pistas y '
+             f'remontes, el parte oficial de cada estación.</p></div></div>')
+    return ssr_compatible("".join(p))
+
+
+def metas_macizo(m: dict) -> dict:
+    mp = MACIZO_PAG[m["id"]]
+    d = (f"¿Hay nieve en {mp['corto']}? Espesor de nieve hoy frente a lo normal, nieve caída esta temporada y previsión "
+         f"de nevadas y cota a 15 días en {mp['sub']}. Con ficha para compartir.")
+    return {"rank_math_title": mp["rm"], "rank_math_description": d[:300]}
+
+
+def jsonld_macizo(m: dict) -> str:
+    mp = MACIZO_PAG[m["id"]]
+    return json.dumps({"@context": "https://schema.org", "@type": "Dataset",
+                       "name": f"{mp['titulo']}: espesor de nieve, nieve caída y previsión",
+                       "description": f"Espesor de nieve, nieve caída por temporada desde 1971, superficie nevada por "
+                                      f"satélite y previsión de cuatro modelos en {mp['sub']}.",
+                       "url": f"{WEB}/nieve/{mp['slug']}/", "license": "https://creativecommons.org/licenses/by/4.0/",
+                       "dateModified": AHORA.isoformat()[:10],
+                       "creator": {"@type": "Organization", "name": "calentamientoglobal.es", "url": WEB + "/"},
+                       "distribution": [{"@type": "DataDownload", "encodingFormat": "application/json",
+                                         "contentUrl": f"{PAGES}/nieve/fichas.json"}]}, ensure_ascii=False)
 
 
 # ----------------------------------------------------------------------------------------------------------- salidas
@@ -2504,6 +2782,10 @@ def guardar_datos(pxs: list, xs: list, sat: dict, macs: list) -> None:
                     t["max_dia"], t["max_espesor"])))
         escribir(SALIDA / f"{px['slug']}.csv", "\n".join(filas) + "\n")
     escribir(SALIDA / "index.json", json.dumps(idx, ensure_ascii=False, indent=1, default=str))
+    fichas = {"generado": gen, "version": VERSION, "fuente": fuente, "licencia": "CC BY 4.0",
+              "puntos": {x["id"]: ficha_punto(x) for x in xs if x["tipo"] != "capital"},
+              "macizos": {m["id"]: ficha_macizo(m, xs) for m in macs}}
+    escribir(SALIDA / "fichas.json", json.dumps(fichas, ensure_ascii=False, separators=(",", ":"), default=str))
     todo = sat_leer()
     if todo:
         sat_guardar(todo, SALIDA / "satelite.csv")
@@ -2629,6 +2911,10 @@ def publicar(pxs: list, xs: list, sat: dict, macs: list, forzar: bool) -> None:
     for px in pxs:
         subir(px["slug"], hub_id, px["slug"], titulo_prov(px), html_prov(px), ssr_prov(px, sat),
               jsonld_prov(px), metas_prov(px), px["monte"]["completo"])
+    for m in macs:   # las páginas de macizo van publicadas desde el primer día (5-11-2026, a petición de David)
+        mp = MACIZO_PAG[m["id"]]
+        subir("_m_" + m["id"], hub_id, mp["slug"], mp["titulo"], html_macizo(m, xs, pxs), ssr_macizo(m, xs, sat),
+              jsonld_macizo(m), metas_macizo(m), True)
     escribir(PUBLICADO, json.dumps(reg, ensure_ascii=False, indent=1, sort_keys=True))
     if errores:
         log(f"{errores} páginas con error")
@@ -2763,6 +3049,9 @@ def main() -> None:
         for px in pxs:
             (d / f"{px['slug']}.html").write_text(envolver(html_prov(px).replace(ANCLA, ssr_prov(px, sat))),
                                                   encoding="utf-8")
+        for m in macs:
+            (d / f"m-{MACIZO_PAG[m['id']]['slug']}.html").write_text(
+                envolver(html_macizo(m, xs, pxs).replace(ANCLA, ssr_macizo(m, xs, sat))), encoding="utf-8")
         log(f"Vista en {d}")
     if a.publicar:
         publicar(pxs, xs, sat, macs, a.forzar)
