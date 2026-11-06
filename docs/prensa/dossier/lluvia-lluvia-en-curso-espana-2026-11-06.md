@@ -1,12 +1,12 @@
-# La estación de AEMET de Elgoibar (Gipuzkoa) lleva 24,7 mm el 6 de noviembre hasta las 20:00
+# La estación de AEMET de Elgoibar (Gipuzkoa) lleva 24,7 mm el 6 de noviembre hasta las 21:00
 
-**Dato:** 24,7 mm de 0:00 a 20:00 (hora local) del 6 de noviembre, la cifra más alta de las 203 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 24,7 mm de 0:00 a 21:00 (hora local) del 6 de noviembre, la cifra más alta de las 234 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 6 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Las que más: Elgoibar (Gipuzkoa): 24,7 mm · Fisterra (A Coruña): 4,9 mm · Reus Aeropuerto (Tarragona): 3,9 mm · Evc_noia: 2,7 mm · Guijo de Granadilla (Cáceres): 1,4 mm.
+- Las que más: Elgoibar (Gipuzkoa): 24,7 mm · Fisterra (A Coruña): 6,4 mm · Reus Aeropuerto (Tarragona): 3,9 mm · Santiago de Compostela (A Coruña): 3,1 mm · Padrón (A Coruña): 3 mm.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData · observación convencional
@@ -14,8 +14,8 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación, desde las 0:00 hasta la última hora cerrada en toda la red. Solo estaciones con todas esas horas.
 
 ## Límites (decirlos antes de que los descubran)
-- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 20:00»).
-- La comparación es entre las 203 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (995 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 21:00»).
+- La comparación es entre las 234 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (995 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
