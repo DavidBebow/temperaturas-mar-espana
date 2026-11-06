@@ -1,12 +1,12 @@
 # 22 capitales españolas tuvieron el 5 de noviembre mínimas de al menos 5 °C por debajo de lo normal para la fecha
 
-**Dato:** 22 de 51 capitales · las más extremas: Zamora -2,7 °C (-10,3); Palencia -2,4 °C (-9,4); Salamanca -2,5 °C (-9,4); Valladolid -1,6 °C (-9); Pontevedra 4,1 °C (-8,3); Ourense 3,4 °C (-7,4); Oviedo 2,7 °C (-7,3); Burgos -0,5 °C (-6,9)  
+**Dato:** 22 de 50 capitales · las más extremas: Zamora -2,6 °C (-10,1); Palencia -2,5 °C (-9,4); Salamanca -2,6 °C (-9,3); Valladolid -1,6 °C (-8,8); Pontevedra 4,1 °C (-8,2); Oviedo 2,5 °C (-7,2); Ourense 3,4 °C (-7,2); Burgos -0,5 °C (-6,8)  
 **Fecha del dato:** 5 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Media de la desviación en esas 22 capitales: -6,9 °C.
+- Media de la desviación en esas 22 capitales: -6,8 °C.
 - Normal de referencia: 1991-2020, día a día, en la celda de cada capital.
 
 ## Fuente y método
