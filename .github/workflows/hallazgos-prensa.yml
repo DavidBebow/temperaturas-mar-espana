@@ -12,6 +12,10 @@ name: Hallazgos de prensa
 # extremos (docs/records/baseline.json, que mantiene records-baseline.yml). Deja
 # docs/records/hallazgos_estaciones.json, que hallazgos_prensa.py mete en la cola
 # con citabilidad alta, y docs/records/hoy.json para el mapa de /records-de-temperatura/.
+#
+# 7-11-2026: antes del detector corre scripts/sala/atribucion.py: periodo de retorno antes (1961-1990) y ahora (1996-2025)
+# de lo observado en cada capital, cociente de probabilidad e índice de huella climática (docs/huella/). El detector
+# lee de ahí la «rareza» de cada hallazgo de temperatura y los «antes era raro». Tarda unos 15 s; no es un workflow nuevo.
 
 on:
   workflow_dispatch:
@@ -73,6 +77,9 @@ jobs:
       - name: Instalar dependencias
         run: pip install matplotlib requests
 
+      - name: Instalar scipy
+        run: pip install "scipy==1.14.*"
+
       # Récords de temperatura en las estaciones de AEMET, el mismo día. Si AEMET no
       # responde o falta la base, el paso no tumba la sala de prensa: el resto sigue
       # con los hallazgos de la pasada anterior (docs/records/ ya está en el repo).
@@ -87,6 +94,12 @@ jobs:
           else
             echo "Sin scripts privados (checkout fallido): se omite el paso de récords"
           fi
+
+      # Atribución (7-11-2026): docs/huella/<slug>.json, index.json, historico/, graf/, antes_raro.json, metodo.md. Si falla, el
+      # detector sigue sin rareza (continue-on-error) con lo de la pasada anterior, que ya está en el repositorio.
+      - name: Atribución e índice de huella climática
+        continue-on-error: true
+        run: python scripts/sala/atribucion.py
 
       - name: Detectar hallazgos y generar dossiers
         run: |
@@ -123,7 +136,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes docs/prensa/noticias docs/records
+          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes docs/prensa/noticias docs/records docs/huella
           for d in docs/prensa/episodios docs/prensa/analisis; do   # pueden no existir si su paso falló
             if [ -d "$d" ]; then git add -A "$d"; fi
           done
