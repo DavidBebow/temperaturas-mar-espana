@@ -1,6 +1,6 @@
 # Lleida cerró octubre de 2026 con 18,4 °C de media: un mes que en 1961-1990 ocurría una vez cada 27 años y ahora es 7,1 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 27 años en 1961-1990 y ahora una vez cada 3,8 años: es 7,1 veces más probable (intervalo 2,5-39).  
+**Dato:** Un mes así ocurría una vez cada 27 años en 1961-1990 y ahora una vez cada 3,8 años: es 7,1 veces más probable (intervalo 2,5-39). Serie: serie diaria de la celda de Lleida del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Lleida  
 **Citabilidad:** media · **Exclusivo:** sí

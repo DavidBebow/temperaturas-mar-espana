@@ -1,6 +1,6 @@
 # Pamplona cerró octubre de 2026 con 15,8 °C de media: un mes que en 1961-1990 ocurría una vez cada 24 años y ahora es 3,8 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 24 años en 1961-1990 y ahora una vez cada 6,4 años: es 3,8 veces más probable (intervalo 1,4-19).  
+**Dato:** Un mes así ocurría una vez cada 24 años en 1961-1990 y ahora una vez cada 6,4 años: es 3,8 veces más probable (intervalo 1,4-19). Serie: serie diaria de la celda de Pamplona del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Pamplona  
 **Citabilidad:** media · **Exclusivo:** sí

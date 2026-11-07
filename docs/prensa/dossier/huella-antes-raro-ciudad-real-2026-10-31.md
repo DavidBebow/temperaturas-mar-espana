@@ -1,6 +1,6 @@
 # Ciudad Real cerró octubre de 2026 con 17,8 °C de media: un mes que en 1961-1990 ocurría una vez cada 18 años y ahora es 3,2 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 18 años en 1961-1990 y ahora una vez cada 5,7 años: es 3,2 veces más probable (intervalo 1,3-8,2).  
+**Dato:** Un mes así ocurría una vez cada 18 años en 1961-1990 y ahora una vez cada 5,7 años: es 3,2 veces más probable (intervalo 1,3-8,2). Serie: serie diaria de la celda de Ciudad Real del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Ciudad Real  
 **Citabilidad:** media · **Exclusivo:** sí

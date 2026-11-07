@@ -1,6 +1,6 @@
 # Vitoria cerró octubre de 2026 con 15,1 °C de media: un mes que en 1961-1990 ocurría una vez cada 15 años y ahora es 3,7 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 15 años en 1961-1990 y ahora una vez cada 4,0 años: es 3,7 veces más probable (intervalo 1,4-11).  
+**Dato:** Un mes así ocurría una vez cada 15 años en 1961-1990 y ahora una vez cada 4,0 años: es 3,7 veces más probable (intervalo 1,4-11). Serie: serie diaria de la celda de Vitoria del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Vitoria  
 **Citabilidad:** media · **Exclusivo:** sí

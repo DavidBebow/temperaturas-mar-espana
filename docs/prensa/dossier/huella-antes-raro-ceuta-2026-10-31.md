@@ -1,6 +1,6 @@
 # Ceuta cerró octubre de 2026 con 21,5 °C de media: un mes que en 1961-1990 ocurría una vez cada 478 años y ahora es 13 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 478 años en 1961-1990 y ahora una vez cada 37 años: es 13 veces más probable (intervalo 2,3-164).  
+**Dato:** Un mes así ocurría una vez cada 478 años en 1961-1990 y ahora una vez cada 37 años: es 13 veces más probable (intervalo 2,3-164). Serie: serie diaria de la celda de Ceuta del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Ceuta  
 **Citabilidad:** media · **Exclusivo:** sí

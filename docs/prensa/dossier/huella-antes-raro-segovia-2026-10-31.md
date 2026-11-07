@@ -1,6 +1,6 @@
 # Segovia cerró octubre de 2026 con 14,5 °C de media: un mes que en 1961-1990 ocurría una vez cada 15 años y ahora es 3,2 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 15 años en 1961-1990 y ahora una vez cada 4,8 años: es 3,2 veces más probable (intervalo 1,6-11).  
+**Dato:** Un mes así ocurría una vez cada 15 años en 1961-1990 y ahora una vez cada 4,8 años: es 3,2 veces más probable (intervalo 1,6-11). Serie: serie diaria de la celda de Segovia del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Segovia  
 **Citabilidad:** media · **Exclusivo:** sí

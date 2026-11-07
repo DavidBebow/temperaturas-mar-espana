@@ -1,6 +1,6 @@
 # Toledo cerró octubre de 2026 con 17,6 °C de media: un mes que en 1961-1990 ocurría una vez cada 16 años y ahora es 3,3 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 16 años en 1961-1990 y ahora una vez cada 4,6 años: es 3,3 veces más probable (intervalo 1,4-12).  
+**Dato:** Un mes así ocurría una vez cada 16 años en 1961-1990 y ahora una vez cada 4,6 años: es 3,3 veces más probable (intervalo 1,4-12). Serie: serie diaria de la celda de Toledo del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Toledo  
 **Citabilidad:** media · **Exclusivo:** sí

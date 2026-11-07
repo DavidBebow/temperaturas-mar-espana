@@ -1,6 +1,6 @@
 # Burgos cerró octubre de 2026 con 13,9 °C de media: un mes que en 1961-1990 ocurría una vez cada 13 años y ahora es 3,1 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 13 años en 1961-1990 y ahora una vez cada 4,3 años: es 3,1 veces más probable (intervalo 1,6-8,9).  
+**Dato:** Un mes así ocurría una vez cada 13 años en 1961-1990 y ahora una vez cada 4,3 años: es 3,1 veces más probable (intervalo 1,6-8,9). Serie: serie diaria de la celda de Burgos del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Burgos  
 **Citabilidad:** media · **Exclusivo:** sí

@@ -1,6 +1,6 @@
 # Girona cerró octubre de 2026 con 18,3 °C de media: un mes que en 1961-1990 ocurría una vez cada 28 años y ahora es 5,7 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 28 años en 1961-1990 y ahora una vez cada 5,0 años: es 5,7 veces más probable (intervalo 1,8-52).  
+**Dato:** Un mes así ocurría una vez cada 28 años en 1961-1990 y ahora una vez cada 5,0 años: es 5,7 veces más probable (intervalo 1,8-52). Serie: serie diaria de la celda de Girona del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Girona  
 **Citabilidad:** media · **Exclusivo:** sí

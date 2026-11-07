@@ -1,6 +1,6 @@
-# Soria cerró octubre de 2026 con 13,9 °C de media: un mes que en 1961-1990 ocurría una vez cada 21 años y ahora es 3,5 veces más probable
+# Soria cerró octubre de 2026 con 13,9 °C de media: un mes que en 1961-1990 ocurría una vez cada 20 años y ahora es 3,5 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 21 años en 1961-1990 y ahora una vez cada 6,0 años: es 3,5 veces más probable (intervalo 1,3-15).  
+**Dato:** Un mes así ocurría una vez cada 20 años en 1961-1990 y ahora una vez cada 5,8 años: es 3,5 veces más probable (intervalo 1,3-14). Serie: serie mensual de la estación de AEMET de Soria.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Soria  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -9,12 +9,12 @@
 - Serie: Soria · climas 1961-1990 y 1996-2025.
 
 ## Fuente y método
-- **Fuente:** AEMET (valores diarios validados de la estación) · cálculo propio de calentamientoglobal.es
+- **Fuente:** AEMET (serie mensual de la estación) · cálculo propio de calentamientoglobal.es
 - **Serie desde:** 1961
 - **Método:** Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5.
 
 ## Límites (decirlos antes de que los descubran)
-- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 1,3-15.
+- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 1,3-14.
 - Todavía no es récord ni percentil extremo de la serie: la noticia es lo que ha cambiado, no el valor.
 - Dato validado de la estación (la validación llega con 10-20 días de retraso).
 
@@ -22,4 +22,4 @@
 - Página: https://calentamientoglobal.es/cambio-climatico-en-soria/
 
 ## Atribución
-Observatorio climático de calentamientoglobal.es, a partir de AEMET (valores diarios validados de la estación) · cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
+Observatorio climático de calentamientoglobal.es, a partir de AEMET (serie mensual de la estación) · cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

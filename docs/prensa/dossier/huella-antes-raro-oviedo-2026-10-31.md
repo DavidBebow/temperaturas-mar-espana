@@ -1,6 +1,6 @@
 # Oviedo cerró octubre de 2026 con 15,5 °C de media: un mes que en 1961-1990 ocurría una vez cada 26 años y ahora es 4,6 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 26 años en 1961-1990 y ahora una vez cada 5,7 años: es 4,6 veces más probable (intervalo 1,6-22).  
+**Dato:** Un mes así ocurría una vez cada 26 años en 1961-1990 y ahora una vez cada 5,7 años: es 4,6 veces más probable (intervalo 1,6-22). Serie: serie diaria de la celda de Oviedo del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Oviedo  
 **Citabilidad:** media · **Exclusivo:** sí

@@ -1,6 +1,6 @@
 # Almería cerró octubre de 2026 con 21,5 °C de media: un mes que en 1961-1990 ocurría una vez cada 24 años y ahora es 5,7 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 24 años en 1961-1990 y ahora una vez cada 4,2 años: es 5,7 veces más probable (intervalo 2,3-26).  
+**Dato:** Un mes así ocurría una vez cada 24 años en 1961-1990 y ahora una vez cada 4,2 años: es 5,7 veces más probable (intervalo 2,3-26). Serie: serie diaria de la celda de Almería del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Almería  
 **Citabilidad:** media · **Exclusivo:** sí

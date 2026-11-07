@@ -1,6 +1,6 @@
 # Jaén cerró octubre de 2026 con 18,7 °C de media: un mes que en 1961-1990 ocurría una vez cada 59 años y ahora es 12 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 59 años en 1961-1990 y ahora una vez cada 5,1 años: es 12 veces más probable (intervalo 3,0-58).  
+**Dato:** Un mes así ocurría una vez cada 59 años en 1961-1990 y ahora una vez cada 5,1 años: es 12 veces más probable (intervalo 3,0-58). Serie: serie diaria de la celda de Jaén del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Jaén  
 **Citabilidad:** media · **Exclusivo:** sí

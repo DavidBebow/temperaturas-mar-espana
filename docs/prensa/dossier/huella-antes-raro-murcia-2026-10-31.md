@@ -1,6 +1,6 @@
 # Murcia cerró octubre de 2026 con 21,2 °C de media: un mes que en 1961-1990 ocurría una vez cada 88 años y ahora es 13 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 88 años en 1961-1990 y ahora una vez cada 6,5 años: es 13 veces más probable (intervalo 4,0-119).  
+**Dato:** Un mes así ocurría una vez cada 88 años en 1961-1990 y ahora una vez cada 6,5 años: es 13 veces más probable (intervalo 4,0-119). Serie: serie diaria de la celda de Murcia del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Murcia  
 **Citabilidad:** media · **Exclusivo:** sí

@@ -1,6 +1,6 @@
 # Melilla cerró octubre de 2026 con 23,3 °C de media: un mes que en 1961-1990 ocurría una vez cada 986 años y ahora es 10 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 986 años en 1961-1990 y ahora una vez cada 98 años: es 10 veces más probable (intervalo 1,1-130).  
+**Dato:** Un mes así ocurría una vez cada 986 años en 1961-1990 y ahora una vez cada 98 años: es 10 veces más probable (intervalo 1,1-130). Serie: serie diaria de la celda de Melilla del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Melilla  
 **Citabilidad:** media · **Exclusivo:** sí

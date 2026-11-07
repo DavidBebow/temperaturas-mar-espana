@@ -1,6 +1,6 @@
 # Castellón cerró octubre de 2026 con 20,1 °C de media: un mes que en 1961-1990 ocurría una vez cada 51 años y ahora es 8,4 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 51 años en 1961-1990 y ahora una vez cada 6,1 años: es 8,4 veces más probable (intervalo 2,5-69).  
+**Dato:** Un mes así ocurría una vez cada 51 años en 1961-1990 y ahora una vez cada 6,1 años: es 8,4 veces más probable (intervalo 2,5-69). Serie: serie diaria de la celda de Castellón del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Castellón  
 **Citabilidad:** media · **Exclusivo:** sí

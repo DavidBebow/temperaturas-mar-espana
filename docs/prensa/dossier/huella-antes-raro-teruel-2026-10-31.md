@@ -1,6 +1,6 @@
 # Teruel cerró octubre de 2026 con 15,7 °C de media: un mes que en 1961-1990 ocurría una vez cada 46 años y ahora es 4,3 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 46 años en 1961-1990 y ahora una vez cada 11 años: es 4,3 veces más probable (intervalo 1,5-49).  
+**Dato:** Un mes así ocurría una vez cada 46 años en 1961-1990 y ahora una vez cada 11 años: es 4,3 veces más probable (intervalo 1,5-49). Serie: serie diaria de la celda de Teruel del reanálisis ERA5.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Teruel  
 **Citabilidad:** media · **Exclusivo:** sí
