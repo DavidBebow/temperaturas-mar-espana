@@ -1249,6 +1249,12 @@ def main():
     fd = sorted({o["fecha_dato"] for (_, o, _) in salidas.values()})
     log(f"Cola provisional: {n_om} capitales con días de Open-Meteo · fecha_dato publicada: {', '.join(fd[-3:])}")
     log(f"Hecho en {time.time() - t0:.0f} s · {len(salidas)} capitales · {len(antes_raro)} candidatos «antes era raro»")
+    if not a.solo:   # nota pública mensual capital a capital (scripts/sala/nota_mensual.py); un fallo no rompe el paso
+        try:
+            from sala.nota_mensual import nota_mensual
+            nota_mensual(sys.modules[__name__])
+        except Exception as e:
+            log(f"nota mensual descartada ({type(e).__name__}: {e})")
     if a.tabla:
         tabla(salidas)
 
