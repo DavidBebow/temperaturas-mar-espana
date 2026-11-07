@@ -84,6 +84,8 @@ FUERZA = {
     "episodio": 70,
     # atribución (scripts/sala/atribucion.py): un día o mes que antes era raro (PR ≥ 3, T_antes ≥ 10 años); fuerza como «anomalía fuerte»
     "antes_raro": 55,
+    # compuestos y temporadas (scripts/sala/compuestos_temporadas.py): dos cosas a la vez; extremo de una temporada de la serie
+    "compuesto": 70, "temporada": 60,
 }
 # Rareza significativa: la fuerza de un hallazgo de temperatura se multiplica por min(PR, RAREZA_PR_TOPE) / 2 (solo si PR > 1,
 # es decir, si el calentamiento ha vuelto más probable lo que se cuenta; en el lado frío no se premia ni se castiga) y se
@@ -95,7 +97,8 @@ AMBITO_F = {"nacional": 1.0, "regional": 0.9, "provincial": 0.8, "local": 0.7, "
 # Pasado ese plazo ya no es noticia: no entra en la cola, solo queda en el historial.
 VIDA = {"capitales": 9, "mediterraneo": 7, "danas": 30, "dias32": 45, "embalses": 10, "caudal": 4,
         "oceano": 10, "temperatura_global": 20, "lluvia": 1, "estaciones": 6, "sequia": 3,
-        "huella": 14}   # huella: el dato validado de AEMET llega con 10-20 días de retraso
+        "huella": 14,   # huella: el dato validado de AEMET llega con 10-20 días de retraso
+        "compuestos": 10, "temporadas": 14}
 
 hallazgos: list[dict] = []
 descartes: list[dict] = []
@@ -1493,6 +1496,13 @@ def sequia():
                 "citabilidad": "media", "miembros": [h["id"] for h in mios]})
 
 
+def compuestos():
+    """Compuestos (sequía cálida, mar y DANA, nieve y embalses, noches tropicales en sequía) y temporadas (verano, última helada, primer día de
+    25 °C, noches tropicales): los calcula scripts/sala/compuestos_temporadas.py (paso anterior de hallazgos-prensa.yml). Aquí solo se puntúan."""
+    from sala import compuestos_temporadas as CT
+    CT.al_detector(sys.modules[__name__])
+
+
 def agregar():
     grupos: dict[tuple, list[dict]] = {}
     for h in hallazgos:
@@ -1847,7 +1857,7 @@ def main():
     ap.add_argument("--salida", default=str(PRENSA / "hallazgos.json"))
     args = ap.parse_args()
 
-    for fn in (capitales, capitales_ayer, lluvia_aemet, estaciones_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta, sequia, huella):
+    for fn in (capitales, capitales_ayer, lluvia_aemet, estaciones_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta, sequia, huella, compuestos):
         try:
             fn()
         except Exception as e:
