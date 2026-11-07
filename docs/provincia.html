@@ -316,12 +316,26 @@ initSelector(); cargar();
 <script>
 /* Avisa a la página que incrusta este panel de su altura real, para que el iframe no deje huecos. */
 (function () {
+  var ultima = 0;
+  function altura() {
+    var m = 0, h = document.body.children;
+    for (var k = 0; k < h.length; k++) {
+      var r = h[k].getBoundingClientRect();
+      if (r.height > 0) m = Math.max(m, r.bottom + window.pageYOffset);
+    }
+    return Math.ceil(Math.max(m, 0)) + 16;
+  }
   function avisar() {
-    try { parent.postMessage({ cgIframeH: Math.ceil(document.body.getBoundingClientRect().height) + 8 }, "https://calentamientoglobal.es"); } catch (e) {}
+    var a = altura();
+    if (a === ultima) return;
+    ultima = a;
+    try { parent.postMessage({ cgIframeH: a }, "https://calentamientoglobal.es"); } catch (e) {}
   }
   window.addEventListener("load", avisar);
   window.addEventListener("resize", avisar);
   if (window.ResizeObserver) new ResizeObserver(avisar).observe(document.body);
+  if (window.MutationObserver) new MutationObserver(avisar).observe(document.body, { childList: true, subtree: true, characterData: true });
+  setInterval(avisar, 500);
 })();
 </script>
 <script src="https://davidbebow.github.io/temperaturas-mar-espana/reutilizar/reutilizar.js" defer></script>
