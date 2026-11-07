@@ -1,12 +1,12 @@
-# 19 capitales españolas tuvieron el 6 de noviembre mínimas de al menos 5 °C por debajo de lo normal para la fecha
+# 18 capitales españolas tuvieron el 6 de noviembre mínimas de al menos 5 °C por debajo de lo normal para la fecha
 
-**Dato:** 19 de 50 capitales · las más extremas: Zamora -2,4 °C (-9,8); Palencia -1,7 °C (-8,5); Valladolid -1,3 °C (-8,4); Ourense 2,8 °C (-7,7); Lugo 0,6 °C (-7,6); Bilbao 4,9 °C (-7,1); León -1 °C (-7); Pontevedra 5,4 °C (-6,8)  
+**Dato:** 18 de 50 capitales · las más extremas: Zamora -2,4 °C (-9,6); Palencia -1,7 °C (-8,4); Valladolid -1,4 °C (-8,3); Ourense 2,7 °C (-7,7); Lugo 0,6 °C (-7,5); Bilbao 4,9 °C (-7); León -1 °C (-6,8); A Coruña 5,7 °C (-6,6)  
 **Fecha del dato:** 6 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Media de la desviación en esas 19 capitales: -6,9 °C.
+- Media de la desviación en esas 18 capitales: -6,9 °C.
 - Normal de referencia: 1991-2020, día a día, en la celda de cada capital.
 
 ## Fuente y método
