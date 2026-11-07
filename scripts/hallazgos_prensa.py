@@ -1606,7 +1606,7 @@ def municipal():
         if r["racha"]["n_record_fecha"] > 0:
             fl, pj = fichas(p["slug"])
             recs = [m for m in pj.get("municipios", []) if m.get("racha") and m["racha"]["puesto"] == 1 and m["racha"]["dias"] > 0
-                    and m["pob"] >= UMBRAL_POB_RACHA][:3]
+                    and m["pob"] >= UMBRAL_POB_RACHA and m["racha"]["dias"] >= 21][:3]   # 21 días: una racha récord de 10 días no es noticia
             if recs:
                 ids["racha_record"].append(p)
             for m in recs:
