@@ -208,5 +208,16 @@ async function initSelector() {
 }
 initSelector(); cargar();
 </script>
+<script>
+/* Avisa a la página que incrusta este panel de su altura real, para que el iframe no deje huecos. */
+(function () {
+  function avisar() {
+    try { parent.postMessage({ cgIframeH: Math.ceil(document.body.getBoundingClientRect().height) + 8 }, "https://calentamientoglobal.es"); } catch (e) {}
+  }
+  window.addEventListener("load", avisar);
+  window.addEventListener("resize", avisar);
+  if (window.ResizeObserver) new ResizeObserver(avisar).observe(document.body);
+})();
+</script>
 </body>
 </html>
