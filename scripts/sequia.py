@@ -12,8 +12,12 @@ Para cada provincia calcula, con la precipitación oficial de AEMET de su capita
 Deja en docs/sequia/: index.json, nacional.json, prensa.json, <slug>.json, <slug>.csv, graf/<slug>-spi.svg,
 graf/<slug>-hidro.svg y graf/mapa.svg. Solo stdlib + scipy. Sin claves ni APIs de pago.
 
-Uso:  python scripts/sequia.py [--sin-red] [--solo slug,slug] [--tabla]
+Uso:  python scripts/sequia.py [--sin-red] [--solo slug,slug] [--tabla] [--vista DIR] [--publicar [--forzar]] [--solo-web]
   --sin-red   no llama a Open-Meteo: la cola provisional sale del ERA5 del archivo del repo y no hay previsión.
+  --vista DIR      (bloque B) escribe en DIR el HTML de las 53 páginas de WordPress para revisarlo (scripts/sequia_web.py).
+  --publicar       (bloque B) crea o actualiza /sequia/ y las 52 /sequia/<provincia>/ por la REST de WordPress; solo reescribe
+                   lo que cambia. Necesita WP_USER y WP_APP_PASSWORD. --forzar reescribe todo.
+  --solo-web       no recalcula: usa lo que ya hay en docs/sequia/.
 """
 from __future__ import annotations
 
@@ -38,7 +42,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).parent))
 from balance_mensual import ESTACIONES, NORMAL, PROVINCIA, SIN_SERIE, Historia, f1, r1  # noqa: E402,F401
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 RAIZ = Path(__file__).resolve().parent.parent
 DOCS = RAIZ / "docs"
 SALIDA = DOCS / "sequia"
@@ -1230,8 +1234,20 @@ def comprobaciones(res: list[dict]) -> list[str]:
 
 
 # --------------------------------------------------------------------------------------------------- principal
+def web(args: list) -> int:
+    """Bloque B: HTML de las páginas y publicación en WordPress (scripts/sequia_web.py)."""
+    import sequia_web as W  # noqa: PLC0415
+    if "--vista" in args:
+        W.vista(args[args.index("--vista") + 1])
+    if "--publicar" in args:
+        return W.publicar("--forzar" in args)
+    return 0
+
+
 def main():
     args = sys.argv[1:]
+    if "--solo-web" in args:
+        return web(args)
     sin_red = "--sin-red" in args or bool(os.environ.get("SEQUIA_SIN_RED"))
     solo = None
     if "--solo" in args:
@@ -1287,6 +1303,8 @@ def main():
     malos = comprobaciones(res) if len(res) == len(ORDEN) else []
     for m in malos:
         log("  COMPROBACIÓN FALLIDA: " + m)
+    if "--vista" in args or "--publicar" in args:
+        return web(args)
     return 0
 
 
