@@ -1834,12 +1834,14 @@ def _agregar_antes_raro_mes(lista: list[dict], ym: str):
     f_max = max(h["fecha_dato"] for h in lista)
     anadir({"serie": "huella", "fuente": ("AEMET (serie mensual y valores diarios validados de la estación) y reanálisis ERA5 (Copernicus/ECMWF) "
                                             "· cálculo propio de calentamientoglobal.es"),
-            "serie_desde": "1961", "territorio": "España", "ambito": "nacional", "pagina": "https://calentamientoglobal.es/huella-climatica/",
+            "serie_desde": "1961", "territorio": "España", "ambito": "nacional", "pagina": f"https://calentamientoglobal.es/prensa/huella-{MESES[mes - 1]}-{anio}/",
             "provisional": False, "tipo": "antes_raro", "fecha_dato": f_max, "indicador": "mes_media_alta_nacional",
             "ambito_tiempo": "mes", "cierre_mes": "cerrado", "id_fijo": f"huella-antes-raro-espana-{ym}",
             "titular": titular, "dato": dato,
             "contexto": [f"Capitales: {', '.join(h['territorio'] for h in lista[:-1])} y {lista[-1]['territorio']}.",
-                         f"Cada una frente a su propia serie; PR mediano de las agregadas: {at.fratio(pr_med, True)} (la fuerza usa este valor con tope 5)."],
+                         f"Cada una frente a su propia serie; PR mediano de las agregadas: {at.fratio(pr_med, True)} (la fuerza usa este valor con tope 5).",
+                         "Las cinco con mayor cociente, con el límite inferior del intervalo del 90 % (un mes así es hoy al menos X veces más probable): " +
+                         "; ".join(f"{f['capital']}, al menos {at.fratio(f['pr_min'], True)}" for f in filas[:5]) + "."],
             "metodo": at.METODO_CORTO, "limites": limites,
             "citabilidad": "alta" if n_aemet >= 10 else "media", "exclusivo": True,
             "rareza": {"significativo": True, "PR_num": pr_med, "PR": min(prs), "agregada": True, "n": n,

@@ -117,6 +117,13 @@ CAPITAL_SIN_ESTACION = {"19": "Guadalajara", "33": "Oviedo", "34": "Palencia", "
 SLUG_EXTRA = {"19": "guadalajara", "33": "asturias", "34": "palencia", "39": "cantabria", "51": "ceuta"}
 SLUGS = {**SLUG47, **SLUG_EXTRA}
 
+# Capitales sin estación diaria apta cuya serie MENSUAL larga sí sirve (07-11-2026; mensual_largo_eleccion.py: >= 25 años válidos
+# en cada mes de 1961-1990 y de 1996-2025, homogeneidad ok frente a ERA5 y sin salto > 0,7 °C frente a la estación actual).
+# Solo se usa para el mensual cuando ESTACIONES no cumple; la serie diaria y el resto del método no cambian.
+ESTACION_MENSUAL_LARGA = {"navarra": "9262", "cantabria": "1109", "alicante": "8025", "malaga": "6155A"}
+ESTACION_MENSUAL_LARGA_NOMBRE = {"navarra": "Pamplona", "cantabria": "Santander, Aeropuerto", "alicante": "Alicante",
+                                 "malaga": "Málaga, Aeropuerto"}
+
 CUM = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366]   # calendario bisiesto: el 29-F tiene su casilla
 FILAS_ANTES = np.arange(ANTES[0] - Y0, ANTES[1] - Y0 + 1)
 FILAS_AHORA = np.arange(AHORA[0] - Y0, AHORA[1] - Y0 + 1)
@@ -766,13 +773,9 @@ _HIST_OBJ = None
 _MES_CAMPO = {"media": "tm", "lluvia": "p"}
 
 
-def mensual_estacion(S: Serie, clave: str, anio: int, mes: int):
-    """(vb, va, x, fuente_txt) con la serie mensual de la estación de AEMET de la capital para el mes cerrado (anio, mes),
-    o None si no se puede: sin estación, homogeneidad dudosa, o menos de MIN_ANIOS años válidos en alguno de los dos climas.
-    Los años salen de Historia.mensual(): mensual oficial de AEMET y, si falta, la media de los diarios validados."""
-    if S.cod not in ESTACIONES or homogeneidad(S.cod) == "dudosa":
-        return None
-    ide, campo = ESTACIONES[S.cod][0], _MES_CAMPO[clave]
+def _mensual_de(ide: str, clave: str, anio: int, mes: int):
+    """(vb, va, x, fuente_txt) de la estación `ide` para el mes cerrado (anio, mes), o None si falta algún requisito."""
+    campo = _MES_CAMPO[clave]
     H = historia()
 
     def vals(a0, a1):
@@ -791,6 +794,23 @@ def mensual_estacion(S: Serie, clave: str, anio: int, mes: int):
     if x is None:
         return None
     return vb, va, float(x), m.get("fuente", "")
+
+
+def mensual_estacion(S: Serie, clave: str, anio: int, mes: int):
+    """(vb, va, x, fuente_txt, nombre_estacion) con la serie mensual de la estación de AEMET de la capital para el mes cerrado
+    (anio, mes), o None si no se puede: sin estación, homogeneidad dudosa, o menos de MIN_ANIOS años válidos en alguno de los dos
+    climas. Los años salen de Historia.mensual(): mensual oficial de AEMET y, si falta, la media de los diarios validados.
+    Si la estación de ESTACIONES no cumple, se prueba la de ESTACION_MENSUAL_LARGA (serie mensual larga, solo mensual)."""
+    if S.cod in ESTACIONES and homogeneidad(S.cod) != "dudosa":
+        r = _mensual_de(ESTACIONES[S.cod][0], clave, anio, mes)
+        if r is not None:
+            return (*r, ESTACIONES[S.cod][2])
+    ide = ESTACION_MENSUAL_LARGA.get(S.slug)
+    if ide:
+        r = _mensual_de(ide, clave, anio, mes)
+        if r is not None:
+            return (*r, ESTACION_MENSUAL_LARGA_NOMBRE.get(S.slug, ide))
+    return None
 
 
 # ----------------------------------------------------------------------------
@@ -883,9 +903,11 @@ def bloque_mes(S: Serie, f: date, hoy: date | None = None):
         # mes cerrado: serie mensual de la estación de AEMET si cumple (≥ 25 años por clima, homogeneidad no dudosa);
         # mes en curso (o sin serie mensual suficiente): la matriz diaria de la capital, con los mismos días de otros años
         est = mensual_estacion(S, clave, a, m) if cerrado else None
+        est_nombre = ESTACIONES[S.cod][2] if S.cod in ESTACIONES else ""
         if est is not None:
-            vb, va, x, fm = est
-            fuente_m, cit_m = "aemet", ("alta" if S.homog == "ok" or homogeneidad(S.cod) == "ok" else "media")
+            vb, va, x, fm, est_nombre = est
+            larga = S.slug in ESTACION_MENSUAL_LARGA and est_nombre == ESTACION_MENSUAL_LARGA_NOMBRE.get(S.slug)
+            fuente_m, cit_m = "aemet", ("alta" if larga or S.homog == "ok" or homogeneidad(S.cod) == "ok" else "media")
         else:
             A = S.mat[var][y, CUM[m - 1]: CUM[m - 1] + k]
             valid = int((~np.isnan(A)).sum())
@@ -901,7 +923,7 @@ def bloque_mes(S: Serie, f: date, hoy: date | None = None):
             o["media_antes"], o["media_ahora"] = r1(r["media_antes"]), r1(r["media_ahora"])
             o["unidad"] = "°C" if clave == "media" else "mm"
             o["fuente_mensual"], o["citabilidad"] = fuente_m, cit_m
-            lugar = (f"serie mensual de la estación de AEMET de {ESTACIONES[S.cod][2]}" if fuente_m == "aemet"
+            lugar = (f"serie mensual de la estación de AEMET de {est_nombre}" if fuente_m == "aemet"
                      else f"serie diaria de la celda de {S.capital} del reanálisis ERA5")
             o["frase"] = frase_rareza(r, "mes", "un mes así" if clave == "media" else
                                       ("un mes así de húmedo" if r["lado"] == "humedo" else "un mes así de seco")) + f" Serie: {lugar}."
