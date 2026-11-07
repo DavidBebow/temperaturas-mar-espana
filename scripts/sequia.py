@@ -229,7 +229,7 @@ def om(url: str, params: dict, intentos: int = 4):
     for i in range(intentos):
         req = urllib.request.Request(full, headers={"User-Agent": UA, "Accept": "application/json"})
         try:
-            with urllib.request.urlopen(req, timeout=180) as r:
+            with urllib.request.urlopen(req, timeout=25) as r:
                 return json.loads(r.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             cuerpo = e.read().decode("utf-8", "replace")[:300]
@@ -239,12 +239,12 @@ def om(url: str, params: dict, intentos: int = 4):
                     continue
                 raise Limite(cuerpo) from None
             if e.code in (500, 502, 503, 504) and i < intentos - 1:
-                time.sleep(15 * (i + 1))
+                time.sleep(5 * (i + 1))
                 continue
             raise RuntimeError(f"HTTP {e.code} {url}: {cuerpo}") from None
         except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
             if i < intentos - 1:
-                time.sleep(15 * (i + 1))
+                time.sleep(3 * (i + 1))
                 continue
             raise RuntimeError(f"{type(e).__name__} {url}: {e}") from None
 
