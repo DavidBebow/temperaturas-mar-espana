@@ -76,10 +76,13 @@ PROVINCIAS = {
 # Fuerza base por tipo de hallazgo (0-100). Después se modula por ámbito,
 # exclusividad y frescura.
 FUERZA = {
-    "record_absoluto": 100, "record_mes": 92, "primera_vez_desde": 90, "record_fecha": 80, "puesto_extremo": 75,
+    "record_absoluto": 100, "record_mes": 50, "primera_vez_desde": 90, "record_fecha": 80, "puesto_extremo": 75,
     "racha": 65, "anomalia_fuerte": 55, "percentil_extremo": 50, "contexto": 30,
-    # lluvia medida por AEMET: la del día anterior completo y la del día en curso hasta la última hora cerrada
-    "lluvia_dia": 85, "lluvia_en_curso": 90,
+    # lluvia medida por AEMET: la del día anterior completo y la del día en curso hasta la última hora cerrada.
+    # 7-11-2026: lluvia_dia (85 → 50), lluvia_en_curso (90 → 54) y record_mes (92 → 50, récord del mes de una estación) quedan por
+    # debajo de antes_raro (55): un hallazgo sin rareza significativa no debe superar a uno con rareza PR ≥ 3 (el multiplicador
+    # min(PR,5)/2 sube un antes_raro con PR ≥ 5 a ×2,5). Además, regla_rareza() lo garantiza al final (ver más abajo).
+    "lluvia_dia": 50, "lluvia_en_curso": 54,
     # monitor de sequía: entrada en sequía severa/extrema o varias provincias a la vez
     "episodio": 70,
     # atribución (scripts/sala/atribucion.py): un día o mes que antes era raro (PR ≥ 3, T_antes ≥ 10 años); fuerza como «anomalía fuerte»
@@ -91,6 +94,16 @@ FUERZA = {
 # es decir, si el calentamiento ha vuelto más probable lo que se cuenta; en el lado frío no se premia ni se castiga) y se
 # recorta a 100. Con PR = 2 no cambia nada; con PR ≥ 5 la fuerza se multiplica por 2,5.
 RAREZA_PR_TOPE = 5.0
+# Frescura (7-11-2026). Diarios: −7 %/día desde el 2.º día, con suelo 0,35 (como hasta ahora). Un hallazgo con ámbito temporal más
+# largo no pierde frescura durante un plazo de gracia y después pierde lo mismo que los diarios:
+#   · mes cerrado (antes_raro mensual, balance): hasta el día 20 del mes siguiente;
+#   · temporada o año (temporada, días >32 °C, puesto extremo anual): hasta 30 días después de su fecha_dato.
+FRESCURA_PERDIDA_DIA = 0.07
+FRESCURA_SUELO = 0.35
+GRACIA_TEMPORADA = 30
+DIA_GRACIA_MES = 20
+# tipos «sin rareza» que regla_rareza() no deja pasar por encima de un hallazgo con rareza PR ≥ 3 del mismo ámbito y citabilidad igual o mayor
+TIPOS_TOPADOS = {"lluvia_dia", "lluvia_en_curso", "record_mes"}
 AMBITO_F = {"nacional": 1.0, "regional": 0.9, "provincial": 0.8, "local": 0.7, "global": 0.85}
 
 # Vida útil de un hallazgo según la cadencia de su serie (días desde fecha_dato).
@@ -212,6 +225,28 @@ def dias_desde(s: str) -> int:
     return (HOY - date.fromisoformat(s[:10])).days
 
 
+def ambito_temporal(h: dict):
+    """('mes', gracia_días) | ('temporada', gracia_días) | ('dia', 1) según lo que cuenta el hallazgo."""
+    f = date.fromisoformat(h["fecha_dato"][:10])
+    if h.get("ambito_tiempo") == "mes" and h.get("cierre_mes") == "cerrado":
+        fin = date(f.year + (f.month == 12), f.month % 12 + 1, DIA_GRACIA_MES)
+        return "mes", max(1, (fin - f).days)
+    ind = h.get("indicador", "")
+    if h.get("tipo") == "temporada" or h.get("serie") in ("temporadas", "dias32") or \
+            (h.get("tipo") == "puesto_extremo" and ("anio" in ind or "otono" in ind)):
+        return "temporada", GRACIA_TEMPORADA
+    return "dia", 1
+
+
+def frescura_y_vida(h: dict, edad: int):
+    """(frescura 0,35-1, vida en días). La vida de la serie se alarga si el plazo de gracia es mayor."""
+    amb, gracia = ambito_temporal(h)
+    vida = VIDA.get(h["serie"], 10)
+    if amb != "dia":
+        vida = max(vida, gracia + int((1 - FRESCURA_SUELO) / FRESCURA_PERDIDA_DIA) + 1)
+    return max(FRESCURA_SUELO, 1 - FRESCURA_PERDIDA_DIA * max(0, edad - gracia)), vida
+
+
 _ATRIB = None
 _RAREZA_VAR = {"tmax": "tmax", "tmin_alta": "tmin", "tmin_baja": "tmin"}
 
@@ -256,11 +291,10 @@ def anadir(h: dict):
     h.setdefault("citabilidad", "media")
     h.setdefault("ambito", "provincial")
     edad = dias_desde(h["fecha_dato"])
-    vida = VIDA.get(h["serie"], 10)
+    frescura, vida = frescura_y_vida(h, edad)
     if edad > vida:
         descartar(h["serie"], h["territorio"], f"dato de hace {edad} días: caducado para esta serie (vida {vida} días)", h.get("titular", ""))
         return
-    frescura = max(0.35, 1 - 0.07 * max(0, edad - 1))  # -7 %/día a partir del 2.º
     h["edad_dias"] = edad
     poner_rareza(h)
     fuerza = FUERZA[h["tipo"]] * AMBITO_F[h["ambito"]] * (1.0 if h["exclusivo"] else 0.7) * frescura
@@ -280,7 +314,7 @@ def anadir(h: dict):
                 h["provincia_slug"] = slug
                 break
     crudo = unicodedata.normalize("NFKD", f"{h['serie']}-{h['tipo']}-{h['territorio']}-{h['fecha_dato']}").encode("ascii", "ignore").decode()
-    h["id"] = re.sub(r"[^a-z0-9]+", "-", crudo.lower()).strip("-")
+    h["id"] = h.pop("id_fijo", None) or re.sub(r"[^a-z0-9]+", "-", crudo.lower()).strip("-")
     hallazgos.append(h)
 
 
@@ -1518,13 +1552,20 @@ def agregar():
         elif h["serie"] == "estaciones" and h["tipo"] in ("record_absoluto", "record_mes"):
             clave = ("estaciones_" + h["indicador"], h["fecha_dato"])
         elif h["serie"] == "huella" and h["tipo"] == "antes_raro":
-            clave = ("huella_" + h["indicador"], h["fecha_dato"])
+            # el mensual se agrega por indicador + mes (los meses cerrados llegan con fechas distintas: 10-13, 10-30, 10-31);
+            # el diario, por fecha exacta
+            clave = ("huella_" + h["indicador"], h["fecha_dato"][:7] if h["indicador"] == "mes_media_alta" else h["fecha_dato"])
         if clave:
             grupos.setdefault(clave, []).append(h)
     for (clave, cuando), lista in grupos.items():
         if len(lista) < 3:
             continue
         lista.sort(key=lambda h: h["territorio"])
+        if clave == "huella_mes_media_alta":
+            lista = [h for h in lista if h.get("cierre_mes") == "cerrado"]   # un mes en curso no es «un mes que cerró así»
+            if len(lista) >= 3:
+                _agregar_antes_raro_mes(lista, cuando)
+            continue
         nombres = ", ".join(h["territorio"] for h in lista[:-1]) + " y " + lista[-1]["territorio"]
         p = lista[0]
         n = len(lista)
@@ -1600,6 +1641,104 @@ def agregar():
                 "miembros": [h["id"] for h in lista]})
 
 
+def _cobertura_mes(ym: str):
+    """Capitales con media del mes `ym` en docs/huella/<slug>.json (denominador del titular nacional) y total de capitales."""
+    n, tot = 0, 0
+    for fp in sorted((DOCS / "huella").glob("*.json")):
+        if fp.stem in ("index", "antes_raro"):
+            continue
+        try:
+            d = leer(fp)
+        except Exception:
+            continue
+        if not isinstance(d, dict) or "slug" not in d:
+            continue
+        tot += 1
+        m = d.get("mes") or {}
+        if (m.get("referencia") or {}).get("mes") == ym and m.get("media"):
+            n += 1
+    return n, tot
+
+
+def _agregar_antes_raro_mes(lista: list[dict], ym: str):
+    """Hallazgo nacional «un mes que antes era raro» (≥ 3 capitales, mismo indicador y mes). Los provinciales pasan a locales."""
+    from sala import atribucion as at
+    anio, mes = int(ym[:4]), int(ym[5:7])
+    n = len(lista)
+    n_dato, tot = _cobertura_mes(ym)
+    n_aemet = sum(1 for h in lista if str(h.get("tipo_fuente") or ("aemet" if str(h.get("fuente", "")).startswith("AEMET") else "era5")) == "aemet")
+    n_era5 = n - n_aemet
+    de_dato = n_dato if n_dato >= n else n     # nunca menos capitales con dato que agregadas
+    nacional_ok = tot > 0 and de_dato >= at.FRAC_NACIONAL * tot
+    # capital del ejemplo: la de estación de AEMET con el T_antes más alto sin estar acotado
+    cand = [h for h in lista if h["rareza"].get("T_antes") is not None and float(h["rareza"]["T_antes"]) < at.T_MAX
+            and str(h.get("tipo_fuente") or "") == "aemet"] or [h for h in lista if h["rareza"].get("T_antes") is not None]
+    top = max(cand, key=lambda h: float(h["rareza"]["T_antes"]))
+    Ttop = at.frase_T(top["rareza"]["T_antes"], float(top["rareza"]["T_antes"]) >= at.T_MAX)
+    denom = f"de las {tot} capitales" if de_dato >= tot else f"de las {de_dato} capitales con dato"
+    if nacional_ok:
+        titular = (f"Un {MESES[mes - 1]} como el de {anio} es hoy al menos tres veces más probable que en 1961-1990 en {n} {denom}; "
+                   f"en {top['territorio']} era un mes de {Ttop.replace('una vez cada', 'una vez cada')}")
+    else:   # menos del 80 % de capitales con dato: no se dice «de las N capitales» como si fuera el conjunto
+        titular = (f"En {n} capitales, un {MESES[mes - 1]} como el de {anio} es hoy al menos tres veces más probable que en 1961-1990; "
+                   f"en {top['territorio']} era un mes de {Ttop}")
+    prs = sorted(float(h["rareza"]["PR"]) if isinstance(h["rareza"].get("PR"), (int, float)) else float(h["rareza"].get("PR_num") or 0) for h in lista)
+    pr_med = prs[len(prs) // 2]
+    mayor = max(lista, key=lambda h: float(h["rareza"].get("PR_num") or 0))
+    filas = []
+    for h in sorted(lista, key=lambda h: -float(h["rareza"].get("PR_num") or 0)):
+        r = h["rareza"]
+        filas.append({"capital": h["territorio"], "valor": h["valor"], "T_antes": r.get("T_antes"), "T_ahora": r.get("T_ahora"),
+                      "PR": r.get("PR"), "pr_min": r.get("pr_min"), "pr_max": r.get("pr_max"), "PR_num": r.get("PR_num"),
+                      "fuente": "AEMET" if str(h.get("tipo_fuente") or "") == "aemet" or (not h.get("tipo_fuente") and str(h.get("fuente", "")).startswith("AEMET")) else "ERA5"})
+    fuentes_txt = f"{n_aemet} con estación de AEMET, {n_era5} con reanálisis ERA5"
+    ic_top = f"{at.fratio(mayor['rareza']['pr_min'], True)}-{at.fratio(mayor['rareza']['pr_max'], True)}"
+    dato = (f"{n} capitales ({fuentes_txt}). " +
+            "; ".join(f"{f['capital']} {f1(f['valor'])} °C (PR {at.fratio(f['PR'], True)})" for f in filas))
+    limites = [
+        "Compara dos climas observados (1961-1990 y 1996-2025) de la misma serie de cada capital: no atribuye este mes a una causa concreta.",
+        (f"Fuentes mezcladas: {fuentes_txt}. El reanálisis ERA5 es una celda de ~25 km, no la estación oficial, y anterior a 1979 es una "
+         "retroextensión preliminar; la cifra oficial puede diferir." if n_era5 else "Todas con estación de AEMET."),
+        f"Intervalos del 90 % amplios en la cola: {mayor['territorio']} {ic_top} veces más probable (PR {at.fratio(mayor['rareza']['PR'], True)}).",
+        (f"Se cuenta sobre las {de_dato} de {tot} capitales con dato de {MESES[mes - 1]}; es un recuento de capitales, no de toda España."
+         if nacional_ok else
+         f"Solo {de_dato} de {tot} capitales tienen dato del mes: no se presenta como imagen del conjunto de España."),
+    ]
+    p = lista[0]
+    f_max = max(h["fecha_dato"] for h in lista)
+    anadir({"serie": "huella", "fuente": ("AEMET (serie mensual y valores diarios validados de la estación) y reanálisis ERA5 (Copernicus/ECMWF) "
+                                            "· cálculo propio de calentamientoglobal.es"),
+            "serie_desde": "1961", "territorio": "España", "ambito": "nacional", "pagina": "https://calentamientoglobal.es/huella-climatica/",
+            "provisional": False, "tipo": "antes_raro", "fecha_dato": f_max, "indicador": "mes_media_alta_nacional",
+            "ambito_tiempo": "mes", "cierre_mes": "cerrado", "id_fijo": f"huella-antes-raro-espana-{ym}",
+            "titular": titular, "dato": dato,
+            "contexto": [f"Capitales: {', '.join(h['territorio'] for h in lista[:-1])} y {lista[-1]['territorio']}.",
+                         f"Cada una frente a su propia serie; PR mediano de las agregadas: {at.fratio(pr_med, True)} (la fuerza usa este valor con tope 5)."],
+            "metodo": at.METODO_CORTO, "limites": limites,
+            "citabilidad": "alta" if n_aemet >= 10 else "media", "exclusivo": True,
+            "rareza": {"significativo": True, "PR_num": pr_med, "PR": min(prs), "agregada": True, "n": n,
+                       "T_antes": top["rareza"]["T_antes"], "frase": f"{n} capitales con PR ≥ 3 ({fuentes_txt})"},
+            "n_aemet": n_aemet, "n_era5": n_era5, "n_con_dato": de_dato, "n_capitales": tot,
+            "tabla_capitales": filas, "miembros": [h["id"] for h in lista]})
+
+
+def regla_rareza(lista: list[dict]) -> list[str]:
+    """Regla que se cumple siempre: un hallazgo sin rareza significativa de los tipos de TIPOS_TOPADOS no supera en fuerza a uno
+    con rareza PR ≥ 3 de citabilidad igual o superior y del mismo ámbito. Devuelve los ids que ha recortado."""
+    rank = {"contexto": 0, "media": 1, "alta": 2}
+    con = [h for h in lista if (h.get("rareza") or {}).get("significativo") and (h["rareza"].get("PR_num") or 0) >= 3]
+    tocados = []
+    for h in lista:
+        if h in con or h["tipo"] not in TIPOS_TOPADOS:
+            continue
+        techos = [x["fuerza"] for x in con if x["ambito"] == h["ambito"] and rank[x["citabilidad"]] >= rank[h["citabilidad"]]]
+        if techos and h["fuerza"] >= min(techos):
+            h["fuerza"] = round(min(techos) - 0.1, 1)
+            h["tope_rareza"] = True
+            tocados.append(h["id"])
+    return tocados
+
+
 # ----------------------------------------------------------------------------
 # dossiers
 # ----------------------------------------------------------------------------
@@ -1618,7 +1757,51 @@ def dossiers(top: list[dict]):
             errores.append(f"dossier {h['id']}: {e}")
 
 
+def _dossier_tabla_capitales(h: dict, plt):
+    """Dossier del «antes era raro» nacional: CSV con la tabla completa y gráfico de barras de PR por capital (ordenado, coloreado por fuente)."""
+    filas = h["tabla_capitales"]
+    with open(DOSSIER / f"{h['id']}.csv", "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["capital", "media_del_mes_C", "T_antes_anios", "T_ahora_anios", "PR", "PR_min_IC90", "PR_max_IC90", "fuente"])
+        for r in filas:
+            w.writerow([r["capital"], r["valor"], r["T_antes"], r["T_ahora"], r["PR"], r["pr_min"], r["pr_max"], r["fuente"]])
+    h["csv"] = f"prensa/dossier/{h['id']}.csv"
+    if plt:
+        fig, ax = plt.subplots(figsize=(10, max(5.5, 0.27 * len(filas) + 1.6)), dpi=150)
+        orden = list(reversed(filas))
+        col = {"AEMET": "#b8321c", "ERA5": "#6694ca"}
+        ys = range(len(orden))
+        ax.barh(list(ys), [max(float(r["PR"]), 1.0) for r in orden], color=[col[r["fuente"]] for r in orden], height=0.7)
+        ax.set_yticks(list(ys))
+        ax.set_yticklabels([r["capital"] for r in orden], fontsize=8)
+        ax.set_xscale("log")
+        tope = max(float(r["PR"]) for r in orden)
+        ax.set_xlim(1, tope * 1.6)
+        marcas = [m for m in (1, 2, 3, 5, 10, 20, 50, 100, 200, 500, 1000) if m <= tope * 1.6]
+        ax.set_xticks(marcas)
+        ax.set_xticklabels([f"{m:,}".replace(",", ".") for m in marcas])
+        ax.minorticks_off()
+        ax.axvline(3, color="#444444", lw=1, ls="--")
+        ax.text(3, len(orden) - 0.2, " PR = 3", fontsize=8, color="#444444", va="bottom")
+        for y, r in zip(ys, orden):
+            ax.text(max(float(r["PR"]), 1.0) * 1.08, y, f"{r['PR']:g}".replace(".", ","), va="center", fontsize=7)
+        ax.set_xlabel("Cociente de probabilidad (PR): cuántas veces más probable hoy que en 1961-1990 (escala logarítmica)", fontsize=9)
+        from matplotlib.patches import Patch
+        ax.legend(handles=[Patch(color=col["AEMET"], label=f"Estación de AEMET ({h.get('n_aemet')})"),
+                           Patch(color=col["ERA5"], label=f"Reanálisis ERA5 ({h.get('n_era5')})")], frameon=False, fontsize=9, loc="lower right")
+        ax.spines[["top", "right"]].set_visible(False)
+        import textwrap
+        ax.set_title(textwrap.fill(h["titular"], 92), loc="left", fontsize=10, fontweight="bold")
+        ax.text(1, -0.09, "Observatorio climático · calentamientoglobal.es · AEMET y ERA5 · cálculo propio", transform=ax.transAxes,
+                ha="right", fontsize=7, color="#6e6e73")
+        fig.savefig(DOSSIER / f"{h['id']}.png", bbox_inches="tight")
+        plt.close(fig)
+        h["grafico"] = f"prensa/dossier/{h['id']}.png"
+
+
 def _dossier(h: dict, plt):
+    if h.get("tabla_capitales"):
+        _dossier_tabla_capitales(h, plt)
     serie = _serie_para(h) if not h.get("miembros") else None
     if serie:
         with open(DOSSIER / f"{h['id']}.csv", "w", newline="", encoding="utf-8") as f:
@@ -1635,6 +1818,14 @@ def _dossier(h: dict, plt):
           f"**Citabilidad:** {h['citabilidad']} · **Exclusivo:** {'sí' if h['exclusivo'] else 'no (dato oficial que publica cualquiera)'}", ""]
     if h.get("contexto"):
         md += ["## Contexto", *[f"- {c}" for c in h["contexto"]], ""]
+    if h.get("tabla_capitales"):
+        from sala import atribucion as at
+        md += ["## Tabla completa", "", "| Capital | Media del mes (°C) | T antes (años) | T ahora (años) | PR (IC 90 %) | Fuente |", "|---|---|---|---|---|---|"]
+        for r in h["tabla_capitales"]:
+            md.append(f"| {r['capital']} | {f1(r['valor'])} | {at.fratio(r['T_antes'], r['T_antes'] is not None and float(r['T_antes']) >= at.T_MAX)} | "
+                      f"{at.fratio(r['T_ahora'], r['T_ahora'] is not None and float(r['T_ahora']) >= at.T_MAX)} | "
+                      f"{at.fratio(r['PR'], True)} ({at.fratio(r['pr_min'], True)}-{at.fratio(r['pr_max'], True)}) | {r['fuente']} |")
+        md.append("")
     if h.get("miembros"):
         por_id = {x["id"]: x for x in hallazgos}
         md += ["## Territorio a territorio", "", "| Territorio | Dato | Dossier local |", "|---|---|---|"]
@@ -1821,7 +2012,8 @@ def huella():
         T = at.frase_T(rz["T_antes"], rz["T_antes"] >= at.T_MAX)
         pr = at.fratio(rz["PR"], True)
         if c.get("ambito_tiempo") == "mes":
-            titular = (f"{cap} cerró {c['mes']} con {f1(c['valor'])} °C de media: un mes que en 1961-1990 ocurría {T} "
+            verbo = "cerró" if c.get("cierre_mes") == "cerrado" else "lleva en lo que va de"
+            titular = (f"{cap} {verbo} {c['mes']} con {f1(c['valor'])} °C de media: un mes que en 1961-1990 ocurría {T} "
                        f"y ahora es {pr} veces más probable")
             ind_h = "mes_media_alta"
         else:
@@ -1844,6 +2036,7 @@ def huella():
         anadir({"serie": "huella", "fuente": c["fuente"], "serie_desde": "1961", "territorio": cap, "provincia": c["provincia"],
                 "ambito": "provincial", "pagina": f"https://calentamientoglobal.es/cambio-climatico-en-{c['slug']}/",
                 "provisional": bool(c.get("provisional")), "tipo": "antes_raro", "fecha_dato": fecha, "indicador": ind_h,
+                "tipo_fuente": c.get("tipo_fuente"), "ambito_tiempo": c.get("ambito_tiempo"), "cierre_mes": c.get("cierre_mes"),
                 "valor": c["valor"], "titular": titular, "dato": c["frase"],
                 "contexto": [f"Serie: {c['estacion']} · climas {rz.get('climas', ['1961-1990', '1996-2025'])[0]} y "
                              f"{rz.get('climas', ['1961-1990', '1996-2025'])[1]}."],
@@ -1887,6 +2080,10 @@ def main():
     miembros = {m for h in unicos for m in h.get("miembros", [])}
     locales = [h for h in unicos if h["id"] in miembros]
     unicos = [h for h in unicos if h["id"] not in miembros]
+    topados = regla_rareza(unicos)
+    unicos.sort(key=lambda h: -h["fuerza"])
+    if topados:
+        print(f"  regla de rareza: recortados {len(topados)} hallazgos sin rareza")
 
     if args.dossiers:
         dossiers([h for h in unicos if h["citabilidad"] != "contexto"][:args.dossiers])
