@@ -1,0 +1,62 @@
+name: Monitor de sequía
+
+# Datos del Monitor de sequía de calentamientoglobal.es (scripts/sequia.py): docs/sequia/ con el semáforo por provincia
+# (SPI a 3, 6 y 12 meses sobre la precipitación de AEMET), el año hidrológico, los días sin lluvia, la previsión a 15
+# días y los gráficos. Una sola pasada al día, a las 07:40 UTC, después de «Series diarias AEMET» y de los embalses.
+# No usa workflow_run para no multiplicar ejecuciones. Sin secretos (la publicación en WordPress llega en el bloque B).
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "40 7 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sequia
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  sequia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: main   # lo último de main, no el commit con el que se lanzó
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar scipy
+        run: pip install "scipy==1.14.*"
+
+      - name: Calcular el monitor
+        run: python scripts/sequia.py
+
+      - name: Guardar
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs/sequia
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "sequia: $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase --autostash && git push && exit 0
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
