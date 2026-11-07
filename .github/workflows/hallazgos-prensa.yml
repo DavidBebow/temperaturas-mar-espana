@@ -101,6 +101,12 @@ jobs:
         continue-on-error: true
         run: python scripts/sala/atribucion.py
 
+      # Compuestos y temporadas (7-11-2026): docs/temporadas/*.json y docs/prensa/analisis/compuestos.json, que lee el detector.
+      # Si falla, el detector ignora los compuestos (continue-on-error).
+      - name: Historias compuestas y temporadas
+        continue-on-error: true
+        run: python scripts/sala/compuestos_temporadas.py
+
       - name: Detectar hallazgos y generar dossiers
         run: |
           rm -rf docs/prensa/dossier
@@ -136,7 +142,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes docs/prensa/noticias docs/records docs/huella
+          git add -A docs/prensa/hallazgos.json docs/prensa/hallazgos_historial.json docs/prensa/envivo.json docs/prensa/dossier docs/prensa/partes docs/prensa/noticias docs/records docs/huella docs/temporadas
           for d in docs/prensa/episodios docs/prensa/analisis; do   # pueden no existir si su paso falló
             if [ -d "$d" ]; then git add -A "$d"; fi
           done
