@@ -32,6 +32,8 @@ import json
 import math
 import sys
 import time
+import urllib.parse
+import urllib.request
 import zlib
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -46,7 +48,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 RAIZ = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(RAIZ / "scripts"))
-from balance_mensual import ARCH, DOCS, ESTACIONES, PROVINCIA, r1  # noqa: E402
+from balance_mensual import ARCH, DOCS, ESTACIONES, PROVINCIA, Historia, r1  # noqa: E402
 from tu_capital import SLUG as SLUG47  # noqa: E402
 
 SALIDA = DOCS / "huella"
@@ -72,6 +74,15 @@ ANTES_RARO_PR = 3.0
 ANTES_RARO_T = 10.0            # años
 FUERZA_PR_TOPE = 5.0           # la fuerza de un hallazgo con rareza significativa se multiplica por min(PR, 5)/2 (si PR > 1)
 DIAS_ULTIMOS = 30
+# --- cola provisional (7-11-2026): tras el último día validado de AEMET, hasta ayer, con Open-Meteo -------------------------
+OM_ARCHIVE = "https://archive-api.open-meteo.com/v1/archive"
+OM_FORECAST = "https://api.open-meteo.com/v1/forecast"
+OM_DIAS_ARCHIVE = 5            # el archivo de Open-Meteo llega hasta 5 días antes de hoy; los últimos días, del forecast con past_days
+OM_PAST_DAYS = 7
+OM_TIMEOUT = 15                # s por petición
+OM_PRESUPUESTO = 120.0         # s en total para todas las capitales: pasado esto se deja de pedir y se publica con lo que haya
+OM_CACHE = SALIDA / "cache" / "openmeteo"
+FUENTE_DIA_PROV = "reanálisis/predicción, pendiente de validar por AEMET"
 DIAS_ANTES_RARO = 10
 MIN_DIAS_MES = 10
 ERA5_CONSOLIDA_DIAS = 6        # ERA5 consolida con unos seis días de retraso: antes de eso, dato provisional
@@ -198,6 +209,8 @@ class Serie:
         nan = np.full((ny, 366), np.nan)
         self.mat = {"tmax": nan.copy(), "tmin": nan.copy(), "prec": nan.copy()}
         self.ultima = None
+        self.prov_dias = set()                   # fechas ISO completadas con Open-Meteo (provisionales)
+        self.ultima_validada = None
 
     # -- carga -------------------------------------------------------------
     def _cargar_filas(self, filas):
@@ -639,6 +652,148 @@ def cargar_serie(cod: str, hoy: date, fuente_forzada: str | None = None) -> Seri
 
 
 # ----------------------------------------------------------------------------
+# cola provisional: del último día validado hasta ayer (Open-Meteo)
+# ----------------------------------------------------------------------------
+_COORD = None
+
+
+def coordenadas(cod: str):
+    """(lat, lon) de la capital. ESTACIONES no guarda coordenadas, así que se usan las de la capital de docs/viento.json
+    (las mismas que ya usa hallazgos_prensa.py con Open-Meteo), por nombre de provincia."""
+    global _COORD
+    if _COORD is None:
+        _COORD = {}
+        try:
+            for c in json.loads((DOCS / "viento.json").read_text(encoding="utf-8"))["capitales"]:
+                _COORD[c["provincia"]] = (float(c["lat"]), float(c["lon"]))
+        except Exception as e:
+            log(f"sin coordenadas: {e}")
+    return _COORD.get(PROVINCIA.get(cod, ""))
+
+
+def _http_json(url: str):
+    req = urllib.request.Request(url, headers={"User-Agent": "calentamientoglobal.es/huella"})
+    with urllib.request.urlopen(req, timeout=OM_TIMEOUT) as r:
+        return json.load(r)
+
+
+def _om_filas(res, desde: str, hasta: str, origen: str) -> dict:
+    """{fecha: [tmax, tmin, origen]} de una respuesta de Open-Meteo (daily), solo con ambas cifras y dentro de [desde, hasta]."""
+    d = (res or {}).get("daily") or {}
+    out = {}
+    for f, tx, tn in zip(d.get("time", []), d.get("temperature_2m_max", []), d.get("temperature_2m_min", [])):
+        if tx is None or tn is None or not (desde <= f <= hasta):
+            continue
+        out[f] = [round(float(tx), 1), round(float(tn), 1), origen]
+    return out
+
+
+def cola_provisional(S: Serie, hoy: date, http=None, reloj=time.monotonic, limite_t=None):
+    """Completa tmax/tmin de S desde el día siguiente al último validado hasta ayer y los marca provisionales.
+    Open-Meteo Archive hasta 5 días antes de hoy; Open-Meteo Forecast con past_days=7 para los últimos días.
+    Caché docs/huella/cache/openmeteo/<slug>.json: solo se piden los días que faltan, y los que vinieron del forecast se
+    renuevan una vez al día (el archivo los consolida). Si algo falla, S queda como estaba (nunca rompe el paso).
+    http: función url → dict (inyectable para las pruebas). Devuelve el número de días añadidos."""
+    http = http or _http_json
+    S.ultima_validada = S.ultima
+    if S.ultima is None:
+        return 0
+    ayer = hoy - timedelta(days=1)
+    if S.ultima >= ayer:
+        return 0
+    desde = S.ultima + timedelta(days=1)
+    pedir = [(desde + timedelta(days=i)).isoformat() for i in range((ayer - desde).days + 1)]
+    xy = coordenadas(S.cod)
+    if xy is None:
+        return 0
+    ruta = OM_CACHE / f"{S.slug}.json"
+    try:
+        cache = json.loads(ruta.read_text(encoding="utf-8"))
+    except Exception:
+        cache = {}
+    dias = cache.get("dias", {}) if (cache.get("lat"), cache.get("lon")) == xy else {}
+    consultado_hoy = cache.get("consultado") == hoy.isoformat()
+    corte_archive = (hoy - timedelta(days=OM_DIAS_ARCHIVE)).isoformat()
+    # reutilizable: lo ya descargado del archivo; lo del forecast solo si ya se consultó hoy
+    faltan = [f for f in pedir if f not in dias or (dias[f][2] == "forecast" and not consultado_hoy)]
+    if faltan and (limite_t is None or reloj() < limite_t):
+        try:
+            en_arch = [f for f in faltan if f <= corte_archive]
+            if en_arch:
+                q = urllib.parse.urlencode({"latitude": f"{xy[0]:.4f}", "longitude": f"{xy[1]:.4f}", "start_date": en_arch[0],
+                                            "end_date": en_arch[-1], "daily": "temperature_2m_max,temperature_2m_min",
+                                            "timezone": "Europe/Madrid"})
+                dias.update(_om_filas(http(f"{OM_ARCHIVE}?{q}"), en_arch[0], en_arch[-1], "archive"))
+            en_for = [f for f in faltan if f > corte_archive]
+            if en_for:
+                q = urllib.parse.urlencode({"latitude": f"{xy[0]:.4f}", "longitude": f"{xy[1]:.4f}", "past_days": OM_PAST_DAYS,
+                                            "forecast_days": 1, "daily": "temperature_2m_max,temperature_2m_min",
+                                            "timezone": "Europe/Madrid"})
+                dias.update(_om_filas(http(f"{OM_FORECAST}?{q}"), en_for[0], en_for[-1], "forecast"))
+            cache = {"lat": xy[0], "lon": xy[1], "consultado": hoy.isoformat(), "dias": dict(sorted(dias.items()))}
+            ruta.parent.mkdir(parents=True, exist_ok=True)
+            nuevo = json.dumps(cache, ensure_ascii=False, separators=(",", ":"))
+            if not ruta.exists() or ruta.read_text(encoding="utf-8") != nuevo:
+                ruta.write_text(nuevo, encoding="utf-8")
+        except Exception as e:
+            log(f"{S.slug}: Open-Meteo falló ({type(e).__name__}: {e}); sin cola provisional nueva")
+    # solo se añade una cola contigua desde el día siguiente al último validado: un hueco rompería «ayer»
+    filas, f = [], desde
+    while f <= ayer and f.isoformat() in dias:
+        tx, tn, _ = dias[f.isoformat()]
+        filas.append((f.isoformat(), tx, tn, math.nan))
+        f += timedelta(days=1)
+    if not filas:
+        return 0
+    S._cargar_filas(filas)
+    S.prov_dias = {x[0] for x in filas}
+    S._ext = {}
+    S.finalizar()
+    return len(filas)
+
+
+# ----------------------------------------------------------------------------
+# mensual desde la estación (serie mensual de AEMET)
+# ----------------------------------------------------------------------------
+def historia():
+    global _HIST_OBJ
+    if _HIST_OBJ is None:
+        _HIST_OBJ = Historia()
+    return _HIST_OBJ
+
+
+_HIST_OBJ = None
+_MES_CAMPO = {"media": "tm", "lluvia": "p"}
+
+
+def mensual_estacion(S: Serie, clave: str, anio: int, mes: int):
+    """(vb, va, x, fuente_txt) con la serie mensual de la estación de AEMET de la capital para el mes cerrado (anio, mes),
+    o None si no se puede: sin estación, homogeneidad dudosa, o menos de MIN_ANIOS años válidos en alguno de los dos climas.
+    Los años salen de Historia.mensual(): mensual oficial de AEMET y, si falta, la media de los diarios validados."""
+    if S.cod not in ESTACIONES or homogeneidad(S.cod) == "dudosa":
+        return None
+    ide, campo = ESTACIONES[S.cod][0], _MES_CAMPO[clave]
+    H = historia()
+
+    def vals(a0, a1):
+        out = []
+        for a in range(a0, a1 + 1):
+            m = H.mensual(ide, a, mes)
+            v = m.get(campo) if m else None
+            if v is not None:
+                out.append(float(v))
+        return np.array(out)
+    vb, va = vals(*ANTES), vals(*AHORA)
+    if len(vb) < MIN_ANIOS or len(va) < MIN_ANIOS:
+        return None
+    m = H.mensual(ide, anio, mes)
+    x = m.get(campo) if m else None
+    if x is None:
+        return None
+    return vb, va, float(x), m.get("fuente", "")
+
+
+# ----------------------------------------------------------------------------
 # caché de ajustes
 # ----------------------------------------------------------------------------
 def leer_cache() -> dict:
@@ -702,47 +857,66 @@ def indice_dia(S: Serie, f: date, memo: dict):
     return memo[k]
 
 
-def mes_referencia(f: date):
-    """(año, mes, días contados, ¿cerrado?) del mes que se analiza según el último día con dato."""
+def mes_referencia(f: date, hoy: date | None = None):
+    """(año, mes, días contados, ¿cerrado?) del mes que se analiza según el último día con dato.
+    7-11-2026: un mes ya terminado en el calendario (hoy está en un mes posterior) es un mes cerrado aunque la validación de AEMET aún no
+    llegue al último día; entonces se cuenta el mes entero y el año vale si tiene ≥ 90 % de los días (COBERTURA). Así un mes con 13 días
+    de dato no se publica como «cerrado»."""
     ult = calendar.monthrange(f.year, f.month)[1]
-    if f.day >= MIN_DIAS_MES or f.day == ult:
-        return f.year, f.month, f.day, f.day == ult
+    if f.day == ult:
+        return f.year, f.month, ult, True
+    if hoy is not None and (hoy.year, hoy.month) > (f.year, f.month):
+        return f.year, f.month, ult, True
+    if f.day >= MIN_DIAS_MES:
+        return f.year, f.month, f.day, False
     a, m = (f.year - 1, 12) if f.month == 1 else (f.year, f.month - 1)
-    n = calendar.monthrange(a, m)[1]
-    return a, m, n, True
+    return a, m, calendar.monthrange(a, m)[1], True
 
 
-def bloque_mes(S: Serie, f: date):
-    a, m, k, cerrado = mes_referencia(f)
+def bloque_mes(S: Serie, f: date, hoy: date | None = None):
+    a, m, k, cerrado = mes_referencia(f, hoy)
     out = {"referencia": {"mes": f"{a}-{m:02d}", "mes_nombre": f"{MESES[m - 1]} de {a}", "dias": k,
                           "tipo": "cerrado" if cerrado else "en_curso",
                           "desde": date(a, m, 1).isoformat(), "hasta": date(a, m, k).isoformat()}}
     y = a - Y0
     for clave, var, suma, tipo in (("media", "tmed", False, "normal"), ("lluvia", "prec", True, "gamma0")):
-        A = S.mat[var][y, CUM[m - 1]: CUM[m - 1] + k]
-        valid = int((~np.isnan(A)).sum())
-        if valid < COBERTURA * k:
-            out[clave] = None
-            continue
-        x = float(np.nansum(A) if suma else np.nanmean(A))
-        vb, va = (_valores_mes(S, var, m, k, fl, suma) for fl in (FILAS_ANTES, FILAS_AHORA))
-        r = analizar_muestras(vb, va, x, tipo, _rng(S.slug, S.fuente, clave, a, m, k))
+        # mes cerrado: serie mensual de la estación de AEMET si cumple (≥ 25 años por clima, homogeneidad no dudosa);
+        # mes en curso (o sin serie mensual suficiente): la matriz diaria de la capital, con los mismos días de otros años
+        est = mensual_estacion(S, clave, a, m) if cerrado else None
+        if est is not None:
+            vb, va, x, fm = est
+            fuente_m, cit_m = "aemet", ("alta" if S.homog == "ok" or homogeneidad(S.cod) == "ok" else "media")
+        else:
+            A = S.mat[var][y, CUM[m - 1]: CUM[m - 1] + k]
+            valid = int((~np.isnan(A)).sum())
+            if valid < COBERTURA * k:
+                out[clave] = None
+                continue
+            x = float(np.nansum(A) if suma else np.nanmean(A))
+            vb, va = (_valores_mes(S, var, m, k, fl, suma) for fl in (FILAS_ANTES, FILAS_AHORA))
+            fuente_m, cit_m = S.fuente, S.citabilidad
+        r = analizar_muestras(vb, va, x, tipo, _rng(S.slug, fuente_m, clave, a, m, k))
         o = publicar(r, True)
         if o:
             o["media_antes"], o["media_ahora"] = r1(r["media_antes"]), r1(r["media_ahora"])
             o["unidad"] = "°C" if clave == "media" else "mm"
+            o["fuente_mensual"], o["citabilidad"] = fuente_m, cit_m
+            lugar = (f"serie mensual de la estación de AEMET de {ESTACIONES[S.cod][2]}" if fuente_m == "aemet"
+                     else f"serie diaria de la celda de {S.capital} del reanálisis ERA5")
             o["frase"] = frase_rareza(r, "mes", "un mes así" if clave == "media" else
-                                      ("un mes así de húmedo" if r["lado"] == "humedo" else "un mes así de seco"))
+                                      ("un mes así de húmedo" if r["lado"] == "humedo" else "un mes así de seco")) + f" Serie: {lugar}."
         out[clave] = o
     return out
 
 
-def lugar_txt(S: Serie) -> str:
+def lugar_txt(S: Serie, f: date | None = None) -> str:
+    if f is not None and f.isoformat() in S.prov_dias:
+        return f"{S.capital} (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET)"
     return f"la estación de AEMET de {S.estacion}" if S.fuente == "aemet" else f"la celda de {S.capital} del reanálisis ERA5"
 
 
 def frase_hoy(S: Serie, f: date, r, nivel: int) -> str:
-    base = f"El {fecha_larga(f)} la temperatura media en {lugar_txt(S)} fue de {fnum(r['valor'])} °C. "
+    base = f"El {fecha_larga(f)} la temperatura media en {lugar_txt(S, f)} fue de {fnum(r['valor'])} °C. "
     return base + frase_rareza(r) + " " + NIVEL_TEXTO[nivel] + "."
 
 
@@ -765,15 +939,30 @@ def procesar(S: Serie, hoy: date, memo: dict, completo: bool = True):
         d = f - timedelta(days=i)
         ind, _ = indice_dia(S, d, memo)
         ult30.append({"fecha": d.isoformat(), "indice": ind})
-    prov = (hoy - f).days <= ERA5_CONSOLIDA_DIAS if S.fuente == "era5" else False
+    prov_om = f.isoformat() in S.prov_dias
+    prov = True if prov_om else ((hoy - f).days <= ERA5_CONSOLIDA_DIAS if S.fuente == "era5" else False)
     ind30 = [u["indice"] for u in ult30 if u["indice"] is not None]
-    base_txt = (f"Basado en la temperatura media del {fecha_larga(f)} en {lugar_txt(S)}; "
-                f"{('dato provisional (ERA5 aún sin consolidar)' if prov else 'dato consolidado') if S.fuente == 'era5' else 'dato validado'}.")
+    if prov_om:
+        base_txt = (f"Basado en la temperatura media del {fecha_larga(f)} en {lugar_txt(S, f)}; dato provisional: se compara con el "
+                    f"clima de {'la estación de AEMET' if S.fuente == 'aemet' else 'la celda ERA5'} de la capital y puede cambiar al validarse.")
+    else:
+        base_txt = (f"Basado en la temperatura media del {fecha_larga(f)} en {lugar_txt(S)}; "
+                    f"{('dato provisional (ERA5 aún sin consolidar)' if prov else 'dato consolidado') if S.fuente == 'era5' else 'dato validado'}.")
+    # índice del último día validado, aparte del del día publicado (que puede llevar cola provisional)
+    hv = None
+    if S.ultima_validada is not None:
+        nv, rv = indice_dia(S, S.ultima_validada, memo)
+        if rv is not None:
+            hv = {"fecha": S.ultima_validada.isoformat(), "indice": nv, "PR_tmed": pub_pr(rv["PR"]), "valor": r1(rv["valor"]),
+                  "provisional": False}
     o = {"slug": S.slug, "cod": S.cod, "capital": S.capital, "provincia": S.provincia, "estacion": S.estacion,
          "indicativo": S.indicativo, "fuente": FUENTE_AEMET if S.fuente == "aemet" else FUENTE_ERA5,
          "tipo_fuente": S.fuente, "homogeneidad": S.homog, "citabilidad": S.citabilidad,
          "motivo_fuente": S.motivo or None,
          "climas": {"antes": list(ANTES), "ahora": list(AHORA)}, "fecha_dato": f.isoformat(), "provisional": prov,
+         "fuente_dia": FUENTE_DIA_PROV if prov_om else ("validado por AEMET" if S.fuente == "aemet" else "reanálisis ERA5"),
+         "fuente_diaria": S.fuente, "fuente_mensual": None,
+         "hoy_validado": hv,
          "hoy": hoyb, "mes": None,
          "ultimos_30": ult30,
          "resumen_30": {"dias_3_o_mas": sum(1 for v in ind30 if v >= 3), "dias_negativos": sum(1 for v in ind30 if v < 0),
@@ -782,8 +971,10 @@ def procesar(S: Serie, hoy: date, memo: dict, completo: bool = True):
                     "metodo_corto": METODO_CORTO},
          "licencia": LICENCIA}
     if completo:
-        mes = bloque_mes(S, f)
+        mes = bloque_mes(S, f, hoy)
         o["mes"] = mes
+        fm = [mes[c]["fuente_mensual"] for c in ("media", "lluvia") if mes.get(c)]
+        o["fuente_mensual"] = fm[0] if fm else S.fuente
     return o, rt
 
 
@@ -812,13 +1003,19 @@ def candidatos_antes_raro(S: Serie, f: date, memo_var: dict, o_mes) -> list[dict
                         "mes": o_mes["referencia"]["mes_nombre"], "valor": m["valor"], "rareza": {
                             k: m[k] for k in ("T_antes", "T_ahora", "PR", "pr_min", "pr_max", "significativo", "metodo")},
                         "frase": m["frase"], "estacion": S.estacion, "fuente": FUENTE_AEMET if S.fuente == "aemet" else FUENTE_ERA5,
-                        "tipo_fuente": S.fuente, "citabilidad": S.citabilidad, "provisional": False,
-                        "cierre_mes": o_mes["referencia"]["tipo"]})
+                        "tipo_fuente": m.get("fuente_mensual", S.fuente), "citabilidad": m.get("citabilidad", S.citabilidad),
+                        "provisional": False, "cierre_mes": o_mes["referencia"]["tipo"]})
+            if m.get("fuente_mensual") == "aemet":
+                out[-1]["fuente"], out[-1]["estacion"] = FUENTE_AEMET.replace("valores diarios validados", "serie mensual"), ESTACIONES[S.cod][2]
+            else:
+                out[-1]["fuente"] = FUENTE_ERA5
     return out
 
 
 def _cand(S, d, ind, ambito, r):
-    prov = S.fuente == "era5" and (date.today() - d).days <= ERA5_CONSOLIDA_DIAS
+    prov_om = d.isoformat() in S.prov_dias
+    prov = prov_om or (S.fuente == "era5" and (date.today() - d).days <= ERA5_CONSOLIDA_DIAS)
+    cit = "media" if prov_om else S.citabilidad     # un dato sin validar nunca es de citabilidad alta
     return {"slug": S.slug, "cod": S.cod, "capital": S.capital, "provincia": S.provincia, "fecha": d.isoformat(),
             "indicador": ind, "ambito_tiempo": ambito, "valor": r1(r["valor"]),
             "rareza": {"T_antes": pub_ratio(r["T_antes"]), "T_ahora": pub_ratio(r["T_ahora"]), "PR": pub_pr(r["PR"]),
@@ -826,7 +1023,7 @@ def _cand(S, d, ind, ambito, r):
                        "metodo": r["metodo"], "climas": [f"{ANTES[0]}-{ANTES[1]}", f"{AHORA[0]}-{AHORA[1]}"]},
             "frase": frase_rareza(r, "día", "un día así"), "estacion": S.estacion,
             "fuente": FUENTE_AEMET if S.fuente == "aemet" else FUENTE_ERA5, "tipo_fuente": S.fuente,
-            "citabilidad": S.citabilidad, "provisional": bool(prov)}
+            "citabilidad": cit, "provisional": bool(prov)}
 
 
 # ----------------------------------------------------------------------------
@@ -993,6 +1190,7 @@ def main():
     ap.add_argument("--solo", default=None)
     ap.add_argument("--sin-historico", action="store_true")
     ap.add_argument("--sin-cache", action="store_true")
+    ap.add_argument("--sin-om", action="store_true", help="no completa la cola provisional con Open-Meteo")
     ap.add_argument("--tabla", action="store_true", help="imprime la tabla por capital")
     a = ap.parse_args()
     hoy = date.fromisoformat(a.hoy) if a.hoy else date.today()
@@ -1004,9 +1202,16 @@ def main():
         cods = [c for c in cods if SLUGS[c] in pedidas]
     series, salidas, memo, memo_var = [], {}, {}, {}
     antes_raro = []
+    n_om = 0
     generado = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     for cod in cods:
         S = cargar_serie(cod, hoy)
+        S.ultima_validada = S.ultima
+        if not a.sin_om:
+            try:
+                n_om += cola_provisional(S, hoy, limite_t=t0 + OM_PRESUPUESTO) > 0
+            except Exception as e:   # la cola es un añadido: si falla, se publica el último validado (provisional: false)
+                log(f"{S.slug}: cola provisional descartada ({type(e).__name__}: {e})")
         aplicar_cache(S, cache)
         if S.ultima is None:
             log(f"{S.slug}: sin datos")
@@ -1041,6 +1246,8 @@ def main():
         guardar_cache(series, cache)
     if not a.sin_historico:
         _escribir_historico(generado)
+    fd = sorted({o["fecha_dato"] for (_, o, _) in salidas.values()})
+    log(f"Cola provisional: {n_om} capitales con días de Open-Meteo · fecha_dato publicada: {', '.join(fd[-3:])}")
     log(f"Hecho en {time.time() - t0:.0f} s · {len(salidas)} capitales · {len(antes_raro)} candidatos «antes era raro»")
     if a.tabla:
         tabla(salidas)
@@ -1102,10 +1309,16 @@ def construir_index(salidas: dict, memo: dict, generado: str) -> dict:
         caps.append({"slug": slug, "capital": S.capital, "provincia": S.provincia, "cod": S.cod,
                      "indice": o["hoy"]["indice"], "PR_tmed": o["hoy"]["tmed"]["PR"] if o["hoy"]["tmed"] else None,
                      "fecha_dato": o["fecha_dato"], "provisional": o["provisional"], "citabilidad": o["citabilidad"],
+                     "fuente_dia": o.get("fuente_dia"), "hoy_validado": o.get("hoy_validado"),
+                     "fuente_diaria": o.get("fuente_diaria"), "fuente_mensual": o.get("fuente_mensual"),
                      "tipo_fuente": S.fuente, "indice_ref": ind_ref})
     caps.sort(key=lambda c: (-(c["indice"] if c["indice"] is not None else -9), c["slug"]))
     con_ref = [c["indice_ref"] for c in caps if c["indice_ref"] is not None]
+    fechas_c = sorted(c["fecha_dato"] for c in caps)
     out = {"generado": generado, "n_capitales": n_tot, "n_con_dato": len(caps), "fecha_referencia": ref,
+           # fecha_dato: la del dato que se publica (ayer si la cola provisional funcionó; si no, el último validado)
+           "fecha_dato": ref, "provisional": any(c["provisional"] and c["fecha_dato"] == ref for c in caps),
+           "fecha_dato_mediana": fechas_c[len(fechas_c) // 2] if fechas_c else None,
            "n_con_dato_ref": len(con_ref), "n_3_o_mas": sum(1 for v in con_ref if v >= 3),
            "n_4_o_mas": sum(1 for v in con_ref if v >= 4), "n_negativos": sum(1 for v in con_ref if v < 0),
            "media_indice": r1(sum(con_ref) / len(con_ref)) if con_ref else None,
