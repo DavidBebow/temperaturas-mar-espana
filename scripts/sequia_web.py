@@ -165,10 +165,11 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgsq-nivel b{font-size:28px}.cgsq-big b{font-size:44px}.cgsq-graf{padding:14px 10px 10px;border-radius:18px}.cgsq-svgw svg,.cgsq-svgw img{min-width:600px}.cgsq-brow{grid-template-columns:78px minmax(0,1fr) 50px}}
 </style>"""
 
-CSS_HUB = """.cgsq-panel-hub{grid-template-areas:"intro hoy" "mapa top" "cif cif" "lista lista";grid-template-rows:repeat(4,auto)}
-.cgsq-mapaw{grid-area:mapa;margin-top:30px;align-self:center}.cgsq-svg{display:block;width:100%;height:auto;overflow:visible}
+CSS_HUB = """.cgsq-panel-hub{grid-template-areas:"intro hoy" "mapa hoy" "top top" "cif cif" "lista lista";grid-template-rows:repeat(5,auto)}
+.cgsq-panel-hub .cgsq-intro,.cgsq-panel-hub .cgsq-hoy{align-self:start}
+.cgsq-mapaw{grid-area:mapa;margin-top:24px;align-self:start}.cgsq-svg{display:block;width:100%;height:auto;overflow:visible}
 .cgsq-p{fill:#6b7c8a;stroke:#0c2133;stroke-width:1.2;transition:fill .2s}.cgsq-svg a:hover .cgsq-p,.cgsq-svg a:focus .cgsq-p{stroke:#fff;stroke-width:2.2}
-.cgsq-top{grid-area:top;align-self:center;margin-top:30px}.cgsq-cif{grid-area:cif;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.cgsq-top{grid-area:top;margin-top:18px}.cgsq-cif{grid-area:cif;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
 .cgsq-lista{grid-area:lista;padding:12px 14px}.cgsq-fila{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(4,minmax(0,1fr));gap:10px;align-items:center;padding:10px 12px;border-radius:14px;color:var(--txt);text-decoration:none;border-top:1px solid rgba(191,230,255,.08);font-size:15px}
 .cgsq a.cgsq-fila:hover{background:var(--cel);color:#fff}.cgsq-fila.cgsq-cab{font-size:12.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;border-top:0}
 .cgsq-fila b{color:#fff}.cgsq-fila small{display:inline!important;margin-left:6px}.cgsq-cifra b{display:block;font-size:34px;line-height:1.05;color:#fff}.cgsq-cifra span{display:block;font-size:14px;color:var(--mut)}
