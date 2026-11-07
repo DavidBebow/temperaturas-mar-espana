@@ -80,13 +80,15 @@ FUERZA = {
     "racha": 65, "anomalia_fuerte": 55, "percentil_extremo": 50, "contexto": 30,
     # lluvia medida por AEMET: la del día anterior completo y la del día en curso hasta la última hora cerrada
     "lluvia_dia": 85, "lluvia_en_curso": 90,
+    # monitor de sequía: entrada en sequía severa/extrema o varias provincias a la vez
+    "episodio": 70,
 }
 AMBITO_F = {"nacional": 1.0, "regional": 0.9, "provincial": 0.8, "local": 0.7, "global": 0.85}
 
 # Vida útil de un hallazgo según la cadencia de su serie (días desde fecha_dato).
 # Pasado ese plazo ya no es noticia: no entra en la cola, solo queda en el historial.
 VIDA = {"capitales": 9, "mediterraneo": 7, "danas": 30, "dias32": 45, "embalses": 10, "caudal": 4,
-        "oceano": 10, "temperatura_global": 20, "lluvia": 1, "estaciones": 6}
+        "oceano": 10, "temperatura_global": 20, "lluvia": 1, "estaciones": 6, "sequia": 3}
 
 hallazgos: list[dict] = []
 descartes: list[dict] = []
@@ -1380,6 +1382,70 @@ def planeta():
 # ----------------------------------------------------------------------------
 # agregación: si muchos territorios cuentan lo mismo, la noticia es nacional
 # ----------------------------------------------------------------------------
+def sequia():
+    """Monitor de sequía (docs/sequia/): reutiliza la detección de cambios de sequia.py
+    (docs/sequia/prensa.json, que compara con el índice de ayer) y la completa con los datos
+    de index.json y <slug>.json. No recalcula nada: solo selecciona y redacta."""
+    try:
+        idx = leer(DOCS / "sequia" / "index.json")
+        pj = leer(DOCS / "sequia" / "prensa.json")
+    except Exception as e:
+        errores.append(f"sequia: {e}")
+        return
+    provs = {x["slug"]: x for x in idx.get("provincias", [])}
+    FUENTE_S = "AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es"
+    LIM_SPI = "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO"
+    def ficha(slug):
+        try:
+            return leer(DOCS / "sequia" / f"{slug}.json")
+        except Exception:
+            return {}
+    def slug_de(it):
+        return (it.get("pagina") or "").rstrip("/").rsplit("/", 1)[-1]
+    peor_hoy = []   # todas las provincias que empeoran hoy, a cualquier nivel
+    for it in pj.get("enviables", []):
+        slug = slug_de(it)
+        pv = provs.get(slug)
+        if not pv:
+            continue
+        f = ficha(slug)
+        d = f.get("dias") or {}
+        base = {"serie": "sequia", "fuente": FUENTE_S, "serie_desde": it.get("serie_desde", ""), "territorio": it["territorio"],
+                "provincia": it["provincia"], "ambito": "provincial", "pagina": it["pagina"],
+                "provisional": bool(it.get("provisional")), "fecha_dato": it["fecha_dato"],
+                "titular": it["titular"], "dato": it["dato"], "contexto": list(it.get("contexto", [])),
+                "metodo": it["metodo"], "limites": [LIM_SPI] + list(it.get("limites", [])),
+                "citabilidad": it.get("citabilidad", "media"), "exclusivo": True}
+        t = it["tipo"]
+        if t == "sequia_nivel_peor":
+            peor_hoy.append(it)
+            if pv.get("nivel") in (3, 4):
+                anadir({**base, "tipo": "episodio", "indicador": "sequia_entrada_" + str(pv["nivel"]), "citabilidad": "alta" if not base["provisional"] else "media"})
+            else:
+                descartar("sequia", it["territorio"], f"empeora a nivel {pv.get('nivel')}: por debajo de sequía severa", it["titular"])
+        elif t == "dias_sin_lluvia":
+            if (d.get("sin_lluvia") or 0) >= 60:
+                anadir({**base, "tipo": "racha", "indicador": "dias_sin_lluvia"})
+        elif t == "spi12_historico":
+            pu = f.get("puesto_actual") or {}
+            if pu.get("puesto", 99) <= 3:
+                anadir({**base, "tipo": "puesto_extremo", "indicador": "spi12_puesto"})
+    # varias provincias empeorando a la vez → una sola noticia nacional
+    mios = [h for h in hallazgos if h["serie"] == "sequia" and h["indicador"].startswith("sequia_entrada_")]
+    if len(peor_hoy) >= 3:
+        p = peor_hoy[0]
+        nombres = sorted(it["territorio"] for it in peor_hoy)
+        lista = ", ".join(nombres[:-1]) + " y " + nombres[-1]
+        anadir({"serie": "sequia", "fuente": FUENTE_S, "serie_desde": p.get("serie_desde", ""), "territorio": "España",
+                "ambito": "nacional", "pagina": "https://calentamientoglobal.es/sequia/", "provisional": any(bool(i.get("provisional")) for i in peor_hoy),
+                "tipo": "episodio", "fecha_dato": p["fecha_dato"], "indicador": "sequia_empeora_varias",
+                "titular": f"{len(peor_hoy)} provincias empeoran a la vez su situación de sequía en el Monitor",
+                "dato": "Provincias que empeoran hoy: " + lista + ".",
+                "contexto": ["Cada provincia se mide con el SPI de la estación de su capital contra su propia serie."],
+                "metodo": p["metodo"], "limites": [LIM_SPI] + list(p.get("limites", [])),
+                "citabilidad": "media", "miembros": [h["id"] for h in mios]})
+
+
 def agregar():
     grupos: dict[tuple, list[dict]] = {}
     for h in hallazgos:
@@ -1668,7 +1734,7 @@ def main():
     ap.add_argument("--salida", default=str(PRENSA / "hallazgos.json"))
     args = ap.parse_args()
 
-    for fn in (capitales, capitales_ayer, lluvia_aemet, estaciones_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta):
+    for fn in (capitales, capitales_ayer, lluvia_aemet, estaciones_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta, sequia):
         try:
             fn()
         except Exception as e:
