@@ -16,6 +16,7 @@ Series que lee (todas en docs/, generadas por otros workflows):
   docs/caudal/hoy.json          GloFAS · percentiles por tramo desde 1997
   docs/oceano.json              olas de calor marinas · NOAA CRW
   docs/temperatura_global.json  ERA5 · Climate Pulse
+  docs/prensa/municipal/index.json y <slug>.json  lluvia por municipio desde 1981, ERA5-Land (prensa_municipal.py, en el Air)
   docs/records/hallazgos_estaciones.json  récords de temperatura en las estaciones de AEMET,
                                 el mismo día (records_detectar.py, clima-scripts): citabilidad alta
 
@@ -111,7 +112,8 @@ AMBITO_F = {"nacional": 1.0, "regional": 0.9, "provincial": 0.8, "local": 0.7, "
 VIDA = {"capitales": 9, "mediterraneo": 7, "danas": 30, "dias32": 45, "embalses": 10, "caudal": 4,
         "oceano": 10, "temperatura_global": 20, "lluvia": 1, "estaciones": 6, "sequia": 3,
         "huella": 14,   # huella: el dato validado de AEMET llega con 10-20 días de retraso
-        "compuestos": 10, "temporadas": 14}
+        "compuestos": 10, "temporadas": 14,
+        "municipal": 10}   # municipal: la pasada es semanal (no corre en Actions); el mes cerrado alarga su vida por ámbito temporal
 
 hallazgos: list[dict] = []
 descartes: list[dict] = []
@@ -1530,6 +1532,130 @@ def sequia():
                 "citabilidad": "media", "miembros": [h["id"] for h in mios]})
 
 
+def municipal():
+    """Capa municipal (docs/prensa/municipal/, que escribe prensa_municipal.py en el Air; no corre en Actions): ranking y rareza de la lluvia
+    de cada municipio DENTRO de la serie ERA5-Land 1981-hoy (rejilla de 0,1°, normal 1991-2020). No atribuye nada y no es un pluviómetro.
+    Provincial: ≥ 10 municipios o ≥ 20 % de la población con el mes cerrado más seco (o más lluvioso) desde 1981; ≥ 10 con el año
+    hidrológico más seco a esta fecha; un municipio de ≥ 20.000 habitantes con la racha seca más larga para la fecha.
+    Nacional: cuando ≥ 3 provincias cumplen lo mismo, con la tabla provincia a provincia."""
+    base = DOCS / "prensa" / "municipal"
+    if not (base / "index.json").exists():
+        return   # todavía no se ha publicado ninguna pasada
+    try:
+        ix = leer(base / "index.json")
+    except Exception as e:
+        errores.append(f"municipal: {e}")
+        return
+    FUENTE_M = "ERA5-Land (Copernicus) · cálculo de calentamientoglobal.es"
+    LIM_M = ["rejilla de 0,1°, no pluviómetro; serie homogénea desde 1981; normal 1991-2020"]
+    UMBRAL_MUN, UMBRAL_PCT, UMBRAL_POB_RACHA = 10, 0.20, 20000
+    fd = ix["fecha_dato"]
+    mc = ix["mes_cerrado"]
+    f_mes = date(mc["anio"] + (mc["mes"] == 12), mc["mes"] % 12 + 1, 1) - timedelta(days=1)   # último día del mes cerrado
+    f_mes = f_mes.isoformat()
+    pobt = lambda p: (f"{p / 1e6:.1f}".replace(".", ",") + " millones de habitantes") if p >= 1_000_000 else (
+        f"{int(round(p / 1000.0)) * 1000:,}".replace(",", ".") + " habitantes" if p >= 500 else "menos de 1.000 habitantes")
+    pagina = lambda slug: f"https://calentamientoglobal.es/sequia/{slug}/"
+    pub = "https://davidbebow.github.io/temperaturas-mar-espana/prensa/municipal/"
+    ids = {"mes_seco": [], "mes_lluvioso": [], "hidro_seco": [], "racha_record": []}   # provincias que cumplen, para la agregación nacional
+
+    def comun(p, extra):
+        h = {"serie": "municipal", "fuente": FUENTE_M, "serie_desde": "1981", "territorio": p["provincia"], "provincia": p["provincia"],
+             "provincia_slug": p["slug"], "ambito": "provincial", "pagina": pagina(p["slug"]), "provisional": False,
+             "citabilidad": "media", "exclusivo": True, "metodo": ix["metodo"], "limites": list(LIM_M),
+             "datos_municipales": pub + p["slug"] + ".json"}
+        h.update(extra)
+        return h
+
+    def fichas(slug):
+        """Fichas de lluvia de los municipios más poblados de la provincia (si existen)."""
+        try:
+            pj = leer(base / f"{slug}.json")
+        except Exception:
+            return [], {}
+        return [{"municipio": m["municipio"], "url": m["url"]} for m in pj["municipios"] if m.get("url")][:5], pj
+
+    for p in ix.get("provincias", []):
+        r, tit, tp = p["resumen"], p["titulares"], p["texto"]
+        N, T = r["n_municipios"], max(r["pob_total"], 1)
+        me, hi = r["mes"], r["hidro"]
+        for ind, n, pob, clave_t, umbral_n in (
+                ("mes_seco", me["n_mas_seco_desde_1981"], me["pob_mas_seco"], "mes_seco", UMBRAL_MUN),
+                ("mes_lluvioso", me["n_mas_lluvioso"], me["pob_mas_lluvioso"], "mes_lluvioso", UMBRAL_MUN),
+                ("hidro_seco", hi["n_mas_seco"], hi["pob"], "hidro_seco", UMBRAL_MUN)):
+            if n == 0:
+                continue   # recuento 0: el texto de la sala lo dice y no es noticia
+            cumple = n >= umbral_n or (ind != "hidro_seco" and pob >= UMBRAL_PCT * T)
+            if not cumple:
+                descartar("municipal", p["provincia"], f"{ind}: {n} municipios ({pob} hab.) por debajo del umbral", tit[clave_t]["texto"])
+                continue
+            ids[ind].append(p)
+            fl, pj = fichas(p["slug"])
+            mes_t = mc["nombre"]
+            ctx = [f"{n} de los {N} municipios de {p['provincia']} ({pobt(pob)} de {pobt(T).replace(' habitantes', '')}).",
+                   f"Mediana municipal del mes: {int(round(me['mediana_pct']))} % de la normal 1991-2020."]
+            if ind == "hidro_seco":
+                ctx[1] = f"Mediana municipal del año hidrológico a esta fecha: {int(round(hi['mediana_pct']))} % de la normal 1991-2020."
+            h = comun(p, {"tipo": "episodio", "fecha_dato": f_mes if ind != "hidro_seco" else fd, "indicador": "municipal_" + ind,
+                          "titular": tit[clave_t]["texto"], "dato": tp["resumen"], "contexto": ctx, "municipios_ficha": fl,
+                          "recuento": {"n": n, "pob": pob, "n_municipios": N, "pob_total": T}})
+            if ind != "hidro_seco":
+                h.update({"ambito_tiempo": "mes", "cierre_mes": "cerrado"})
+            anadir(h)
+        # racha: municipios de ≥ 20.000 habitantes con la racha seca más larga para la fecha desde 1981
+        if r["racha"]["n_record_fecha"] > 0:
+            fl, pj = fichas(p["slug"])
+            recs = [m for m in pj.get("municipios", []) if m.get("racha") and m["racha"]["puesto"] == 1 and m["racha"]["dias"] > 0
+                    and m["pob"] >= UMBRAL_POB_RACHA][:3]
+            if recs:
+                ids["racha_record"].append(p)
+            for m in recs:
+                rr = m["racha"]
+                f_txt = fecha_dia(fd)
+                anadir(comun(p, {
+                    "tipo": "racha", "territorio": m["municipio"], "fecha_dato": fd, "indicador": "municipal_racha_record", "ambito_tiempo": None,
+                    "titular": f"{m['municipio']} ({p['provincia']}, {pobt(m['pob'])}) lleva {rr['dias']} días sin llover: la racha más larga para el {f_txt} desde 1981",
+                    "dato": f"Racha sin lluvia (menos de 1 mm al día) hasta el {fecha_larga(fd)}: {rr['dias']} días. El máximo anterior para esa fecha desde 1981 era de {rr['max_hist']} días.",
+                    "contexto": [f"Días de lluvia en los últimos 90 días: {rr['dias_lluvia_90']} (lo normal: {str(rr['dias_lluvia_90_normal']).replace('.', ',')})."],
+                    "pagina": m.get("url") or pagina(p["slug"]), "municipios_ficha": [{"municipio": m["municipio"], "url": m["url"]}] if m.get("url") else []}))
+
+    # nacional: ≥ 3 provincias con lo mismo, con la tabla provincia a provincia; «de España» solo con ≥ 80 % de municipios con dato
+    nac = ix["nacional"]["resumen"]
+    ambito_txt = "España" if nac["mes"]["n_con_dato"] >= 0.8 * nac["n_municipios"] else f"los {nac['mes']['n_con_dato']:,} municipios con dato".replace(",", ".")
+    CAB = {"mes_seco": ("mes_seco", f"{mc['nombre']} ha sido el más seco desde 1981", "n", "pob", f_mes),
+           "mes_lluvioso": ("mes_lluvioso", f"{mc['nombre']} ha sido el más lluvioso desde 1981", "n", "pob", f_mes),
+           "hidro_seco": ("hidro_seco", f"el año hidrológico {ix['ano_hidrologico']}, a {fecha_dia(fd)}, es el más seco desde 1981-82", "n", "pob", fd)}
+    for ind, provs in ids.items():
+        if len(provs) < 3:
+            continue
+        miembros = [h["id"] for h in hallazgos if h.get("serie") == "municipal" and h.get("indicador") == "municipal_" + ind]
+        if ind == "racha_record":
+            tabla = [(p["provincia"], sum(1 for h in hallazgos if h.get("serie") == "municipal" and h["indicador"] == "municipal_racha_record" and h.get("provincia") == p["provincia"]), 0) for p in provs]
+            n_tot = sum(t[1] for t in tabla)
+            titular = f"{n_tot} municipios de {len(provs)} provincias, cada uno con más de 20.000 habitantes, llevan la racha sin lluvia más larga para el {fecha_dia(fd)} desde 1981"
+            dato = "Municipios por provincia: " + "; ".join(f"{a} {b}" for a, b, _ in sorted(tabla, key=lambda t: -t[1])) + "."
+            fecha_h = fd
+        else:
+            clave_n, clave_p = ("n_mas_seco_desde_1981", "pob_mas_seco") if ind == "mes_seco" else (("n_mas_lluvioso", "pob_mas_lluvioso") if ind == "mes_lluvioso" else ("n_mas_seco", "pob"))
+            sec = "mes" if ind.startswith("mes") else "hidro"
+            tabla = sorted(((p["provincia"], p["resumen"][sec][clave_n], p["resumen"][sec][clave_p]) for p in provs), key=lambda t: -t[1])
+            n_tot, pob_tot = sum(t[1] for t in tabla), sum(t[2] for t in tabla)
+            titular = f"En {n_tot:,}".replace(",", ".") + f" municipios de {len(provs)} provincias, {pobt(pob_tot)}, {CAB[ind][1]}"
+            if ambito_txt != "España":
+                titular += " (rejilla ERA5-Land; con dato en " + ambito_txt + ")"
+            dato = "Provincia a provincia (municipios y habitantes): " + "; ".join(f"{a} {b} ({pobt(c).replace(' habitantes', '')})" for a, b, c in tabla) + "."
+            fecha_h = CAB[ind][4]
+        h = {"serie": "municipal", "fuente": FUENTE_M, "serie_desde": "1981", "territorio": "España", "ambito": "nacional",
+             "pagina": "https://calentamientoglobal.es/sequia/", "provisional": False, "tipo": "episodio", "fecha_dato": fecha_h,
+             "indicador": "municipal_nacional_" + ind, "titular": titular, "dato": dato,
+             "contexto": [f"Reúne {len(provs)} provincias con el mismo resultado; lo ponderado por población sale de {nac['pob_total']:,} habitantes en {nac['n_municipios']:,} municipios.".replace(",", ".")],
+             "metodo": ix["metodo"], "limites": list(LIM_M), "citabilidad": "media", "exclusivo": True, "miembros": miembros,
+             "datos_municipales": pub + "index.json", "tabla": [{"provincia": a, "n": b, "pob": c} for a, b, c in tabla]}
+        if ind.startswith("mes"):
+            h.update({"ambito_tiempo": "mes", "cierre_mes": "cerrado"})
+        anadir(h)
+
+
 def compuestos():
     """Compuestos (sequía cálida, mar y DANA, nieve y embalses, noches tropicales en sequía) y temporadas (verano, última helada, primer día de
     25 °C, noches tropicales): los calcula scripts/sala/compuestos_temporadas.py (paso anterior de hallazgos-prensa.yml). Aquí solo se puntúan."""
@@ -2050,7 +2176,7 @@ def main():
     ap.add_argument("--salida", default=str(PRENSA / "hallazgos.json"))
     args = ap.parse_args()
 
-    for fn in (capitales, capitales_ayer, lluvia_aemet, estaciones_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta, sequia, huella, compuestos):
+    for fn in (capitales, capitales_ayer, lluvia_aemet, estaciones_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta, sequia, huella, compuestos, municipal):
         try:
             fn()
         except Exception as e:
