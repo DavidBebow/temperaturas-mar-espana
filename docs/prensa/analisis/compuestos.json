@@ -1,0 +1,1097 @@
+{
+ "fecha": "2026-11-07",
+ "reglas": {
+  "sequia_calida": {
+   "cumple": true,
+   "provincias": [
+    "melilla",
+    "cordoba",
+    "ceuta",
+    "huelva"
+   ],
+   "umbrales": {
+    "nivel_min": 2,
+    "anomalia_min_c": 1.5
+   },
+   "metodo": "Provincia con nivel de sequía 2 o más en el Monitor (SPI a 6 y 12 meses de la estación de su capital) y la media del mes en curso (o del último mes cerrado, si el en curso lleva menos de 10 días) al menos 1,5 °C por encima de la media de ese mes en 1996-2025 en la misma serie.",
+   "miembros": [
+    {
+     "slug": "melilla",
+     "provincia": "Melilla",
+     "cod": "52",
+     "nivel": 3,
+     "nivel_texto": "Sequía severa",
+     "mes": "octubre de 2026",
+     "tipo_mes": "cerrado",
+     "hasta": "2026-10-31",
+     "media": 23.3,
+     "media_ahora": 21.0,
+     "media_antes": 20.3,
+     "anomalia": 2.3,
+     "PR": 10,
+     "pr_min": 1.1,
+     "pr_max": 130,
+     "significativo": true,
+     "spi12": 0.08,
+     "hidro_pct": 48,
+     "fuente_t": "era5",
+     "citabilidad": "media"
+    },
+    {
+     "slug": "cordoba",
+     "provincia": "Córdoba",
+     "cod": "14",
+     "nivel": 4,
+     "nivel_texto": "Sequía extrema",
+     "mes": "octubre de 2026",
+     "tipo_mes": "cerrado",
+     "hasta": "2026-10-31",
+     "media": 21.9,
+     "media_ahora": 19.8,
+     "media_antes": 18.7,
+     "anomalia": 2.1,
+     "PR": 2.5,
+     "pr_min": 0.5,
+     "pr_max": 8.9,
+     "significativo": false,
+     "spi12": 0.59,
+     "hidro_pct": 15,
+     "fuente_t": "era5",
+     "citabilidad": "media"
+    },
+    {
+     "slug": "ceuta",
+     "provincia": "Ceuta",
+     "cod": "51",
+     "nivel": 4,
+     "nivel_texto": "Sequía extrema",
+     "mes": "octubre de 2026",
+     "tipo_mes": "cerrado",
+     "hasta": "2026-10-31",
+     "media": 21.5,
+     "media_ahora": 19.7,
+     "media_antes": 19.1,
+     "anomalia": 1.8,
+     "PR": 13,
+     "pr_min": 2.3,
+     "pr_max": 164,
+     "significativo": true,
+     "spi12": 1.39,
+     "hidro_pct": 43,
+     "fuente_t": "era5",
+     "citabilidad": "media"
+    },
+    {
+     "slug": "huelva",
+     "provincia": "Huelva",
+     "cod": "21",
+     "nivel": 4,
+     "nivel_texto": "Sequía extrema",
+     "mes": "octubre de 2026",
+     "tipo_mes": "cerrado",
+     "hasta": "2026-10-31",
+     "media": 21.7,
+     "media_ahora": 20.2,
+     "media_antes": 19.5,
+     "anomalia": 1.5,
+     "PR": 1.7,
+     "pr_min": 0.5,
+     "pr_max": 5.3,
+     "significativo": false,
+     "spi12": 0.26,
+     "hidro_pct": 0,
+     "fuente_t": "era5",
+     "citabilidad": "media"
+    }
+   ]
+  },
+  "mar_y_dana": {
+   "cumple": false,
+   "mar_anomalia": 1.66,
+   "mar_ultimo": "2026-11-05",
+   "mar_sst": 21.621,
+   "mar_puesto": 4,
+   "mar_de": 46,
+   "dana_en_curso": false,
+   "dana_prevista": false,
+   "dana": {
+    "ultimo_dato": "2026-11-06",
+    "run": "2026-11-07T00:00Z",
+    "sistemas": 0
+   },
+   "umbrales": {
+    "anomalia_min_c": 1.5,
+    "dias_prevision": 5
+   },
+   "metodo": "Mediterráneo occidental español (NOAA OISST) con la temperatura del mar al menos 1,5 °C por encima de lo normal, o en récord para la fecha, y una DANA en curso en el catálogo del observatorio o prevista en los próximos 5 días en la previsión de ECMWF a 500 hPa."
+  },
+  "nieve_y_embalses": {
+   "cumple": false,
+   "en_temporada": false,
+   "provincias": [],
+   "umbrales": {
+    "nieve_frac_max": 0.5,
+    "embalses_puntos_min": 10.0
+   },
+   "metodo": "De diciembre a abril, provincia con la nieve acumulada en el monte de referencia por debajo del 50 % de lo normal a la fecha (ERA5, 1991-2020) y los embalses al menos 10 puntos por debajo de su media de los últimos 10 años (MITECO)."
+  },
+  "noches_tropicales_en_sequia": {
+   "cumple": false,
+   "en_temporada": false,
+   "provincias": [],
+   "umbrales": {
+    "noches_min": 5,
+    "nivel_min": 2
+   },
+   "metodo": "De junio a septiembre, capital con al menos 5 noches tropicales (mínima de 20 °C o más) en los últimos 7 días con dato validado y sequía moderada o peor en su provincia."
+  }
+ },
+ "hallazgos": [
+  {
+   "serie": "compuestos",
+   "tipo": "compuesto",
+   "indicador": "sequia_calida",
+   "territorio": "Melilla",
+   "provincia": "Melilla",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Sequía cálida en Melilla: sequía severa y 2,3 °C más que lo normal en octubre de 2026",
+   "dato": "Melilla está en «sequía severa» en el Monitor de sequía (SPI-12 de 0,1) y la media de octubre de 2026 es de 23,3 °C, 2,3 °C por encima de la media de ese mes en 1996-2025; es 10 veces más probable que en 1961-1990 (intervalo 1,1-130).",
+   "contexto": [
+    "Menos lluvia y más calor es la combinación que seca más deprisa el suelo y los embalses."
+   ],
+   "metodo": "Provincia con nivel de sequía 2 o más en el Monitor (SPI a 6 y 12 meses de la estación de su capital) y la media del mes en curso (o del último mes cerrado, si el en curso lleva menos de 10 días) al menos 1,5 °C por encima de la media de ese mes en 1996-2025 en la misma serie.",
+   "limites": [
+    "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO",
+    "La anomalía es de una estación (la de la capital), no de toda la provincia",
+    "Temperatura de la celda ERA5 de la capital: reanálisis, no medida"
+   ],
+   "citabilidad": "media",
+   "exclusivo": true,
+   "fuente": "AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/sequia/melilla/"
+  },
+  {
+   "serie": "compuestos",
+   "tipo": "compuesto",
+   "indicador": "sequia_calida",
+   "territorio": "Córdoba",
+   "provincia": "Córdoba",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Sequía cálida en Córdoba: sequía extrema y 2,1 °C más que lo normal en octubre de 2026",
+   "dato": "Córdoba está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,6) y la media de octubre de 2026 es de 21,9 °C, 2,1 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.",
+   "contexto": [
+    "Menos lluvia y más calor es la combinación que seca más deprisa el suelo y los embalses."
+   ],
+   "metodo": "Provincia con nivel de sequía 2 o más en el Monitor (SPI a 6 y 12 meses de la estación de su capital) y la media del mes en curso (o del último mes cerrado, si el en curso lleva menos de 10 días) al menos 1,5 °C por encima de la media de ese mes en 1996-2025 en la misma serie.",
+   "limites": [
+    "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO",
+    "La anomalía es de una estación (la de la capital), no de toda la provincia",
+    "Temperatura de la celda ERA5 de la capital: reanálisis, no medida"
+   ],
+   "citabilidad": "media",
+   "exclusivo": true,
+   "fuente": "AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/sequia/cordoba/"
+  },
+  {
+   "serie": "compuestos",
+   "tipo": "compuesto",
+   "indicador": "sequia_calida",
+   "territorio": "Ceuta",
+   "provincia": "Ceuta",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Sequía cálida en Ceuta: sequía extrema y 1,8 °C más que lo normal en octubre de 2026",
+   "dato": "Ceuta está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,4) y la media de octubre de 2026 es de 21,5 °C, 1,8 °C por encima de la media de ese mes en 1996-2025; es 13 veces más probable que en 1961-1990 (intervalo 2,3-164).",
+   "contexto": [
+    "Menos lluvia y más calor es la combinación que seca más deprisa el suelo y los embalses."
+   ],
+   "metodo": "Provincia con nivel de sequía 2 o más en el Monitor (SPI a 6 y 12 meses de la estación de su capital) y la media del mes en curso (o del último mes cerrado, si el en curso lleva menos de 10 días) al menos 1,5 °C por encima de la media de ese mes en 1996-2025 en la misma serie.",
+   "limites": [
+    "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO",
+    "La anomalía es de una estación (la de la capital), no de toda la provincia",
+    "Temperatura de la celda ERA5 de la capital: reanálisis, no medida"
+   ],
+   "citabilidad": "media",
+   "exclusivo": true,
+   "fuente": "AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/sequia/ceuta/"
+  },
+  {
+   "serie": "compuestos",
+   "tipo": "compuesto",
+   "indicador": "sequia_calida",
+   "territorio": "Huelva",
+   "provincia": "Huelva",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Sequía cálida en Huelva: sequía extrema y 1,5 °C más que lo normal en octubre de 2026",
+   "dato": "Huelva está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,3) y la media de octubre de 2026 es de 21,7 °C, 1,5 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.",
+   "contexto": [
+    "Menos lluvia y más calor es la combinación que seca más deprisa el suelo y los embalses."
+   ],
+   "metodo": "Provincia con nivel de sequía 2 o más en el Monitor (SPI a 6 y 12 meses de la estación de su capital) y la media del mes en curso (o del último mes cerrado, si el en curso lleva menos de 10 días) al menos 1,5 °C por encima de la media de ese mes en 1996-2025 en la misma serie.",
+   "limites": [
+    "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO",
+    "La anomalía es de una estación (la de la capital), no de toda la provincia",
+    "Temperatura de la celda ERA5 de la capital: reanálisis, no medida"
+   ],
+   "citabilidad": "media",
+   "exclusivo": true,
+   "fuente": "AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/sequia/huelva/"
+  },
+  {
+   "serie": "compuestos",
+   "tipo": "compuesto",
+   "indicador": "sequia_calida_varias",
+   "territorio": "España",
+   "ambito": "nacional",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Sequía cálida en 4 provincias: sequía moderada o peor y hasta 2,3 °C más que lo normal",
+   "dato": "Con sequía moderada o peor y el mes al menos 1,5 °C por encima de lo normal: Melilla, Córdoba, Ceuta y Huelva. Anomalía media, 1,9 °C.",
+   "contexto": [
+    "Cada provincia se mide con la estación de su capital."
+   ],
+   "metodo": "Provincia con nivel de sequía 2 o más en el Monitor (SPI a 6 y 12 meses de la estación de su capital) y la media del mes en curso (o del último mes cerrado, si el en curso lleva menos de 10 días) al menos 1,5 °C por encima de la media de ese mes en 1996-2025 en la misma serie.",
+   "limites": [
+    "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO"
+   ],
+   "citabilidad": "media",
+   "exclusivo": true,
+   "fuente": "AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/sequia/",
+   "miembros_slug": [
+    "melilla",
+    "cordoba",
+    "ceuta",
+    "huelva"
+   ]
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "A Coruña",
+   "provincia": "A Coruña",
+   "valor": "7",
+   "previo": "5",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-30",
+   "provisional": false,
+   "titular": "A Coruña: 2026 bate el máximo de su serie en días de 30 °C o más: 7, frente a 5 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 7, frente a 5 del máximo anterior, con datos validados de AEMET hasta el 30 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de A Coruña, con 45 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/a-coruna/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "temporada_tropical_n",
+   "territorio": "Albacete",
+   "provincia": "Albacete",
+   "valor": "31",
+   "previo": "30",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de noches tropicales",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-30",
+   "provisional": false,
+   "titular": "Albacete: 2026 bate el máximo de su serie en noches tropicales: 31, frente a 30 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en noches tropicales: 31, frente a 30 del máximo anterior, con datos validados de AEMET hasta el 30 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Albacete, Base Aérea, con 54 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/albacete/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "primer_dia_25_ini",
+   "territorio": "Badajoz",
+   "provincia": "Badajoz",
+   "valor": "24 de febrero",
+   "previo": "26 de febrero",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET tuvieron en {anio} el primer día de 25 °C o más más temprano de su serie",
+   "ambito": "provincial",
+   "fecha_dato": "2026-02-24",
+   "provisional": false,
+   "titular": "Badajoz: 2026 bate el récord de su serie: primer día de 25 °C o más el 24 de febrero, frente al 26 de febrero del anterior",
+   "dato": "2026 bate el récord de su serie: primer día de 25 °C o más el 24 de febrero, frente al 26 de febrero del anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Badajoz Aeropuerto, con 65 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/1 y el 31/7 con la máxima diaria validada (umbral 25 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/badajoz/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Barcelona",
+   "provincia": "Barcelona",
+   "valor": "74",
+   "previo": "71",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Barcelona: 2026 bate el máximo de su serie en días de 30 °C o más: 74, frente a 71 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 74, frente a 71 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Barcelona Aeropuerto, con 61 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/barcelona/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Bilbao",
+   "provincia": "Bizkaia",
+   "valor": "46",
+   "previo": "35",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Bilbao: 2026 bate el máximo de su serie en días de 30 °C o más: 46, frente a 35 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 46, frente a 35 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Bilbao Aeropuerto, con 64 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/bizkaia/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "temporada_tropical_n",
+   "territorio": "Bilbao",
+   "provincia": "Bizkaia",
+   "valor": "24",
+   "previo": "16",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de noches tropicales",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Bilbao: 2026 bate el máximo de su serie en noches tropicales: 24, frente a 16 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en noches tropicales: 24, frente a 16 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Bilbao Aeropuerto, con 44 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/bizkaia/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "temporada_tropical_n",
+   "territorio": "Cádiz",
+   "provincia": "Cádiz",
+   "valor": "134",
+   "previo": "130",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de noches tropicales",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Cádiz: 2026 bate el máximo de su serie en noches tropicales: 134, frente a 130 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en noches tropicales: 134, frente a 130 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Cádiz, con 57 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "media",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/cadiz/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Cuenca",
+   "provincia": "Cuenca",
+   "valor": "109",
+   "previo": "96",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-02",
+   "provisional": false,
+   "titular": "Cuenca: 2026 bate el máximo de su serie en días de 30 °C o más: 109, frente a 96 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 109, frente a 96 del máximo anterior, con datos validados de AEMET hasta el 2 de noviembre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Cuenca, con 65 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/cuenca/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "San Sebastián",
+   "provincia": "Gipuzkoa",
+   "valor": "20",
+   "previo": "15",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "San Sebastián: 2026 bate el máximo de su serie en días de 30 °C o más: 20, frente a 15 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 20, frente a 15 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Donostia, Igeldo, con 65 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/gipuzkoa/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "temporada_tropical_n",
+   "territorio": "San Sebastián",
+   "provincia": "Gipuzkoa",
+   "valor": "34",
+   "previo": "15",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de noches tropicales",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "San Sebastián: 2026 bate el máximo de su serie en noches tropicales: 34, frente a 15 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en noches tropicales: 34, frente a 15 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Donostia, Igeldo, con 52 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/gipuzkoa/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Huesca",
+   "provincia": "Huesca",
+   "valor": "110",
+   "previo": "102",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Huesca: 2026 bate el máximo de su serie en días de 30 °C o más: 110, frente a 102 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 110, frente a 102 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Huesca Aeropuerto, con 62 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/huesca/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "temporada_tropical_n",
+   "territorio": "Huesca",
+   "provincia": "Huesca",
+   "valor": "49",
+   "previo": "32",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de noches tropicales",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Huesca: 2026 bate el máximo de su serie en noches tropicales: 49, frente a 32 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en noches tropicales: 49, frente a 32 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Huesca Aeropuerto, con 60 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/huesca/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Logroño",
+   "provincia": "La Rioja",
+   "valor": "105",
+   "previo": "89",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-30",
+   "provisional": false,
+   "titular": "Logroño: 2026 bate el máximo de su serie en días de 30 °C o más: 105, frente a 89 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 105, frente a 89 del máximo anterior, con datos validados de AEMET hasta el 30 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Logroño Aeropuerto, con 65 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/la-rioja/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "temporada_tropical_n",
+   "territorio": "Logroño",
+   "provincia": "La Rioja",
+   "valor": "18",
+   "previo": "12",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de noches tropicales",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-30",
+   "provisional": false,
+   "titular": "Logroño: 2026 bate el máximo de su serie en noches tropicales: 18, frente a 12 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en noches tropicales: 18, frente a 12 del máximo anterior, con datos validados de AEMET hasta el 30 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Logroño Aeropuerto, con 54 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/la-rioja/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "León",
+   "provincia": "León",
+   "valor": "64",
+   "previo": "53",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-01",
+   "provisional": false,
+   "titular": "León: 2026 bate el máximo de su serie en días de 30 °C o más: 64, frente a 53 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 64, frente a 53 del máximo anterior, con datos validados de AEMET hasta el 1 de noviembre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de León, Virgen del Camino, con 64 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/leon/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Madrid",
+   "provincia": "Madrid",
+   "valor": "108",
+   "previo": "93",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Madrid: 2026 bate el máximo de su serie en días de 30 °C o más: 108, frente a 93 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 108, frente a 93 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Madrid, Retiro, con 64 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/madrid/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "temporada_tropical_ini",
+   "territorio": "Madrid",
+   "provincia": "Madrid",
+   "valor": "29 de mayo",
+   "previo": "29 de mayo",
+   "empate": true,
+   "agregado": "{n} estaciones de AEMET tuvieron en {anio} la primera noche tropical más temprana de su serie",
+   "ambito": "provincial",
+   "fecha_dato": "2026-05-29",
+   "provisional": false,
+   "titular": "Madrid: 2026 iguala el récord de su serie: primera noche tropical el 29 de mayo, frente al 29 de mayo del anterior",
+   "dato": "2026 iguala el récord de su serie: primera noche tropical el 29 de mayo, frente al 29 de mayo del anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Madrid, Retiro, con 64 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/madrid/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "temporada_tropical_n",
+   "territorio": "Madrid",
+   "provincia": "Madrid",
+   "valor": "80",
+   "previo": "61",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de noches tropicales",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Madrid: 2026 bate el máximo de su serie en noches tropicales: 80, frente a 61 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en noches tropicales: 80, frente a 61 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Madrid, Retiro, con 64 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/madrid/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Salamanca",
+   "provincia": "Salamanca",
+   "valor": "95",
+   "previo": "78",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Salamanca: 2026 bate el máximo de su serie en días de 30 °C o más: 95, frente a 78 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 95, frente a 78 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Salamanca Aeropuerto, con 65 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/salamanca/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Santa Cruz de Tenerife",
+   "provincia": "Santa Cruz de Tenerife",
+   "valor": "58",
+   "previo": "47",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Santa Cruz de Tenerife: 2026 bate el máximo de su serie en días de 30 °C o más: 58, frente a 47 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 58, frente a 47 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Santa Cruz de Tenerife, con 65 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/santa-cruz-de-tenerife/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Soria",
+   "provincia": "Soria",
+   "valor": "86",
+   "previo": "67",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Soria: 2026 bate el máximo de su serie en días de 30 °C o más: 86, frente a 67 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 86, frente a 67 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Soria, con 64 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/soria/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "ultima_helada_fin",
+   "territorio": "Soria",
+   "provincia": "Soria",
+   "valor": "24 de marzo",
+   "previo": "25 de marzo",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET tuvieron en {anio} la última helada más temprana de su serie",
+   "ambito": "provincial",
+   "fecha_dato": "2026-03-24",
+   "provisional": false,
+   "titular": "Soria: 2026 bate el récord de su serie: última helada (mínima de 0 °C o menos entre enero y junio) el 24 de marzo, frente al 25 de marzo del anterior",
+   "dato": "2026 bate el récord de su serie: última helada (mínima de 0 °C o menos entre enero y junio) el 24 de marzo, frente al 25 de marzo del anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Soria, con 64 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/1 y el 30/6 con la mínima diaria validada (umbral 0 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/soria/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Tarragona",
+   "provincia": "Tarragona",
+   "valor": "128",
+   "previo": "121",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Tarragona: 2026 bate el máximo de su serie en días de 30 °C o más: 128, frente a 121 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 128, frente a 121 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Observatorio del Ebro (Tortosa), con 65 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/tarragona/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Valencia",
+   "provincia": "Valencia",
+   "valor": "88",
+   "previo": "84",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Valencia: 2026 bate el máximo de su serie en días de 30 °C o más: 88, frente a 84 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 88, frente a 84 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de València, con 65 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/valencia/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Zamora",
+   "provincia": "Zamora",
+   "valor": "102",
+   "previo": "81",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Zamora: 2026 bate el máximo de su serie en días de 30 °C o más: 102, frente a 81 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 102, frente a 81 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Zamora, con 65 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1961",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/zamora/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "verano_largo_n",
+   "territorio": "Zaragoza",
+   "provincia": "Zaragoza",
+   "valor": "115",
+   "previo": "107",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de días de 30 °C o más",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Zaragoza: 2026 bate el máximo de su serie en días de 30 °C o más: 115, frente a 107 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 115, frente a 107 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1963; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Zaragoza Aeropuerto, con 63 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1963",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/zaragoza/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "ultima_helada_fin",
+   "territorio": "Zaragoza",
+   "provincia": "Zaragoza",
+   "valor": "7 de enero",
+   "previo": "12 de enero",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET tuvieron en {anio} la última helada más temprana de su serie",
+   "ambito": "provincial",
+   "fecha_dato": "2026-01-07",
+   "provisional": false,
+   "titular": "Zaragoza: 2026 bate el récord de su serie: última helada (mínima de 0 °C o menos entre enero y junio) el 7 de enero, frente al 12 de enero del anterior",
+   "dato": "2026 bate el récord de su serie: última helada (mínima de 0 °C o menos entre enero y junio) el 7 de enero, frente al 12 de enero del anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1963; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Zaragoza Aeropuerto, con 62 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/1 y el 30/6 con la mínima diaria validada (umbral 0 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1963",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/zaragoza/"
+  },
+  {
+   "serie": "temporadas",
+   "tipo": "temporada",
+   "indicador": "temporada_tropical_n",
+   "territorio": "Zaragoza",
+   "provincia": "Zaragoza",
+   "valor": "76",
+   "previo": "57",
+   "empate": false,
+   "agregado": "{n} estaciones de AEMET superan en {anio} su récord de noches tropicales",
+   "ambito": "provincial",
+   "fecha_dato": "2026-10-31",
+   "provisional": false,
+   "titular": "Zaragoza: 2026 bate el máximo de su serie en noches tropicales: 76, frente a 57 del máximo anterior",
+   "dato": "2026 bate el máximo de su serie en noches tropicales: 76, frente a 57 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1963; temporada cerrada).",
+   "contexto": [
+    "Serie de la estación de AEMET de Zaragoza Aeropuerto, con 63 años válidos."
+   ],
+   "metodo": "Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.",
+   "limites": [
+    "Datos validados de AEMET con 10-20 días de retraso",
+    "Una estación mide un punto, no toda la provincia"
+   ],
+   "citabilidad": "alta",
+   "exclusivo": true,
+   "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
+   "serie_desde": "1963",
+   "pagina": "https://calentamientoglobal.es/el-tiempo/zaragoza/"
+  }
+ ],
+ "generado": "2026-11-07T16:53:22Z"
+}
