@@ -3,10 +3,17 @@ name: Monitor de sequía
 # Datos del Monitor de sequía de calentamientoglobal.es (scripts/sequia.py): docs/sequia/ con el semáforo por provincia
 # (SPI a 3, 6 y 12 meses sobre la precipitación de AEMET), el año hidrológico, los días sin lluvia, la previsión a 15
 # días y los gráficos. Una sola pasada al día, a las 07:40 UTC, después de «Series diarias AEMET» y de los embalses.
-# No usa workflow_run para no multiplicar ejecuciones. Sin secretos (la publicación en WordPress llega en el bloque B).
+# No usa workflow_run para no multiplicar ejecuciones. Bloque B: si están los secretos WP_USER y WP_APP_AGOSTO (los mismos que
+# nieve.yml y heladas.yml), publica además en WordPress /sequia/ y /sequia/<provincia>/ (contenido fijo solo si cambia y bloque
+# del día en el meta cg_ssr_html); sin ellos solo calcula los datos y no falla.
 
 on:
   workflow_dispatch:
+    inputs:
+      forzar:
+        description: "Reescribir el contenido de las 53 páginas aunque no haya cambiado"
+        type: boolean
+        default: false
   schedule:
     - cron: "40 7 * * *"
 
@@ -24,7 +31,7 @@ env:
 jobs:
   sequia:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
@@ -39,8 +46,20 @@ jobs:
       - name: Instalar scipy
         run: pip install "scipy==1.14.*"
 
-      - name: Calcular el monitor
-        run: python scripts/sequia.py
+      - name: Calcular el monitor y publicar en WordPress
+        env:
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
+          FORZAR: ${{ github.event.inputs.forzar }}
+        run: |
+          ARGS=""
+          if [ -n "$WP_USER" ] && [ -n "$WP_APP_PASSWORD" ]; then
+            ARGS="--publicar"
+            if [ "$FORZAR" = "true" ]; then ARGS="$ARGS --forzar"; fi
+          else
+            echo "Sin secretos de WordPress: solo se calculan los datos."
+          fi
+          python scripts/sequia.py $ARGS
 
       - name: Guardar
         if: always()
