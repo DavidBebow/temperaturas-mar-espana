@@ -7,6 +7,7 @@
 
 ## Contexto
 - Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).
+- Rareza: Una noche así ocurría una vez cada 2,1 años en 1961-1990 y ahora una vez cada 3,9 años: es 1,8 veces menos probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).
 
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026
@@ -16,6 +17,7 @@
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
 - Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
+- La rareza compara dos climas (1961-1990 y 1996-2025) de la serie del reanálisis ERA5 en la celda de la capital; no atribuye este día a una causa y su intervalo es del 90 %.
 - COMPROBAR: el observatorio no tiene una estación de AEMET de referencia a menos de 20 km de esta capital.
 
 ## Enlaces

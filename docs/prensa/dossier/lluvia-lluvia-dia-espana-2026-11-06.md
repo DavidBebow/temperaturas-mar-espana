@@ -1,6 +1,6 @@
 # La estación de AEMET de A Estrada (Pontevedra) recogió 30,8 mm en las 24 horas hasta las 8:00 del 7 de noviembre
 
-**Dato:** 30,8 mm entre las 8:00 del 6 y las 8:00 del 7 de noviembre (hora peninsular), la cifra más alta de las 377 estaciones de AEMET con las 24 horas que sigue el mapa · 1 superó los 30 mm  
+**Dato:** 30,8 mm entre las 8:00 del 6 y las 8:00 del 7 de noviembre (hora peninsular), la cifra más alta de las 383 estaciones de AEMET con las 24 horas que sigue el mapa · 1 superó los 30 mm  
 **Fecha del dato:** 6 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -14,7 +14,7 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación de observación convencional, en el día pluviométrico de AEMET (de 07:00 a 07:00 UTC), el de sus valores diarios. Solo estaciones con las 24 horas.
 
 ## Límites (decirlos antes de que los descubran)
-- La comparación es entre las 377 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (995 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- La comparación es entre las 383 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (995 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Lluvia de cada estación: en el resto del término municipal pudo llover más o menos.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 

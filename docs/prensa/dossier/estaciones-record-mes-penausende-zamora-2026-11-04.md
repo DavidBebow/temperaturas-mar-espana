@@ -1,6 +1,6 @@
 # Peñausende (Zamora) bajó el 4 de noviembre a -2,8 °C, la temperatura más baja en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Peñausende, a 1003 m, mínima de -2,8 °C el 4 de noviembre (entre las 07:00 y las 08:00, hora local) · récord anterior de noviembre en la estación: -2,1 °C (28 de noviembre de 2021) · récord absoluto de la estación: -5,9 °C (4 de abril de 2022) · 24 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Peñausende, a 1003 m, mínima de -2,8 °C el 4 de noviembre (hora de la mínima: 07:00) · récord anterior de noviembre en la estación: -2,1 °C (28 de noviembre de 2021) · récord absoluto de la estación: -5,9 °C (4 de abril de 2022) · valor climatológico diario validado por AEMET: -2,8 °C  
 **Fecha del dato:** 4 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Peñausende (Zamora)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -15,7 +15,7 @@
 - **Método:** Mínima diaria de la estación (día de 0 a 24 h UTC) obtenida de la observación horaria que publica AEMET OpenData (campo «tamin», extremo de cada hora), comparada con los valores climatológicos extremos mensuales y absolutos que AEMET publica para esa estación (tabla consultada el 2 de noviembre de 2026).
 
 ## Límites (decirlos antes de que los descubran)
-- Observación en tiempo real, sin validar: AEMET revisa el dato en 2-4 días y puede corregirlo. El observatorio vuelve a comprobarlo con el valor validado y marca el hallazgo como confirmado o lo retira.
+- Confirmado con el valor climatológico diario validado por AEMET (-2,8 °C el 4 de noviembre).
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 2 de noviembre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2013.
