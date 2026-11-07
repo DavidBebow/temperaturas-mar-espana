@@ -1,13 +1,14 @@
-# Un octubre como el de 2026 es hoy al menos tres veces más probable que en 1961-1990 en 31 de las 50 capitales con dato; en Las Palmas era un mes de una vez cada 473 años
+# Un octubre como el de 2026 es hoy al menos tres veces más probable que en 1961-1990 en 32 de las 51 capitales con dato; en Las Palmas era un mes de una vez cada 473 años
 
-**Dato:** 31 capitales (13 con estación de AEMET, 18 con reanálisis ERA5). Santa Cruz de Tenerife 24,6 °C (PR 82); Las Palmas 24,5 °C (PR 56); Valencia 21,5 °C (PR 39); Ceuta 21,5 °C (PR 13); Murcia 21,2 °C (PR 13); Jaén 18,7 °C (PR 12); Melilla 23,3 °C (PR 10); Cuenca 15,8 °C (PR 8,5); Zaragoza 17,9 °C (PR 8,5); Castellón 20,1 °C (PR 8,4); Lleida 18,4 °C (PR 7,1); Albacete 16,7 °C (PR 6,6); Tarragona 20 °C (PR 5,8); Almería 21,5 °C (PR 5,7); Girona 18,3 °C (PR 5,7); Granada 18,7 °C (PR 5,1); Oviedo 15,5 °C (PR 4,6); Teruel 15,7 °C (PR 4,3); Badajoz 19,2 °C (PR 4,0); Pamplona 15,8 °C (PR 3,8); Zamora 15,5 °C (PR 3,8); Vitoria 15,1 °C (PR 3,7); Guadalajara 16,1 °C (PR 3,5); Soria 13,9 °C (PR 3,5); Toledo 17,6 °C (PR 3,3); Ciudad Real 17,8 °C (PR 3,2); Segovia 14,5 °C (PR 3,2); Burgos 13,9 °C (PR 3,1); Palma 21,6 °C (PR 3,1); Cádiz 22 °C (PR 3,0); Madrid 16,9 °C (PR 3,0)  
+**Dato:** 32 capitales (14 con estación de AEMET, 18 con reanálisis ERA5). Santa Cruz de Tenerife 24,6 °C (PR 82); Las Palmas 24,5 °C (PR 56); Valencia 21,5 °C (PR 39); Ceuta 21,5 °C (PR 13); Murcia 21,2 °C (PR 13); Jaén 18,7 °C (PR 12); Melilla 23,3 °C (PR 10); Cuenca 15,8 °C (PR 8,5); Zaragoza 17,9 °C (PR 8,5); Alicante 21,7 °C (PR 8,4); Castellón 20,1 °C (PR 8,4); Lleida 18,4 °C (PR 7,1); Albacete 16,7 °C (PR 6,6); Tarragona 20 °C (PR 5,8); Almería 21,5 °C (PR 5,7); Girona 18,3 °C (PR 5,7); Granada 18,7 °C (PR 5,1); Oviedo 15,5 °C (PR 4,6); Teruel 15,7 °C (PR 4,3); Badajoz 19,2 °C (PR 4,0); Pamplona 15,8 °C (PR 3,8); Zamora 15,5 °C (PR 3,8); Vitoria 15,1 °C (PR 3,7); Guadalajara 16,1 °C (PR 3,5); Soria 13,9 °C (PR 3,5); Toledo 17,6 °C (PR 3,3); Ciudad Real 17,8 °C (PR 3,2); Segovia 14,5 °C (PR 3,2); Burgos 13,9 °C (PR 3,1); Palma 21,6 °C (PR 3,1); Cádiz 22 °C (PR 3,0); Madrid 16,9 °C (PR 3,0)  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Capitales: Albacete, Almería, Badajoz, Burgos, Castellón, Ceuta, Ciudad Real, Cuenca, Cádiz, Girona, Granada, Guadalajara, Jaén, Las Palmas, Lleida, Madrid, Melilla, Murcia, Oviedo, Palma, Pamplona, Santa Cruz de Tenerife, Segovia, Soria, Tarragona, Teruel, Toledo, Valencia, Vitoria, Zamora y Zaragoza.
-- Cada una frente a su propia serie; PR mediano de las agregadas: 5,1 (la fuerza usa este valor con tope 5).
+- Capitales: Albacete, Alicante, Almería, Badajoz, Burgos, Castellón, Ceuta, Ciudad Real, Cuenca, Cádiz, Girona, Granada, Guadalajara, Jaén, Las Palmas, Lleida, Madrid, Melilla, Murcia, Oviedo, Palma, Pamplona, Santa Cruz de Tenerife, Segovia, Soria, Tarragona, Teruel, Toledo, Valencia, Vitoria, Zamora y Zaragoza.
+- Cada una frente a su propia serie; PR mediano de las agregadas: 5,7 (la fuerza usa este valor con tope 5).
+- Las cinco con mayor cociente, con el límite inferior del intervalo del 90 % (un mes así es hoy al menos X veces más probable): Santa Cruz de Tenerife, al menos 6,0; Las Palmas, al menos 4,4; Valencia, al menos 9,9; Ceuta, al menos 2,3; Murcia, al menos 4,0.
 
 ## Tabla completa
 
@@ -22,6 +23,7 @@
 | Melilla | 23,3 | 986 | 98 | 10 (1,1-130) | ERA5 |
 | Cuenca | 15,8 | 33 | 3,8 | 8,5 (4,0-37) | AEMET |
 | Zaragoza | 17,9 | 27 | 3,1 | 8,5 (4,1-34) | AEMET |
+| Alicante | 21,7 | 92 | 11 | 8,4 (2,9-49) | AEMET |
 | Castellón | 20,1 | 51 | 6,1 | 8,4 (2,5-69) | ERA5 |
 | Lleida | 18,4 | 27 | 3,8 | 7,1 (2,5-39) | ERA5 |
 | Albacete | 16,7 | 21 | 3,2 | 6,6 (3,0-25) | AEMET |
@@ -50,6 +52,7 @@
 | Territorio | Dato | Dossier local |
 |---|---|---|
 | Albacete | Un mes así ocurría una vez cada 21 años en 1961-1990 y ahora una vez cada 3,2 años: es 6,6 veces más probable (intervalo 3,0-25). Serie: serie mensual de la estación de AEMET de Albacete, Base Aérea. | [huella-antes-raro-albacete-2026-10-31](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/huella-antes-raro-albacete-2026-10-31.md) |
+| Alicante | Un mes así ocurría una vez cada 92 años en 1961-1990 y ahora una vez cada 11 años: es 8,4 veces más probable (intervalo 2,9-49). Serie: serie mensual de la estación de AEMET de Alicante. | [huella-antes-raro-alicante-2026-10-31](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/huella-antes-raro-alicante-2026-10-31.md) |
 | Almería | Un mes así ocurría una vez cada 24 años en 1961-1990 y ahora una vez cada 4,2 años: es 5,7 veces más probable (intervalo 2,3-26). Serie: serie diaria de la celda de Almería del reanálisis ERA5. | [huella-antes-raro-almeria-2026-10-31](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/huella-antes-raro-almeria-2026-10-31.md) |
 | Badajoz | Un mes así ocurría una vez cada 11 años en 1961-1990 y ahora una vez cada 2,8 años: es 4,0 veces más probable (intervalo 1,8-12). Serie: serie mensual de la estación de AEMET de Badajoz Aeropuerto. | [huella-antes-raro-badajoz-2026-10-31](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/huella-antes-raro-badajoz-2026-10-31.md) |
 | Burgos | Un mes así ocurría una vez cada 13 años en 1961-1990 y ahora una vez cada 4,3 años: es 3,1 veces más probable (intervalo 1,6-8,9). Serie: serie diaria de la celda de Burgos del reanálisis ERA5. | [huella-antes-raro-burgos-2026-10-31](https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/huella-antes-raro-burgos-2026-10-31.md) |
@@ -88,12 +91,12 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Compara dos climas observados (1961-1990 y 1996-2025) de la misma serie de cada capital: no atribuye este mes a una causa concreta.
-- Fuentes mezcladas: 13 con estación de AEMET, 18 con reanálisis ERA5. El reanálisis ERA5 es una celda de ~25 km, no la estación oficial, y anterior a 1979 es una retroextensión preliminar; la cifra oficial puede diferir.
+- Fuentes mezcladas: 14 con estación de AEMET, 18 con reanálisis ERA5. El reanálisis ERA5 es una celda de ~25 km, no la estación oficial, y anterior a 1979 es una retroextensión preliminar; la cifra oficial puede diferir.
 - Intervalos del 90 % amplios en la cola: Santa Cruz de Tenerife 6,0-más de 1.000 veces más probable (PR 82).
-- Se cuenta sobre las 50 de 52 capitales con dato de octubre; es un recuento de capitales, no de toda España.
+- Se cuenta sobre las 51 de 52 capitales con dato de octubre; es un recuento de capitales, no de toda España.
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/huella-climatica/
+- Página: https://calentamientoglobal.es/prensa/huella-octubre-2026/
 - Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/huella-antes-raro-espana-2026-10.csv
 - Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/huella-antes-raro-espana-2026-10.png
 
