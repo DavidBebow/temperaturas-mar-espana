@@ -1280,7 +1280,8 @@ def g_danas_lluvia(R, D):
 
 def generar(R, D):
     out = []
-    for g in (g_verano_largo, g_danas_lluvia, g_otono_serie, g_torrencial, g_dana_largo):
+    from sala import compuestos_temporadas as CT
+    for g in (g_verano_largo, g_danas_lluvia, g_otono_serie, g_torrencial, g_dana_largo, CT.historias):
         try:
             out.extend(g(R, D) or [])
         except Exception as e:  # noqa: BLE001
