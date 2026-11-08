@@ -20,7 +20,7 @@
    2025
   ]
  },
- "fecha_dato": "2026-11-06",
+ "fecha_dato": "2026-11-07",
  "provisional": true,
  "fuente_dia": "reanálisis/predicción, pendiente de validar por AEMET",
  "fuente_diaria": "era5",
@@ -34,41 +34,24 @@
  },
  "hoy": {
   "tmax": {
-   "valor": 22.4,
+   "valor": 25.3,
    "lado": "calido",
    "metodo": "empírica",
-   "T_antes": 0.1,
-   "T_ahora": 0.1,
+   "T_antes": 0.5,
+   "T_ahora": 0.3,
    "T_tope": false,
-   "PR": 1.2,
-   "pr_min": 0.9,
-   "pr_max": 1.5,
-   "significativo": false,
-   "nivel": 0,
-   "p_antes": 0.259866,
-   "p_ahora": 0.305812,
+   "PR": 1.7,
+   "pr_min": 1.1,
+   "pr_max": 2.7,
+   "significativo": true,
+   "nivel": 1,
+   "p_antes": 0.0626906,
+   "p_ahora": 0.108255,
    "anios_antes": 30,
    "anios_ahora": 30
   },
   "tmin": {
-   "valor": 10.6,
-   "lado": "calido",
-   "metodo": "normal",
-   "T_antes": 0.1,
-   "T_ahora": 0.1,
-   "T_tope": false,
-   "PR": 1.2,
-   "pr_min": 1.1,
-   "pr_max": 1.4,
-   "significativo": true,
-   "nivel": 0,
-   "p_antes": 0.426268,
-   "p_ahora": 0.509834,
-   "anios_antes": 30,
-   "anios_ahora": 30
-  },
-  "tmed": {
-   "valor": 16.5,
+   "valor": 12.2,
    "lado": "calido",
    "metodo": "normal",
    "T_antes": 0.1,
@@ -79,13 +62,30 @@
    "pr_max": 1.6,
    "significativo": true,
    "nivel": 0,
-   "p_antes": 0.286031,
-   "p_ahora": 0.380536,
+   "p_antes": 0.228727,
+   "p_ahora": 0.302412,
    "anios_antes": 30,
    "anios_ahora": 30
   },
-  "indice": 0,
-  "nivel_texto": "Nivel 0: dentro de lo que ya era normal"
+  "tmed": {
+   "valor": 18.8,
+   "lado": "calido",
+   "metodo": "normal",
+   "T_antes": 0.4,
+   "T_ahora": 0.2,
+   "T_tope": false,
+   "PR": 1.8,
+   "pr_min": 1.3,
+   "pr_max": 2.5,
+   "significativo": true,
+   "nivel": 1,
+   "p_antes": 0.0804904,
+   "p_ahora": 0.142241,
+   "anios_antes": 30,
+   "anios_ahora": 30
+  },
+  "indice": 1,
+  "nivel_texto": "Nivel +1: un día así es hoy al menos 1,5 veces más probable que en 1961-1990 por el calentamiento"
  },
  "mes": {
   "referencia": {
@@ -144,10 +144,6 @@
   }
  },
  "ultimos_30": [
-  {
-   "fecha": "2026-10-08",
-   "indice": 0
-  },
   {
    "fecha": "2026-10-09",
    "indice": 0
@@ -250,7 +246,7 @@
   },
   {
    "fecha": "2026-11-03",
-   "indice": 1
+   "indice": 0
   },
   {
    "fecha": "2026-11-04",
@@ -263,6 +259,10 @@
   {
    "fecha": "2026-11-06",
    "indice": 0
+  },
+  {
+   "fecha": "2026-11-07",
+   "indice": 1
   }
  ],
  "resumen_30": {
@@ -272,10 +272,10 @@
   "media_indice": 0.5
  },
  "textos": {
-  "frase_hoy": "El 6 de noviembre de 2026 la temperatura media en Córdoba (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET) fue de 16,5 °C. Un día así ocurría unas 8,9 veces al año en 1961-1990 y ahora unas 12 veces al año: es 1,3 veces más probable (intervalo 1,1-1,6). Nivel 0: dentro de lo que ya era normal.",
-  "base": "Basado en la temperatura media del 6 de noviembre de 2026 en Córdoba (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET); dato provisional: se compara con el clima de la celda ERA5 de la capital y puede cambiar al validarse.",
+  "frase_hoy": "El 7 de noviembre de 2026 la temperatura media en Córdoba (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET) fue de 18,8 °C. Un día así ocurría unas 2,5 veces al año en 1961-1990 y ahora unas 4,4 veces al año: es 1,8 veces más probable (intervalo 1,3-2,5). Nivel +1: un día así es hoy al menos 1,5 veces más probable que en 1961-1990 por el calentamiento.",
+  "base": "Basado en la temperatura media del 7 de noviembre de 2026 en Córdoba (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET); dato provisional: se compara con el clima de la celda ERA5 de la capital y puede cambiar al validarse.",
   "metodo_corto": "Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5."
  },
  "licencia": "CC BY 4.0",
- "generado": "2026-11-07T17:33:29Z"
+ "generado": "2026-11-08T00:02:48Z"
 }
