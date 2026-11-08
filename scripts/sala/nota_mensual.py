@@ -24,8 +24,8 @@ URL_NOTA = "calentamientoglobal.es/prensa/huella-{mes_es}/"
 PAGES = "https://davidbebow.github.io/temperaturas-mar-espana"
 FONDO, TEXTO, SEC, ACENTO, DEST, HONDO = "#0c2133", "#e8f1f8", "#9fb6c8", "#bfe6ff", "#ff7a45", "#163a55"
 COL_FUENTE = {"AEMET": "#ff7a45", "ERA5": "#6694ca"}
-PALABRAS = (400, 480)
-ENTRADILLA = (40, 60)
+PALABRAS = (450, 720)
+ENTRADILLA = (40, 90)
 
 
 def _palabras(t: str) -> int:
@@ -83,8 +83,19 @@ def _contexto_balance(at, ym: str):
         return None
 
 
+def _robustas(at, filas):
+    """Capitales de las que se puede AFIRMAR «al menos tres veces más probable»: límite inferior del intervalo del 90 % ≥ 3,
+    periodo de retorno antes ≥ 10 años y significativo. Es la única lista que entra en el titular (regla del 8-11-2026:
+    la estimación central no se titula; en la cola tiene intervalos de cientos de años)."""
+    rob = [r for r in filas if r["significativo"] and float(r["pr_min"]) >= at.ANTES_RARO_PR
+           and float(r["T_antes"]) >= at.ANTES_RARO_T]
+    return sorted(rob, key=lambda r: (-float(r["pr_min"]), r["capital"]))
+
+
 def _titular(at, ym, filas, tot):
-    """Titular del hallazgo nacional (scripts/hallazgos_prensa.py::_agregar_antes_raro_mes), de antes_raro.json."""
+    """Titular con la misma regla que scripts/hallazgos_prensa.py::_agregar_antes_raro_mes: solo las robustas.
+    Devuelve (titular, lista_central, robustas). lista_central = candidatos de antes_raro.json (estimación central ≥ 3)."""
+    import math
     anio, mes = int(ym[:4]), int(ym[5:7])
     try:
         cand = json.loads((at.SALIDA / "antes_raro.json").read_text(encoding="utf-8"))["candidatos"]
@@ -92,68 +103,102 @@ def _titular(at, ym, filas, tot):
         cand = []
     lista = [c for c in cand if c.get("indicador") == "mes_media_alta" and c.get("ambito_tiempo") == "mes"
              and str(c.get("fecha", ""))[:7] == ym]
-    n = len(lista)
+    rob = _robustas(at, filas)
+    n, n_rob = len(lista), len(rob)
     if n < 3:
-        return None, lista
+        return None, lista, rob
     n_dato = len(filas)
-    sel = [c for c in lista if c["rareza"].get("T_antes") is not None and float(c["rareza"]["T_antes"]) < at.T_MAX
-           and c.get("tipo_fuente") == "aemet"] or [c for c in lista if c["rareza"].get("T_antes") is not None]
-    top = max(sel, key=lambda c: float(c["rareza"]["T_antes"]))
-    Ttop = at.frase_T(top["rareza"]["T_antes"], float(top["rareza"]["T_antes"]) >= at.T_MAX)
-    if n_dato >= at.FRAC_NACIONAL * tot:
-        denom = f"de las {tot} capitales" if n_dato >= tot else f"de las {n_dato} capitales con dato"
-        return (f"Un {at.MESES[mes - 1]} como el de {anio} es hoy al menos tres veces más probable que en 1961-1990 en {n} "
-                f"{denom}; en {top['capital']} era un mes de {Ttop}"), lista
-    return (f"En {n} capitales, un {at.MESES[mes - 1]} como el de {anio} es hoy al menos tres veces más probable que en "
-            f"1961-1990; en {top['capital']} era un mes de {Ttop}"), lista
+    nacional_ok = n_dato >= at.FRAC_NACIONAL * tot
+    mes_txt = at.MESES[mes - 1]
+    if n_rob >= 3:
+        top = rob[0]
+        veces = int(math.floor(float(top["pr_min"])))
+        cola = f"; en {top['capital']}, al menos {veces} veces" if veces > int(at.ANTES_RARO_PR) else ""
+        denom = f" (de las {tot} capitales)" if nacional_ok and n_dato >= tot else (f" (de {n_dato} con dato)" if nacional_ok else "")
+        return (f"Un {mes_txt} como el de {anio} es hoy al menos tres veces más probable que en 1961-1990 en {n_rob} capitales"
+                f"{denom}{cola}"), lista, rob
+    if n_rob > 0:
+        return (f"En {n_rob} capitales ({_lista_y([r['capital'] for r in rob])}), un {mes_txt} como el de {anio} es hoy al menos "
+                f"tres veces más probable que en 1961-1990; en otras {n - n_rob} la estimación central supera ese umbral, pero el "
+                f"intervalo no permite afirmarlo"), lista, rob
+    return (f"En {n} capitales, la estimación central indica que un {mes_txt} como el de {anio} es hoy al menos tres veces más "
+            f"probable que en 1961-1990, pero en ninguna lo confirma el intervalo del 90 %"), lista, rob
 
 
 def _lista_y(nombres):
     return ", ".join(nombres[:-1]) + " y " + nombres[-1] if len(nombres) > 1 else nombres[0]
 
 
-def _texto(at, ym, filas, tot, titular, lista):
-    """Entradilla y párrafos. Sin adjetivos, cada cifra con fecha, fuente, climas y método."""
+def _texto(at, ym, filas, tot, titular, lista, rob):
+    """Entradilla y párrafos. Sin adjetivos, cada cifra con fecha, fuente, climas y método. Dos recuentos, siempre separados:
+    `rob` (límite inferior ≥ 3: lo que se afirma) y `lista` (estimación central ≥ 3: lo que se cuenta aparte)."""
     anio, mes = int(ym[:4]), int(ym[5:7])
     mes_es = f"{at.MESES[mes - 1]} de {anio}"
     n = len(filas)
-    n_flag = len(lista)
-    ordenadas = sorted(filas, key=lambda r: (-float(r["PR"]), -float(r["pr_min"]), r["capital"]))
-    top5 = ordenadas[:5]
+    n_flag, n_rob = len(lista), len(rob)
+    n_solo = n_flag - n_rob
     n_a = sum(1 for r in filas if r["fuente"] == "AEMET")
     n_e = n - n_a
-    f_a = sum(1 for c in lista if c.get("tipo_fuente") == "aemet")     # las mismas 31 de antes_raro.json
+    f_a = sum(1 for c in lista if c.get("tipo_fuente") == "aemet")
     f_e = n_flag - f_a
+    r_a = sum(1 for r in rob if r["fuente"] == "AEMET")
+    r_e = n_rob - r_a
     nacional_ok = n >= at.FRAC_NACIONAL * tot
     cobertura = f"{n} de las {tot} capitales" if nacional_ok else f"{n} capitales (de {tot}; no es una imagen del conjunto de España)"
+    nombres_rob = _lista_y([r["capital"] for r in rob]) if rob else ""
 
-    entradilla = (f"En {n_flag} de las {n} capitales con dato, un {at.MESES[mes - 1]} como el de {anio} es hoy al menos tres "
-                  f"veces más probable que en 1961-1990. La nota compara dos climas de la misma serie de cada capital, "
-                  f"1961-1990 y 1996-2025, con estaciones de AEMET y el reanálisis ERA5.")
+    if n_rob:
+        entradilla = (f"En {n_rob} de las {n} capitales con dato ({nombres_rob}), un {at.MESES[mes - 1]} como el de {anio} es hoy al "
+                      f"menos tres veces más probable que en 1961-1990, incluso en el extremo más prudente del intervalo del 90 %. "
+                      f"En otras {n_solo} la estimación central también supera ese umbral, pero el intervalo no permite afirmarlo. "
+                      f"La nota compara dos climas de la misma serie de cada capital, 1961-1990 y 1996-2025, con estaciones de AEMET "
+                      f"y el reanálisis ERA5.")
+    else:
+        entradilla = (f"En {n_flag} de las {n} capitales con dato, la estimación central indica que un {at.MESES[mes - 1]} como el de "
+                      f"{anio} es hoy al menos tres veces más probable que en 1961-1990, pero en ninguna lo confirma el intervalo del "
+                      f"90 %. La nota compara dos climas de la misma serie de cada capital, 1961-1990 y 1996-2025, con estaciones de "
+                      f"AEMET y el reanálisis ERA5.")
 
     p1 = (f"Esta nota mide cuántas capitales españolas tuvieron en {mes_es} una temperatura media mensual que antes era rara. "
-          f"Hay dato en {cobertura}. En {n_flag}, un mes así es hoy al menos tres veces más probable que en 1961-1990, con un "
-          f"intervalo del 90 % que no incluye el 1 y un periodo de retorno de al menos 10 años en 1961-1990. En las otras "
-          f"{n - n_flag} no se cumplen esas condiciones.")
+          f"Hay dato en {cobertura}. En {n_rob}, el límite inferior del intervalo del 90 % del cociente de probabilidad es 3 o más "
+          f"y el periodo de retorno en 1961-1990 es de al menos 10 años: en ellas se puede afirmar que un mes así es hoy al menos "
+          f"tres veces más probable. En otras {n_solo} la estimación central del cociente supera 3 y el intervalo no incluye el 1, "
+          f"pero su límite inferior queda por debajo de 3: son capitales en las que el mes también era raro y se ha vuelto más "
+          f"probable, sin que pueda precisarse cuánto. En las {n - n_flag} restantes no se cumplen esas condiciones.")
 
-    items = [f"{r['capital']}, al menos {at.fnum(r['pr_min'])} (media {at.fnum(r['valor'])} °C; normal "
-             f"{at.fnum(r['normal_antes'])} °C en 1961-1990, {at.fnum(r['normal_ahora'])} °C en 1996-2025)" for r in top5]
-    p2 = ("Las cinco capitales con mayor cociente, con el límite inferior del intervalo del 90 % "
-          "(«un mes así es hoy al menos X veces más probable»): " + "; ".join(items) + ".")
-    bajos = [r["capital"] for r in top5 if r["pr_min"] < at.ANTES_RARO_PR]
-    if bajos:
-        p2 += f" En {_lista_y(bajos)} el límite inferior queda por debajo de 3: el intervalo es amplio."
+    if rob:
+        items = [f"{r['capital']}, al menos {at.fnum(r['pr_min'])} (media {at.fnum(r['valor'])} °C; normal "
+                 f"{at.fnum(r['normal_antes'])} °C en 1961-1990 y {at.fnum(r['normal_ahora'])} °C en 1996-2025)" for r in rob]
+        p2 = (f"Las {n_rob} capitales, con el límite inferior del intervalo del 90 % («un mes así es hoy al menos X veces más "
+              f"probable»): " + "; ".join(items) + f". {r_a} van por estación de AEMET y {r_e} por el reanálisis ERA5.")
+    else:
+        top5 = sorted(filas, key=lambda r: (-float(r["PR"]), r["capital"]))[:5]
+        p2 = ("Las cinco capitales con mayor estimación central, con el límite inferior del intervalo del 90 %: " +
+              "; ".join(f"{r['capital']}, {at.fratio(r['PR'], True)} (al menos {at.fnum(r['pr_min'])})" for r in top5) +
+              ". En ninguna el límite inferior llega a 3.")
+    # las que quedan fuera por periodo de retorno antes < 10 años aunque su límite inferior sea ≥ 3
+    casi = [r for r in filas if r["significativo"] and float(r["pr_min"]) >= at.ANTES_RARO_PR and float(r["T_antes"]) < at.ANTES_RARO_T]
+    if casi:
+        p2 += " " + "; ".join(f"{r['capital']} también supera el umbral (al menos {at.fnum(r['pr_min'])}), pero en 1961-1990 su "
+                              f"{at.MESES[mes - 1]} era un mes de una vez cada {at.fratio(r['T_antes'], True)} años, por debajo del "
+                              f"mínimo de 10 que exige la nota" for r in casi) + "."
+    mayores = sorted(filas, key=lambda r: -float(r["PR"]))[:3]
+    p2 += (" Las estimaciones centrales más altas (" +
+           "; ".join(f"{r['capital']}, {at.fratio(r['PR'], True)}" for r in mayores) +
+           ") tienen intervalos que llegan a varios cientos o a más de 1.000: por eso el titular usa el límite inferior y no esas cifras.")
 
     p3 = (f"De las {n} capitales, {n_a} van por la serie mensual de una estación de AEMET y {n_e} por el reanálisis ERA5 "
           f"(Copernicus/ECMWF), un modelo y no una estación. Una capital va por AEMET si su estación tiene al menos "
           f"{at.MIN_ANIOS} años válidos en cada clima y una serie homogénea; si no, va por ERA5, con citabilidad media. Entre "
-          f"las {n_flag} destacadas, {f_a} son de AEMET y {f_e} de ERA5.")
+          f"las {n_rob} capitales del titular, {r_a} son de AEMET y {r_e} de ERA5; entre las {n_solo} con estimación central por "
+          f"encima de 3, {f_a - r_a} son de AEMET y {f_e - r_e} de ERA5.")
 
     ctx = _contexto_balance(at, ym)
     mayor = max(filas, key=lambda r: float(r["PR"]))
     p4 = (f"Qué no dice esta nota: compara dos climas observados y no atribuye {mes_es} a una causa. Los intervalos del 90 % "
           f"son amplios en la cola: en {mayor['capital']} el cociente es {at.fratio(mayor['PR'], True)} y el intervalo va de "
-          f"{at.fratio(mayor['pr_min'], True)} a {at.fratio(mayor['pr_max'], True)}.")
+          f"{at.fratio(mayor['pr_min'], True)} a {at.fratio(mayor['pr_max'], True)}. Por eso el titular cuenta solo las capitales "
+          f"cuyo límite inferior supera 3.")
     if ctx:
         p4 += " " + ctx
 
@@ -192,7 +237,7 @@ def _markdown(titular, fecha_txt, entradilla, parrafos, filas, at) -> str:
     return "\n".join(out) + "\n"
 
 
-def dibujar_png(at, ruta: Path, filas, mes_es: str, url_nota: str, n_flag: int):
+def dibujar_png(at, ruta: Path, filas, mes_es: str, url_nota: str, n_flag: int, n_rob: int = 0):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -236,8 +281,8 @@ def dibujar_png(at, ruta: Path, filas, mes_es: str, url_nota: str, n_flag: int):
     fig.text(0.02, 0.897, (f"Cociente de probabilidad (PR) de la temperatura media del mes: 1996-2025 frente a 1961-1990, "
                            f"en {n} capitales. Entre paréntesis, el límite inferior del intervalo del 90 %."),
              color=SEC, fontsize=13, va="center")
-    fig.text(0.02, 0.862, (f"{n_flag} de {n} cumplen los criterios de «antes era raro»: PR ≥ 3, intervalo sin el 1 y periodo de "
-                           f"retorno antes ≥ 10 años · línea discontinua: PR 3 · eje logarítmico"),
+    fig.text(0.02, 0.862, (f"{n_rob} de {n} con límite inferior del intervalo ≥ 3 (lo que se afirma); {n_flag} con estimación central ≥ 3 "
+                           f"· periodo de retorno antes ≥ 10 años · línea discontinua: PR 3 · eje logarítmico"),
              color=SEC, fontsize=13, va="center")
     fig.legend(handles=[Patch(color=COL_FUENTE["AEMET"], label="Estación de AEMET"),
                         Patch(color=COL_FUENTE["ERA5"], label="Reanálisis ERA5 (no es una estación)")],
@@ -257,12 +302,12 @@ def nota_mensual(at, dibujar: bool = True):
         at.log("nota mensual: sin mes cerrado con dato")
         return None
     filas = sorted((_fila(*c) for c in caps), key=lambda r: (-float(r["PR"]), -float(r["pr_min"]), r["capital"]))
-    titular, lista = _titular(at, ym, filas, tot)
-    n_flag = len(lista)
+    titular, lista, rob = _titular(at, ym, filas, tot)
+    n_flag, n_rob = len(lista), len(rob)
     if titular is None:
         at.log(f"nota mensual: {ym} con menos de 3 capitales «antes era raro»; no hay nota")
         return None
-    mes_es, entradilla, parrafos = _texto(at, ym, filas, tot, titular, lista)
+    mes_es, entradilla, parrafos = _texto(at, ym, filas, tot, titular, lista, rob)
     pal, pal_e = sum(_palabras(p) for p in parrafos), _palabras(entradilla)
     if not (PALABRAS[0] <= pal <= PALABRAS[1]) or not (ENTRADILLA[0] <= pal_e <= ENTRADILLA[1]):
         at.log(f"nota mensual: AVISO longitud fuera de rango (párrafos {pal}, entradilla {pal_e})")
@@ -274,7 +319,10 @@ def nota_mensual(at, dibujar: bool = True):
     n_a = sum(1 for r in filas if r["fuente"] == "AEMET")
     obj = {"mes": ym, "titular": titular, "fecha": fecha_cierre, "fecha_txt": fecha_txt, "entradilla": entradilla,
            "parrafos": parrafos, "metodo": at.METODO_CORTO, "licencia": at.LICENCIA, "markdown": md,
-           "n_capitales": tot, "n_con_dato": len(filas), "n_antes_raro": n_flag, "n_aemet": n_a, "n_era5": len(filas) - n_a,
+           "n_capitales": tot, "n_con_dato": len(filas), "n_antes_raro": n_flag, "n_robustas": n_rob,
+           "robustas": [r["capital"] for r in rob], "criterio_titular": f"límite inferior del IC 90 % ≥ {at.ANTES_RARO_PR:g} y T antes ≥ {at.ANTES_RARO_T:g} años",
+           "criterio_central": f"PR ≥ {at.ANTES_RARO_PR:g}, IC sin 1 y T antes ≥ {at.ANTES_RARO_T:g} años",
+           "n_aemet": n_a, "n_era5": len(filas) - n_a,
            "palabras": pal, "url": f"https://{url}", "climas": {"antes": list(at.ANTES), "ahora": list(at.AHORA)},
            "archivos": {"csv": f"{PAGES}/huella/nota-{ym}.csv", "png": f"{PAGES}/huella/nota-{ym}.png",
                         "json": f"{PAGES}/huella/nota-{ym}.json",
@@ -285,8 +333,8 @@ def nota_mensual(at, dibujar: bool = True):
     at.escribir_texto(at.SALIDA / f"nota-{ym}.csv", _csv(filas))
     if dibujar:
         try:
-            dibujar_png(at, at.SALIDA / f"nota-{ym}.png", filas, mes_es, url, n_flag)
+            dibujar_png(at, at.SALIDA / f"nota-{ym}.png", filas, mes_es, url, n_flag, n_rob)
         except Exception as e:
             at.log(f"nota mensual: PNG no generado ({type(e).__name__}: {e})")
-    at.log(f"nota mensual {ym}: {len(filas)} capitales, {n_flag} con PR ≥ 3, {pal} palabras · docs/huella/nota-{ym}.*")
+    at.log(f"nota mensual {ym}: {len(filas)} capitales, {n_rob} robustas / {n_flag} con PR central ≥ 3, {pal} palabras · docs/huella/nota-{ym}.*")
     return obj
