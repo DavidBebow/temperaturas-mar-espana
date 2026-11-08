@@ -1,12 +1,12 @@
 # 24 capitales se han calentado una media de 2,3 °C desde 1970; Cuenca, Barcelona y Albacete, las que más
 
-*7 de noviembre de 2026 · calentamientoglobal.es con datos de AEMET*
+*8 de noviembre de 2026 · calentamientoglobal.es con datos de AEMET*
 
-De las 26 capitales con serie de temperatura de AEMET desde 1970 o antes, 24 se han calentado de forma estadísticamente significativa entre 1970 y 2025: 2,3 °C de media, según los valores climatológicos de AEMET calculados por calentamientoglobal.es (7 de noviembre de 2026).
+De las 26 capitales con serie de temperatura de AEMET desde 1970 o antes, 24 se han calentado de forma estadísticamente significativa entre 1970 y 2025: 2,3 °C de media, según los valores climatológicos de AEMET calculados por calentamientoglobal.es (8 de noviembre de 2026).
 
 Cuenca encabeza la lista, con 3,3 °C más que en 1970, seguida de Barcelona (3,1 °C), Albacete (3,0 °C), Zaragoza (2,9 °C) y Málaga (2,6 °C). Completan las diez primeras Zamora (2,5 °C), Madrid, Tarragona y Valencia (2,4 °C cada una) y Soria (2,3 °C). Burgos y Sevilla quedan fuera: su serie tiene desde 1979 un salto que puede deberse a un cambio en la estación. Ciudad Real (3,6 °C desde 1971) y Castellón (2,8 °C desde 1976) no entran porque su serie empieza después de 1970.
 
-En 44 de las 45 capitales con serie publicada, el año más cálido (solo o empatado) es 2022 o posterior: 2022 lo es en 28; 2025, en 11; 2024, en 9; 2023, en 8. La excepción es Madrid, cuyo récord sigue en 2017 (16,7 °C); 2022 no cuenta en su serie por falta de algún mes válido.
+En 44 de las 45 capitales con serie publicada, el año más cálido (solo o empatado) es 2022 o posterior: 2022 lo es en 28; 2025, en 11; 2024, en 9; 2023, en 9. La excepción es Madrid, cuyo récord sigue en 2017 (16,7 °C); 2022 no cuenta en su serie por falta de algún mes válido.
 
 Con los datos diarios validados de AEMET hasta fechas entre el 13 de octubre de 2026 y el 3 de noviembre de 2026, según la estación, 20 capitales van camino de cerrar 2026 como su año más cálido: la horquilla del 90 % de la estimación queda entera al menos 0,2 °C por encima de su récord. Vitoria rondaría los 14,3 °C (entre 14,0 y 14,6) frente a 13,5 °C en 2022 y Toledo rondaría los 18,2 °C (entre 18,0 y 18,4) frente a 17,5 °C en 2023 y 2025. En conjunto, 44 de las 45 van camino de uno de sus cinco años más cálidos. Son estimaciones que el resto del año puede mover.
 
