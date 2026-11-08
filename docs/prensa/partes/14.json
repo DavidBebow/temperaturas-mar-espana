@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-08T06:44:45Z",
+ "generado": "2026-11-08T08:15:18Z",
  "fecha": "2026-11-08",
  "cod": "14",
  "provincia": "Córdoba",
@@ -35,6 +35,28 @@
  "angulos": {
   "ayer": [
    {
+    "id": "14-ayer-la-estacion-de-aemet-de-benameji-alcachofares-altos-lleva-al-menos-20-2026-11-07",
+    "angulo": "ayer",
+    "clase": "comparacion",
+    "titular": "La estación de AEMET de Benamejí-Alcachofares Altos lleva al menos 20 días seguidos sin recoger 1 mm de lluvia (hasta el 7 de noviembre)",
+    "dato": "al menos 20 días seguidos con menos de 1 mm en la estación de AEMET de Benamejí-Alcachofares Altos, hasta el 7 de noviembre incluido · el 8 de noviembre lleva 0 mm hasta las 8:00",
+    "contexto": [],
+    "fuente": "AEMET OpenData · observación convencional",
+    "metodo": "Días consecutivos, hasta el último día completo, en que la estación de AEMET recogió menos de 1 mm.",
+    "limites": [
+     "La ventana de cálculo es de 20 días: la racha real puede ser más larga."
+    ],
+    "citabilidad": "alta",
+    "fecha_dato": "2026-11-07",
+    "edad_dias": 1,
+    "provisional": false,
+    "pagina": "https://calentamientoglobal.es/lluvia-hoy-espana/",
+    "fuerza": 55.0,
+    "csv": null,
+    "grafico": null,
+    "requiere_revision": false
+   },
+   {
     "id": "14-ayer-el-modelo-cams-de-copernicus-da-aire-moderada-en-cordoba-el-8-de-nov-2026-11-07",
     "angulo": "ayer",
     "clase": "comparacion",
@@ -55,6 +77,34 @@
     "csv": null,
     "grafico": null,
     "requiere_revision": true
+   },
+   {
+    "id": "14-ayer-cordoba-esta-en-sequia-extrema-a-cierre-de-octubre-spi-a-6-meses-de-2026-10-31",
+    "angulo": "ayer",
+    "clase": "extremo",
+    "titular": "Córdoba está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,15, el 15 % de la lluvia normal del año hidrológico, con los embalses al 73.3 %",
+    "dato": "Nivel 4 (Sequía extrema); SPI-3 −1,94, SPI-6 −2,15, SPI-12 0,59.",
+    "contexto": [
+     "Lluvia desde el 1 de octubre en Córdoba: 16.2 mm.",
+     "Días sin lluvia de 1 mm en la capital: 2.",
+     "Embalses de la provincia al 73.3 % (hace un año 42.3 %; media de 10 años 30.2 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,59). La sequía meteorológica ha empezado antes de que se note en los pantanos."
+    ],
+    "fuente": "AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es",
+    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
+    "limites": [
+     "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO",
+     "Sequía meteorológica (lluvia), no hidrológica: los índices de escasez por demarcación los publica MITECO."
+    ],
+    "citabilidad": "media",
+    "fecha_dato": "2026-10-31",
+    "edad_dias": 8,
+    "provisional": false,
+    "pagina": "https://calentamientoglobal.es/sequia/cordoba/",
+    "fuerza": 39.4,
+    "csv": null,
+    "grafico": null,
+    "requiere_revision": false,
+    "id_hallazgo": "sequia-estado-cordoba-2026-10-4"
    }
   ],
   "semana": [],
@@ -219,7 +269,7 @@
     "angulo": "municipios",
     "clase": "comparacion",
     "titular": "16 de 17 municipios de Córdoba llevan menos de la mitad de la lluvia normal de otoño, según el reanálisis ERA5; Almodóvar del Río, solo el 8 %",
-    "dato": "Almodóvar del Río 10,6 mm de 129,8 normales (8 %) · media provincial 26 % · el más lluvioso: Peñarroya-Pueblonuevo (52 %)",
+    "dato": "Almodóvar del Río 10,6 mm de 130,1 normales (8 %) · media provincial 26 % · el más lluvioso: Peñarroya-Pueblonuevo (52 %)",
     "contexto": [
      "El otoño pasado hasta la misma fecha, Almodóvar del Río llevaba 84,4 mm."
     ],
@@ -337,8 +387,21 @@
    }
   ]
  },
- "cifras": [],
- "n_items": 12,
+ "cifras": [
+  {
+   "etiqueta": "Lluvia en las 24 horas hasta las 8:00 del 8 de noviembre",
+   "valor": "0 mm",
+   "nota": "en las 6 estaciones de AEMET de la provincia que sigue el observatorio",
+   "fuente": "AEMET"
+  },
+  {
+   "etiqueta": "Lluvia de los últimos siete días",
+   "valor": "0,2 mm",
+   "nota": "media de 6 estaciones de AEMET",
+   "fuente": "AEMET"
+  }
+ ],
+ "n_items": 14,
  "errores": [],
  "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · los datos de origen conservan la licencia de su organismo"
 }

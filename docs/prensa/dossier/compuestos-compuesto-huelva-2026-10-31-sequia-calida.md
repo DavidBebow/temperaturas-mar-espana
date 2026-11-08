@@ -1,6 +1,6 @@
 # Sequía cálida en Huelva: sequía extrema y 1,5 °C más que lo normal en octubre de 2026
 
-**Dato:** Huelva está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,3) y la media de octubre de 2026 es de 21,7 °C, 1,5 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Huelva está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,2) y la media de octubre de 2026 es de 21,7 °C, 1,5 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** provincial · **Territorio:** Huelva  
 **Citabilidad:** media · **Exclusivo:** sí

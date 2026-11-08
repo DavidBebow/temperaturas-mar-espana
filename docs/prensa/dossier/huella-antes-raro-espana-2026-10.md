@@ -1,14 +1,14 @@
-# Un octubre como el de 2026 es hoy al menos tres veces más probable que en 1961-1990 en 32 de las 51 capitales con dato; en Las Palmas era un mes de una vez cada 473 años
+# Un octubre como el de 2026 es hoy al menos tres veces más probable que en 1961-1990 en 8 capitales (de 51 con dato); en Valencia, al menos 9 veces
 
-**Dato:** 32 capitales (14 con estación de AEMET, 18 con reanálisis ERA5). Santa Cruz de Tenerife 24,6 °C (PR 82); Las Palmas 24,5 °C (PR 56); Valencia 21,5 °C (PR 39); Ceuta 21,5 °C (PR 13); Murcia 21,2 °C (PR 13); Jaén 18,7 °C (PR 12); Melilla 23,3 °C (PR 10); Cuenca 15,8 °C (PR 8,5); Zaragoza 17,9 °C (PR 8,5); Alicante 21,7 °C (PR 8,4); Castellón 20,1 °C (PR 8,4); Lleida 18,4 °C (PR 7,1); Albacete 16,7 °C (PR 6,6); Tarragona 20 °C (PR 5,8); Almería 21,5 °C (PR 5,7); Girona 18,3 °C (PR 5,7); Granada 18,7 °C (PR 5,1); Oviedo 15,5 °C (PR 4,6); Teruel 15,7 °C (PR 4,3); Badajoz 19,2 °C (PR 4,0); Pamplona 15,8 °C (PR 3,8); Zamora 15,5 °C (PR 3,8); Vitoria 15,1 °C (PR 3,7); Guadalajara 16,1 °C (PR 3,5); Soria 13,9 °C (PR 3,5); Toledo 17,6 °C (PR 3,3); Ciudad Real 17,8 °C (PR 3,2); Segovia 14,5 °C (PR 3,2); Burgos 13,9 °C (PR 3,1); Palma 21,6 °C (PR 3,1); Cádiz 22 °C (PR 3,0); Madrid 16,9 °C (PR 3,0)  
+**Dato:** 8 capitales con «al menos tres veces» afirmable; 32 con estimación central ≥ 3 (14 con estación de AEMET, 18 con reanálisis ERA5). Santa Cruz de Tenerife 24,6 °C (PR 82, al menos 6,0); Las Palmas 24,5 °C (PR 56, al menos 4,4); Valencia 21,5 °C (PR 39, al menos 9,9); Ceuta 21,5 °C (PR 13, al menos 2,3); Murcia 21,2 °C (PR 13, al menos 4,0); Jaén 18,7 °C (PR 12, al menos 3,0); Melilla 23,3 °C (PR 10, al menos 1,1); Cuenca 15,8 °C (PR 8,5, al menos 4,0); Zaragoza 17,9 °C (PR 8,5, al menos 4,1); Alicante 21,7 °C (PR 8,4, al menos 2,9); Castellón 20,1 °C (PR 8,4, al menos 2,5); Lleida 18,4 °C (PR 7,1, al menos 2,5); Albacete 16,7 °C (PR 6,6, al menos 3,0); Tarragona 20 °C (PR 5,8, al menos 2,9); Almería 21,5 °C (PR 5,7, al menos 2,3); Girona 18,3 °C (PR 5,7, al menos 1,8); Granada 18,7 °C (PR 5,1, al menos 1,4); Oviedo 15,5 °C (PR 4,6, al menos 1,6); Teruel 15,7 °C (PR 4,3, al menos 1,5); Badajoz 19,2 °C (PR 4,0, al menos 1,8); Pamplona 15,8 °C (PR 3,8, al menos 1,4); Zamora 15,5 °C (PR 3,8, al menos 1,4); Vitoria 15,1 °C (PR 3,7, al menos 1,4); Guadalajara 16,1 °C (PR 3,5, al menos 1,5); Soria 13,9 °C (PR 3,5, al menos 1,3); Toledo 17,6 °C (PR 3,3, al menos 1,4); Ciudad Real 17,8 °C (PR 3,2, al menos 1,3); Segovia 14,5 °C (PR 3,2, al menos 1,6); Burgos 13,9 °C (PR 3,1, al menos 1,6); Palma 21,6 °C (PR 3,1, al menos 1,1); Cádiz 22 °C (PR 3,0, al menos 1,1); Madrid 16,9 °C (PR 3,0, al menos 1,4)  
 **Fecha del dato:** 31 de octubre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Capitales: Albacete, Alicante, Almería, Badajoz, Burgos, Castellón, Ceuta, Ciudad Real, Cuenca, Cádiz, Girona, Granada, Guadalajara, Jaén, Las Palmas, Lleida, Madrid, Melilla, Murcia, Oviedo, Palma, Pamplona, Santa Cruz de Tenerife, Segovia, Soria, Tarragona, Teruel, Toledo, Valencia, Vitoria, Zamora y Zaragoza.
-- Cada una frente a su propia serie; PR mediano de las agregadas: 5,7 (la fuerza usa este valor con tope 5).
-- Las cinco con mayor cociente, con el límite inferior del intervalo del 90 % (un mes así es hoy al menos X veces más probable): Santa Cruz de Tenerife, al menos 6,0; Las Palmas, al menos 4,4; Valencia, al menos 9,9; Ceuta, al menos 2,3; Murcia, al menos 4,0.
+- Capitales en las que se puede afirmar «al menos tres veces»: Valencia, Santa Cruz de Tenerife, Las Palmas, Zaragoza, Cuenca, Murcia, Albacete y Jaén.
+- Con estimación central ≥ 3 (32): Albacete, Alicante, Almería, Badajoz, Burgos, Castellón, Ceuta, Ciudad Real, Cuenca, Cádiz, Girona, Granada, Guadalajara, Jaén, Las Palmas, Lleida, Madrid, Melilla, Murcia, Oviedo, Palma, Pamplona, Santa Cruz de Tenerife, Segovia, Soria, Tarragona, Teruel, Toledo, Valencia, Vitoria, Zamora y Zaragoza. PR mediano de las agregadas: 5,7 (la fuerza usa este valor con tope 5).
+- Las robustas, con el límite inferior del intervalo del 90 % (un mes así es hoy al menos X veces más probable): Valencia, al menos 9,9; Santa Cruz de Tenerife, al menos 6,0; Las Palmas, al menos 4,4; Zaragoza, al menos 4,1; Cuenca, al menos 4,0; Murcia, al menos 4,0; Albacete, al menos 3,0; Jaén, al menos 3,0.
 
 ## Tabla completa
 
@@ -91,6 +91,7 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Compara dos climas observados (1961-1990 y 1996-2025) de la misma serie de cada capital: no atribuye este mes a una causa concreta.
+- El titular solo cuenta las capitales cuyo límite inferior del intervalo del 90 % es ≥ 3 (8); las 24 que superan 3 solo en la estimación central se dicen aparte y con esas palabras.
 - Fuentes mezcladas: 14 con estación de AEMET, 18 con reanálisis ERA5. El reanálisis ERA5 es una celda de ~25 km, no la estación oficial, y anterior a 1979 es una retroextensión preliminar; la cifra oficial puede diferir.
 - Intervalos del 90 % amplios en la cola: Santa Cruz de Tenerife 6,0-más de 1.000 veces más probable (PR 82).
 - Se cuenta sobre las 51 de 52 capitales con dato de octubre; es un recuento de capitales, no de toda España.
