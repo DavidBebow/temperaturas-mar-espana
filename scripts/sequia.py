@@ -42,7 +42,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).parent))
 from balance_mensual import ESTACIONES, NORMAL, PROVINCIA, SIN_SERIE, Historia, f1, r1  # noqa: E402,F401
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 RAIZ = Path(__file__).resolve().parent.parent
 DOCS = RAIZ / "docs"
 SALIDA = DOCS / "sequia"
@@ -403,13 +403,22 @@ def serie_mensual(hist: Historia, cod: str, dia: Diaria, tipo_era5: bool):
                     reg = {"p": float(o[5]), "fuente": "AEMET, mensual oficial", "prov": False}
         if reg is None:
             dias = [date(y, m, d) for d in range(1, nd + 1)]
-            if all(d in serie for d in dias):
+            faltan = [d for d in dias if d not in serie]
+            if not faltan:
                 en_cola = any(d in dia.cola and d not in dia.base for d in dias)
                 if tipo_era5:
                     f = "ERA5 en la capital" + (" (último tramo provisional)" if en_cola else "")
                 else:
                     f = "AEMET, diarios validados + cola provisional" if en_cola else "AEMET, diarios validados"
                 reg = {"p": sum(serie[d] for d in dias), "fuente": f, "prov": en_cola}
+            elif not tipo_era5 and 0 < len(faltan) <= MAX_DIAS_RELLENO_ERA5:
+                # 8-11-2026: un día suelto sin validar (Segovia 8-10, Toledo 15-10) anulaba el mes y, con él, el SPI a 6 y 12
+                # meses y el semáforo durante un año. Hasta 3 días del mes pueden venir del ERA5 del archivo del repo, dichos.
+                era = leer_era5(cod)
+                if all(d in era for d in faltan):
+                    p = sum(serie[d] for d in dias if d in serie) + sum(era[d] for d in faltan)
+                    reg = {"p": p, "fuente": f"AEMET, diarios validados + {len(faltan)} día(s) de ERA5", "prov": True,
+                           "dias_era5": [d.isoformat() for d in faltan]}
         out[clave] = reg
         m += 1
         if m == 13:
@@ -439,6 +448,12 @@ def normal_mensual(mensual: dict) -> dict[int, tuple[float | None, str]]:
 
 
 # --------------------------------------------------------------------------------------------------- SPI
+EMB_CAP_MIN = 30.0                  # hm³: por debajo, los embalses de la provincia se publican como «pequeño» (no comparables)
+SPI_TOPE = 3.0
+SPI_P_MIN = 0.0013498980316301035   # Φ(−3): el SPI publicado queda entre −3 y +3
+MAX_DIAS_RELLENO_ERA5 = 5           # días de un mes cerrado que pueden venir del ERA5 del archivo si AEMET no los tiene
+
+
 def spi_escala(mensual: dict, k: int):
     """{'AAAA-MM': spi} para la escala k (meses). Gamma por máxima verosimilitud sobre 1991-2020 (o toda la serie con
     ≥ 30 años), mezcla para ceros de McKee: H = q + (1−q)·G. Un acumulado con un mes sin dato no se calcula."""
@@ -471,7 +486,9 @@ def spi_escala(mensual: dict, k: int):
         for c, x in del_mes.items():
             g = float(gamma.cdf(x, a, loc=0, scale=escala)) if x > 0 else 0.0
             h = q + (1 - q) * g
-            h = min(max(h, 1e-6), 1 - 1e-6)
+            # 8-11-2026: el SPI se acota en ±3 (práctica estándar: NCAR, AEMET «≤ −2 extremadamente seco»). Con acumulados casi
+            # nulos la gamma daba −4,75 (el tope anterior era p = 1e-6), una cifra que no distingue nada y que invita a dudar.
+            h = min(max(h, SPI_P_MIN), 1 - SPI_P_MIN)
             out[c] = float(norm.ppf(h))
     return out, alternativas
 
@@ -497,18 +514,20 @@ def clase_spi(v) -> str | None:
 
 def nivel_semaforo(s3, s6, s12) -> int:
     """Regla del semáforo (REGLA_SEMAFORO). 5 = sin SPI a 6 y 12 meses."""
-    if s6 is None or s12 is None:
+    if s6 is None and s12 is None:
         return 5
-    s6, s12 = r2(s6), r2(s12)
+    # 8-11-2026: con una sola de las dos escalas largas (la otra anulada por un hueco) el semáforo se calcula con la que hay
+    # y la ficha lo marca como parcial (nivel_parcial); antes la provincia quedaba un año entero sin semáforo.
+    disponibles = [r2(x) for x in (s6, s12) if x is not None]
     s3 = None if s3 is None else r2(s3)
-    peor = min(s6, s12)
+    peor = min(disponibles)
     if peor <= -2:
         return 4
     if peor <= -1.5:
         return 3
     if peor <= -1:
         return 2
-    vals = [x for x in (s3, s6, s12) if x is not None]
+    vals = [x for x in [s3] + disponibles if x is not None]
     return 1 if min(vals) <= -0.7 else 0
 
 
@@ -668,6 +687,41 @@ def calc_dias(dia: Diaria, ult: date) -> dict:
     prov_desde = min((x for x in dia.cola if x not in dia.base), default=None)
     res["provisional"] = bool(ultimo_llu and prov_desde and ultimo_llu >= prov_desde)
     res["ultimo_dia_es_provisional"] = bool(prov_desde and ult >= prov_desde)
+    # 8-11-2026: puesto histórico de la racha. Para cada año de la serie, la racha seca que había a esta misma fecha del
+    # calendario (días consecutivos < UMBRAL_LLUVIA hacia atrás, sin cruzar un hueco). Permite decir «la más larga para
+    # esta fecha desde {inicio}» o «la 3.ª más larga», que es lo que convierte 178 días en una noticia comprobable.
+    rachas = {}
+    anios = sorted({x.year for x in serie})
+    for y in anios:
+        if y == ult.year:
+            continue
+        try:
+            f = date(y, ult.month, ult.day)
+        except ValueError:          # 29 de febrero
+            f = date(y, ult.month, 28)
+        if f not in serie:
+            continue
+        k, d2, ok = 0, f, True
+        while True:
+            v = serie.get(d2)
+            if v is None:
+                ok = k >= 1 and (f - d2).days >= 400   # hueco muy atrás: la racha ya es ≥ 400 días, se da por cerrada
+                break
+            if v >= UMBRAL_LLUVIA:
+                break
+            k += 1
+            d2 -= timedelta(days=1)
+            if k > 4000:
+                break
+        if ok:
+            rachas[y] = k
+    if rachas and not hueco:
+        mayores = sorted(rachas.items(), key=lambda kv: -kv[1])
+        res["racha_puesto"] = 1 + sum(1 for v in rachas.values() if v > n)
+        res["racha_anios"] = len(rachas)
+        res["racha_desde"] = min(rachas)
+        res["racha_max_hist"] = {"dias": mayores[0][1], "anio": mayores[0][0]}
+        res["racha_normal"] = r1(statistics.median(rachas.values()))
     return res
 
 
@@ -686,8 +740,14 @@ def calc_embalses(slug: str, url_web: dict) -> dict | None:
     if pct is None:
         return None
     grandes = sorted((e for e in d.get("embalses") or [] if e.get("capacidad_hm3")), key=lambda e: -e["capacidad_hm3"])[:3]
+    # 8-11-2026: Valladolid tiene un solo embalse de 6 hm³ (San José) al 100 %: la cifra es cierta pero no dice nada de la
+    # provincia. Por debajo de EMB_CAP_MIN hm³ se publica con la marca «pequeño» y los textos no la usan como comparación.
+    pequeno = bool(cap is not None and cap < EMB_CAP_MIN)
     return {"pct": r1(pct), "pct_hace_1a": d.get("pct_hace_1a"), "pct_media_10a": d.get("pct_media_10a"),
-            "volumen_hm3": vol, "capacidad_hm3": cap, "boletin": d.get("boletin_fecha"),
+            "volumen_hm3": vol, "capacidad_hm3": cap, "boletin": d.get("boletin_fecha"), "pequeno": pequeno,
+            "n_embalses": len(d.get("embalses") or []),
+            "nota": (f"Capacidad total de solo {r1(cap)} hm³ ({len(d.get('embalses') or [])} embalse(s)): el porcentaje no "
+                     f"describe la provincia.") if pequeno else None,
             "grandes": [{"nombre": e["nombre"], "pct": e.get("pct"), "capacidad_hm3": e["capacidad_hm3"]} for e in grandes],
             "pagina": url_web.get(es) or d.get("url_web") or f"{WEB}/embalses-{slug}/"}
 
@@ -747,8 +807,11 @@ def frase_nivel(nv: int, s6, s12) -> str:
     if nv in FRASES:
         return FRASES[nv]
     esc, v = (6, s6) if (s6 is not None and (s12 is None or s6 <= s12)) else (12, s12)
-    return (f"El SPI a {esc} meses es {f2(v)}: {NIVELES[nv][0].lower()} en el semáforo de calentamientoglobal.es "
-            f"(la regla mira el peor de los SPI a 6 y 12 meses).")
+    parcial = (s6 is None) != (s12 is None)
+    tope = " (tope de la escala)" if abs(float(v)) >= SPI_TOPE - 1e-9 else ""
+    cola = (f" Solo hay SPI a {esc} meses: el otro acumulado tiene un mes sin dato, así que el semáforo es parcial."
+            if parcial else " (la regla mira el peor de los SPI a 6 y 12 meses).")
+    return f"El SPI a {esc} meses es {f2(v)}{tope}: {NIVELES[nv][0].lower()} en el semáforo de calentamientoglobal.es{cola}"
 
 
 def textos_provincia(r: dict) -> dict:
@@ -833,6 +896,8 @@ def calcular(hist: Historia, cod: str, slug: str, url_web_emb: dict, nieve_idx: 
         "cola": {"dias": len([x for x in dia.cola if x not in dia.base]),
                  "fuentes": sorted(set(dia.cola_fuente.values()))},
         "nivel": nv, "nivel_texto": NIVELES[nv][0], "color": NIVELES[nv][1],
+        "nivel_parcial": bool(nv != 5 and (s[6] is None or s[12] is None)),
+        "spi_tope": SPI_TOPE,
         "escala_clave": (6 if (nv >= 2 and s[6] is not None and (s[12] is None or r2(s[6]) <= r2(s[12]))) else 12),
         "huecos": [c for c in meses[-24:] if mensual[c] is None],
         "excedentaria": bool(s[12] is not None and r2(s[12]) >= 1),
