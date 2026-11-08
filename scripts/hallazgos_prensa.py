@@ -35,6 +35,7 @@ import argparse
 import csv
 import glob
 import json
+import math
 import os
 import re
 import sys
@@ -1530,6 +1531,176 @@ def sequia():
                 "contexto": ["Cada provincia se mide con el SPI de la estación de su capital contra su propia serie."],
                 "metodo": p["metodo"], "limites": [LIM_SPI] + list(p.get("limites", [])),
                 "citabilidad": "media", "miembros": [h["id"] for h in mios]})
+    _sequia_estados(idx, provs, ficha, FUENTE_S, LIM_SPI)
+
+
+SEQ_RACHA_MIN = 60          # días sin lluvia de 1 mm en una capital para que la racha sea noticia por sí sola
+SEQ_RACHA_PUESTO = 3        # ... o si está entre las 3 más largas para esta fecha en la serie
+SEQ_ESCONDIDA_EMB = 60.0    # % de embalses a partir del cual una sequía meteorológica severa es «escondida»
+SEQ_CONTRASTE_HUMEDO = 150  # % del año hidrológico para contar como «muy por encima»
+SEQ_CONTRASTE_SECO = 25     # % ... «muy por debajo»
+SEQ_CONTRASTE_N = 5         # provincias de cada lado para que el contraste sea hallazgo nacional
+
+
+def _spi_txt(v) -> str:
+    """−2,09 con coma y signo menos tipográfico; «≤ −3,00» en el tope de la escala."""
+    if v is None:
+        return "sin dato"
+    v = float(v)
+    s = f"{abs(v):.2f}".replace(".", ",")
+    s = ("−" if v < 0 else "") + s
+    return ("≤ " + s) if v <= -3.0 else s
+
+
+def _sequia_estados(idx: dict, provs: dict, ficha, FUENTE_S: str, LIM_SPI: str):
+    """8-11-2026. La fuente `sequia` de arriba solo lee prensa.json, que recoge SUCESOS del día (cambio de nivel, cruce de 30/60/90
+    días). Un ESTADO que dura (Huelva, 178 días sin lluvia; cinco provincias en sequía severa con los pantanos llenos) no aparecía
+    nunca en la cola. Aquí se leen los estados desde index.json y las fichas, con ids fijos para que el mismo estado sea el mismo
+    hallazgo un día tras otro y la sala de prensa no lo ofrezca dos veces."""
+    MET = ("SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; "
+           "racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; "
+           "embalses, boletín de MITECO.")
+    filas = idx.get("provincias", [])
+    mes_cerrado = max((p.get("ultimo_mes_cerrado") or "" for p in filas), default="")
+    fin_mes = None
+    if mes_cerrado:
+        y, m = int(mes_cerrado[:4]), int(mes_cerrado[5:7])
+        import calendar as _cal
+        fin_mes = date(y, m, _cal.monthrange(y, m)[1]).isoformat()
+    # ---- A. rachas secas en las capitales
+    for p in filas:
+        f = ficha(p["slug"])
+        d = f.get("dias") or {}
+        n = d.get("sin_lluvia") or 0
+        puesto = d.get("racha_puesto")
+        if n < SEQ_RACHA_MIN and not (puesto is not None and puesto <= SEQ_RACHA_PUESTO and n >= 30):
+            continue
+        if d.get("hueco_en_la_cuenta"):
+            continue
+        cap = f.get("capital") or p.get("capital") or p["provincia"]
+        era5 = f.get("tipo") == "reanalisis"
+        ult = d.get("ultimo_dia_lluvia")
+        ult_txt = f"{fecha_dia(ult)}" if ult else "una fecha anterior al inicio de la serie"
+        if puesto is not None:
+            mx = d.get("racha_max_hist") or {}
+            if puesto == 1:
+                tit = (f"{cap} lleva {n} días sin un día de lluvia de 1 mm: la racha más larga para esta fecha desde {d.get('racha_desde')} "
+                       f"(la anterior, {mx.get('dias')} días en {mx.get('anio')})")
+                tipo = "record_absoluto"
+            else:
+                tit = (f"{cap} lleva {n} días sin un día de lluvia de 1 mm, la {puesto}.ª racha más larga para esta fecha desde "
+                       f"{d.get('racha_desde')} (la mayor, {mx.get('dias')} días en {mx.get('anio')})")
+                tipo = "racha"
+            ctx = [f"Racha normal para esta fecha: {d.get('racha_normal')} días (mediana de {d.get('racha_anios')} años).",
+                   f"Último día con al menos 1 mm: {ult_txt} ({d.get('mm_ultimo')} mm)."]
+        else:
+            tit = f"{cap} lleva {n} días seguidos sin un día de lluvia de 1 mm (último, {ult_txt})"
+            tipo = "racha"
+            ctx = ["Puesto histórico de la racha no disponible todavía en la ficha: comparar con la serie antes de enviar."]
+        if d.get("dias_lluvia_90") is not None and d.get("normal_90") is not None:
+            ctx.append(f"Días de lluvia en los últimos 90: {d['dias_lluvia_90']} (normal {d['normal_90']}).")
+        hid = f.get("hidro") or {}
+        if hid.get("pct") is not None:
+            ctx.append(f"Año hidrológico desde el 1 de octubre: {hid.get('mm')} mm, el {hid['pct']} % de lo normal.")
+        limites = [LIM_SPI, "Racha medida en la estación de la capital (una estación, no la provincia); el umbral de 1 mm es el de «día de lluvia» de AEMET."]
+        # contraste con la rejilla ERA5-Land del mismo municipio (capa municipal): el reanálisis suele poner lluvia débil donde el
+        # pluviómetro no la mide (Huelva, octubre 2026: 12,5 mm en la celda, 0,2 en la estación). Se dice antes de que lo descubran.
+        try:
+            mj = leer(DOCS / "prensa" / "municipal" / f"{p['slug']}.json")
+            mm_cap = next((m for m in mj.get("municipios", []) if _norm(m.get("municipio", "")) == _norm(cap)), None)
+            if mm_cap and mm_cap.get("mes") and mm_cap.get("racha"):
+                limites.append(f"La rejilla ERA5-Land en el municipio de {cap} registra {str(mm_cap['mes']['mm']).replace('.', ',')} mm en "
+                               f"{mj.get('mes_cerrado', {}).get('nombre', 'el mes cerrado')} y una racha de {mm_cap['racha']['dias']} días: el reanálisis "
+                               f"reparte lluvia débil que el pluviómetro no recoge. La racha que se publica es la del pluviómetro oficial.")
+        except Exception:
+            pass
+        if d.get("ultimo_dia_es_provisional"):
+            limites.append("Los últimos días de la cuenta son provisionales (reanálisis/predicción, pendientes de validar por AEMET).")
+        if era5:
+            limites.append("Serie de reanálisis ERA5 en la celda de la capital, no de estación.")
+        anadir({"serie": "sequia", "fuente": FUENTE_S, "serie_desde": str(d.get("racha_desde") or f.get("inicio_serie") or ""),
+                "territorio": p["provincia"], "provincia": p["provincia"], "ambito": "provincial", "pagina": p.get("url"),
+                "provisional": bool(d.get("ultimo_dia_es_provisional")), "fecha_dato": d.get("hasta") or HOY.isoformat(),
+                "tipo": tipo, "indicador": "sequia_racha_estado", "id_fijo": f"sequia-racha-{p['slug']}-{ult or 'inicio'}",
+                "titular": tit, "dato": f"{n} días sin lluvia de 1 mm hasta el {fecha_dia(d.get('hasta'))} en {cap}.",
+                "contexto": ctx, "metodo": MET, "limites": limites,
+                "citabilidad": "media" if (era5 or d.get("provisional")) else "alta", "exclusivo": True})
+    # ---- B. sequía severa o extrema en curso (estado del mes cerrado) + sequía escondida tras los embalses
+    severas = [p for p in filas if p.get("nivel") in (3, 4)]
+    ids_sev = []
+    for p in severas:
+        f = ficha(p["slug"])
+        emb = f.get("embalses") or {}
+        esc = bool(emb.get("pct") is not None and not emb.get("pequeno") and float(emb["pct"]) >= SEQ_ESCONDIDA_EMB)
+        k = str(f.get("escala_clave") or 6)
+        spi_v = ((f.get("spi") or {}).get(k) or {}).get("valor", p.get(f"spi{k}"))
+        spi_v = _spi_txt(spi_v)
+        tit = (f"{p['provincia']} está en {p.get('nivel_texto', '').lower()} a cierre de {MESES[int(mes_cerrado[5:7]) - 1]}: SPI a {k} meses "
+               f"de {spi_v}, el {p.get('hidro_pct')} % de la lluvia normal del año hidrológico")
+        if esc:
+            tit += f", con los embalses al {emb['pct']} %"
+        ctx = [f"Lluvia desde el 1 de octubre en {f.get('capital') or p['provincia']}: {p.get('hidro_mm')} mm.",
+               f"Días sin lluvia de 1 mm en la capital: {p.get('dias_sin_lluvia')}."]
+        if esc:
+            ctx.append(f"Embalses de la provincia al {emb['pct']} % (hace un año {emb.get('pct_hace_1a')} %; media de 10 años "
+                       f"{emb.get('pct_media_10a')} %): el agua embalsada es del año hidrológico anterior, que fue húmedo "
+                       f"(SPI a 12 meses {_spi_txt(p.get('spi12'))}). La sequía meteorológica ha empezado antes de que se note en los pantanos.")
+        h = {"serie": "sequia", "fuente": FUENTE_S, "serie_desde": str(f.get("inicio_serie") or ""), "territorio": p["provincia"],
+             "provincia": p["provincia"], "ambito": "provincial", "pagina": p.get("url"), "provisional": False,
+             "fecha_dato": fin_mes or HOY.isoformat(), "ambito_tiempo": "mes", "cierre_mes": "cerrado",
+             "tipo": "episodio", "indicador": "sequia_estado_mes", "id_fijo": f"sequia-estado-{p['slug']}-{mes_cerrado}-{p['nivel']}",
+             "titular": tit, "dato": f"Nivel {p['nivel']} ({p.get('nivel_texto')}); SPI-3 {_spi_txt(p.get('spi3'))}, SPI-6 {_spi_txt(p.get('spi6'))}, SPI-12 {_spi_txt(p.get('spi12'))}.",
+             "contexto": ctx, "metodo": MET,
+             "limites": [LIM_SPI, "Sequía meteorológica (lluvia), no hidrológica: los índices de escasez por demarcación los publica MITECO."],
+             "citabilidad": "media", "exclusivo": True, "escondida": esc}
+        anadir(h)
+        ids_sev.append(h["id"])
+    if len(severas) >= 3 and mes_cerrado:
+        nombres = sorted(p["provincia"] for p in severas)
+        n4 = sum(1 for p in severas if p["nivel"] == 4)
+        escondidas = [p["provincia"] for p in severas if any(h.get("escondida") for h in hallazgos if h["id"] == f"sequia-estado-{p['slug']}-{mes_cerrado}-{p['nivel']}")]
+        tot = len([p for p in filas if p.get("nivel") != 5])
+        mes_txt = MESES[int(mes_cerrado[5:7]) - 1]
+        tit = f"{len(severas)} de las {tot} provincias con semáforo están en sequía severa o extrema a cierre de {mes_txt}"
+        if n4:
+            tit += f" ({n4} en extrema)"
+        ctx = [f"Provincias: {', '.join(nombres[:-1])} y {nombres[-1]}.",
+               "Cada provincia se mide con el SPI de la estación de su capital contra su propia serie (referencia 1991-2020)."]
+        limites = [LIM_SPI, "Recuento de provincias por la estación de su capital; no es una superficie ni una población."]
+        if len(escondidas) >= 3:
+            tit = (f"Sequía escondida: {len(escondidas)} provincias en sequía severa o extrema con los embalses por encima del "
+                   f"{int(SEQ_ESCONDIDA_EMB)} % ({len(severas)} en total a cierre de {mes_txt})")
+            ctx.insert(1, (f"Con embalses ≥ {int(SEQ_ESCONDIDA_EMB)} %: {', '.join(escondidas)}. El agua embalsada viene del año "
+                           f"hidrológico 2025-26, que fue húmedo (SPI a 12 meses positivo en casi toda España); la lluvia de los últimos "
+                           f"3 y 6 meses está muy por debajo de lo normal. Es el aviso temprano que los boletines hidrológicos no dan."))
+        anadir({"serie": "sequia", "fuente": FUENTE_S, "serie_desde": "", "territorio": "España", "ambito": "nacional",
+                "pagina": "https://calentamientoglobal.es/sequia/", "provisional": False, "fecha_dato": fin_mes,
+                "ambito_tiempo": "mes", "cierre_mes": "cerrado", "tipo": "episodio",
+                "indicador": "sequia_estado_nacional", "id_fijo": f"sequia-estado-espana-{mes_cerrado}",
+                "titular": tit, "dato": "; ".join(f"{p['provincia']} SPI-6 {_spi_txt(p.get('spi6'))} · {p.get('hidro_pct')} % · embalses {p.get('embalses_pct')} %" for p in sorted(severas, key=lambda x: (x.get('spi6') if x.get('spi6') is not None else 0))),
+                "contexto": ctx, "metodo": MET, "limites": limites, "citabilidad": "media", "exclusivo": True,
+                "escondidas": escondidas, "miembros": ids_sev})
+    # ---- C. contraste: muy por encima y muy por debajo del año hidrológico a la misma fecha
+    con_h = [p for p in filas if p.get("hidro_pct") is not None]
+    hum = sorted([p for p in con_h if p["hidro_pct"] >= SEQ_CONTRASTE_HUMEDO], key=lambda p: -p["hidro_pct"])
+    sec = sorted([p for p in con_h if p["hidro_pct"] <= SEQ_CONTRASTE_SECO], key=lambda p: p["hidro_pct"])
+    if len(hum) >= SEQ_CONTRASTE_N and len(sec) >= SEQ_CONTRASTE_N:
+        hasta = max((((ficha(p["slug"]).get("hidro") or {}).get("hasta") or "") for p in con_h), default=HOY.isoformat())
+        tit = (f"El otoño parte España en dos: {len(hum)} provincias llevan más del {SEQ_CONTRASTE_HUMEDO} % de su lluvia normal desde el 1 de "
+               f"octubre y {len(sec)} menos del {SEQ_CONTRASTE_SECO} % ({hum[0]['provincia']} {hum[0]['hidro_pct']} %, {sec[0]['provincia']} "
+               f"{sec[0]['hidro_pct']} %)")
+        anadir({"serie": "sequia", "fuente": FUENTE_S, "serie_desde": "", "territorio": "España", "ambito": "nacional",
+                "pagina": "https://calentamientoglobal.es/sequia/", "provisional": True, "fecha_dato": hasta or HOY.isoformat(),
+                "tipo": "anomalia_fuerte", "indicador": "sequia_contraste", "id_fijo": f"sequia-contraste-{(hasta or HOY.isoformat())[:7]}",
+                "titular": tit,
+                "dato": ("Por encima: " + "; ".join(f"{p['provincia']} {p['hidro_pct']} %" for p in hum) + ". Por debajo: " +
+                         "; ".join(f"{p['provincia']} {p['hidro_pct']} %" for p in sec) + "."),
+                "contexto": [f"Lluvia del 1 de octubre al {fecha_dia(hasta)} en la estación de cada capital frente a la normal 1991-2020 de la misma ventana.",
+                             "Mapa provincia a provincia en la portada del Monitor de sequía."],
+                "metodo": MET,
+                "limites": [LIM_SPI, "Porcentajes de la estación de la capital; a principios del año hidrológico una sola tormenta mueve mucho el porcentaje.",
+                            "Los últimos días de cada serie son provisionales (reanálisis/predicción)."],
+                "citabilidad": "media", "exclusivo": True})
 
 
 def municipal():
@@ -1549,6 +1720,7 @@ def municipal():
     FUENTE_M = "ERA5-Land (Copernicus) · cálculo de calentamientoglobal.es"
     LIM_M = ["rejilla de 0,1°, no pluviómetro; serie homogénea desde 1981; normal 1991-2020"]
     UMBRAL_MUN, UMBRAL_PCT, UMBRAL_POB_RACHA = 10, 0.20, 20000
+    UMBRAL_TODA, UMBRAL_MEDIANA = 0.90, 30.0   # «toda la provincia seca»: ≥ 90 % de los municipios bajo el 70 % y mediana ≤ 30 % de lo normal
     fd = ix["fecha_dato"]
     mc = ix["mes_cerrado"]
     f_mes = date(mc["anio"] + (mc["mes"] == 12), mc["mes"] % 12 + 1, 1) - timedelta(days=1)   # último día del mes cerrado
@@ -1557,7 +1729,7 @@ def municipal():
         f"{int(round(p / 1000.0)) * 1000:,}".replace(",", ".") + " habitantes" if p >= 500 else "menos de 1.000 habitantes")
     pagina = lambda slug: f"https://calentamientoglobal.es/sequia/{slug}/"
     pub = "https://davidbebow.github.io/temperaturas-mar-espana/prensa/municipal/"
-    ids = {"mes_seco": [], "mes_lluvioso": [], "hidro_seco": [], "racha_record": []}   # provincias que cumplen, para la agregación nacional
+    ids = {"mes_seco": [], "mes_lluvioso": [], "hidro_seco": [], "racha_record": [], "mes_toda_seca": []}   # provincias que cumplen, para la agregación nacional
 
     def comun(p, extra):
         h = {"serie": "municipal", "fuente": FUENTE_M, "serie_desde": "1981", "territorio": p["provincia"], "provincia": p["provincia"],
@@ -1602,6 +1774,19 @@ def municipal():
             if ind != "hidro_seco":
                 h.update({"ambito_tiempo": "mes", "cierre_mes": "cerrado"})
             anadir(h)
+        # 8-11-2026: provincia entera muy por debajo de lo normal en el mes cerrado (Huelva: 80 de 80 municipios bajo el 70 %,
+        # mediana del 20 %). No hay récord municipal, pero la unanimidad es la noticia; sin esta regla el lado seco no emitía nada.
+        if me.get("n_con_dato", N) >= 5 and me.get("n_bajo_70", 0) >= UMBRAL_TODA * me.get("n_con_dato", N) and me.get("mediana_pct", 100) <= UMBRAL_MEDIANA:
+            ids["mes_toda_seca"].append(p)
+            fl, pj = fichas(p["slug"])
+            med = int(round(me["mediana_pct"]))
+            anadir(comun(p, {"tipo": "episodio", "fecha_dato": f_mes, "indicador": "municipal_mes_toda_seca", "ambito_tiempo": "mes", "cierre_mes": "cerrado",
+                             "titular": (f"En {me['n_bajo_70']} de los {me.get('n_con_dato', N)} municipios de {p['provincia']} ({pobt(me['pob_bajo_70'])}), "
+                                         f"{mc['nombre']} no llegó al 70 % de su lluvia normal; la mediana provincial fue el {med} %"),
+                             "dato": tp.get("resumen", ""), "municipios_ficha": fl,
+                             "contexto": [f"Municipio con menos lluvia respecto a lo normal y puesto del mes en su serie 1981-2026, en la ficha provincial.",
+                                          f"Rejilla ERA5-Land: en la capital puede diferir del pluviómetro de AEMET (ver el Monitor de sequía)."],
+                             "recuento": {"n": me["n_bajo_70"], "pob": me["pob_bajo_70"], "n_municipios": N, "pob_total": T, "mediana_pct": me["mediana_pct"]}}))
         # racha: municipios de ≥ 20.000 habitantes con la racha seca más larga para la fecha desde 1981
         if r["racha"]["n_record_fecha"] > 0:
             fl, pj = fichas(p["slug"])
@@ -1622,7 +1807,8 @@ def municipal():
     # nacional: ≥ 3 provincias con lo mismo, con la tabla provincia a provincia; «de España» solo con ≥ 80 % de municipios con dato
     nac = ix["nacional"]["resumen"]
     ambito_txt = "España" if nac["mes"]["n_con_dato"] >= 0.8 * nac["n_municipios"] else f"los {nac['mes']['n_con_dato']:,} municipios con dato".replace(",", ".")
-    CAB = {"mes_seco": ("mes_seco", f"{mc['nombre']} ha sido el más seco desde 1981", "n", "pob", f_mes),
+    CAB = {"mes_toda_seca": ("mes_toda_seca", f"{mc['nombre']} no llegó al 70 % de la lluvia normal", "n", "pob", f_mes),
+           "mes_seco": ("mes_seco", f"{mc['nombre']} ha sido el más seco desde 1981", "n", "pob", f_mes),
            "mes_lluvioso": ("mes_lluvioso", f"{mc['nombre']} ha sido el más lluvioso desde 1981", "n", "pob", f_mes),
            "hidro_seco": ("hidro_seco", f"el año hidrológico {ix['ano_hidrologico']}, a {fecha_dia(fd)}, es el más seco desde 1981-82", "n", "pob", fd)}
     for ind, provs in ids.items():
@@ -1636,7 +1822,8 @@ def municipal():
             dato = "Municipios por provincia: " + "; ".join(f"{a} {b}" for a, b, _ in sorted(tabla, key=lambda t: -t[1])) + "."
             fecha_h = fd
         else:
-            clave_n, clave_p = ("n_mas_seco_desde_1981", "pob_mas_seco") if ind == "mes_seco" else (("n_mas_lluvioso", "pob_mas_lluvioso") if ind == "mes_lluvioso" else ("n_mas_seco", "pob"))
+            clave_n, clave_p = (("n_mas_seco_desde_1981", "pob_mas_seco") if ind == "mes_seco" else ("n_mas_lluvioso", "pob_mas_lluvioso") if ind == "mes_lluvioso"
+                                else ("n_bajo_70", "pob_bajo_70") if ind == "mes_toda_seca" else ("n_mas_seco", "pob"))
             sec = "mes" if ind.startswith("mes") else "hidro"
             tabla = sorted(((p["provincia"], p["resumen"][sec][clave_n], p["resumen"][sec][clave_p]) for p in provs), key=lambda t: -t[1])
             n_tot, pob_tot = sum(t[1] for t in tabla), sum(t[2] for t in tabla)
@@ -1796,18 +1983,31 @@ def _agregar_antes_raro_mes(lista: list[dict], ym: str):
     n_era5 = n - n_aemet
     de_dato = n_dato if n_dato >= n else n     # nunca menos capitales con dato que agregadas
     nacional_ok = tot > 0 and de_dato >= at.FRAC_NACIONAL * tot
-    # capital del ejemplo: la de estación de AEMET con el T_antes más alto sin estar acotado
-    cand = [h for h in lista if h["rareza"].get("T_antes") is not None and float(h["rareza"]["T_antes"]) < at.T_MAX
-            and str(h.get("tipo_fuente") or "") == "aemet"] or [h for h in lista if h["rareza"].get("T_antes") is not None]
-    top = max(cand, key=lambda h: float(h["rareza"]["T_antes"]))
-    Ttop = at.frase_T(top["rareza"]["T_antes"], float(top["rareza"]["T_antes"]) >= at.T_MAX)
-    denom = f"de las {tot} capitales" if de_dato >= tot else f"de las {de_dato} capitales con dato"
-    if nacional_ok:
-        titular = (f"Un {MESES[mes - 1]} como el de {anio} es hoy al menos tres veces más probable que en 1961-1990 en {n} {denom}; "
-                   f"en {top['territorio']} era un mes de {Ttop.replace('una vez cada', 'una vez cada')}")
-    else:   # menos del 80 % de capitales con dato: no se dice «de las N capitales» como si fuera el conjunto
-        titular = (f"En {n} capitales, un {MESES[mes - 1]} como el de {anio} es hoy al menos tres veces más probable que en 1961-1990; "
-                   f"en {top['territorio']} era un mes de {Ttop}")
+    # Regla del titular (8-11-2026): «al menos tres veces más probable» solo se afirma de las capitales cuyo LÍMITE INFERIOR
+    # del intervalo del 90 % es ≥ 3 («robustas»). Las que solo superan 3 en la estimación central se cuentan aparte y nunca
+    # entran en el titular. El ejemplo destacado es la robusta con mayor límite inferior, dicho con ese límite (nunca con la
+    # estimación central ni con el periodo de retorno central, que en la cola tiene intervalos de cientos de años).
+    def _pmin(h):
+        v = h["rareza"].get("pr_min")
+        return float(v) if isinstance(v, (int, float)) else 0.0
+    robustas = sorted([h for h in lista if _pmin(h) >= at.ANTES_RARO_PR], key=lambda h: -_pmin(h))
+    n_rob = len(robustas)
+    n_solo_central = n - n_rob
+    mes_txt = MESES[mes - 1]
+    if n_rob >= 3:
+        top = robustas[0]
+        veces = int(math.floor(_pmin(top)))
+        cola = f"; en {top['territorio']}, al menos {veces} veces" if veces > int(at.ANTES_RARO_PR) else ""
+        denom = f" (de las {tot} capitales)" if nacional_ok and de_dato >= tot else (f" (de {de_dato} con dato)" if nacional_ok else "")
+        titular = (f"Un {mes_txt} como el de {anio} es hoy al menos tres veces más probable que en 1961-1990 en {n_rob} capitales"
+                   f"{denom}{cola}")
+    elif n_rob > 0:
+        titular = (f"En {n_rob} capitales ({_lista_y_txt([h['territorio'] for h in robustas])}), un {mes_txt} como el de {anio} es hoy "
+                   f"al menos tres veces más probable que en 1961-1990; en otras {n_solo_central} la estimación central supera ese "
+                   f"umbral, pero el intervalo no permite afirmarlo")
+    else:
+        titular = (f"En {n} capitales, la estimación central indica que un {mes_txt} como el de {anio} es hoy al menos tres veces "
+                   f"más probable que en 1961-1990, pero en ninguna lo confirma el intervalo del 90 %")
     prs = sorted(float(h["rareza"]["PR"]) if isinstance(h["rareza"].get("PR"), (int, float)) else float(h["rareza"].get("PR_num") or 0) for h in lista)
     pr_med = prs[len(prs) // 2]
     mayor = max(lista, key=lambda h: float(h["rareza"].get("PR_num") or 0))
@@ -1818,11 +2018,16 @@ def _agregar_antes_raro_mes(lista: list[dict], ym: str):
                       "PR": r.get("PR"), "pr_min": r.get("pr_min"), "pr_max": r.get("pr_max"), "PR_num": r.get("PR_num"),
                       "fuente": "AEMET" if str(h.get("tipo_fuente") or "") == "aemet" or (not h.get("tipo_fuente") and str(h.get("fuente", "")).startswith("AEMET")) else "ERA5"})
     fuentes_txt = f"{n_aemet} con estación de AEMET, {n_era5} con reanálisis ERA5"
+    rob_aemet = sum(1 for h in robustas if str(h.get("tipo_fuente") or "") == "aemet")
+    rob_txt = (f"{n_rob} con límite inferior del intervalo ≥ 3 ({rob_aemet} AEMET, {n_rob - rob_aemet} ERA5); "
+               f"{n_solo_central} solo en la estimación central")
     ic_top = f"{at.fratio(mayor['rareza']['pr_min'], True)}-{at.fratio(mayor['rareza']['pr_max'], True)}"
-    dato = (f"{n} capitales ({fuentes_txt}). " +
-            "; ".join(f"{f['capital']} {f1(f['valor'])} °C (PR {at.fratio(f['PR'], True)})" for f in filas))
+    dato = (f"{n_rob} capitales con «al menos tres veces» afirmable; {n} con estimación central ≥ 3 ({fuentes_txt}). " +
+            "; ".join(f"{f['capital']} {f1(f['valor'])} °C (PR {at.fratio(f['PR'], True)}, al menos {at.fratio(f['pr_min'], True)})" for f in filas))
     limites = [
         "Compara dos climas observados (1961-1990 y 1996-2025) de la misma serie de cada capital: no atribuye este mes a una causa concreta.",
+        (f"El titular solo cuenta las capitales cuyo límite inferior del intervalo del 90 % es ≥ 3 ({n_rob}); las {n_solo_central} que superan 3 "
+         f"solo en la estimación central se dicen aparte y con esas palabras."),
         (f"Fuentes mezcladas: {fuentes_txt}. El reanálisis ERA5 es una celda de ~25 km, no la estación oficial, y anterior a 1979 es una "
          "retroextensión preliminar; la cifra oficial puede diferir." if n_era5 else "Todas con estación de AEMET."),
         f"Intervalos del 90 % amplios en la cola: {mayor['territorio']} {ic_top} veces más probable (PR {at.fratio(mayor['rareza']['PR'], True)}).",
@@ -1838,16 +2043,23 @@ def _agregar_antes_raro_mes(lista: list[dict], ym: str):
             "provisional": False, "tipo": "antes_raro", "fecha_dato": f_max, "indicador": "mes_media_alta_nacional",
             "ambito_tiempo": "mes", "cierre_mes": "cerrado", "id_fijo": f"huella-antes-raro-espana-{ym}",
             "titular": titular, "dato": dato,
-            "contexto": [f"Capitales: {', '.join(h['territorio'] for h in lista[:-1])} y {lista[-1]['territorio']}.",
-                         f"Cada una frente a su propia serie; PR mediano de las agregadas: {at.fratio(pr_med, True)} (la fuerza usa este valor con tope 5).",
-                         "Las cinco con mayor cociente, con el límite inferior del intervalo del 90 % (un mes así es hoy al menos X veces más probable): " +
-                         "; ".join(f"{f['capital']}, al menos {at.fratio(f['pr_min'], True)}" for f in filas[:5]) + "."],
+            "contexto": [(f"Capitales en las que se puede afirmar «al menos tres veces»: {_lista_y_txt([h['territorio'] for h in robustas])}."
+                          if robustas else "Ninguna capital con límite inferior del intervalo ≥ 3."),
+                         f"Con estimación central ≥ 3 ({n}): {', '.join(h['territorio'] for h in lista[:-1])} y {lista[-1]['territorio']}. "
+                         f"PR mediano de las agregadas: {at.fratio(pr_med, True)} (la fuerza usa este valor con tope 5).",
+                         "Las robustas, con el límite inferior del intervalo del 90 % (un mes así es hoy al menos X veces más probable): " +
+                         ("; ".join(f"{h['territorio']}, al menos {at.fratio(h['rareza']['pr_min'], True)}" for h in robustas) + "." if robustas else "ninguna.")],
             "metodo": at.METODO_CORTO, "limites": limites,
-            "citabilidad": "alta" if n_aemet >= 10 else "media", "exclusivo": True,
-            "rareza": {"significativo": True, "PR_num": pr_med, "PR": min(prs), "agregada": True, "n": n,
-                       "T_antes": top["rareza"]["T_antes"], "frase": f"{n} capitales con PR ≥ 3 ({fuentes_txt})"},
-            "n_aemet": n_aemet, "n_era5": n_era5, "n_con_dato": de_dato, "n_capitales": tot,
+            "citabilidad": "alta" if (rob_aemet >= 3 if n_rob >= 3 else n_aemet >= 10) else "media", "exclusivo": True,
+            "rareza": {"significativo": True, "PR_num": pr_med, "PR": min(prs), "agregada": True, "n": n, "n_robustas": n_rob,
+                       "T_antes": (robustas[0] if robustas else lista[0])["rareza"].get("T_antes"), "frase": rob_txt},
+            "n_aemet": n_aemet, "n_era5": n_era5, "n_robustas": n_rob, "robustas": [h["territorio"] for h in robustas],
+            "n_con_dato": de_dato, "n_capitales": tot,
             "tabla_capitales": filas, "miembros": [h["id"] for h in lista]})
+
+
+def _lista_y_txt(nombres: list[str]) -> str:
+    return ", ".join(nombres[:-1]) + " y " + nombres[-1] if len(nombres) > 1 else (nombres[0] if nombres else "")
 
 
 def regla_rareza(lista: list[dict]) -> list[str]:
