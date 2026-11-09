@@ -1,12 +1,12 @@
-# La estación de AEMET de La Covatilla Estación de Esquí (Salamanca) lleva 40,6 mm el 9 de noviembre hasta las 9:00; la de Badajoz/Talavera la Real (Badajoz), 35,6 mm
+# La estación de AEMET de La Covatilla Estación de Esquí (Salamanca) lleva 50,2 mm el 9 de noviembre hasta las 12:00; la de San Fernando Roa (Cádiz), 40,4 mm
 
-**Dato:** 40,6 mm de 0:00 a 9:00 (hora local) del 9 de noviembre, la cifra más alta de las 236 estaciones de AEMET que sigue el mapa con todas esas horas  
+**Dato:** 50,2 mm de 0:00 a 12:00 (hora local) del 9 de noviembre, la cifra más alta de las 232 estaciones de AEMET que sigue el mapa con todas esas horas  
 **Fecha del dato:** 9 de noviembre de 2026  
 **Ámbito:** nacional · **Territorio:** España  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Las que más: La Covatilla Estación de Esquí (Salamanca): 40,6 mm · Badajoz/Talavera la Real (Badajoz): 35,6 mm · Guijo de Granadilla (Cáceres): 34 mm · Tornavacas (Cáceres): 29,2 mm · Badajoz Universidad (Badajoz): 24,2 mm.
+- Las que más: La Covatilla Estación de Esquí (Salamanca): 50,2 mm · San Fernando Roa (Cádiz): 40,4 mm · Tornavacas (Cáceres): 38,8 mm · Badajoz/Talavera la Real (Badajoz): 35,6 mm · Alajar Cabezo Molinos (Huelva): 34,8 mm.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData · observación convencional
@@ -14,8 +14,8 @@
 - **Método:** Suma de la precipitación horaria que publica AEMET OpenData en cada estación, desde las 0:00 hasta la última hora cerrada en toda la red. Solo estaciones con todas esas horas.
 
 ## Límites (decirlos antes de que los descubran)
-- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 9:00»).
-- La comparación es entre las 236 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (998 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
+- Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 12:00»).
+- La comparación es entre las 232 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (998 municipios); AEMET tiene más estaciones y en alguna pudo llover más.
 - Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo.
 
 ## Enlaces
