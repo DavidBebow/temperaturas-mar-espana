@@ -7,7 +7,7 @@
 
 ## Contexto
 - Lluvia desde el 1 de octubre en Cádiz: 2.7 mm.
-- Días sin lluvia de 1 mm en la capital: 3.
+- Días sin lluvia de 1 mm en la capital: 4.
 - Embalses de la provincia al 73.3 % (hace un año 43.1 %; media de 10 años 37.3 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 1,17). La sequía meteorológica ha empezado antes de que se note en los pantanos.
 
 ## Fuente y método

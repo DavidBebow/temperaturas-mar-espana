@@ -6,8 +6,8 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Ourense: 12.1 mm.
-- Días sin lluvia de 1 mm en la capital: 11.
+- Lluvia desde el 1 de octubre en Ourense: 13.3 mm.
+- Días sin lluvia de 1 mm en la capital: 1.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es

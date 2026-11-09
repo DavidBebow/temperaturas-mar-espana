@@ -7,7 +7,7 @@
 
 ## Contexto
 - Lluvia desde el 1 de octubre en Córdoba: 16.2 mm.
-- Días sin lluvia de 1 mm en la capital: 2.
+- Días sin lluvia de 1 mm en la capital: 3.
 - Embalses de la provincia al 73.3 % (hace un año 42.3 %; media de 10 años 30.2 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,59). La sequía meteorológica ha empezado antes de que se note en los pantanos.
 
 ## Fuente y método
