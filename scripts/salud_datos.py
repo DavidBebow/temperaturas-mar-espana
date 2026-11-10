@@ -411,7 +411,22 @@ def c_provincias(d: dict) -> list:
     return out
 
 
+def c_coherencia(d: dict) -> list:
+    """Resultado del paso de coherencia (scripts/coherencia.py): cada fallo es un aviso con su ruta y valores."""
+    out = []
+    for f in (d.get("fallos") or [])[:12]:
+        vals = " | ".join(f"{v.get('ruta')}: {v.get('valor')}" for v in (f.get("valores") or [])[:3])
+        out.append(("aviso", f"{f.get('comprobacion')}: {f.get('detalle')} · {f.get('clave')} · {vals}"[:300]))
+    if d.get("n_fallos", 0) > 12:
+        out.append(("aviso", f"y {d['n_fallos'] - 12} fallos más en docs/estado/coherencia.json"))
+    ev = sum(c.get("evaluadas", 0) for c in d.get("comprobaciones", []))
+    out.append(("info", f"{len(d.get('comprobaciones', []))} comprobaciones, {ev} elementos evaluados, {d.get('n_fallos', 0)} fallos; "
+                        f"{len(d.get('bloqueados', []))} hallazgos fuera de enviables"))
+    return out
+
+
 CONTRASTES = {
+    "coherencia": c_coherencia,
     "calor_mortalidad": c_calor_mortalidad,
     "temperaturas_mar": c_temperaturas_mar,
     "noches_tropicales": c_noches_tropicales,
@@ -633,6 +648,15 @@ def main() -> int:
     anterior = leer_json(ESTADO, {}) or {}
     ant_por_id = {h["id"]: h for h in anterior.get("herramientas", [])}
 
+    # Paso «coherencia» (10-11-2026): misma clave → mismo valor, titular = dato, «hoy» fresco, listas por nivel.
+    # Escribe docs/estado/coherencia.json; nunca tumba la pasada y cabe en menos de un minuto.
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import coherencia
+        coherencia.ejecutar()
+    except Exception as e:
+        log(f"coherencia: no se pudo ejecutar ({str(e)[:120]})")
+
     resultados = []
     for h in man["herramientas"]:
         log(f"· {h['id']}")
@@ -660,7 +684,7 @@ def main() -> int:
         inc = {
             "fecha": iso(AHORA), "id": r["id"], "nombre": r["nombre"],
             "de": antes, "a": ahora, "motivo": r.get("motivo"),
-            "run_url": (r.get("run") or {}).get("ultimo", {}).get("url") if r.get("run") else None,
+            "run_url": ((r.get("run") or {}).get("ultimo") or {}).get("url"),
         }
         nuevas.append(inc)
     incidencias = (nuevas + incidencias)[:300]
