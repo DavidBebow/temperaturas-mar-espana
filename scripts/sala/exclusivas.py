@@ -243,7 +243,7 @@ def _hechos_otono(R, tipo, c, idp):
                                            + ("llovió mucho más que este año a estas alturas." if tipo == "otono_seco"
                                               else "llovió mucho menos que este año a estas alturas."), FUENTE_D, [str(a) for a, _v in x["huecos"]]))
     # 26-10-2026: el récord seco se mide contra los otoños anteriores hasta la víspera (más exigente); el húmedo, hasta el mismo día
-    tramo_t = ("hasta la víspera: lo de este año, que llega hasta hoy, queda aun así por debajo" if tipo == "otono_seco"
+    tramo_t = ("hasta la víspera: lo de este año, que llega hasta el corte de la nota, queda aun así por debajo" if tipo == "otono_seco"
                else "hasta el mismo día, completo")
     hh.append(R.hecho(f"{idp}_met", "La comparación es con todos los otoños de la estación con datos completos en los valores diarios validados de AEMET, "
                                     f"{tramo_t}; lo de este año suma la observación horaria de los últimos días, que AEMET valida en unos días.",
