@@ -1,6 +1,6 @@
 # Palencia ya supera hoy, 10 de noviembre, la temperatura más alta de toda la serie de su estación de AEMET: 41,8 °C entre las 14:00 y las 15:00 frente a los 23 °C de 2015
 
-**Dato:** Medido por AEMET en su estación de Palencia, a 736 m, máxima de 41,8 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: 39,8 °C (16 de julio de 2022) · récord anterior de noviembre en la estación: 23 °C (8 de noviembre de 2015) · día en curso, con observaciones hasta las 17:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Palencia, a 736 m, máxima de 41,8 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: 39,8 °C (16 de julio de 2022) · récord anterior de noviembre en la estación: 23 °C (8 de noviembre de 2015) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 10 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Palencia  
 **Citabilidad:** media · **Exclusivo:** sí
