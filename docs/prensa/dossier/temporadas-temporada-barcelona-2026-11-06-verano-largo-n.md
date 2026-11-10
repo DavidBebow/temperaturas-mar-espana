@@ -1,7 +1,7 @@
 # Barcelona: 2026 bate el máximo de su serie en días de 30 °C o más: 74, frente a 71 del máximo anterior
 
-**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 74, frente a 71 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).  
-**Fecha del dato:** 31 de octubre de 2026  
+**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 74, frente a 71 del máximo anterior, con datos validados de AEMET hasta el 6 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
+**Fecha del dato:** 6 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Barcelona  
 **Citabilidad:** alta · **Exclusivo:** sí
 

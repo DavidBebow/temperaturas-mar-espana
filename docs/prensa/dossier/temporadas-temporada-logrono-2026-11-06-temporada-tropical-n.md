@@ -1,17 +1,17 @@
-# Logroño: 2026 bate el máximo de su serie en días de 30 °C o más: 105, frente a 89 del máximo anterior
+# Logroño: 2026 bate el máximo de su serie en noches tropicales: 18, frente a 12 del máximo anterior
 
-**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 105, frente a 89 del máximo anterior, con datos validados de AEMET hasta el 30 de octubre de 2026 (serie desde 1961; temporada cerrada).  
-**Fecha del dato:** 30 de octubre de 2026  
+**Dato:** 2026 bate el máximo de su serie en noches tropicales: 18, frente a 12 del máximo anterior, con datos validados de AEMET hasta el 6 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
+**Fecha del dato:** 6 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Logroño  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Serie de la estación de AEMET de Logroño Aeropuerto, con 65 años válidos.
+- Serie de la estación de AEMET de Logroño Aeropuerto, con 54 años válidos.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es
 - **Serie desde:** 1961
-- **Método:** Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.
+- **Método:** Se mira cada año por separado entre el 1/4 y el 30/11 con la mínima diaria validada (umbral 20 °C); solo cuentan años con al menos 90 % de días con dato.
 
 ## Límites (decirlos antes de que los descubran)
 - Datos validados de AEMET con 10-20 días de retraso

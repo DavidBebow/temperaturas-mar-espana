@@ -1,12 +1,12 @@
-# Santa Cruz de Tenerife: 2026 bate el máximo de su serie en días de 30 °C o más: 58, frente a 47 del máximo anterior
+# Tarragona: 2026 bate el máximo de su serie en días de 30 °C o más: 128, frente a 121 del máximo anterior
 
-**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 58, frente a 47 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).  
-**Fecha del dato:** 31 de octubre de 2026  
-**Ámbito:** provincial · **Territorio:** Santa Cruz de Tenerife  
+**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 128, frente a 121 del máximo anterior, con datos validados de AEMET hasta el 6 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
+**Fecha del dato:** 6 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Tarragona  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Serie de la estación de AEMET de Santa Cruz de Tenerife, con 65 años válidos.
+- Serie de la estación de AEMET de Observatorio del Ebro (Tortosa), con 65 años válidos.
 
 ## Fuente y método
 - **Fuente:** AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es
@@ -18,7 +18,7 @@
 - Una estación mide un punto, no toda la provincia
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/el-tiempo/santa-cruz-de-tenerife/
+- Página: https://calentamientoglobal.es/el-tiempo/tarragona/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
