@@ -529,7 +529,7 @@ def _capital(a: dict):
         dia = date.fromisoformat(ultimo).day
         anadir({**base, "tipo": "anomalia_fuerte", "fecha_dato": ultimo, "indicador": "lluvia_mes",
                 "titular": f"{cap} ya ha recogido en {dia} días de {MESES[m['m'] - 1]} el {int(round(100 * m['mm'] / m['normal_mes']))} % de la lluvia de todo un {MESES[m['m'] - 1]} normal",
-                "dato": f"{f1(m['mm'])} mm hasta el día {dia} · normal hasta hoy {f1(m['normal'])} mm · normal del mes completo {f1(m['normal_mes'])} mm",
+                "dato": f"{f1(m['mm'])} mm hasta el día {dia} · normal hasta el día {dia} {f1(m['normal'])} mm · normal del mes completo {f1(m['normal_mes'])} mm",
                 "contexto": [f"{m['pct']} % de lo normal para estas fechas del mes."]})
     for clave, nombre_periodo in (("anio", "año"), ("otonio", "otoño")):
         p = L.get(clave)
@@ -2421,6 +2421,15 @@ def main():
     locales = [h for h in unicos if h["id"] in miembros]
     unicos = [h for h in unicos if h["id"] not in miembros]
     topados = regla_rareza(unicos)
+    # 10-11-2026 · regla de coherencia (scripts/coherencia.py): titular/dato frente a rareza.* y «hoy» con dato
+    # anterior a ayer. Un hallazgo que falla sale de «enviables» (requiere_revision) con el motivo.
+    try:
+        import coherencia
+        marcados = coherencia.marcar_hallazgos(unicos + locales)
+        if marcados:
+            print(f"  coherencia: {len(marcados)} hallazgos fuera de enviables · " + "; ".join(f"{x['id']} ({x['motivo_revision']})" for x in marcados[:5]))
+    except Exception as e:  # el verificador nunca tumba la pasada
+        errores.append(f"coherencia: {e}")
     unicos.sort(key=lambda h: -h["fuerza"])
     if topados:
         print(f"  regla de rareza: recortados {len(topados)} hallazgos sin rareza")
