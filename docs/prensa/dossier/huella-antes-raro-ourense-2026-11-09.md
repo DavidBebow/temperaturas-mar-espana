@@ -18,6 +18,7 @@
 - Todavía no es récord ni percentil extremo de la serie: la noticia es lo que ha cambiado, no el valor.
 - Reanálisis ERA5 en una celda de ~25 km, no la estación oficial: la cifra oficial puede diferir; ERA5 anterior a 1979 es una retroextensión preliminar.
 - Cola extrema: estimación del extremo anual del mes con una GEV sobre 30 máximos anuales; el intervalo es amplio.
+- COMPROBAR: coherencia: dice «hoy» con un dato anterior a ayer
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-ourense/

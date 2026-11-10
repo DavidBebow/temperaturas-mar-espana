@@ -1,6 +1,6 @@
 # Jerez de la Frontera Aeropuerto (Cádiz) ya ha bajado hoy, 10 de noviembre, a -12,2 °C entre las 14:00 y las 15:00, la temperatura más baja de toda la serie de su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Jerez de la Frontera Aeropuerto, a 27 m, mínima de -12,2 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: -5,4 °C (22 de diciembre de 1979) · récord anterior de noviembre en la estación: -1 °C (21 de noviembre de 1952) · día en curso, con observaciones hasta las 21:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Jerez de la Frontera Aeropuerto, a 27 m, mínima de -12,2 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: -5,4 °C (22 de diciembre de 1979) · récord anterior de noviembre en la estación: -1 °C (21 de noviembre de 1952) · día en curso, con observaciones hasta las 00:00 (hora local)  
 **Fecha del dato:** 10 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Jerez de la Frontera Aeropuerto (Cádiz)  
 **Citabilidad:** alta · **Exclusivo:** sí
