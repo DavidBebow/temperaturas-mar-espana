@@ -1,0 +1,61 @@
+{
+ "generado": "2026-11-10T15:28:41+00:00",
+ "duracion_s": 1.97,
+ "comprobaciones": [
+  {
+   "id": "clave",
+   "descripcion": "Misma clave (indicador+territorio+periodo+corte), mismo valor en todos los JSON",
+   "evaluadas": 204,
+   "fallos": 0
+  },
+  {
+   "id": "titular",
+   "descripcion": "El número del titular y del dato es el del campo estructurado",
+   "evaluadas": 55,
+   "fallos": 0
+  },
+  {
+   "id": "hoy",
+   "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
+   "evaluadas": 170,
+   "fallos": 1
+  },
+  {
+   "id": "niveles",
+   "descripcion": "Las listas por nivel solo contienen elementos de su nivel",
+   "evaluadas": 1,
+   "fallos": 1
+  }
+ ],
+ "n_fallos": 2,
+ "fallos": [
+  {
+   "comprobacion": "hoy",
+   "clave": "capitales-anomalia-fuerte-tarragona-2026-11-03|dato",
+   "valores": [
+    {
+     "ruta": "prensa/hallazgos.json#en_revision(capitales-anomalia-fuerte-tarragona-2026-11-03)",
+     "valor": "fecha_dato 2026-11-03"
+    }
+   ],
+   "detalle": "dice «hoy» con un dato anterior a ayer"
+  },
+  {
+   "comprobacion": "niveles",
+   "clave": "Avisos rojos de AEMET",
+   "valores": [
+    {
+     "ruta": "https://calentamientoglobal.es/el-tiempo/",
+     "valor": "Santa Cruz de Tenerife: naranja"
+    }
+   ],
+   "detalle": "«Avisos rojos de AEMET» contiene elementos de otro nivel"
+  }
+ ],
+ "bloqueados": [
+  {
+   "id": "capitales-anomalia-fuerte-tarragona-2026-11-03",
+   "motivo": "dice «hoy» con un dato anterior a ayer"
+  }
+ ]
+}
