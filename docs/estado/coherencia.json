@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-10T17:21:06+00:00",
+ "generado": "2026-11-10T23:47:39+00:00",
  "duracion_s": 2.32,
  "comprobaciones": [
   {
@@ -11,35 +11,40 @@
   {
    "id": "titular",
    "descripcion": "El número del titular y del dato es el del campo estructurado",
-   "evaluadas": 55,
+   "evaluadas": 54,
    "fallos": 0
   },
   {
    "id": "hoy",
    "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
-   "evaluadas": 170,
-   "fallos": 0
+   "evaluadas": 167,
+   "fallos": 1
   },
   {
    "id": "niveles",
    "descripcion": "Las listas por nivel solo contienen elementos de su nivel",
    "evaluadas": 1,
-   "fallos": 1
+   "fallos": 0
   }
  ],
  "n_fallos": 1,
  "fallos": [
   {
-   "comprobacion": "niveles",
-   "clave": "Avisos rojos de AEMET",
+   "comprobacion": "hoy",
+   "clave": "huella-antes-raro-espana-2026-11-09|titular",
    "valores": [
     {
-     "ruta": "https://calentamientoglobal.es/el-tiempo/",
-     "valor": "Santa Cruz de Tenerife: naranja"
+     "ruta": "prensa/hallazgos.json#enviables(huella-antes-raro-espana-2026-11-09)",
+     "valor": "fecha_dato 2026-11-09"
     }
    ],
-   "detalle": "«Avisos rojos de AEMET» contiene elementos de otro nivel"
+   "detalle": "dice «hoy» con un dato anterior a ayer"
   }
  ],
- "bloqueados": []
+ "bloqueados": [
+  {
+   "id": "huella-antes-raro-espana-2026-11-09",
+   "motivo": "dice «hoy» con un dato anterior a ayer"
+  }
+ ]
 }
