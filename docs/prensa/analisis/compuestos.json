@@ -32,7 +32,7 @@
      "pr_max": 130,
      "significativo": true,
      "spi12": 0.08,
-     "hidro_pct": 47,
+     "hidro_pct": 52,
      "fuente_t": "era5",
      "citabilidad": "media"
     },
@@ -54,7 +54,7 @@
      "pr_max": 164,
      "significativo": true,
      "spi12": 1.39,
-     "hidro_pct": 42,
+     "hidro_pct": 99,
      "fuente_t": "era5",
      "citabilidad": "media"
     },
@@ -76,25 +76,25 @@
      "pr_max": 5.3,
      "significativo": false,
      "spi12": 0.22,
-     "hidro_pct": 2,
+     "hidro_pct": 50,
      "fuente_t": "era5",
      "citabilidad": "media"
     }
    ]
   },
   "mar_y_dana": {
-   "cumple": false,
-   "mar_anomalia": 1.89,
-   "mar_ultimo": "2026-11-08",
-   "mar_sst": 21.46,
+   "cumple": true,
+   "mar_anomalia": 2.11,
+   "mar_ultimo": "2026-11-09",
+   "mar_sst": 21.558,
    "mar_puesto": 2,
    "mar_de": 46,
    "dana_en_curso": false,
-   "dana_prevista": false,
+   "dana_prevista": true,
    "dana": {
-    "ultimo_dato": "2026-11-08",
-    "run": "2026-11-09T00:00Z",
-    "sistemas": 0
+    "ultimo_dato": "2026-11-09",
+    "run": "2026-11-10T00:00Z",
+    "sistemas": 1
    },
    "umbrales": {
     "anomalia_min_c": 1.5,
@@ -229,6 +229,30 @@
     "ceuta",
     "huelva"
    ]
+  },
+  {
+   "serie": "compuestos",
+   "tipo": "compuesto",
+   "indicador": "mar_y_dana",
+   "territorio": "España",
+   "ambito": "nacional",
+   "fecha_dato": "2026-11-09",
+   "provisional": false,
+   "titular": "El Mediterráneo está 2,1 °C por encima de lo normal y el modelo europeo prevé una DANA en los próximos 5 días: una DANA sobre un mar así tiene más vapor disponible",
+   "dato": "El 9 de noviembre de 2026 la temperatura del Mediterráneo occidental era de 21,6 °C, 2,1 °C por encima de la media de la fecha (puesto 2 de 46 desde 1981), y el modelo europeo prevé una DANA en los próximos 5 días.",
+   "contexto": [
+    "Más vapor disponible no significa más lluvia: depende de dónde se sitúe la DANA."
+   ],
+   "metodo": "Mediterráneo occidental español (NOAA OISST) con la temperatura del mar al menos 1,5 °C por encima de lo normal, o en récord para la fecha, y una DANA en curso en el catálogo del observatorio o prevista en los próximos 5 días en la previsión de ECMWF a 500 hPa.",
+   "limites": [
+    "No predice lluvias ni su cantidad",
+    "La previsión de DANA es del modelo de ECMWF, no un aviso oficial de AEMET"
+   ],
+   "citabilidad": "media",
+   "exclusivo": true,
+   "fuente": "NOAA OISST v2.1 y ECMWF IFS (datos abiertos), cálculo propio de calentamientoglobal.es",
+   "serie_desde": "1981",
+   "pagina": "https://calentamientoglobal.es/dana/"
   },
   {
    "serie": "temporadas",
@@ -1043,5 +1067,5 @@
    "pagina": "https://calentamientoglobal.es/el-tiempo/zaragoza/"
   }
  ],
- "generado": "2026-11-10T15:29:37Z"
+ "generado": "2026-11-10T17:20:25Z"
 }

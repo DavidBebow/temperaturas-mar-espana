@@ -1,6 +1,6 @@
 # San Javier Aeropuerto (Murcia) ya supera hoy, 10 de noviembre, la temperatura más alta de toda la serie de su estación de AEMET: 42,5 °C entre las 12:00 y las 13:00 frente a los 29,5 °C de 2019
 
-**Dato:** Medido por AEMET en su estación de San Javier Aeropuerto, a 4 m, máxima de 42,5 °C el 10 de noviembre (entre las 12:00 y las 13:00, hora local) · récord absoluto anterior de la estación: 41,9 °C (13 de agosto de 2022) · récord anterior de noviembre en la estación: 29,5 °C (1 de noviembre de 2019) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de San Javier Aeropuerto, a 4 m, máxima de 42,5 °C el 10 de noviembre (entre las 12:00 y las 13:00, hora local) · récord absoluto anterior de la estación: 41,9 °C (13 de agosto de 2022) · récord anterior de noviembre en la estación: 29,5 °C (1 de noviembre de 2019) · día en curso, con observaciones hasta las 17:00 (hora local)  
 **Fecha del dato:** 10 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** San Javier Aeropuerto (Murcia)  
 **Citabilidad:** media · **Exclusivo:** sí

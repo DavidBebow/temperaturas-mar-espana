@@ -1,4 +1,4 @@
-# Salamanca está en sequía severa a cierre de octubre: SPI a 6 meses de −1,98, el 37 % de la lluvia normal del año hidrológico
+# Salamanca está en sequía severa a cierre de octubre: SPI a 6 meses de −1,98, el 48 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 3 (Sequía severa); SPI-3 −1,64, SPI-6 −1,98, SPI-12 0,66.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,8 +6,8 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Salamanca: 23.6 mm.
-- Días sin lluvia de 1 mm en la capital: 2.
+- Lluvia desde el 1 de octubre en Salamanca: 31.8 mm.
+- Días sin lluvia de 1 mm en la capital: 0.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es

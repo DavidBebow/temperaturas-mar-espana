@@ -1,4 +1,4 @@
-# Gipuzkoa está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,12, el 31 % de la lluvia normal del año hidrológico
+# Gipuzkoa está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,12, el 30 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 4 (Sequía extrema); SPI-3 −2,17, SPI-6 −2,12, SPI-12 −0,70.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,8 +6,8 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en San Sebastián: 68.1 mm.
-- Días sin lluvia de 1 mm en la capital: 4.
+- Lluvia desde el 1 de octubre en San Sebastián: 68.5 mm.
+- Días sin lluvia de 1 mm en la capital: 5.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es

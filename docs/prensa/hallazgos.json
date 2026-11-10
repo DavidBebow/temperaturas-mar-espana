@@ -1,9 +1,9 @@
 {
- "generado": "2026-11-10T15:29:37Z",
- "total": 92,
+ "generado": "2026-11-10T17:20:26Z",
+ "total": 88,
  "por_citabilidad": {
-  "alta": 10,
-  "media": 80,
+  "alta": 7,
+  "media": 79,
   "contexto": 2
  },
  "enviables": [
@@ -659,40 +659,38 @@
    "dossier": "prensa/dossier/huella-antes-raro-espana-2026-10.md"
   },
   {
-   "serie": "sequia",
-   "fuente": "AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es",
-   "serie_desde": "1945",
-   "territorio": "Burgos",
-   "provincia": "Burgos",
-   "ambito": "provincial",
-   "pagina": "https://calentamientoglobal.es/sequia/burgos/",
-   "provisional": true,
-   "fecha_dato": "2026-11-08",
-   "tipo": "record_absoluto",
-   "indicador": "sequia_racha_estado",
-   "titular": "Burgos lleva 32 días sin un día de lluvia de 1 mm: la racha más larga para esta fecha desde 1945 (la anterior, 16 días en 1949)",
-   "dato": "32 días sin lluvia de 1 mm hasta el 8 de noviembre en Burgos.",
-   "contexto": [
-    "Racha normal para esta fecha: 2.0 días (mediana de 81 años).",
-    "Último día con al menos 1 mm: 7 de octubre (4.0 mm).",
-    "Días de lluvia en los últimos 90: 10 (normal 18.7).",
-    "Año hidrológico desde el 1 de octubre: 45.2 mm, el 54 % de lo normal."
-   ],
-   "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
+   "serie": "mediterraneo",
+   "fuente": "NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E",
+   "serie_desde": "1981",
+   "territorio": "Mediterráneo occidental",
+   "ambito": "nacional",
+   "pagina": "https://calentamientoglobal.es/dana/",
+   "metodo": "Temperatura superficial del mar NOAA OISST v2.1 (0,25°), media diaria de la caja 36,5-41,5° N / 1,5° O-5° E (de Alborán oriental al mar Balear). Normal 1991-2020 por día del año; puesto para la fecha sobre todos los años desde 1981.",
    "limites": [
-    "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO",
-    "Racha medida en la estación de la capital (una estación, no la provincia); el umbral de 1 mm es el de «día de lluvia» de AEMET.",
-    "La rejilla ERA5-Land en el municipio de Burgos registra 38,6 mm en octubre de 2026 y una racha de 13 días: el reanálisis reparte lluvia débil que el pluviómetro no recoge. La racha que se publica es la del pluviómetro oficial.",
-    "Los últimos días de la cuenta son provisionales (reanálisis/predicción, pendientes de validar por AEMET)."
+    "Los últimos ~14 días de OISST son la versión preliminar (NRT) y la final puede corregirlos: en esos días un récord o un puesto por menos de 0,1 °C no se da por cierto.",
+    "Media de una caja de mar abierto, no la temperatura de una playa concreta."
    ],
    "citabilidad": "alta",
+   "tipo": "puesto_extremo",
+   "fecha_dato": "2026-11-09",
+   "indicador": "sst_puesto_fecha",
+   "titular": "El Mediterráneo español tuvo uno de sus dos 9 de noviembre más cálidos desde 1981: 21,6 °C, 2,1 °C por encima de lo normal",
+   "dato": "21,56 °C · dato preliminar de NOAA: queda a 0,06 °C del de 2022 (21,61 °C), menos de lo que puede corregirse, así que no se puede decir cuál es más alto · normal 1991-2020 19,45 °C (+2,11)",
+   "contexto": [
+    "82 días de 2026 han sido récord para su fecha en la serie desde 1981.",
+    "Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.",
+    "21,6 °C es lo normal en esta zona para un 20 de octubre (media 1991-2020)."
+   ],
+   "puesto": null,
+   "de": 46,
    "exclusivo": true,
-   "edad_dias": 2,
-   "fuerza": 74.4,
+   "edad_dias": 1,
+   "fuerza": 75.0,
    "requiere_revision": false,
-   "provincia_slug": "burgos",
-   "id": "sequia-racha-burgos-2026-10-07",
-   "dossier": "prensa/dossier/sequia-racha-burgos-2026-10-07.md"
+   "id": "mediterraneo-puesto-extremo-mediterraneo-occidental-2026-11-09",
+   "csv": "prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-11-09.csv",
+   "grafico": "prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-11-09.png",
+   "dossier": "prensa/dossier/mediterraneo-puesto-extremo-mediterraneo-occidental-2026-11-09.md"
   },
   {
    "serie": "sequia",
@@ -708,7 +706,7 @@
    "tipo": "episodio",
    "indicador": "sequia_estado_nacional",
    "titular": "Sequía escondida: 5 provincias en sequía severa o extrema con los embalses por encima del 60 % (17 en total a cierre de octubre)",
-   "dato": "Huelva SPI-6 ≤ −3,00 · 2 % · embalses 71.6 %; Sevilla SPI-6 −2,43 · 12 % · embalses 65.2 %; Cádiz SPI-6 −2,23 · 3 % · embalses 73.3 %; Córdoba SPI-6 −2,15 · 15 % · embalses 73.3 %; Toledo SPI-6 −2,15 · 42 % · embalses 44.3 %; Albacete SPI-6 −2,12 · 38 % · embalses 56.3 %; Gipuzkoa SPI-6 −2,12 · 31 % · embalses 69.0 %; Ceuta SPI-6 −2,08 · 42 % · embalses None %; Cáceres SPI-6 −2,03 · 11 % · embalses 49.9 %; Ourense SPI-6 −1,99 · 9 % · embalses 52.5 %; Salamanca SPI-6 −1,98 · 37 % · embalses 50.5 %; Ávila SPI-6 −1,93 · 76 % · embalses 40.8 %; Segovia SPI-6 −1,86 · 67 % · embalses 46.3 %; Badajoz SPI-6 −1,83 · 20 % · embalses 73.2 %; A Coruña SPI-6 −1,75 · 36 % · embalses 50.7 %; Melilla SPI-6 −1,72 · 47 % · embalses None %; Pontevedra SPI-6 −1,64 · 17 % · embalses 43.8 %",
+   "dato": "Huelva SPI-6 ≤ −3,00 · 50 % · embalses 71.6 %; Sevilla SPI-6 −2,43 · 35 % · embalses 65.2 %; Cádiz SPI-6 −2,23 · 31 % · embalses 73.3 %; Córdoba SPI-6 −2,15 · 37 % · embalses 73.3 %; Toledo SPI-6 −2,15 · 58 % · embalses 44.3 %; Albacete SPI-6 −2,12 · 41 % · embalses 56.3 %; Gipuzkoa SPI-6 −2,12 · 30 % · embalses 69.0 %; Ceuta SPI-6 −2,08 · 99 % · embalses None %; Cáceres SPI-6 −2,03 · 39 % · embalses 49.9 %; Ourense SPI-6 −1,99 · 18 % · embalses 52.5 %; Salamanca SPI-6 −1,98 · 48 % · embalses 50.5 %; Ávila SPI-6 −1,93 · 91 % · embalses 40.8 %; Segovia SPI-6 −1,86 · 74 % · embalses 46.3 %; Badajoz SPI-6 −1,83 · 38 % · embalses 73.2 %; A Coruña SPI-6 −1,75 · 40 % · embalses 50.7 %; Melilla SPI-6 −1,72 · 52 % · embalses None %; Pontevedra SPI-6 −1,64 · 23 % · embalses 43.8 %",
    "contexto": [
     "Provincias: A Coruña, Albacete, Badajoz, Ceuta, Cáceres, Cádiz, Córdoba, Gipuzkoa, Huelva, Melilla, Ourense, Pontevedra, Salamanca, Segovia, Sevilla, Toledo y Ávila.",
     "Con embalses ≥ 60 %: Badajoz, Cádiz, Córdoba, Huelva, Sevilla. El agua embalsada viene del año hidrológico 2025-26, que fue húmedo (SPI a 12 meses positivo en casi toda España); la lluvia de los últimos 3 y 6 meses está muy por debajo de lo normal. Es el aviso temprano que los boletines hidrológicos no dan.",
@@ -751,6 +749,34 @@
    "fuerza": 70.0,
    "requiere_revision": false,
    "id": "sequia-estado-espana-2026-10"
+  },
+  {
+   "serie": "compuestos",
+   "tipo": "compuesto",
+   "indicador": "mar_y_dana",
+   "territorio": "España",
+   "ambito": "nacional",
+   "fecha_dato": "2026-11-09",
+   "provisional": false,
+   "titular": "El Mediterráneo está 2,1 °C por encima de lo normal y el modelo europeo prevé una DANA en los próximos 5 días: una DANA sobre un mar así tiene más vapor disponible",
+   "dato": "El 9 de noviembre de 2026 la temperatura del Mediterráneo occidental era de 21,6 °C, 2,1 °C por encima de la media de la fecha (puesto 2 de 46 desde 1981), y el modelo europeo prevé una DANA en los próximos 5 días.",
+   "contexto": [
+    "Más vapor disponible no significa más lluvia: depende de dónde se sitúe la DANA."
+   ],
+   "metodo": "Mediterráneo occidental español (NOAA OISST) con la temperatura del mar al menos 1,5 °C por encima de lo normal, o en récord para la fecha, y una DANA en curso en el catálogo del observatorio o prevista en los próximos 5 días en la previsión de ECMWF a 500 hPa.",
+   "limites": [
+    "No predice lluvias ni su cantidad",
+    "La previsión de DANA es del modelo de ECMWF, no un aviso oficial de AEMET"
+   ],
+   "citabilidad": "media",
+   "exclusivo": true,
+   "fuente": "NOAA OISST v2.1 y ECMWF IFS (datos abiertos), cálculo propio de calentamientoglobal.es",
+   "serie_desde": "1981",
+   "pagina": "https://calentamientoglobal.es/dana/",
+   "edad_dias": 1,
+   "fuerza": 70.0,
+   "requiere_revision": false,
+   "id": "compuestos-compuesto-espana-2026-11-09-mar-y-dana"
   },
   {
    "serie": "municipal",
@@ -827,37 +853,6 @@
    "fuerza": 70.0,
    "requiere_revision": false,
    "id": "municipal-episodio-espana-2026-10-31"
-  },
-  {
-   "serie": "mediterraneo",
-   "fuente": "NOAA OISST v2.1 (ERDDAP) · media de la caja 36,5-41,5° N, 1,5° O-5° E",
-   "serie_desde": "1981",
-   "territorio": "Mediterráneo occidental",
-   "ambito": "nacional",
-   "pagina": "https://calentamientoglobal.es/dana/",
-   "metodo": "Temperatura superficial del mar NOAA OISST v2.1 (0,25°), media diaria de la caja 36,5-41,5° N / 1,5° O-5° E (de Alborán oriental al mar Balear). Normal 1991-2020 por día del año; puesto para la fecha sobre todos los años desde 1981.",
-   "limites": [
-    "Los últimos ~14 días de OISST son la versión preliminar (NRT) y la final puede corregirlos: en esos días un récord o un puesto por menos de 0,1 °C no se da por cierto.",
-    "Media de una caja de mar abierto, no la temperatura de una playa concreta."
-   ],
-   "citabilidad": "alta",
-   "tipo": "puesto_extremo",
-   "fecha_dato": "2026-11-08",
-   "indicador": "sst_puesto_fecha",
-   "titular": "El Mediterráneo español tuvo uno de sus tres 8 de noviembre más cálidos desde 1981: 21,5 °C, 1,9 °C por encima de lo normal",
-   "dato": "21,46 °C · dato preliminar de NOAA: queda a 0,08 °C del de 2024 (21,38 °C), menos de lo que puede corregirse, así que no se puede decir cuál es más alto · normal 1991-2020 19,57 °C (+1,89)",
-   "contexto": [
-    "82 días de 2026 han sido récord para su fecha en la serie desde 1981.",
-    "Máximo absoluto de la serie: 29,01 °C el 14 de agosto de 2026.",
-    "21,5 °C es lo normal en esta zona para un 21 de octubre (media 1991-2020)."
-   ],
-   "puesto": null,
-   "de": 46,
-   "exclusivo": true,
-   "edad_dias": 2,
-   "fuerza": 69.8,
-   "requiere_revision": false,
-   "id": "mediterraneo-puesto-extremo-mediterraneo-occidental-2026-11-08"
   },
   {
    "serie": "temporadas",
@@ -1056,14 +1051,14 @@
    "tipo": "lluvia_en_curso",
    "fecha_dato": "2026-11-10",
    "indicador": "lluvia_hoy_max",
-   "titular": "La estación de AEMET de La Covatilla Estación de Esquí (Salamanca) lleva 120 mm el 10 de noviembre hasta las 15:00; la de Tornavacas (Cáceres), 85,4 mm",
-   "dato": "120 mm de 0:00 a 15:00 (hora local) del 10 de noviembre, la cifra más alta de las 237 estaciones de AEMET que sigue el mapa con todas esas horas",
+   "titular": "La estación de AEMET de La Covatilla Estación de Esquí (Salamanca) lleva 127 mm el 10 de noviembre hasta las 17:00; la de Tornavacas (Cáceres), 91 mm",
+   "dato": "127 mm de 0:00 a 17:00 (hora local) del 10 de noviembre, la cifra más alta de las 237 estaciones de AEMET que sigue el mapa con todas esas horas",
    "contexto": [
-    "Las que más: La Covatilla Estación de Esquí (Salamanca): 120 mm · Tornavacas (Cáceres): 85,4 mm · Guijo de Granadilla (Cáceres): 69,4 mm · Coria (Cáceres): 42 mm · Alajar Cabezo Molinos (Huelva): 32 mm."
+    "Las que más: La Covatilla Estación de Esquí (Salamanca): 127 mm · Tornavacas (Cáceres): 91 mm · Guijo de Granadilla (Cáceres): 75,6 mm · Coria (Cáceres): 46,8 mm · Alajar Cabezo Molinos (Huelva): 32,8 mm."
    ],
    "metodo": "Suma de la precipitación horaria que publica AEMET OpenData en cada estación, desde las 0:00 hasta la última hora cerrada en toda la red. Solo estaciones con todas esas horas.",
    "limites": [
-    "Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 15:00»).",
+    "Día en curso: la cifra sube a medida que entran horas. Citar siempre con la hora («hasta las 17:00»).",
     "La comparación es entre las 237 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (995 municipios); AEMET tiene más estaciones y en alguna pudo llover más.",
     "Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo."
    ],
@@ -1071,36 +1066,6 @@
    "fuerza": 54.0,
    "requiere_revision": false,
    "id": "lluvia-lluvia-en-curso-espana-2026-11-10"
-  },
-  {
-   "serie": "sequia",
-   "fuente": "AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es",
-   "serie_desde": "",
-   "territorio": "España",
-   "ambito": "nacional",
-   "pagina": "https://calentamientoglobal.es/sequia/",
-   "provisional": true,
-   "fecha_dato": "2026-11-08",
-   "tipo": "anomalia_fuerte",
-   "indicador": "sequia_contraste",
-   "titular": "El otoño parte España en dos: 8 provincias llevan más del 150 % de su lluvia normal desde el 1 de octubre y 11 menos del 25 % (Tarragona 439 %, Huelva 2 %)",
-   "dato": "Por encima: Tarragona 439 %; Las Palmas 409 %; Barcelona 366 %; Alicante 251 %; Castellón 189 %; Valencia 176 %; Lleida 168 %; Girona 152 %. Por debajo: Huelva 2 %; Cádiz 3 %; Ourense 9 %; Cáceres 11 %; Sevilla 12 %; Lugo 14 %; Córdoba 15 %; Pontevedra 17 %; Badajoz 20 %; Valladolid 20 %; Madrid 25 %.",
-   "contexto": [
-    "Lluvia del 1 de octubre al 8 de noviembre en la estación de cada capital frente a la normal 1991-2020 de la misma ventana.",
-    "Mapa provincia a provincia en la portada del Monitor de sequía."
-   ],
-   "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
-   "limites": [
-    "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO",
-    "Porcentajes de la estación de la capital; a principios del año hidrológico una sola tormenta mueve mucho el porcentaje.",
-    "Los últimos días de cada serie son provisionales (reanálisis/predicción)."
-   ],
-   "citabilidad": "media",
-   "exclusivo": true,
-   "edad_dias": 2,
-   "fuerza": 51.1,
-   "requiere_revision": false,
-   "id": "sequia-contraste-2026-11"
   },
   {
    "serie": "lluvia",
@@ -1115,13 +1080,13 @@
    "fecha_dato": "2026-11-09",
    "indicador": "lluvia_dia_max",
    "titular": "La estación de AEMET de La Covatilla Estación de Esquí (Salamanca) recogió 90,8 mm en las 24 horas hasta las 8:00 del 10 de noviembre; la de Tornavacas (Cáceres), 66,2 mm",
-   "dato": "90,8 mm entre las 8:00 del 9 y las 8:00 del 10 de noviembre (hora peninsular), la cifra más alta de las 384 estaciones de AEMET con las 24 horas que sigue el mapa · 14 superaron los 30 mm",
+   "dato": "90,8 mm entre las 8:00 del 9 y las 8:00 del 10 de noviembre (hora peninsular), la cifra más alta de las 387 estaciones de AEMET con las 24 horas que sigue el mapa · 13 superaron los 30 mm",
    "contexto": [
     "Las que más: La Covatilla Estación de Esquí (Salamanca): 90,8 mm · Tornavacas (Cáceres): 66,2 mm · Alajar Cabezo Molinos (Huelva): 55,4 mm · Guijo de Granadilla (Cáceres): 51 mm · Coin (Málaga): 48,4 mm."
    ],
    "metodo": "Suma de la precipitación horaria que publica AEMET OpenData en cada estación de observación convencional, en el día pluviométrico de AEMET (de 07:00 a 07:00 UTC), el de sus valores diarios. Solo estaciones con las 24 horas.",
    "limites": [
-    "La comparación es entre las 384 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (995 municipios); AEMET tiene más estaciones y en alguna pudo llover más.",
+    "La comparación es entre las 387 estaciones de AEMET que usa de referencia el mapa de lluvia de calentamientoglobal.es (995 municipios); AEMET tiene más estaciones y en alguna pudo llover más.",
     "Lluvia de cada estación: en el resto del término municipal pudo llover más o menos.",
     "Dato de observación en tiempo real; AEMET lo valida después y puede corregirlo."
    ],
@@ -1129,76 +1094,6 @@
    "fuerza": 50.0,
    "requiere_revision": false,
    "id": "lluvia-lluvia-dia-espana-2026-11-09"
-  },
-  {
-   "serie": "sequia",
-   "fuente": "AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es",
-   "serie_desde": "1938",
-   "territorio": "León",
-   "provincia": "León",
-   "ambito": "provincial",
-   "pagina": "https://calentamientoglobal.es/sequia/leon/",
-   "provisional": true,
-   "fecha_dato": "2026-11-08",
-   "tipo": "racha",
-   "indicador": "sequia_racha_estado",
-   "titular": "León lleva 34 días sin un día de lluvia de 1 mm, la 2.ª racha más larga para esta fecha desde 1938 (la mayor, 41 días en 1941)",
-   "dato": "34 días sin lluvia de 1 mm hasta el 8 de noviembre en León.",
-   "contexto": [
-    "Racha normal para esta fecha: 3.0 días (mediana de 87 años).",
-    "Último día con al menos 1 mm: 5 de octubre (2.5 mm).",
-    "Días de lluvia en los últimos 90: 11 (normal 16.7).",
-    "Año hidrológico desde el 1 de octubre: 28.6 mm, el 37 % de lo normal."
-   ],
-   "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
-   "limites": [
-    "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO",
-    "Racha medida en la estación de la capital (una estación, no la provincia); el umbral de 1 mm es el de «día de lluvia» de AEMET.",
-    "La rejilla ERA5-Land en el municipio de León registra 14,2 mm en octubre de 2026 y una racha de 15 días: el reanálisis reparte lluvia débil que el pluviómetro no recoge. La racha que se publica es la del pluviómetro oficial.",
-    "Los últimos días de la cuenta son provisionales (reanálisis/predicción, pendientes de validar por AEMET)."
-   ],
-   "citabilidad": "alta",
-   "exclusivo": true,
-   "edad_dias": 2,
-   "fuerza": 48.4,
-   "requiere_revision": false,
-   "provincia_slug": "leon",
-   "id": "sequia-racha-leon-2026-10-05"
-  },
-  {
-   "serie": "sequia",
-   "fuente": "AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es",
-   "serie_desde": "1921",
-   "territorio": "Zamora",
-   "provincia": "Zamora",
-   "ambito": "provincial",
-   "pagina": "https://calentamientoglobal.es/sequia/zamora/",
-   "provisional": true,
-   "fecha_dato": "2026-11-08",
-   "tipo": "racha",
-   "indicador": "sequia_racha_estado",
-   "titular": "Zamora lleva 33 días sin un día de lluvia de 1 mm, la 2.ª racha más larga para esta fecha desde 1921 (la mayor, 34 días en 1981)",
-   "dato": "33 días sin lluvia de 1 mm hasta el 8 de noviembre en Zamora.",
-   "contexto": [
-    "Racha normal para esta fecha: 4.0 días (mediana de 104 años).",
-    "Último día con al menos 1 mm: 6 de octubre (12.6 mm).",
-    "Días de lluvia en los últimos 90: 6 (normal 14.9).",
-    "Año hidrológico desde el 1 de octubre: 25.5 mm, el 37 % de lo normal."
-   ],
-   "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
-   "limites": [
-    "SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO",
-    "Racha medida en la estación de la capital (una estación, no la provincia); el umbral de 1 mm es el de «día de lluvia» de AEMET.",
-    "La rejilla ERA5-Land en el municipio de Zamora registra 29,1 mm en octubre de 2026 y una racha de 13 días: el reanálisis reparte lluvia débil que el pluviómetro no recoge. La racha que se publica es la del pluviómetro oficial.",
-    "Los últimos días de la cuenta son provisionales (reanálisis/predicción, pendientes de validar por AEMET)."
-   ],
-   "citabilidad": "alta",
-   "exclusivo": true,
-   "edad_dias": 2,
-   "fuerza": 48.4,
-   "requiere_revision": false,
-   "provincia_slug": "zamora",
-   "id": "sequia-racha-zamora-2026-10-06"
   },
   {
    "serie": "capitales",
@@ -1398,21 +1293,21 @@
    "fecha_dato": "2026-11-09",
    "indicador": "tmin_alta",
    "valor": 15.2,
-   "valor_corregido": 14.657142857142857,
+   "valor_corregido": 14.719047619047618,
    "record_anterior_txt": "13,7 °C (1994)",
    "titular": "Granada tuvo el 9 de noviembre la mínima más alta para esa fecha desde 1940: 15,2 °C",
    "dato": "mínima 15,2 °C (corregida a escala ERA5: 14,7 °C) · récord anterior para la fecha 13,7 °C (1994)",
    "contexto": [
     "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
-    "Rareza: Una noche así ocurría una vez cada 7,2 años en 1961-1990 y ahora una vez cada 1,5 años: es 4,7 veces más probable (intervalo 2,5-10)."
+    "Rareza: Una noche así ocurría una vez cada 7,6 años en 1961-1990 y ahora una vez cada 1,6 años: es 4,8 veces más probable (intervalo 2,5-10)."
    ],
    "exclusivo": true,
    "ambito": "provincial",
    "edad_dias": 1,
    "rareza": {
-    "T_antes": 7.2,
-    "T_ahora": 1.5,
-    "PR": 4.7,
+    "T_antes": 7.6,
+    "T_ahora": 1.6,
+    "PR": 4.8,
     "pr_min": 2.5,
     "pr_max": 10,
     "significativo": true,
@@ -1421,21 +1316,15 @@
      "1996-2025"
     ],
     "metodo": "normal",
-    "frase": "Una noche así ocurría una vez cada 7,2 años en 1961-1990 y ahora una vez cada 1,5 años: es 4,7 veces más probable (intervalo 2,5-10).",
+    "frase": "Una noche así ocurría una vez cada 7,6 años en 1961-1990 y ahora una vez cada 1,6 años: es 4,8 veces más probable (intervalo 2,5-10).",
     "fuente_serie": "ERA5",
-    "PR_num": 4.6762359740126
+    "PR_num": 4.75309413483588
    },
    "fuerza": 100.0,
    "requiere_revision": true,
    "provincia_slug": "granada",
    "id": "capitales-record-fecha-granada-2026-11-09",
    "prov_dias": [
-    [
-     "2026-11-04",
-     19.2,
-     8.8,
-     0.5
-    ],
     [
      "2026-11-05",
      18.0,
@@ -1480,7 +1369,7 @@
    "provincia": "Murcia",
    "ambito": "provincial",
    "titular": "San Javier Aeropuerto (Murcia) ya supera hoy, 10 de noviembre, la temperatura más alta de toda la serie de su estación de AEMET: 42,5 °C entre las 12:00 y las 13:00 frente a los 29,5 °C de 2019",
-   "dato": "Medido por AEMET en su estación de San Javier Aeropuerto, a 4 m, máxima de 42,5 °C el 10 de noviembre (entre las 12:00 y las 13:00, hora local) · récord absoluto anterior de la estación: 41,9 °C (13 de agosto de 2022) · récord anterior de noviembre en la estación: 29,5 °C (1 de noviembre de 2019) · día en curso, con observaciones hasta las 15:00 (hora local)",
+   "dato": "Medido por AEMET en su estación de San Javier Aeropuerto, a 4 m, máxima de 42,5 °C el 10 de noviembre (entre las 12:00 y las 13:00, hora local) · récord absoluto anterior de la estación: 41,9 °C (13 de agosto de 2022) · récord anterior de noviembre en la estación: 29,5 °C (1 de noviembre de 2019) · día en curso, con observaciones hasta las 17:00 (hora local)",
    "contexto": [
     "Supera el récord anterior en 0,6 °C.",
     "La tabla de valores extremos de la estación recoge récords al menos desde 2011.",
@@ -1550,7 +1439,7 @@
    "provincia": "Palencia",
    "ambito": "provincial",
    "titular": "Palencia ya supera hoy, 10 de noviembre, la temperatura más alta de toda la serie de su estación de AEMET: 41,8 °C entre las 14:00 y las 15:00 frente a los 23 °C de 2015",
-   "dato": "Medido por AEMET en su estación de Palencia, a 736 m, máxima de 41,8 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: 39,8 °C (16 de julio de 2022) · récord anterior de noviembre en la estación: 23 °C (8 de noviembre de 2015) · día en curso, con observaciones hasta las 15:00 (hora local)",
+   "dato": "Medido por AEMET en su estación de Palencia, a 736 m, máxima de 41,8 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: 39,8 °C (16 de julio de 2022) · récord anterior de noviembre en la estación: 23 °C (8 de noviembre de 2015) · día en curso, con observaciones hasta las 17:00 (hora local)",
    "contexto": [
     "Supera el récord anterior en 2 °C.",
     "La tabla de valores extremos de la estación recoge récords al menos desde 2009.",
@@ -1620,7 +1509,7 @@
    "provincia": "Cádiz",
    "ambito": "provincial",
    "titular": "Jerez de la Frontera Aeropuerto (Cádiz) ya ha bajado hoy, 10 de noviembre, a -12,2 °C entre las 14:00 y las 15:00, la temperatura más baja de toda la serie de su estación de AEMET",
-   "dato": "Medido por AEMET en su estación de Jerez de la Frontera Aeropuerto, a 27 m, mínima de -12,2 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: -5,4 °C (22 de diciembre de 1979) · récord anterior de noviembre en la estación: -1 °C (21 de noviembre de 1952) · día en curso, con observaciones hasta las 15:00 (hora local)",
+   "dato": "Medido por AEMET en su estación de Jerez de la Frontera Aeropuerto, a 27 m, mínima de -12,2 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: -5,4 °C (22 de diciembre de 1979) · récord anterior de noviembre en la estación: -1 °C (21 de noviembre de 1952) · día en curso, con observaciones hasta las 17:00 (hora local)",
    "contexto": [
     "Rebaja el récord anterior en 6,8 °C.",
     "La tabla de valores extremos de la estación recoge récords al menos desde 1952.",
@@ -1688,7 +1577,7 @@
    "provincia": "Segovia",
    "provisional": true,
    "pagina": "https://calentamientoglobal.es/cambio-climatico-en-segovia/",
-   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Segovia, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -1,4 °C, mínimas +0,3 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
+   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Segovia, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -1,4 °C, mínimas +0,4 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
    "limites": [
     "Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
     "Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
@@ -1700,44 +1589,38 @@
    "fecha_dato": "2026-11-09",
    "indicador": "tmin_alta",
    "valor": 11.6,
-   "valor_corregido": 11.28095238095238,
+   "valor_corregido": 11.247619047619047,
    "record_anterior_txt": "10,4 °C (1983)",
    "titular": "Segovia tuvo el 9 de noviembre la mínima más alta para esa fecha desde 1940: 11,6 °C",
-   "dato": "mínima 11,6 °C (corregida a escala ERA5: 11,3 °C) · récord anterior para la fecha 10,4 °C (1983)",
+   "dato": "mínima 11,6 °C (corregida a escala ERA5: 11,2 °C) · récord anterior para la fecha 10,4 °C (1983)",
    "contexto": [
     "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
-    "Rareza: Una noche así ocurría una vez cada 2,4 años en 1961-1990 y ahora una vez al año: es 2,5 veces más probable (intervalo 1,3-5,1)."
+    "Rareza: Una noche así ocurría una vez cada 2,3 años en 1961-1990 y ahora unas 1,1 veces al año: es 2,4 veces más probable (intervalo 1,3-5,0)."
    ],
    "exclusivo": true,
    "ambito": "provincial",
    "edad_dias": 1,
    "rareza": {
-    "T_antes": 2.4,
-    "T_ahora": 1.0,
-    "PR": 2.5,
+    "T_antes": 2.3,
+    "T_ahora": 0.9,
+    "PR": 2.4,
     "pr_min": 1.3,
-    "pr_max": 5.1,
+    "pr_max": 5.0,
     "significativo": true,
     "climas": [
      "1961-1990",
      "1996-2025"
     ],
     "metodo": "normal",
-    "frase": "Una noche así ocurría una vez cada 2,4 años en 1961-1990 y ahora una vez al año: es 2,5 veces más probable (intervalo 1,3-5,1).",
+    "frase": "Una noche así ocurría una vez cada 2,3 años en 1961-1990 y ahora unas 1,1 veces al año: es 2,4 veces más probable (intervalo 1,3-5,0).",
     "fuente_serie": "ERA5",
-    "PR_num": 2.4501001747457125
+    "PR_num": 2.4391019533236302
    },
-   "fuerza": 78.4,
+   "fuerza": 78.1,
    "requiere_revision": true,
    "provincia_slug": "segovia",
    "id": "capitales-record-fecha-segovia-2026-11-09",
    "prov_dias": [
-    [
-     "2026-11-04",
-     10.2,
-     -1.6,
-     0.0
-    ],
     [
      "2026-11-05",
      11.9,
@@ -1826,12 +1709,6 @@
    "id": "capitales-record-fecha-ciudad-real-2026-11-09",
    "prov_dias": [
     [
-     "2026-11-04",
-     17.3,
-     3.8,
-     0.0
-    ],
-    [
      "2026-11-05",
      17.9,
      5.1,
@@ -1874,7 +1751,7 @@
    "provincia": "Toledo",
    "provisional": true,
    "pagina": "https://calentamientoglobal.es/cambio-climatico-en-toledo/",
-   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Toledo, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0 °C, mínimas -1 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
+   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Toledo, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,1 °C, mínimas -1 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
    "limites": [
     "Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
     "Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
@@ -1919,12 +1796,6 @@
    "id": "capitales-record-fecha-toledo-2026-11-09",
    "prov_dias": [
     [
-     "2026-11-04",
-     15.0,
-     2.5,
-     0.0
-    ],
-    [
      "2026-11-05",
      16.8,
      2.2,
@@ -1964,11 +1835,11 @@
    "provincia": "Huelva",
    "provisional": true,
    "pagina": "https://calentamientoglobal.es/cambio-climatico-en-huelva/",
-   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Huelva, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +0,2 °C, mínimas -1,7 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
+   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Huelva, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +0,1 °C, mínimas -1,8 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
    "limites": [
     "Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
     "Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "COMPROBAR antes de enviar: supera el récord anterior en 2,2 °C, demasiado para un análisis; confirmar con la estación de AEMET.",
+    "COMPROBAR antes de enviar: supera el récord anterior en 2,3 °C, demasiado para un análisis; confirmar con la estación de AEMET.",
     "La rareza compara dos climas (1961-1990 y 1996-2025) de la serie del reanálisis ERA5 en la celda de la capital; no atribuye este día a una causa y su intervalo es del 90 %.",
     "COMPROBAR: pendiente de que AEMET publique el dato de la estación de Huelva (llega con 2-4 días de retraso)."
    ],
@@ -1977,21 +1848,21 @@
    "fecha_dato": "2026-11-09",
    "indicador": "tmin_alta",
    "valor": 18.1,
-   "valor_corregido": 19.761904761904763,
+   "valor_corregido": 19.857142857142858,
    "record_anterior_txt": "17,6 °C (2006)",
    "titular": "Huelva tuvo el 9 de noviembre la mínima más alta para esa fecha desde 1940: 18,1 °C",
-   "dato": "mínima 18,1 °C (corregida a escala ERA5: 19,8 °C) · récord anterior para la fecha 17,6 °C (2006)",
+   "dato": "mínima 18,1 °C (corregida a escala ERA5: 19,9 °C) · récord anterior para la fecha 17,6 °C (2006)",
    "contexto": [
     "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
-    "Rareza: Una noche así ocurría una vez cada 895 años en 1961-1990 y ahora una vez cada 53 años: es 17 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1)."
+    "Rareza: Una noche así ocurría menos de una vez cada 1.000 años en 1961-1990 y ahora una vez cada 61 años: es 16 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1); con tan pocos casos en 1961-1990 el cociente es un mínimo."
    ],
    "exclusivo": true,
    "ambito": "provincial",
    "edad_dias": 1,
    "rareza": {
-    "T_antes": 895,
-    "T_ahora": 53,
-    "PR": 17,
+    "T_antes": 1000,
+    "T_ahora": 61,
+    "PR": 16,
     "pr_min": 0.8,
     "pr_max": 1000,
     "significativo": false,
@@ -2000,21 +1871,15 @@
      "1996-2025"
     ],
     "metodo": "GEV",
-    "frase": "Una noche así ocurría una vez cada 895 años en 1961-1990 y ahora una vez cada 53 años: es 17 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).",
+    "frase": "Una noche así ocurría menos de una vez cada 1.000 años en 1961-1990 y ahora una vez cada 61 años: es 16 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1); con tan pocos casos en 1961-1990 el cociente es un mínimo.",
     "fuente_serie": "ERA5",
-    "PR_num": 16.76169030405021
+    "PR_num": 16.284808215724844
    },
    "fuerza": 64.0,
    "requiere_revision": true,
    "provincia_slug": "huelva",
    "id": "capitales-record-fecha-huelva-2026-11-09",
    "prov_dias": [
-    [
-     "2026-11-04",
-     21.9,
-     7.7,
-     0.0
-    ],
     [
      "2026-11-05",
      20.5,
@@ -2051,101 +1916,11 @@
    "serie": "capitales",
    "fuente": "ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026",
    "serie_desde": "1940",
-   "territorio": "Santander",
-   "provincia": "Cantabria",
-   "provisional": true,
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-cantabria/",
-   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Santander, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +0,3 °C, mínimas -2,9 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
-   "limites": [
-    "Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
-    "Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "La rareza compara dos climas (1961-1990 y 1996-2025) de la serie del reanálisis ERA5 en la celda de la capital; no atribuye este día a una causa y su intervalo es del 90 %.",
-    "COMPROBAR: pendiente de que AEMET publique el dato de la estación de Santander (llega con 2-4 días de retraso)."
-   ],
-   "citabilidad": "media",
-   "tipo": "record_fecha",
-   "fecha_dato": "2026-11-09",
-   "indicador": "tmax",
-   "valor": 21.7,
-   "valor_corregido": 21.447619047619046,
-   "record_anterior_txt": "20,8 °C (1983)",
-   "titular": "Santander marcó el 9 de noviembre su máxima más alta para esa fecha desde 1940: 21,7 °C",
-   "dato": "21,7 °C (corregido a escala ERA5: 21,4 °C) · récord anterior para la fecha 20,8 °C (1983)",
-   "contexto": [
-    "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
-    "Rareza: Un día así ocurría unas 3,2 veces al año en 1961-1990 y ahora unas 4,4 veces al año: es 1,4 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1)."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 1,
-   "rareza": {
-    "T_antes": 0.3,
-    "T_ahora": 0.2,
-    "PR": 1.4,
-    "pr_min": 0.9,
-    "pr_max": 1.9,
-    "significativo": false,
-    "climas": [
-     "1961-1990",
-     "1996-2025"
-    ],
-    "metodo": "empírica",
-    "frase": "Un día así ocurría unas 3,2 veces al año en 1961-1990 y ahora unas 4,4 veces al año: es 1,4 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).",
-    "fuente_serie": "ERA5",
-    "PR_num": 1.3541279223563945
-   },
-   "fuerza": 64.0,
-   "requiere_revision": true,
-   "provincia_slug": "cantabria",
-   "id": "capitales-record-fecha-santander-2026-11-09",
-   "prov_dias": [
-    [
-     "2026-11-04",
-     12.5,
-     6.2,
-     0.0
-    ],
-    [
-     "2026-11-05",
-     15.6,
-     5.1,
-     0.0
-    ],
-    [
-     "2026-11-06",
-     16.8,
-     5.3,
-     0.0
-    ],
-    [
-     "2026-11-07",
-     18.8,
-     7.6,
-     0.0
-    ],
-    [
-     "2026-11-08",
-     22.0,
-     10.3,
-     0.0
-    ],
-    [
-     "2026-11-09",
-     21.7,
-     16.5,
-     2.1
-    ]
-   ]
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026",
-   "serie_desde": "1940",
    "territorio": "Sevilla",
    "provincia": "Sevilla",
    "provisional": true,
    "pagina": "https://calentamientoglobal.es/cambio-climatico-en-sevilla/",
-   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Sevilla, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,2 °C, mínimas +1,1 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
+   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Sevilla, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,2 °C, mínimas +1 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
    "limites": [
     "Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
     "Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
@@ -2157,44 +1932,38 @@
    "fecha_dato": "2026-11-09",
    "indicador": "tmin_alta",
    "valor": 17.9,
-   "valor_corregido": 16.790476190476188,
+   "valor_corregido": 16.91428571428571,
    "record_anterior_txt": "16,3 °C (1994)",
    "titular": "Sevilla tuvo el 9 de noviembre la mínima más alta para esa fecha desde 1940: 17,9 °C",
-   "dato": "mínima 17,9 °C (corregida a escala ERA5: 16,8 °C) · récord anterior para la fecha 16,3 °C (1994)",
+   "dato": "mínima 17,9 °C (corregida a escala ERA5: 16,9 °C) · récord anterior para la fecha 16,3 °C (1994)",
    "contexto": [
     "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
-    "Rareza: Una noche así ocurría una vez cada 1,1 años en 1961-1990 y ahora unas 1,4 veces al año: es 1,6 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1)."
+    "Rareza: Una noche así ocurría una vez cada 1,2 años en 1961-1990 y ahora unas 1,3 veces al año: es 1,6 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1)."
    ],
    "exclusivo": true,
    "ambito": "provincial",
    "edad_dias": 1,
    "rareza": {
-    "T_antes": 1.1,
-    "T_ahora": 0.7,
+    "T_antes": 1.2,
+    "T_ahora": 0.8,
     "PR": 1.6,
     "pr_min": 1.0,
-    "pr_max": 2.6,
+    "pr_max": 2.7,
     "significativo": false,
     "climas": [
      "1961-1990",
      "1996-2025"
     ],
     "metodo": "normal",
-    "frase": "Una noche así ocurría una vez cada 1,1 años en 1961-1990 y ahora unas 1,4 veces al año: es 1,6 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).",
+    "frase": "Una noche así ocurría una vez cada 1,2 años en 1961-1990 y ahora unas 1,3 veces al año: es 1,6 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).",
     "fuente_serie": "ERA5",
-    "PR_num": 1.6203060421341478
+    "PR_num": 1.6348471667491777
    },
    "fuerza": 64.0,
    "requiere_revision": true,
    "provincia_slug": "sevilla",
    "id": "capitales-record-fecha-sevilla-2026-11-09",
    "prov_dias": [
-    [
-     "2026-11-04",
-     22.9,
-     10.6,
-     0.5
-    ],
     [
      "2026-11-05",
      21.5,
@@ -2235,7 +2004,7 @@
    "provincia": "Albacete",
    "provisional": true,
    "pagina": "https://calentamientoglobal.es/cambio-climatico-en-albacete/",
-   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Albacete, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,8 °C, mínimas -0,7 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
+   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Albacete, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,7 °C, mínimas -0,8 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
    "limites": [
     "Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
     "Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
@@ -2247,19 +2016,19 @@
    "fecha_dato": "2026-11-09",
    "indicador": "tmin_alta",
    "valor": 12.9,
-   "valor_corregido": 13.6,
+   "valor_corregido": 13.676190476190477,
    "record_anterior_txt": "12,5 °C (1994)",
    "titular": "Albacete tuvo el 9 de noviembre la mínima más alta para esa fecha desde 1940: 12,9 °C",
-   "dato": "mínima 12,9 °C (corregida a escala ERA5: 13,6 °C) · récord anterior para la fecha 12,5 °C (1994)",
+   "dato": "mínima 12,9 °C (corregida a escala ERA5: 13,7 °C) · récord anterior para la fecha 12,5 °C (1994)",
    "contexto": [
     "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
-    "Rareza: Una noche así ocurría una vez cada 2,5 años en 1961-1990 y ahora una vez cada 1,3 años: es 2,0 veces más probable (intervalo 1,1-3,4)."
+    "Rareza: Una noche así ocurría una vez cada 2,6 años en 1961-1990 y ahora una vez cada 1,3 años: es 2,0 veces más probable (intervalo 1,1-3,4)."
    ],
    "exclusivo": true,
    "ambito": "provincial",
    "edad_dias": 1,
    "rareza": {
-    "T_antes": 2.5,
+    "T_antes": 2.6,
     "T_ahora": 1.3,
     "PR": 2.0,
     "pr_min": 1.1,
@@ -2270,21 +2039,15 @@
      "1996-2025"
     ],
     "metodo": "normal",
-    "frase": "Una noche así ocurría una vez cada 2,5 años en 1961-1990 y ahora una vez cada 1,3 años: es 2,0 veces más probable (intervalo 1,1-3,4).",
+    "frase": "Una noche así ocurría una vez cada 2,6 años en 1961-1990 y ahora una vez cada 1,3 años: es 2,0 veces más probable (intervalo 1,1-3,4).",
     "fuente_serie": "ERA5",
-    "PR_num": 1.9551213805866032
+    "PR_num": 1.969650832128599
    },
-   "fuerza": 62.6,
+   "fuerza": 63.0,
    "requiere_revision": true,
    "provincia_slug": "albacete",
    "id": "capitales-record-fecha-albacete-2026-11-09",
    "prov_dias": [
-    [
-     "2026-11-04",
-     16.2,
-     7.7,
-     0.4
-    ],
     [
      "2026-11-05",
      17.7,
@@ -2325,7 +2088,7 @@
    "provincia": "Melilla",
    "provisional": true,
    "pagina": "https://calentamientoglobal.es/cambio-climatico-en-melilla/",
-   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Melilla, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -2,1 °C, mínimas +0,4 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
+   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Melilla, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -2 °C, mínimas +0,4 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
    "limites": [
     "Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
     "Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
@@ -2337,7 +2100,7 @@
    "fecha_dato": "2026-11-09",
    "indicador": "tmin_alta",
    "valor": 19.1,
-   "valor_corregido": 18.65714285714286,
+   "valor_corregido": 18.704761904761906,
    "record_anterior_txt": "18,2 °C (2009)",
    "titular": "Melilla tuvo el 9 de noviembre la mínima más alta para esa fecha desde 1940: 19,1 °C",
    "dato": "mínima 19,1 °C (corregida a escala ERA5: 18,7 °C) · récord anterior para la fecha 18,2 °C (2009)",
@@ -2362,19 +2125,13 @@
     "metodo": "normal",
     "frase": "Una noche así ocurría una vez al año en 1961-1990 y ahora unas 1,9 veces al año: es 1,9 veces más probable (intervalo 1,3-2,8).",
     "fuente_serie": "ERA5",
-    "PR_num": 1.8676846753176983
+    "PR_num": 1.8812266806522948
    },
-   "fuerza": 59.8,
+   "fuerza": 60.2,
    "requiere_revision": true,
    "provincia_slug": "melilla",
    "id": "capitales-record-fecha-melilla-2026-11-09",
    "prov_dias": [
-    [
-     "2026-11-04",
-     20.7,
-     16.8,
-     9.0
-    ],
     [
      "2026-11-05",
      21.8,
@@ -2425,43 +2182,41 @@
    "tipo": "anomalia_fuerte",
    "fecha_dato": "2026-11-09",
    "indicador": "ayer_mínimas_calor",
-   "titular": "30 capitales españolas tuvieron el 9 de noviembre mínimas de al menos 5 °C por encima de lo normal para la fecha",
-   "dato": "30 de 50 capitales · las más extremas: Donostia/San Sebastián 19,2 °C (+7,7); Girona 16,2 °C (+7,6); Santander 19,4 °C (+6,9); Bilbao 18,4 °C (+6,9); Toledo 14,8 °C (+6,7); Cuenca 11,5 °C (+6,4); Ciudad Real 14,3 °C (+6,4); Huelva 19,8 °C (+6,3)",
+   "titular": "28 capitales españolas tuvieron el 9 de noviembre mínimas de al menos 5 °C por encima de lo normal para la fecha",
+   "dato": "28 de 49 capitales · las más extremas: Donostia/San Sebastián 19,3 °C (+7,7); Girona 16,1 °C (+7,5); Bilbao 18,5 °C (+7,1); Toledo 14,8 °C (+6,8); Ciudad Real 14,3 °C (+6,6); Huelva 19,9 °C (+6,6); Burgos 11,9 °C (+6,4); Cuenca 11,5 °C (+6,4)",
    "contexto": [
-    "Media de la desviación en esas 30 capitales: +6 °C.",
+    "Media de la desviación en esas 28 capitales: +6,1 °C.",
     "Normal de referencia: 1991-2020, día a día, en la celda de cada capital."
    ],
    "miembros_txt": [
     "Donostia/San Sebastián",
     "Girona",
-    "Santander",
     "Bilbao",
     "Toledo",
-    "Cuenca",
     "Ciudad Real",
     "Huelva",
     "Burgos",
+    "Cuenca",
     "Badajoz",
-    "Oviedo",
     "Albacete",
     "Granada",
+    "Oviedo",
     "Valladolid",
     "Salamanca",
-    "Córdoba",
     "Palencia",
     "Segovia",
-    "Vitoria-Gasteiz",
-    "Huesca",
-    "Guadalajara",
     "León",
+    "Guadalajara",
+    "Huesca",
+    "Córdoba",
+    "Vitoria-Gasteiz",
     "Cáceres",
     "Ávila",
-    "Teruel",
-    "Lleida",
     "Cádiz",
-    "Tarragona",
-    "Logroño",
-    "Zamora"
+    "Zamora",
+    "Teruel",
+    "A Coruña",
+    "Lleida"
    ],
    "exclusivo": true,
    "edad_dias": 1,
@@ -2489,20 +2244,20 @@
    "fecha_dato": "2026-11-09",
    "indicador": "tmin_alta",
    "valor": 14.5,
-   "valor_corregido": 14.614285714285714,
+   "valor_corregido": 14.595238095238095,
    "record_anterior_txt": "14 °C (1945)",
    "titular": "Cáceres tuvo el 9 de noviembre la mínima más alta para esa fecha desde 1940: 14,5 °C",
    "dato": "mínima 14,5 °C (corregida a escala ERA5: 14,6 °C) · récord anterior para la fecha 14 °C (1945)",
    "contexto": [
     "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
-    "Rareza: Una noche así ocurría una vez cada 1,5 años en 1961-1990 y ahora unas 1,2 veces al año: es 1,7 veces más probable (intervalo 1,1-2,9)."
+    "Rareza: Una noche así ocurría una vez cada 1,4 años en 1961-1990 y ahora unas 1,2 veces al año: es 1,7 veces más probable (intervalo 1,1-2,9)."
    ],
    "exclusivo": true,
    "ambito": "provincial",
    "edad_dias": 1,
    "rareza": {
-    "T_antes": 1.5,
-    "T_ahora": 0.9,
+    "T_antes": 1.4,
+    "T_ahora": 0.8,
     "PR": 1.7,
     "pr_min": 1.1,
     "pr_max": 2.9,
@@ -2512,21 +2267,15 @@
      "1996-2025"
     ],
     "metodo": "normal",
-    "frase": "Una noche así ocurría una vez cada 1,5 años en 1961-1990 y ahora unas 1,2 veces al año: es 1,7 veces más probable (intervalo 1,1-2,9).",
+    "frase": "Una noche así ocurría una vez cada 1,4 años en 1961-1990 y ahora unas 1,2 veces al año: es 1,7 veces más probable (intervalo 1,1-2,9).",
     "fuente_serie": "ERA5",
-    "PR_num": 1.716417512340416
+    "PR_num": 1.7135953499741965
    },
-   "fuerza": 54.9,
+   "fuerza": 54.8,
    "requiere_revision": true,
    "provincia_slug": "caceres",
    "id": "capitales-record-fecha-caceres-2026-11-09",
    "prov_dias": [
-    [
-     "2026-11-04",
-     16.6,
-     6.0,
-     0.0
-    ],
     [
      "2026-11-05",
      17.6,
@@ -2579,19 +2328,19 @@
    "fecha_dato": "2026-11-09",
    "indicador": "tmin_alta",
    "valor": 15.9,
-   "valor_corregido": 16.67142857142857,
+   "valor_corregido": 16.676190476190477,
    "record_anterior_txt": "15,4 °C (1985)",
    "titular": "Badajoz tuvo el 9 de noviembre la mínima más alta para esa fecha desde 1940: 15,9 °C",
    "dato": "mínima 15,9 °C (corregida a escala ERA5: 16,7 °C) · récord anterior para la fecha 15,4 °C (1985)",
    "contexto": [
     "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
-    "Rareza: Una noche así ocurría una vez cada 2,7 años en 1961-1990 y ahora una vez cada 1,6 años: es 1,7 veces más probable (intervalo 1,0-3,1)."
+    "Rareza: Una noche así ocurría una vez cada 2,8 años en 1961-1990 y ahora una vez cada 1,6 años: es 1,7 veces más probable (intervalo 1,0-3,1)."
    ],
    "exclusivo": true,
    "ambito": "provincial",
    "edad_dias": 1,
    "rareza": {
-    "T_antes": 2.7,
+    "T_antes": 2.8,
     "T_ahora": 1.6,
     "PR": 1.7,
     "pr_min": 1.0,
@@ -2602,21 +2351,15 @@
      "1996-2025"
     ],
     "metodo": "normal",
-    "frase": "Una noche así ocurría una vez cada 2,7 años en 1961-1990 y ahora una vez cada 1,6 años: es 1,7 veces más probable (intervalo 1,0-3,1).",
+    "frase": "Una noche así ocurría una vez cada 2,8 años en 1961-1990 y ahora una vez cada 1,6 años: es 1,7 veces más probable (intervalo 1,0-3,1).",
     "fuente_serie": "ERA5",
-    "PR_num": 1.6739366034239465
+    "PR_num": 1.6745025385666203
    },
    "fuerza": 53.6,
    "requiere_revision": true,
    "provincia_slug": "badajoz",
    "id": "capitales-record-fecha-badajoz-2026-11-09",
    "prov_dias": [
-    [
-     "2026-11-04",
-     19.3,
-     5.7,
-     0.0
-    ],
     [
      "2026-11-05",
      19.0,
@@ -2657,7 +2400,7 @@
    "provincia": "Palencia",
    "provisional": true,
    "pagina": "https://calentamientoglobal.es/cambio-climatico-en-palencia/",
-   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Palencia, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +0,1 °C, mínimas -0,2 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
+   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Palencia, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +0,1 °C, mínimas -0,3 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
    "limites": [
     "Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
     "Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
@@ -2669,44 +2412,38 @@
    "fecha_dato": "2026-11-05",
    "indicador": "tmin_baja",
    "valor": -2.8,
-   "valor_corregido": -2.571428571428571,
+   "valor_corregido": -2.5476190476190474,
    "record_anterior_txt": "-1,5 °C (1941)",
    "titular": "Palencia registró el 5 de noviembre su mínima más baja para esa fecha desde 1940: -2,8 °C",
-   "dato": "mínima -2,8 °C (corregida a escala ERA5: -2,6 °C) · récord anterior para la fecha -1,5 °C (1941)",
+   "dato": "mínima -2,8 °C (corregida a escala ERA5: -2,5 °C) · récord anterior para la fecha -1,5 °C (1941)",
    "contexto": [
     "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
-    "Rareza: Una noche así ocurría una vez cada 2,9 años en 1961-1990 y ahora una vez cada 3,3 años: es 1,2 veces menos probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1)."
+    "Rareza: Una noche así ocurría una vez cada 2,1 años en 1961-1990 y ahora una vez cada 3,9 años: es 1,8 veces menos probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1)."
    ],
    "exclusivo": true,
    "ambito": "provincial",
    "edad_dias": 5,
    "rareza": {
-    "T_antes": 2.9,
-    "T_ahora": 3.3,
-    "PR": 0.9,
-    "pr_min": 0.5,
-    "pr_max": 1.4,
+    "T_antes": 2.1,
+    "T_ahora": 3.9,
+    "PR": 0.5,
+    "pr_min": 0.3,
+    "pr_max": 1.0,
     "significativo": false,
     "climas": [
      "1961-1990",
      "1996-2025"
     ],
-    "metodo": "GEV",
-    "frase": "Una noche así ocurría una vez cada 2,9 años en 1961-1990 y ahora una vez cada 3,3 años: es 1,2 veces menos probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).",
+    "metodo": "normal",
+    "frase": "Una noche así ocurría una vez cada 2,1 años en 1961-1990 y ahora una vez cada 3,9 años: es 1,8 veces menos probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).",
     "fuente_serie": "ERA5",
-    "PR_num": 0.858095853812992
+    "PR_num": 0.5447564357644157
    },
    "fuerza": 46.1,
    "requiere_revision": true,
    "provincia_slug": "palencia",
    "id": "capitales-record-fecha-palencia-2026-11-05",
    "prov_dias": [
-    [
-     "2026-11-04",
-     11.4,
-     -0.2,
-     0.0
-    ],
     [
      "2026-11-05",
      12.3,
@@ -2747,7 +2484,7 @@
    "provincia": "Pontevedra",
    "provisional": true,
    "pagina": "https://calentamientoglobal.es/cambio-climatico-en-pontevedra/",
-   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Pontevedra, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +1,1 °C, mínimas -1,5 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
+   "metodo": "Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Pontevedra, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +1 °C, mínimas -1,4 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.",
    "limites": [
     "Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.",
     "Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
@@ -2759,10 +2496,10 @@
    "fecha_dato": "2026-11-05",
    "indicador": "tmin_baja",
    "valor": 2.7,
-   "valor_corregido": 4.1571428571428575,
+   "valor_corregido": 4.133333333333334,
    "record_anterior_txt": "5 °C (1980)",
    "titular": "Pontevedra registró el 5 de noviembre su mínima más baja para esa fecha desde 1940: 2,7 °C",
-   "dato": "mínima 2,7 °C (corregida a escala ERA5: 4,2 °C) · récord anterior para la fecha 5 °C (1980)",
+   "dato": "mínima 2,7 °C (corregida a escala ERA5: 4,1 °C) · récord anterior para la fecha 5 °C (1980)",
    "contexto": [
     "Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).",
     "Rareza: Una noche así ocurría unas 1,1 veces al año en 1961-1990 y ahora una vez cada 2,2 años: es 2,5 veces menos probable (intervalo 1,1-5,7)."
@@ -2784,19 +2521,13 @@
     "metodo": "normal",
     "frase": "Una noche así ocurría unas 1,1 veces al año en 1961-1990 y ahora una vez cada 2,2 años: es 2,5 veces menos probable (intervalo 1,1-5,7).",
     "fuente_serie": "ERA5",
-    "PR_num": 0.40033887570731175
+    "PR_num": 0.3990763513930321
    },
    "fuerza": 46.1,
    "requiere_revision": true,
    "provincia_slug": "pontevedra",
    "id": "capitales-record-fecha-pontevedra-2026-11-05",
    "prov_dias": [
-    [
-     "2026-11-04",
-     16.4,
-     6.3,
-     0.0
-    ],
     [
      "2026-11-05",
      16.0,
@@ -2849,7 +2580,7 @@
    "fecha_dato": "2026-11-05",
    "indicador": "tmin_baja",
    "valor": -3.0,
-   "valor_corregido": -2.6238095238095243,
+   "valor_corregido": -2.6142857142857143,
    "record_anterior_txt": "-2 °C (1980)",
    "titular": "Zamora registró el 5 de noviembre su mínima más baja para esa fecha desde 1940: -3 °C",
    "dato": "mínima -3 °C (corregida a escala ERA5: -2,6 °C) · récord anterior para la fecha -2 °C (1980)",
@@ -2874,19 +2605,13 @@
     "metodo": "GEV",
     "frase": "Una noche así ocurría una vez cada 3,3 años en 1961-1990 y ahora una vez cada 4,2 años: es 1,3 veces menos probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).",
     "fuente_serie": "ERA5",
-    "PR_num": 0.7870375644633926
+    "PR_num": 0.787416550475125
    },
    "fuerza": 46.1,
    "requiere_revision": true,
    "provincia_slug": "zamora",
    "id": "capitales-record-fecha-zamora-2026-11-05",
    "prov_dias": [
-    [
-     "2026-11-04",
-     11.8,
-     0.2,
-     0.0
-    ],
     [
      "2026-11-05",
      12.8,
@@ -2918,6 +2643,37 @@
      9.6
     ]
    ]
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Cádiz",
+   "provincia": "Cádiz",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-cadiz/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Cádiz, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "puesto_extremo",
+   "fecha_dato": "2026-11-04",
+   "indicador": "lluvia_otonio_seco",
+   "titular": "Cádiz vive el 3.º otoño más seco desde 1940: 14,7 mm, el 13 % de lo normal",
+   "dato": "14,7 mm en el otoño hasta el 4 de noviembre · normal 114,9 mm · puesto 3 de 87",
+   "contexto": [
+    "El más seco de la serie: 1954 con 5,7 mm.",
+    "El más lluvioso: 1965 con 295,2 mm."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 39.0,
+   "requiere_revision": true,
+   "provincia_slug": "cadiz",
+   "id": "capitales-puesto-extremo-cadiz-2026-11-04"
   },
   {
    "serie": "capitales",
@@ -2981,32 +2737,601 @@
    "serie": "capitales",
    "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
    "serie_desde": "1940",
-   "territorio": "Cádiz",
-   "provincia": "Cádiz",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-cadiz/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Cádiz, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "territorio": "Vitoria-Gasteiz",
+   "provincia": "Álava",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-alava/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Vitoria-Gasteiz, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
    "limites": [
     "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
     "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
     "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
    ],
    "citabilidad": "media",
-   "tipo": "puesto_extremo",
-   "fecha_dato": "2026-11-03",
-   "indicador": "lluvia_otonio_seco",
-   "titular": "Cádiz vive el 3.º otoño más seco desde 1940: 14,5 mm, el 13 % de lo normal",
-   "dato": "14,5 mm en el otoño hasta el 3 de noviembre · normal 110,9 mm · puesto 3 de 87",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Vitoria-Gasteiz lleva 44 días de más de 32 °C en 2026, 6,3 veces su normal",
+   "dato": "44 días · normal 1991-2020: 7",
    "contexto": [
-    "El más seco de la serie: 1954 con 5,5 mm.",
-    "El más lluvioso: 1965 con 295 mm."
+    "Media 1951-1980: 2.1 días al año · media 1996-2025: 9.2."
    ],
    "exclusivo": true,
    "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 34.8,
+   "edad_dias": 6,
+   "fuerza": 28.6,
    "requiere_revision": true,
-   "provincia_slug": "cadiz",
-   "id": "capitales-puesto-extremo-cadiz-2026-11-03"
+   "provincia_slug": "alava",
+   "id": "capitales-anomalia-fuerte-vitoria-gasteiz-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Ávila",
+   "provincia": "Ávila",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-avila/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Ávila, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Ávila lleva 38 días de más de 32 °C en 2026, 4,4 veces su normal",
+   "dato": "38 días · normal 1991-2020: 8,6",
+   "contexto": [
+    "Media 1951-1980: 0.9 días al año · media 1996-2025: 11.3."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "avila",
+   "id": "capitales-anomalia-fuerte-avila-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Palma",
+   "provincia": "Illes Balears",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-baleares/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Palma, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Palma lleva 32 días de más de 32 °C en 2026, 8,6 veces su normal",
+   "dato": "32 días · normal 1991-2020: 3,7",
+   "contexto": [
+    "Media 1951-1980: 0.3 días al año · media 1996-2025: 5.2."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "baleares",
+   "id": "capitales-anomalia-fuerte-palma-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Barcelona",
+   "provincia": "Barcelona",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-barcelona/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Barcelona, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Barcelona lleva 28 días de más de 32 °C en 2026, 18,7 veces su normal",
+   "dato": "28 días · normal 1991-2020: 1,5",
+   "contexto": [
+    "Media 1951-1980: 0.1 días al año · media 1996-2025: 3.1."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "barcelona",
+   "id": "capitales-anomalia-fuerte-barcelona-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Burgos",
+   "provincia": "Burgos",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-burgos/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Burgos, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Burgos lleva 44 días de más de 32 °C en 2026, 4,4 veces su normal",
+   "dato": "44 días · normal 1991-2020: 10,1",
+   "contexto": [
+    "Media 1951-1980: 1.4 días al año · media 1996-2025: 13.2."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "burgos",
+   "id": "capitales-anomalia-fuerte-burgos-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Castelló de la Plana/Castellón de la Plana",
+   "provincia": "Castellón",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-castellon/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Castelló de la Plana/Castellón de la Plana, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Castelló de la Plana/Castellón de la Plana lleva 20 días de más de 32 °C en 2026, 6,9 veces su normal",
+   "dato": "20 días · normal 1991-2020: 2,9",
+   "contexto": [
+    "Media 1951-1980: 0.8 días al año · media 1996-2025: 3.8."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "castellon",
+   "id": "capitales-anomalia-fuerte-castello-de-la-plana-castellon-de-la-plana-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Girona",
+   "provincia": "Girona",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-girona/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Girona, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Girona lleva 84 días de más de 32 °C en 2026, 4,5 veces su normal",
+   "dato": "84 días · normal 1991-2020: 18,8",
+   "contexto": [
+    "Media 1951-1980: 5.9 días al año · media 1996-2025: 22.1."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "girona",
+   "id": "capitales-anomalia-fuerte-girona-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Huesca",
+   "provincia": "Huesca",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-huesca/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Huesca, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Huesca lleva 81 días de más de 32 °C en 2026, 2,6 veces su normal",
+   "dato": "81 días · normal 1991-2020: 31,4",
+   "contexto": [
+    "Media 1951-1980: 5.6 días al año · media 1996-2025: 34.3."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "huesca",
+   "id": "capitales-anomalia-fuerte-huesca-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "León",
+   "provincia": "León",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-leon/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de León, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "León lleva 39 días de más de 32 °C en 2026, 2,7 veces su normal",
+   "dato": "39 días · normal 1991-2020: 14,4",
+   "contexto": [
+    "Media 1951-1980: 2.7 días al año · media 1996-2025: 17.5."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "leon",
+   "id": "capitales-anomalia-fuerte-leon-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Logroño",
+   "provincia": "La Rioja",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-la-rioja/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Logroño, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Logroño lleva 74 días de más de 32 °C en 2026, 3,7 veces su normal",
+   "dato": "74 días · normal 1991-2020: 20",
+   "contexto": [
+    "Media 1951-1980: 6.1 días al año · media 1996-2025: 23.8."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "la-rioja",
+   "id": "capitales-anomalia-fuerte-logrono-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Pamplona/Iruña",
+   "provincia": "Navarra",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-navarra/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Pamplona/Iruña, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Pamplona/Iruña lleva 56 días de más de 32 °C en 2026, 4,1 veces su normal",
+   "dato": "56 días · normal 1991-2020: 13,6",
+   "contexto": [
+    "Media 1951-1980: 3.4 días al año · media 1996-2025: 15.5."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "navarra",
+   "id": "capitales-anomalia-fuerte-pamplona-iruna-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Ourense",
+   "provincia": "Ourense",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-ourense/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Ourense, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Ourense lleva 45 días de más de 32 °C en 2026, 3,1 veces su normal",
+   "dato": "45 días · normal 1991-2020: 14,3",
+   "contexto": [
+    "Media 1951-1980: 7.1 días al año · media 1996-2025: 16.5."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "ourense",
+   "id": "capitales-anomalia-fuerte-ourense-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Salamanca",
+   "provincia": "Salamanca",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-salamanca/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Salamanca, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Salamanca lleva 60 días de más de 32 °C en 2026, 3,8 veces su normal",
+   "dato": "60 días · normal 1991-2020: 15,7",
+   "contexto": [
+    "Media 1951-1980: 5.4 días al año · media 1996-2025: 19.4."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "salamanca",
+   "id": "capitales-anomalia-fuerte-salamanca-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Segovia",
+   "provincia": "Segovia",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-segovia/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Segovia, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Segovia lleva 45 días de más de 32 °C en 2026, 2,9 veces su normal",
+   "dato": "45 días · normal 1991-2020: 15,3",
+   "contexto": [
+    "Media 1951-1980: 2.3 días al año · media 1996-2025: 16.7."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "segovia",
+   "id": "capitales-anomalia-fuerte-segovia-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Soria",
+   "provincia": "Soria",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-soria/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Soria, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Soria lleva 67 días de más de 32 °C en 2026, 3,3 veces su normal",
+   "dato": "67 días · normal 1991-2020: 20,3",
+   "contexto": [
+    "Media 1951-1980: 3.2 días al año · media 1996-2025: 23.5."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "soria",
+   "id": "capitales-anomalia-fuerte-soria-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Tarragona",
+   "provincia": "Tarragona",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-tarragona/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Tarragona, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "lluvia_mes",
+   "titular": "Tarragona ya ha recogido en 4 días de noviembre el 78 % de la lluvia de todo un noviembre normal",
+   "dato": "36,4 mm hasta el día 4 · normal hasta el día 4 8,5 mm · normal del mes completo 46,9 mm",
+   "contexto": [
+    "430 % de lo normal para estas fechas del mes."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "tarragona",
+   "id": "capitales-anomalia-fuerte-tarragona-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Tarragona",
+   "provincia": "Tarragona",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-tarragona/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Tarragona, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Tarragona lleva 88 días de más de 32 °C en 2026, 2,9 veces su normal",
+   "dato": "88 días · normal 1991-2020: 30,7",
+   "contexto": [
+    "Media 1951-1980: 10.5 días al año · media 1996-2025: 35.1."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "tarragona",
+   "id": "capitales-anomalia-fuerte-tarragona-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "València",
+   "provincia": "Valencia",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-valencia/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de València, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "València lleva 76 días de más de 32 °C en 2026, 2,8 veces su normal",
+   "dato": "76 días · normal 1991-2020: 27,5",
+   "contexto": [
+    "Media 1951-1980: 12.8 días al año · media 1996-2025: 31.0."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "valencia",
+   "id": "capitales-anomalia-fuerte-valencia-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Bilbao",
+   "provincia": "Bizkaia",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-bizkaia/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Bilbao, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Bilbao lleva 24 días de más de 32 °C en 2026, 30 veces su normal",
+   "dato": "24 días · normal 1991-2020: 0,8",
+   "contexto": [
+    "Media 1951-1980: 0.2 días al año · media 1996-2025: 1.1."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "bizkaia",
+   "id": "capitales-anomalia-fuerte-bilbao-2026-11-04"
+  },
+  {
+   "serie": "capitales",
+   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
+   "serie_desde": "1940",
+   "territorio": "Zamora",
+   "provincia": "Zamora",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-zamora/",
+   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Zamora, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
+   "limites": [
+    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
+    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
+    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
+   ],
+   "citabilidad": "media",
+   "tipo": "anomalia_fuerte",
+   "fecha_dato": "2026-11-04",
+   "indicador": "d32_anio",
+   "titular": "Zamora lleva 72 días de más de 32 °C en 2026, 2,9 veces su normal",
+   "dato": "72 días · normal 1991-2020: 24,5",
+   "contexto": [
+    "Media 1951-1980: 11.1 días al año · media 1996-2025: 28.3."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 6,
+   "fuerza": 28.6,
+   "requiere_revision": true,
+   "provincia_slug": "zamora",
+   "id": "capitales-anomalia-fuerte-zamora-2026-11-04"
   },
   {
    "serie": "dias32",
@@ -3309,606 +3634,6 @@
    "id": "dias32-record-absoluto-caceres-2026-10-01"
   },
   {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Vitoria-Gasteiz",
-   "provincia": "Álava",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-alava/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Vitoria-Gasteiz, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Vitoria-Gasteiz lleva 44 días de más de 32 °C en 2026, 6,3 veces su normal",
-   "dato": "44 días · normal 1991-2020: 7",
-   "contexto": [
-    "Media 1951-1980: 2.1 días al año · media 1996-2025: 9.2."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "alava",
-   "id": "capitales-anomalia-fuerte-vitoria-gasteiz-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Ávila",
-   "provincia": "Ávila",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-avila/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Ávila, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Ávila lleva 38 días de más de 32 °C en 2026, 4,4 veces su normal",
-   "dato": "38 días · normal 1991-2020: 8,6",
-   "contexto": [
-    "Media 1951-1980: 0.9 días al año · media 1996-2025: 11.3."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "avila",
-   "id": "capitales-anomalia-fuerte-avila-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Palma",
-   "provincia": "Illes Balears",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-baleares/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Palma, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Palma lleva 32 días de más de 32 °C en 2026, 8,6 veces su normal",
-   "dato": "32 días · normal 1991-2020: 3,7",
-   "contexto": [
-    "Media 1951-1980: 0.3 días al año · media 1996-2025: 5.2."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "baleares",
-   "id": "capitales-anomalia-fuerte-palma-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Barcelona",
-   "provincia": "Barcelona",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-barcelona/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Barcelona, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Barcelona lleva 28 días de más de 32 °C en 2026, 18,7 veces su normal",
-   "dato": "28 días · normal 1991-2020: 1,5",
-   "contexto": [
-    "Media 1951-1980: 0.1 días al año · media 1996-2025: 3.1."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "barcelona",
-   "id": "capitales-anomalia-fuerte-barcelona-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Burgos",
-   "provincia": "Burgos",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-burgos/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Burgos, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Burgos lleva 44 días de más de 32 °C en 2026, 4,4 veces su normal",
-   "dato": "44 días · normal 1991-2020: 10,1",
-   "contexto": [
-    "Media 1951-1980: 1.4 días al año · media 1996-2025: 13.2."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "burgos",
-   "id": "capitales-anomalia-fuerte-burgos-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Castelló de la Plana/Castellón de la Plana",
-   "provincia": "Castellón",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-castellon/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Castelló de la Plana/Castellón de la Plana, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Castelló de la Plana/Castellón de la Plana lleva 20 días de más de 32 °C en 2026, 6,9 veces su normal",
-   "dato": "20 días · normal 1991-2020: 2,9",
-   "contexto": [
-    "Media 1951-1980: 0.8 días al año · media 1996-2025: 3.8."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "castellon",
-   "id": "capitales-anomalia-fuerte-castello-de-la-plana-castellon-de-la-plana-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Girona",
-   "provincia": "Girona",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-girona/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Girona, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Girona lleva 84 días de más de 32 °C en 2026, 4,5 veces su normal",
-   "dato": "84 días · normal 1991-2020: 18,8",
-   "contexto": [
-    "Media 1951-1980: 5.9 días al año · media 1996-2025: 22.1."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "girona",
-   "id": "capitales-anomalia-fuerte-girona-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Huesca",
-   "provincia": "Huesca",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-huesca/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Huesca, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Huesca lleva 81 días de más de 32 °C en 2026, 2,6 veces su normal",
-   "dato": "81 días · normal 1991-2020: 31,4",
-   "contexto": [
-    "Media 1951-1980: 5.6 días al año · media 1996-2025: 34.3."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "huesca",
-   "id": "capitales-anomalia-fuerte-huesca-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "León",
-   "provincia": "León",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-leon/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de León, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "León lleva 39 días de más de 32 °C en 2026, 2,7 veces su normal",
-   "dato": "39 días · normal 1991-2020: 14,4",
-   "contexto": [
-    "Media 1951-1980: 2.7 días al año · media 1996-2025: 17.5."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "leon",
-   "id": "capitales-anomalia-fuerte-leon-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Logroño",
-   "provincia": "La Rioja",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-la-rioja/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Logroño, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Logroño lleva 74 días de más de 32 °C en 2026, 3,7 veces su normal",
-   "dato": "74 días · normal 1991-2020: 20",
-   "contexto": [
-    "Media 1951-1980: 6.1 días al año · media 1996-2025: 23.8."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "la-rioja",
-   "id": "capitales-anomalia-fuerte-logrono-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Pamplona/Iruña",
-   "provincia": "Navarra",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-navarra/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Pamplona/Iruña, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Pamplona/Iruña lleva 56 días de más de 32 °C en 2026, 4,1 veces su normal",
-   "dato": "56 días · normal 1991-2020: 13,6",
-   "contexto": [
-    "Media 1951-1980: 3.4 días al año · media 1996-2025: 15.5."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "navarra",
-   "id": "capitales-anomalia-fuerte-pamplona-iruna-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Ourense",
-   "provincia": "Ourense",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-ourense/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Ourense, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Ourense lleva 45 días de más de 32 °C en 2026, 3,1 veces su normal",
-   "dato": "45 días · normal 1991-2020: 14,3",
-   "contexto": [
-    "Media 1951-1980: 7.1 días al año · media 1996-2025: 16.5."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "ourense",
-   "id": "capitales-anomalia-fuerte-ourense-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Salamanca",
-   "provincia": "Salamanca",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-salamanca/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Salamanca, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Salamanca lleva 60 días de más de 32 °C en 2026, 3,8 veces su normal",
-   "dato": "60 días · normal 1991-2020: 15,7",
-   "contexto": [
-    "Media 1951-1980: 5.4 días al año · media 1996-2025: 19.4."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "salamanca",
-   "id": "capitales-anomalia-fuerte-salamanca-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Segovia",
-   "provincia": "Segovia",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-segovia/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Segovia, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Segovia lleva 45 días de más de 32 °C en 2026, 2,9 veces su normal",
-   "dato": "45 días · normal 1991-2020: 15,3",
-   "contexto": [
-    "Media 1951-1980: 2.3 días al año · media 1996-2025: 16.7."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "segovia",
-   "id": "capitales-anomalia-fuerte-segovia-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Soria",
-   "provincia": "Soria",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-soria/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Soria, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Soria lleva 67 días de más de 32 °C en 2026, 3,3 veces su normal",
-   "dato": "67 días · normal 1991-2020: 20,3",
-   "contexto": [
-    "Media 1951-1980: 3.2 días al año · media 1996-2025: 23.5."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "soria",
-   "id": "capitales-anomalia-fuerte-soria-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Tarragona",
-   "provincia": "Tarragona",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-tarragona/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Tarragona, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "lluvia_mes",
-   "titular": "Tarragona ya ha recogido en 3 días de noviembre el 61 % de la lluvia de todo un noviembre normal",
-   "dato": "28,4 mm hasta el día 3 · normal hasta el día 3 5,1 mm · normal del mes completo 46,9 mm",
-   "contexto": [
-    "554 % de lo normal para estas fechas del mes."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "tarragona",
-   "id": "capitales-anomalia-fuerte-tarragona-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Tarragona",
-   "provincia": "Tarragona",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-tarragona/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Tarragona, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Tarragona lleva 88 días de más de 32 °C en 2026, 2,9 veces su normal",
-   "dato": "88 días · normal 1991-2020: 30,7",
-   "contexto": [
-    "Media 1951-1980: 10.5 días al año · media 1996-2025: 35.1."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "tarragona",
-   "id": "capitales-anomalia-fuerte-tarragona-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "València",
-   "provincia": "Valencia",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-valencia/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de València, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "València lleva 76 días de más de 32 °C en 2026, 2,8 veces su normal",
-   "dato": "76 días · normal 1991-2020: 27,5",
-   "contexto": [
-    "Media 1951-1980: 12.8 días al año · media 1996-2025: 31.0."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "valencia",
-   "id": "capitales-anomalia-fuerte-valencia-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Bilbao",
-   "provincia": "Bizkaia",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-bizkaia/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Bilbao, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Bilbao lleva 24 días de más de 32 °C en 2026, 30 veces su normal",
-   "dato": "24 días · normal 1991-2020: 0,8",
-   "contexto": [
-    "Media 1951-1980: 0.2 días al año · media 1996-2025: 1.1."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "bizkaia",
-   "id": "capitales-anomalia-fuerte-bilbao-2026-11-03"
-  },
-  {
-   "serie": "capitales",
-   "fuente": "ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0",
-   "serie_desde": "1940",
-   "territorio": "Zamora",
-   "provincia": "Zamora",
-   "pagina": "https://calentamientoglobal.es/cambio-climatico-en-zamora/",
-   "metodo": "Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Zamora, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.",
-   "limites": [
-    "Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.",
-    "ERA5 consolida con unos seis días de retraso; los últimos días son preliminares.",
-    "COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad."
-   ],
-   "citabilidad": "media",
-   "tipo": "anomalia_fuerte",
-   "fecha_dato": "2026-11-03",
-   "indicador": "d32_anio",
-   "titular": "Zamora lleva 72 días de más de 32 °C en 2026, 2,9 veces su normal",
-   "dato": "72 días · normal 1991-2020: 24,5",
-   "contexto": [
-    "Media 1951-1980: 11.1 días al año · media 1996-2025: 28.3."
-   ],
-   "exclusivo": true,
-   "ambito": "provincial",
-   "edad_dias": 7,
-   "fuerza": 25.5,
-   "requiere_revision": true,
-   "provincia_slug": "zamora",
-   "id": "capitales-anomalia-fuerte-zamora-2026-11-03"
-  },
-  {
    "serie": "dias32",
    "fuente": "ERA5 (Open-Meteo Archive) · Proyección: distribución 1991-2020 + calentamiento IPCC AR6 (Sur de Europa)",
    "serie_desde": "1961",
@@ -4177,6 +3902,36 @@
    "requiere_revision": true,
    "provincia_slug": "burgos",
    "id": "dias32-puesto-extremo-burgos-2026-10-01"
+  },
+  {
+   "serie": "dias32",
+   "fuente": "ERA5 (Open-Meteo Archive) · Proyección: distribución 1991-2020 + calentamiento IPCC AR6 (Sur de Europa)",
+   "serie_desde": "1961",
+   "territorio": "León",
+   "pagina": "https://calentamientoglobal.es/cambio-climatico-por-provincias/",
+   "metodo": "Días con máxima ≥ 32.0 °C en el punto de referencia de la provincia, ERA5 vía Open-Meteo, contados por año natural desde 1961.",
+   "limites": [
+    "Un punto por provincia (reanálisis), no la red de estaciones de AEMET.",
+    "El año 2026 no ha terminado: la cifra puede subir si hay más días de 32 °C.",
+    "COMPROBAR: el recuento de un punto de reanálisis no coincide con el de la estación de AEMET (auditoría del 17-10-2026); no se publica.",
+    "COMPROBAR antes de enviar: dias32.json etiqueta el año en curso como 2025; confirmar en dias32_generar.py que el conteo es de 2026."
+   ],
+   "citabilidad": "media",
+   "tipo": "puesto_extremo",
+   "fecha_dato": "2026-10-01",
+   "indicador": "d32",
+   "titular": "León suma 28 días de más de 32 °C en 2026, el 2.º año con más desde 1961",
+   "dato": "28 días · máximo 42 (2022) · media 1991-2020: 8,7",
+   "contexto": [
+    "Media 1961-1990: 2,4 días."
+   ],
+   "exclusivo": true,
+   "ambito": "provincial",
+   "edad_dias": 40,
+   "fuerza": 21.0,
+   "requiere_revision": true,
+   "provincia_slug": "leon",
+   "id": "dias32-puesto-extremo-leon-2026-10-01"
   }
  ],
  "contexto": [
@@ -5869,11 +5624,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Albacete está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,12, el 38 % de la lluvia normal del año hidrológico",
+   "titular": "Albacete está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,12, el 41 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 4 (Sequía extrema); SPI-3 −1,51, SPI-6 −2,12, SPI-12 −0,24.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Albacete: 19.4 mm.",
-    "Días sin lluvia de 1 mm en la capital: 3."
+    "Lluvia desde el 1 de octubre en Albacete: 21.1 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -5904,11 +5659,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Ávila está en sequía severa a cierre de octubre: SPI a 6 meses de −1,93, el 76 % de la lluvia normal del año hidrológico",
+   "titular": "Ávila está en sequía severa a cierre de octubre: SPI a 6 meses de −1,93, el 91 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 3 (Sequía severa); SPI-3 −1,00, SPI-6 −1,93, SPI-12 0,32.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Ávila: 56.0 mm.",
-    "Días sin lluvia de 1 mm en la capital: 21."
+    "Lluvia desde el 1 de octubre en Ávila: 67.8 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -5939,11 +5694,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Badajoz está en sequía severa a cierre de octubre: SPI a 6 meses de −1,83, el 20 % de la lluvia normal del año hidrológico, con los embalses al 73.2 %",
+   "titular": "Badajoz está en sequía severa a cierre de octubre: SPI a 6 meses de −1,83, el 38 % de la lluvia normal del año hidrológico, con los embalses al 73.2 %",
    "dato": "Nivel 3 (Sequía severa); SPI-3 −1,35, SPI-6 −1,83, SPI-12 0,88.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Badajoz: 17.0 mm.",
-    "Días sin lluvia de 1 mm en la capital: 33.",
+    "Lluvia desde el 1 de octubre en Badajoz: 32.2 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0.",
     "Embalses de la provincia al 73.2 % (hace un año 59.0 %; media de 10 años 39.0 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,88). La sequía meteorológica ha empezado antes de que se note en los pantanos."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
@@ -5975,11 +5730,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Cáceres está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,03, el 11 % de la lluvia normal del año hidrológico",
+   "titular": "Cáceres está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,03, el 39 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 4 (Sequía extrema); SPI-3 −2,35, SPI-6 −2,03, SPI-12 0,49.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Cáceres: 12.6 mm.",
-    "Días sin lluvia de 1 mm en la capital: 2."
+    "Lluvia desde el 1 de octubre en Cáceres: 45.0 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -6010,11 +5765,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Cádiz está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,23, el 3 % de la lluvia normal del año hidrológico, con los embalses al 73.3 %",
+   "titular": "Cádiz está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,23, el 31 % de la lluvia normal del año hidrológico, con los embalses al 73.3 %",
    "dato": "Nivel 4 (Sequía extrema); SPI-3 −2,39, SPI-6 −2,23, SPI-12 1,17.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Cádiz: 2.7 mm.",
-    "Días sin lluvia de 1 mm en la capital: 4.",
+    "Lluvia desde el 1 de octubre en Cádiz: 31.6 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0.",
     "Embalses de la provincia al 73.3 % (hace un año 43.1 %; media de 10 años 37.3 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 1,17). La sequía meteorológica ha empezado antes de que se note en los pantanos."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
@@ -6046,11 +5801,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Córdoba está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,15, el 15 % de la lluvia normal del año hidrológico, con los embalses al 73.3 %",
+   "titular": "Córdoba está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,15, el 37 % de la lluvia normal del año hidrológico, con los embalses al 73.3 %",
    "dato": "Nivel 4 (Sequía extrema); SPI-3 −1,94, SPI-6 −2,15, SPI-12 0,59.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Córdoba: 16.2 mm.",
-    "Días sin lluvia de 1 mm en la capital: 3.",
+    "Lluvia desde el 1 de octubre en Córdoba: 41.5 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0.",
     "Embalses de la provincia al 73.3 % (hace un año 42.3 %; media de 10 años 30.2 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,59). La sequía meteorológica ha empezado antes de que se note en los pantanos."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
@@ -6082,11 +5837,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "A Coruña está en sequía severa a cierre de octubre: SPI a 6 meses de −1,75, el 36 % de la lluvia normal del año hidrológico",
+   "titular": "A Coruña está en sequía severa a cierre de octubre: SPI a 6 meses de −1,75, el 40 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 3 (Sequía severa); SPI-3 −1,04, SPI-6 −1,75, SPI-12 0,11.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en A Coruña: 57.9 mm.",
-    "Días sin lluvia de 1 mm en la capital: 1."
+    "Lluvia desde el 1 de octubre en A Coruña: 67.1 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -6117,11 +5872,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Gipuzkoa está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,12, el 31 % de la lluvia normal del año hidrológico",
+   "titular": "Gipuzkoa está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,12, el 30 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 4 (Sequía extrema); SPI-3 −2,17, SPI-6 −2,12, SPI-12 −0,70.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en San Sebastián: 68.1 mm.",
-    "Días sin lluvia de 1 mm en la capital: 4."
+    "Lluvia desde el 1 de octubre en San Sebastián: 68.5 mm.",
+    "Días sin lluvia de 1 mm en la capital: 5."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -6152,10 +5907,10 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Huelva está en sequía extrema a cierre de octubre: SPI a 6 meses de ≤ −3,00, el 2 % de la lluvia normal del año hidrológico, con los embalses al 71.6 %",
+   "titular": "Huelva está en sequía extrema a cierre de octubre: SPI a 6 meses de ≤ −3,00, el 50 % de la lluvia normal del año hidrológico, con los embalses al 71.6 %",
    "dato": "Nivel 4 (Sequía extrema); SPI-3 ≤ −3,00, SPI-6 ≤ −3,00, SPI-12 0,22.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Huelva: 2.2 mm.",
+    "Lluvia desde el 1 de octubre en Huelva: 46.5 mm.",
     "Días sin lluvia de 1 mm en la capital: 0.",
     "Embalses de la provincia al 71.6 % (hace un año 62.1 %; media de 10 años 52.8 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,22). La sequía meteorológica ha empezado antes de que se note en los pantanos."
    ],
@@ -6188,11 +5943,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Ourense está en sequía severa a cierre de octubre: SPI a 6 meses de −1,99, el 9 % de la lluvia normal del año hidrológico",
+   "titular": "Ourense está en sequía severa a cierre de octubre: SPI a 6 meses de −1,99, el 18 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 3 (Sequía severa); SPI-3 −1,86, SPI-6 −1,99, SPI-12 0,11.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Ourense: 13.3 mm.",
-    "Días sin lluvia de 1 mm en la capital: 1."
+    "Lluvia desde el 1 de octubre en Ourense: 26.9 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -6223,11 +5978,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Pontevedra está en sequía severa a cierre de octubre: SPI a 6 meses de −1,64, el 17 % de la lluvia normal del año hidrológico",
+   "titular": "Pontevedra está en sequía severa a cierre de octubre: SPI a 6 meses de −1,64, el 23 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 3 (Sequía severa); SPI-3 −0,85, SPI-6 −1,64, SPI-12 0,99.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Pontevedra: 48.2 mm.",
-    "Días sin lluvia de 1 mm en la capital: 1."
+    "Lluvia desde el 1 de octubre en Pontevedra: 66.5 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -6258,11 +6013,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Salamanca está en sequía severa a cierre de octubre: SPI a 6 meses de −1,98, el 37 % de la lluvia normal del año hidrológico",
+   "titular": "Salamanca está en sequía severa a cierre de octubre: SPI a 6 meses de −1,98, el 48 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 3 (Sequía severa); SPI-3 −1,64, SPI-6 −1,98, SPI-12 0,66.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Salamanca: 23.6 mm.",
-    "Días sin lluvia de 1 mm en la capital: 2."
+    "Lluvia desde el 1 de octubre en Salamanca: 31.8 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -6293,11 +6048,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Segovia está en sequía severa a cierre de octubre: SPI a 6 meses de −1,86, el 67 % de la lluvia normal del año hidrológico",
+   "titular": "Segovia está en sequía severa a cierre de octubre: SPI a 6 meses de −1,86, el 74 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 3 (Sequía severa); SPI-3 −0,85, SPI-6 −1,86, SPI-12 −0,12.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Segovia: 51.1 mm.",
-    "Días sin lluvia de 1 mm en la capital: 20."
+    "Lluvia desde el 1 de octubre en Segovia: 56.8 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -6328,11 +6083,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Sevilla está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,43, el 12 % de la lluvia normal del año hidrológico, con los embalses al 65.2 %",
+   "titular": "Sevilla está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,43, el 35 % de la lluvia normal del año hidrológico, con los embalses al 65.2 %",
    "dato": "Nivel 4 (Sequía extrema); SPI-3 −1,95, SPI-6 −2,43, SPI-12 0,13.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Sevilla: 12.0 mm.",
-    "Días sin lluvia de 1 mm en la capital: 22.",
+    "Lluvia desde el 1 de octubre en Sevilla: 35.5 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0.",
     "Embalses de la provincia al 65.2 % (hace un año 66.5 %; media de 10 años 52.7 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,13). La sequía meteorológica ha empezado antes de que se note en los pantanos."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
@@ -6364,11 +6119,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Toledo está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,15, el 42 % de la lluvia normal del año hidrológico",
+   "titular": "Toledo está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,15, el 58 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 4 (Sequía extrema); SPI-3 −1,72, SPI-6 −2,15, SPI-12 0,09.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Toledo: 26.8 mm.",
-    "Días sin lluvia de 1 mm en la capital: 21."
+    "Lluvia desde el 1 de octubre en Toledo: 37.2 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -6399,10 +6154,10 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Ceuta está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,08, el 42 % de la lluvia normal del año hidrológico",
+   "titular": "Ceuta está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,08, el 99 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 4 (Sequía extrema); SPI-3 −1,45, SPI-6 −2,08, SPI-12 1,39.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Ceuta: 34.4 mm.",
+    "Lluvia desde el 1 de octubre en Ceuta: 83.7 mm.",
     "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
@@ -6434,11 +6189,11 @@
    "cierre_mes": "cerrado",
    "tipo": "episodio",
    "indicador": "sequia_estado_mes",
-   "titular": "Melilla está en sequía severa a cierre de octubre: SPI a 6 meses de −1,72, el 47 % de la lluvia normal del año hidrológico",
+   "titular": "Melilla está en sequía severa a cierre de octubre: SPI a 6 meses de −1,72, el 52 % de la lluvia normal del año hidrológico",
    "dato": "Nivel 3 (Sequía severa); SPI-3 −1,29, SPI-6 −1,72, SPI-12 0,08.",
    "contexto": [
-    "Lluvia desde el 1 de octubre en Melilla: 22.5 mm.",
-    "Días sin lluvia de 1 mm en la capital: 4."
+    "Lluvia desde el 1 de octubre en Melilla: 26.5 mm.",
+    "Días sin lluvia de 1 mm en la capital: 0."
    ],
    "metodo": "SPI a 3, 6 y 12 meses (gamma, referencia 1991-2020) sobre la precipitación oficial de AEMET en la estación de la capital; racha = días consecutivos con menos de 1 mm; año hidrológico desde el 1 de octubre frente a la normal de la misma ventana; embalses, boletín de MITECO.",
    "limites": [
@@ -7759,13 +7514,19 @@
   {
    "serie": "capitales",
    "territorio": "Almería",
-   "motivo": "celda IFS no comparable con ERA5 (sesgo máx 3,1 / mín -3,2 °C)",
+   "motivo": "celda IFS no comparable con ERA5 (sesgo máx 2,9 / mín -3,1 °C)",
    "dato": ""
   },
   {
    "serie": "capitales",
    "territorio": "Santa Cruz de Tenerife",
    "motivo": "celda IFS no comparable con ERA5 (sesgo máx 4 / mín -0,3 °C)",
+   "dato": ""
+  },
+  {
+   "serie": "capitales",
+   "territorio": "Santander",
+   "motivo": "celda IFS no comparable con ERA5 (sesgo máx 0,2 / mín -3 °C)",
    "dato": ""
   },
   {
