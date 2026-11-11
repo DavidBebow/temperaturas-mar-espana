@@ -49,7 +49,7 @@ jobs:
 
       - name: Ejecutar script
         env:
-          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY_PREDICCION }}
           CG_MAPA: docs/municipios_mapa.json
           CG_NORMALES: normales_temperatura.json
           CG_SALIDA: docs/prediccion
