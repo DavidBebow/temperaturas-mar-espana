@@ -1,7 +1,7 @@
 # San Sebastián: 2026 bate el máximo de su serie en días de 30 °C o más: 20, frente a 15 del máximo anterior
 
-**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 20, frente a 15 del máximo anterior, con datos validados de AEMET hasta el 31 de octubre de 2026 (serie desde 1961; temporada cerrada).  
-**Fecha del dato:** 31 de octubre de 2026  
+**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 20, frente a 15 del máximo anterior, con datos validados de AEMET hasta el 7 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
+**Fecha del dato:** 7 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** San Sebastián  
 **Citabilidad:** alta · **Exclusivo:** sí
 
