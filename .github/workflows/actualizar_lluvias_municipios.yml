@@ -166,7 +166,7 @@ jobs:
           git clone --depth 1 "https://x-access-token:${DATOS_TOKEN}@github.com/DavidBebow/calentamientoglobal-datos-diarios.git" datos_diarios
           ultimo=$(git -C datos_diarios log -1 --format=%ct)
           ahora=$(date +%s)
-          if [ $((ahora - ultimo)) -lt 3000 ]; then
+          if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ] && [ $((ahora - ultimo)) -lt 3000 ]; then
             echo "Ultima publicacion hace menos de 50 min: se salta."
             exit 0
           fi
