@@ -20,7 +20,7 @@
    2025
   ]
  },
- "fecha_dato": "2026-11-09",
+ "fecha_dato": "2026-11-10",
  "provisional": true,
  "fuente_dia": "reanálisis/predicción, pendiente de validar por AEMET",
  "fuente_diaria": "era5",
@@ -34,120 +34,96 @@
  },
  "hoy": {
   "tmax": {
-   "valor": 24.0,
+   "valor": 25.3,
    "lado": "calido",
-   "metodo": "normal",
-   "T_antes": 25,
-   "T_ahora": 4.4,
+   "metodo": "GEV",
+   "T_antes": 50,
+   "T_ahora": 86,
    "T_tope": false,
-   "PR": 5.7,
-   "pr_min": 1.8,
-   "pr_max": 19,
-   "significativo": true,
-   "nivel": 5,
-   "p_antes": 0.00128259,
-   "p_ahora": 0.00728454,
+   "PR": 0.6,
+   "pr_min": 0.1,
+   "pr_max": 1000,
+   "significativo": false,
+   "nivel": 0,
+   "p_antes": 0.0198965,
+   "p_ahora": 0.0116473,
    "anios_antes": 30,
-   "anios_ahora": 30
+   "anios_ahora": 30,
+   "nota": "cola extrema: estimación del extremo anual del mes (GEV por L-momentos)"
   },
   "tmin": {
-   "valor": 18.4,
+   "valor": 18.0,
    "lado": "calido",
    "metodo": "empírica",
-   "T_antes": 1.9,
-   "T_ahora": 0.5,
+   "T_antes": 1.1,
+   "T_ahora": 0.4,
    "T_tope": false,
-   "PR": 3.9,
-   "pr_min": 2.3,
-   "pr_max": 6.6,
+   "PR": 2.9,
+   "pr_min": 1.9,
+   "pr_max": 4.4,
    "significativo": true,
-   "nivel": 3,
-   "p_antes": 0.0165753,
-   "p_ahora": 0.0652864,
+   "nivel": 2,
+   "p_antes": 0.0301203,
+   "p_ahora": 0.0877537,
    "anios_antes": 30,
    "anios_ahora": 30
   },
   "tmed": {
-   "valor": 21.2,
+   "valor": 21.7,
    "lado": "calido",
-   "metodo": "normal",
-   "T_antes": 6.6,
-   "T_ahora": 1.8,
-   "T_tope": false,
-   "PR": 3.7,
-   "pr_min": 1.8,
-   "pr_max": 8.6,
+   "metodo": "GEV",
+   "T_antes": 1000,
+   "T_ahora": 22,
+   "T_tope": true,
+   "PR": 45,
+   "pr_min": 7.5,
+   "pr_max": 1000,
    "significativo": true,
-   "nivel": 3,
-   "p_antes": 0.00489784,
-   "p_ahora": 0.0183142,
+   "nivel": 5,
+   "p_antes": 0.001,
+   "p_ahora": 0.0446224,
    "anios_antes": 30,
-   "anios_ahora": 30
+   "anios_ahora": 30,
+   "nota": "cola extrema: estimación del extremo anual del mes (GEV por L-momentos)"
   },
-  "indice": 3,
-  "nivel_texto": "Nivel +3: un día así es hoy al menos tres veces más probable que en 1961-1990 por el calentamiento"
+  "indice": 5,
+  "nivel_texto": "Nivel +5: un día así es hoy al menos cinco veces más probable que en 1961-1990 por el calentamiento"
  },
  "mes": {
   "referencia": {
-   "mes": "2026-10",
-   "mes_nombre": "octubre de 2026",
-   "dias": 31,
-   "tipo": "cerrado",
-   "desde": "2026-10-01",
-   "hasta": "2026-10-31"
+   "mes": "2026-11",
+   "mes_nombre": "noviembre de 2026",
+   "dias": 10,
+   "tipo": "en_curso",
+   "desde": "2026-11-01",
+   "hasta": "2026-11-10"
   },
   "media": {
-   "valor": 21.5,
+   "valor": 19.6,
    "lado": "calido",
    "metodo": "normal",
-   "T_antes": 478,
-   "T_ahora": 37,
+   "T_antes": 154,
+   "T_ahora": 60,
    "T_tope": false,
-   "PR": 13,
-   "pr_min": 2.3,
-   "pr_max": 164,
-   "significativo": true,
-   "nivel": 5,
-   "p_antes": 0.00208996,
-   "p_ahora": 0.0272728,
+   "PR": 2.6,
+   "pr_min": 0.4,
+   "pr_max": 41,
+   "significativo": false,
+   "nivel": 0,
+   "p_antes": 0.00648119,
+   "p_ahora": 0.0166338,
    "anios_antes": 30,
    "anios_ahora": 30,
-   "media_antes": 19.1,
-   "media_ahora": 19.7,
+   "media_antes": 16.8,
+   "media_ahora": 17.4,
    "unidad": "°C",
    "fuente_mensual": "era5",
    "citabilidad": "media",
-   "frase": "Un mes así ocurría una vez cada 478 años en 1961-1990 y ahora una vez cada 37 años: es 13 veces más probable (intervalo 2,3-164). Serie: serie diaria de la celda de Ceuta del reanálisis ERA5."
+   "frase": "Un mes así ocurría una vez cada 154 años en 1961-1990 y ahora una vez cada 60 años: es 2,6 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1). Serie: serie diaria de la celda de Ceuta del reanálisis ERA5."
   },
-  "lluvia": {
-   "valor": 20.2,
-   "lado": "seco",
-   "metodo": "gamma con ceros (McKee)",
-   "T_antes": 3.5,
-   "T_ahora": 5.9,
-   "T_tope": false,
-   "PR": 0.6,
-   "pr_min": 0.3,
-   "pr_max": 1.1,
-   "significativo": false,
-   "nivel": 0,
-   "p_antes": 0.28503,
-   "p_ahora": 0.168825,
-   "anios_antes": 30,
-   "anios_ahora": 30,
-   "media_antes": 49.7,
-   "media_ahora": 62.2,
-   "unidad": "mm",
-   "fuente_mensual": "era5",
-   "citabilidad": "media",
-   "frase": "Un mes así de seco ocurría una vez cada 3,5 años en 1961-1990 y ahora una vez cada 5,9 años: es 1,7 veces menos probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1). Serie: serie diaria de la celda de Ceuta del reanálisis ERA5."
-  }
+  "lluvia": null
  },
  "ultimos_30": [
-  {
-   "fecha": "2026-10-11",
-   "indice": 0
-  },
   {
    "fecha": "2026-10-12",
    "indice": 0
@@ -250,7 +226,7 @@
   },
   {
    "fecha": "2026-11-06",
-   "indice": 0
+   "indice": 1
   },
   {
    "fecha": "2026-11-07",
@@ -263,19 +239,23 @@
   {
    "fecha": "2026-11-09",
    "indice": 3
+  },
+  {
+   "fecha": "2026-11-10",
+   "indice": 5
   }
  ],
  "resumen_30": {
-  "dias_3_o_mas": 4,
+  "dias_3_o_mas": 5,
   "dias_negativos": 0,
   "dias_con_dato": 30,
-  "media_indice": 1.3
+  "media_indice": 1.5
  },
  "textos": {
-  "frase_hoy": "El 9 de noviembre de 2026 la temperatura media en Ceuta (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET) fue de 21,2 °C. Un día así ocurría una vez cada 6,6 años en 1961-1990 y ahora una vez cada 1,8 años: es 3,7 veces más probable (intervalo 1,8-8,6). Nivel +3: un día así es hoy al menos tres veces más probable que en 1961-1990 por el calentamiento.",
-  "base": "Basado en la temperatura media del 9 de noviembre de 2026 en Ceuta (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET); dato provisional: se compara con el clima de la celda ERA5 de la capital y puede cambiar al validarse.",
+  "frase_hoy": "El 10 de noviembre de 2026 la temperatura media en Ceuta (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET) fue de 21,7 °C. Un día así ocurría menos de una vez cada 1.000 años en 1961-1990 y ahora una vez cada 22 años: es 45 veces más probable (intervalo 7,5-más de 1.000); con tan pocos casos en 1961-1990 el cociente es un mínimo. Nivel +5: un día así es hoy al menos cinco veces más probable que en 1961-1990 por el calentamiento.",
+  "base": "Basado en la temperatura media del 10 de noviembre de 2026 en Ceuta (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET); dato provisional: se compara con el clima de la celda ERA5 de la capital y puede cambiar al validarse.",
   "metodo_corto": "Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5."
  },
  "licencia": "CC BY 4.0",
- "generado": "2026-11-10T17:20:05Z"
+ "generado": "2026-11-11T00:03:28Z"
 }

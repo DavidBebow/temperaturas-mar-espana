@@ -1,8 +1,8 @@
-# Sequía cálida en Melilla: sequía severa y 2,3 °C más que lo normal en octubre de 2026
+# Sequía cálida en Sevilla: sequía extrema y 1,9 °C más que lo normal en noviembre de 2026
 
-**Dato:** Melilla está en «sequía severa» en el Monitor de sequía (SPI-12 de 0,1) y la media de octubre de 2026 es de 23,3 °C, 2,3 °C por encima de la media de ese mes en 1996-2025; es 10 veces más probable que en 1961-1990 (intervalo 1,1-130).  
-**Fecha del dato:** 31 de octubre de 2026  
-**Ámbito:** provincial · **Territorio:** Melilla  
+**Dato:** Sevilla está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,1) y la media de noviembre de 2026 hasta el 10 de noviembre de 2026 es de 18,4 °C, 1,9 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 10 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Sevilla  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
@@ -19,7 +19,7 @@
 - Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/melilla/
+- Página: https://calentamientoglobal.es/sequia/sevilla/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

@@ -1,9 +1,9 @@
-# Sequía cálida en Ceuta: sequía extrema y 1,8 °C más que lo normal en octubre de 2026
+# Sequía cálida en Pontevedra: sequía severa y 1,5 °C más que lo normal en noviembre de 2026
 
-**Dato:** Ceuta está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,4) y la media de octubre de 2026 es de 21,5 °C, 1,8 °C por encima de la media de ese mes en 1996-2025; es 13 veces más probable que en 1961-1990 (intervalo 2,3-164).  
-**Fecha del dato:** 31 de octubre de 2026  
-**Ámbito:** provincial · **Territorio:** Ceuta  
-**Citabilidad:** media · **Exclusivo:** sí
+**Dato:** Pontevedra está en «sequía severa» en el Monitor de sequía (SPI-12 de 1,0) y la media de noviembre de 2026 hasta el 10 de noviembre de 2026 es de 14,4 °C, 1,5 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 10 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Pontevedra  
+**Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
 - Menos lluvia y más calor es la combinación que seca más deprisa el suelo y los embalses.
@@ -16,10 +16,9 @@
 ## Límites (decirlos antes de que los descubran)
 - SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO
 - La anomalía es de una estación (la de la capital), no de toda la provincia
-- Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/ceuta/
+- Página: https://calentamientoglobal.es/sequia/pontevedra/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

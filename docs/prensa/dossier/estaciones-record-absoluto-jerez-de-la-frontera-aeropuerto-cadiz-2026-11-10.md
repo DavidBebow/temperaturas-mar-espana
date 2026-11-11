@@ -1,6 +1,6 @@
-# Jerez de la Frontera Aeropuerto (Cádiz) ya ha bajado hoy, 10 de noviembre, a -12,2 °C entre las 14:00 y las 15:00, la temperatura más baja de toda la serie de su estación de AEMET
+# Jerez de la Frontera Aeropuerto (Cádiz) bajó el 10 de noviembre a -12,2 °C, la temperatura más baja de toda la serie de su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Jerez de la Frontera Aeropuerto, a 27 m, mínima de -12,2 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: -5,4 °C (22 de diciembre de 1979) · récord anterior de noviembre en la estación: -1 °C (21 de noviembre de 1952) · día en curso, con observaciones hasta las 00:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Jerez de la Frontera Aeropuerto, a 27 m, mínima de -12,2 °C el 10 de noviembre (entre las 14:00 y las 15:00, hora local) · récord absoluto anterior de la estación: -5,4 °C (22 de diciembre de 1979) · récord anterior de noviembre en la estación: -1 °C (21 de noviembre de 1952) · 22 de 24 horas del día con observación  
 **Fecha del dato:** 10 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Jerez de la Frontera Aeropuerto (Cádiz)  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -20,7 +20,7 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 9 de noviembre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 1952.
-- Día en curso: la cifra puede cambiar hasta la medianoche (hora UTC). Citar siempre con la hora.
+- Al día le faltan 2 horas de observación en OpenData: la mínima real pudo ser menor (citar «al menos»).
 - COMPROBAR antes de enviar: supera el récord anterior en 6,8 °C, demasiado para un dato sin validar; el extremo de la hora se separa 32,1 °C de la temperatura de esa hora: posible pico del sensor; la mínima se dio a las 13:00 UTC, fuera de las horas habituales; ninguna estación vecina (a menos de 50 km) baja de 17,7 °C. No se publica hasta que AEMET valide el dato.
 
 ## Enlaces

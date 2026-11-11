@@ -20,7 +20,7 @@
    2025
   ]
  },
- "fecha_dato": "2026-11-09",
+ "fecha_dato": "2026-11-10",
  "provisional": true,
  "fuente_dia": "reanálisis/predicción, pendiente de validar por AEMET",
  "fuente_diaria": "era5",
@@ -34,53 +34,54 @@
  },
  "hoy": {
   "tmax": {
-   "valor": 18.0,
+   "valor": 19.2,
    "lado": "calido",
    "metodo": "normal",
-   "T_antes": 0.3,
-   "T_ahora": 0.2,
+   "T_antes": 0.6,
+   "T_ahora": 0.4,
    "T_tope": false,
-   "PR": 1.4,
+   "PR": 1.5,
    "pr_min": 1.0,
-   "pr_max": 2.0,
+   "pr_max": 2.1,
    "significativo": true,
-   "nivel": 0,
-   "p_antes": 0.0985641,
-   "p_ahora": 0.142026,
+   "nivel": 1,
+   "p_antes": 0.0509642,
+   "p_ahora": 0.0772267,
    "anios_antes": 30,
    "anios_ahora": 30
   },
   "tmin": {
    "valor": 13.9,
    "lado": "calido",
-   "metodo": "normal",
-   "T_antes": 9.1,
-   "T_ahora": 3.4,
+   "metodo": "GEV",
+   "T_antes": 94,
+   "T_ahora": 31,
    "T_tope": false,
-   "PR": 2.7,
-   "pr_min": 1.1,
-   "pr_max": 5.6,
-   "significativo": true,
-   "nivel": 2,
-   "p_antes": 0.0035257,
-   "p_ahora": 0.00951426,
+   "PR": 3.0,
+   "pr_min": 0.5,
+   "pr_max": 49,
+   "significativo": false,
+   "nivel": 0,
+   "p_antes": 0.0106402,
+   "p_ahora": 0.032299,
    "anios_antes": 30,
-   "anios_ahora": 30
+   "anios_ahora": 30,
+   "nota": "cola extrema: estimación del extremo anual del mes (GEV por L-momentos)"
   },
   "tmed": {
-   "valor": 16.0,
+   "valor": 16.6,
    "lado": "calido",
    "metodo": "normal",
-   "T_antes": 2.2,
-   "T_ahora": 0.9,
+   "T_antes": 3.9,
+   "T_ahora": 1.6,
    "T_tope": false,
    "PR": 2.5,
-   "pr_min": 1.4,
-   "pr_max": 5.4,
+   "pr_min": 1.3,
+   "pr_max": 5.3,
    "significativo": true,
    "nivel": 2,
-   "p_antes": 0.0148743,
-   "p_ahora": 0.0367234,
+   "p_antes": 0.00828358,
+   "p_ahora": 0.020511,
    "anios_antes": 30,
    "anios_ahora": 30
   },
@@ -89,65 +90,39 @@
  },
  "mes": {
   "referencia": {
-   "mes": "2026-10",
-   "mes_nombre": "octubre de 2026",
-   "dias": 31,
-   "tipo": "cerrado",
-   "desde": "2026-10-01",
-   "hasta": "2026-10-31"
+   "mes": "2026-11",
+   "mes_nombre": "noviembre de 2026",
+   "dias": 10,
+   "tipo": "en_curso",
+   "desde": "2026-11-01",
+   "hasta": "2026-11-10"
   },
   "media": {
-   "valor": 15.1,
+   "valor": 10.8,
    "lado": "calido",
    "metodo": "normal",
-   "T_antes": 15,
-   "T_ahora": 4.0,
+   "T_antes": 4.2,
+   "T_ahora": 3.0,
    "T_tope": false,
-   "PR": 3.7,
-   "pr_min": 1.4,
-   "pr_max": 11,
-   "significativo": true,
-   "nivel": 3,
-   "p_antes": 0.0685666,
-   "p_ahora": 0.252304,
+   "PR": 1.4,
+   "pr_min": 0.9,
+   "pr_max": 2.7,
+   "significativo": false,
+   "nivel": 0,
+   "p_antes": 0.238807,
+   "p_ahora": 0.337556,
    "anios_antes": 30,
    "anios_ahora": 30,
-   "media_antes": 12.8,
-   "media_ahora": 14.0,
+   "media_antes": 9.5,
+   "media_ahora": 10.1,
    "unidad": "°C",
    "fuente_mensual": "era5",
    "citabilidad": "media",
-   "frase": "Un mes así ocurría una vez cada 15 años en 1961-1990 y ahora una vez cada 4,0 años: es 3,7 veces más probable (intervalo 1,4-11). Serie: serie diaria de la celda de Vitoria del reanálisis ERA5."
+   "frase": "Un mes así ocurría una vez cada 4,2 años en 1961-1990 y ahora una vez cada 3,0 años: es 1,4 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1). Serie: serie diaria de la celda de Vitoria del reanálisis ERA5."
   },
-  "lluvia": {
-   "valor": 58.2,
-   "lado": "seco",
-   "metodo": "gamma con ceros (McKee)",
-   "T_antes": 1.8,
-   "T_ahora": 2.0,
-   "T_tope": false,
-   "PR": 0.9,
-   "pr_min": 0.6,
-   "pr_max": 1.3,
-   "significativo": false,
-   "nivel": 0,
-   "p_antes": 0.541702,
-   "p_ahora": 0.509098,
-   "anios_antes": 30,
-   "anios_ahora": 30,
-   "media_antes": 61.2,
-   "media_ahora": 64.4,
-   "unidad": "mm",
-   "fuente_mensual": "era5",
-   "citabilidad": "media",
-   "frase": "Un mes así de seco ocurría una vez cada 1,8 años en 1961-1990 y ahora una vez cada 2,0 años: es 1,1 veces menos probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1). Serie: serie diaria de la celda de Vitoria del reanálisis ERA5."
-  }
+  "lluvia": null
  },
  "ultimos_30": [
-  {
-   "fecha": "2026-10-11",
-   "indice": 1
-  },
   {
    "fecha": "2026-10-12",
    "indice": 1
@@ -263,6 +238,10 @@
   {
    "fecha": "2026-11-09",
    "indice": 2
+  },
+  {
+   "fecha": "2026-11-10",
+   "indice": 2
   }
  ],
  "resumen_30": {
@@ -272,10 +251,10 @@
   "media_indice": 0.6
  },
  "textos": {
-  "frase_hoy": "El 9 de noviembre de 2026 la temperatura media en Vitoria (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET) fue de 16,0 °C. Un día así ocurría una vez cada 2,2 años en 1961-1990 y ahora unas 1,1 veces al año: es 2,5 veces más probable (intervalo 1,4-5,4). Nivel +2: un día así es hoy al menos el doble de probable que en 1961-1990 por el calentamiento.",
-  "base": "Basado en la temperatura media del 9 de noviembre de 2026 en Vitoria (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET); dato provisional: se compara con el clima de la celda ERA5 de la capital y puede cambiar al validarse.",
+  "frase_hoy": "El 10 de noviembre de 2026 la temperatura media en Vitoria (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET) fue de 16,6 °C. Un día así ocurría una vez cada 3,9 años en 1961-1990 y ahora una vez cada 1,6 años: es 2,5 veces más probable (intervalo 1,3-5,3). Nivel +2: un día así es hoy al menos el doble de probable que en 1961-1990 por el calentamiento.",
+  "base": "Basado en la temperatura media del 10 de noviembre de 2026 en Vitoria (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET); dato provisional: se compara con el clima de la celda ERA5 de la capital y puede cambiar al validarse.",
   "metodo_corto": "Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5."
  },
  "licencia": "CC BY 4.0",
- "generado": "2026-11-10T17:20:05Z"
+ "generado": "2026-11-11T00:03:28Z"
 }
