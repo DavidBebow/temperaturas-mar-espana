@@ -62,7 +62,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase --autostash
+          # 11-11-2026: aqui habia un git pull --rebase --autostash ANTES del commit; commiteo marcas de conflicto en 53 JSON. El rebase va solo en el bucle de push.
           [ -d docs/prediccion ] && git add docs/prediccion || true
           if git diff --staged --quiet; then
             echo "Sin cambios."
