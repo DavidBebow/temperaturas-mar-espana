@@ -18,7 +18,13 @@ on:
     # cuando GitHub lanza todo lo del mundo y se atasca. Con las 999 cada pasada
     # dura ~45 min, asi que no caben muchas mas sin pisarse con la clave de AEMET
     # que comparte el recolector de lluvia.
-    - cron: '47 4,10,15,20 * * *'
+    # 11-11-2026 (script 2.2): TRES pasadas, a las 04:47, 13:47 y 20:47 UTC, despues de
+    # las reelaboraciones de AEMET. Van mas despacio (CG_PAUSA 2.5 s) porque la clave
+    # se comparte con otros procesos y a 1.3 s uno de cada cuatro municipios fallaba
+    # con 429. La horaria solo se pide para los municipios con pagina: unas 1.400
+    # llamadas y alrededor de una hora por pasada. La de las 04:47 acaba antes del
+    # aviso de la manana de la app.
+    - cron: '47 4,13,20 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -53,6 +59,8 @@ jobs:
           CG_MAPA: docs/municipios_mapa.json
           CG_NORMALES: normales_temperatura.json
           CG_SALIDA: docs/prediccion
+          CG_PAUSA: '2.5'
+          CG_TOPE_MIN: '100'
         run: python privado/prediccion_municipios.py
 
       - name: Publicar cambios
