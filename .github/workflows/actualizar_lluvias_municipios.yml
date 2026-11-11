@@ -81,6 +81,42 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Reparar JSON de prediccion con marcas de conflicto (11-11-2026)
+        # El paso Publicar cambios de actualizar_prediccion.yml commiteo marcas
+        # de conflicto en docs/prediccion/*.json. Se queda el lado valido y se
+        # publica. Si no hay nada roto, no hace nada.
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          import json,glob
+          n=0
+          for f in sorted(glob.glob("docs/prediccion/*.json")):
+              t=open(f,encoding="utf-8").read()
+              if not t.startswith("<<<<<<<"): continue
+              L=t.split("\n")
+              i=[k for k,x in enumerate(L) if x.startswith("=======")][0]
+              j=[k for k,x in enumerate(L) if x.startswith(">>>>>>>")][0]
+              ok=None
+              for c in ("\n".join(L[i+1:j]),"\n".join(L[1:i])):
+                  try:
+                      json.loads(c); ok=c; break
+                  except Exception: pass
+              if ok is None: print("SIN LADO VALIDO",f); continue
+              open(f,"w",encoding="utf-8").write(ok+"\n"); n+=1
+          print("reparados",n)
+          PY
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/prediccion
+          if ! git diff --staged --quiet; then
+            git commit -m "Prediccion: reparadas marcas de conflicto en los JSON"
+            for i in 1 2 3 4 5; do
+              git push && break
+              git pull --rebase -X theirs origin main || { git rebase --abort; true; }
+              sleep $((i*5))
+            done
+          fi
+
       - name: Ejecutar script
         env:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY_PREDICCION }}
