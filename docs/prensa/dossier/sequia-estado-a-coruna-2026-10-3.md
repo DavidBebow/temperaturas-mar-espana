@@ -1,4 +1,4 @@
-# A Coruña está en sequía severa a cierre de octubre: SPI a 6 meses de −1,75, el 40 % de la lluvia normal del año hidrológico
+# A Coruña está en sequía severa a cierre de octubre: SPI a 6 meses de −1,75, el 52 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 3 (Sequía severa); SPI-3 −1,04, SPI-6 −1,75, SPI-12 0,11.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,7 +6,7 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en A Coruña: 67.1 mm.
+- Lluvia desde el 1 de octubre en A Coruña: 89.8 mm.
 - Días sin lluvia de 1 mm en la capital: 0.
 
 ## Fuente y método

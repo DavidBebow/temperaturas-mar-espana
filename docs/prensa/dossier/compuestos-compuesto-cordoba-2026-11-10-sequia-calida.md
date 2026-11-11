@@ -1,6 +1,6 @@
-# Sequía cálida en Córdoba: sequía extrema y 2,4 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Córdoba: sequía extrema y 2,6 °C más que lo normal en noviembre de 2026
 
-**Dato:** Córdoba está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,6) y la media de noviembre de 2026 hasta el 10 de noviembre de 2026 es de 17,8 °C, 2,4 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Córdoba está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,6) y la media de noviembre de 2026 hasta el 10 de noviembre de 2026 es de 18,0 °C, 2,6 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 10 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Córdoba  
 **Citabilidad:** media · **Exclusivo:** sí

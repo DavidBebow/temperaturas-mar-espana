@@ -1,4 +1,4 @@
-# Albacete está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,12, el 41 % de la lluvia normal del año hidrológico
+# Albacete está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,12, el 40 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 4 (Sequía extrema); SPI-3 −1,51, SPI-6 −2,12, SPI-12 −0,24.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -7,7 +7,7 @@
 
 ## Contexto
 - Lluvia desde el 1 de octubre en Albacete: 21.1 mm.
-- Días sin lluvia de 1 mm en la capital: 0.
+- Días sin lluvia de 1 mm en la capital: 1.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es

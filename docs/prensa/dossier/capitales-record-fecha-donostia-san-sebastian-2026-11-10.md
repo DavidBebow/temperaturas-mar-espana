@@ -1,18 +1,18 @@
 # Donostia/San Sebastián marcó el 10 de noviembre su máxima más alta para esa fecha desde 1940: 22,8 °C
 
-**Dato:** 22,8 °C (corregido a escala ERA5: 22,9 °C) · récord anterior para la fecha 21,2 °C (1963)  
+**Dato:** 22,8 °C (corregido a escala ERA5: 23 °C) · récord anterior para la fecha 21,2 °C (1963)  
 **Fecha del dato:** 10 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Donostia/San Sebastián  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
 - Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).
-- Rareza: Un día así ocurría una vez cada 2,4 años en 1961-1990 y ahora unas 1,1 veces al año: es 2,7 veces más probable (intervalo 1,6-4,5).
+- Rareza: Un día así ocurría una vez cada 2,5 años en 1961-1990 y ahora unas 1,1 veces al año: es 2,8 veces más probable (intervalo 1,6-4,6).
 
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026
 - **Serie desde:** 1940
-- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Donostia/San Sebastián, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,1 °C, mínimas -1,7 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
+- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Donostia/San Sebastián, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,2 °C, mínimas -1,8 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
