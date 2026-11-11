@@ -82,7 +82,7 @@ jobs:
 
       - name: Ejecutar script
         env:
-          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY_PREDICCION }}
           # El base viaja con el script, en el privado. El historico y la salida
           # se quedan aqui, que es quien los sirve por GitHub Pages.
           CG_BASE: privado/municipios_base.json
