@@ -10,37 +10,6 @@ on:
     # UNA PASADA CADA HORA, al minuto 23.
     #
 
-      - name: Datos diarios de la App (un JSON por municipio)
-        # 11-11-2026 · App «¿Es normal el tiempo de hoy en tu pueblo?», fase 2.
-        # No llama a ninguna API: lee lo que este mismo flujo y los demas ya han
-        # publicado (docs/...) y escribe un JSON pequeno por municipio en el repo
-        # de datos (publico, solo datos). Un commit unico por pasada: el repo no
-        # acumula historial. El libro de cuentas (hist/) vive en el arbol, asi que
-        # se conserva aunque el historial de git se aplaste. Como mucho una
-        # publicacion por hora (cada push dispara un despliegue de Pages).
-        # Si falla, la pasada de lluvias no se da por fallida.
-        continue-on-error: true
-        env:
-          CG_REPO: ${{ github.workspace }}
-          CG_SALIDA: ${{ github.workspace }}/datos_diarios
-          DATOS_TOKEN: ${{ secrets.DATOS_DIARIOS_TOKEN }}
-        run: |
-          git clone --depth 1 "https://x-access-token:${DATOS_TOKEN}@github.com/DavidBebow/calentamientoglobal-datos-diarios.git" datos_diarios
-          ultimo=$(git -C datos_diarios log -1 --format=%ct)
-          ahora=$(date +%s)
-          if [ $((ahora - ultimo)) -lt 3000 ]; then
-            echo "Ultima publicacion hace menos de 50 min: se salta."
-            exit 0
-          fi
-          python privado/app_municipio_diario.py
-          cd datos_diarios
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout --orphan nuevo
-          git add -A
-          git commit -q -m "Datos diarios: $(date -u +%Y-%m-%d\ %H:%M) UTC"
-          git push --force origin nuevo:main
-
     # 1-10-2026: la tormenta del Levante lo dejo claro. Con ocho pasadas al dia
     # la cifra de "hoy" iba de una a cinco horas por detras de la lluvia, y la
     # gente entra a mirar la pagina JUSTO cuando esta lloviendo. Esa tarde la
