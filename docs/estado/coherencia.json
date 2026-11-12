@@ -1,33 +1,33 @@
 {
- "generado": "2026-11-11T17:30:15+00:00",
+ "generado": "2026-11-12T01:06:23+00:00",
  "duracion_s": 1.92,
  "comprobaciones": [
   {
    "id": "clave",
    "descripcion": "Misma clave (indicador+territorio+periodo+corte), mismo valor en todos los JSON",
-   "evaluadas": 96,
+   "evaluadas": 116,
    "fallos": 0
   },
   {
    "id": "titular",
    "descripcion": "El número del titular y del dato es el del campo estructurado",
-   "evaluadas": 29,
+   "evaluadas": 36,
    "fallos": 0
   },
   {
    "id": "hoy",
    "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
-   "evaluadas": 142,
+   "evaluadas": 151,
    "fallos": 1
   },
   {
    "id": "niveles",
    "descripcion": "Las listas por nivel solo contienen elementos de su nivel",
    "evaluadas": 1,
-   "fallos": 1
+   "fallos": 0
   }
  ],
- "n_fallos": 2,
+ "n_fallos": 1,
  "fallos": [
   {
    "comprobacion": "hoy",
@@ -39,17 +39,6 @@
     }
    ],
    "detalle": "dice «hoy» con un dato anterior a ayer"
-  },
-  {
-   "comprobacion": "niveles",
-   "clave": "Avisos rojos de AEMET",
-   "valores": [
-    {
-     "ruta": "https://calentamientoglobal.es/el-tiempo/",
-     "valor": "Santa Cruz de Tenerife: naranja"
-    }
-   ],
-   "detalle": "«Avisos rojos de AEMET» contiene elementos de otro nivel"
   }
  ],
  "bloqueados": [
