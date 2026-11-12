@@ -6,7 +6,7 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Pontevedra: 115.1 mm.
+- Lluvia desde el 1 de octubre en Pontevedra: 116.9 mm.
 - Días sin lluvia de 1 mm en la capital: 0.
 
 ## Fuente y método

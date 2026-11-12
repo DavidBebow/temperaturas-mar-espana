@@ -1,4 +1,4 @@
-# Ourense está en sequía severa a cierre de octubre: SPI a 6 meses de −1,99, el 37 % de la lluvia normal del año hidrológico
+# Ourense está en sequía severa a cierre de octubre: SPI a 6 meses de −1,99, el 47 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 3 (Sequía severa); SPI-3 −1,86, SPI-6 −1,99, SPI-12 0,11.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,7 +6,7 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Ourense: 56.9 mm.
+- Lluvia desde el 1 de octubre en Ourense: 74.2 mm.
 - Días sin lluvia de 1 mm en la capital: 0.
 
 ## Fuente y método

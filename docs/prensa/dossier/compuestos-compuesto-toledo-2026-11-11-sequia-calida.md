@@ -1,6 +1,6 @@
-# Sequía cálida en Toledo: sequía extrema y 1,5 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Toledo: sequía extrema y 1,6 °C más que lo normal en noviembre de 2026
 
-**Dato:** Toledo está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,1) y la media de noviembre de 2026 hasta el 11 de noviembre de 2026 es de 13,3 °C, 1,5 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Toledo está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,1) y la media de noviembre de 2026 hasta el 11 de noviembre de 2026 es de 13,4 °C, 1,6 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 11 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Toledo  
 **Citabilidad:** media · **Exclusivo:** sí

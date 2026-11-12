@@ -1,6 +1,6 @@
-# Sequía cálida en Granada: sequía moderada y 3,2 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Granada: sequía severa y 3,2 °C más que lo normal en noviembre de 2026
 
-**Dato:** Granada está en «sequía moderada» en el Monitor de sequía (SPI-12 de 1,1) y la media de noviembre de 2026 hasta el 11 de noviembre de 2026 es de 15,9 °C, 3,2 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Granada está en «sequía severa» en el Monitor de sequía (SPI-12 de 1,1) y la media de noviembre de 2026 hasta el 11 de noviembre de 2026 es de 15,9 °C, 3,2 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 11 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Granada  
 **Citabilidad:** alta · **Exclusivo:** sí

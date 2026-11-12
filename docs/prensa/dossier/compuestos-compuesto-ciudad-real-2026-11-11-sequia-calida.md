@@ -1,6 +1,6 @@
-# Sequía cálida en Ciudad Real: sequía moderada y 1,5 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Ciudad Real: sequía moderada y 1,7 °C más que lo normal en noviembre de 2026
 
-**Dato:** Ciudad Real está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,7) y la media de noviembre de 2026 hasta el 11 de noviembre de 2026 es de 13,4 °C, 1,5 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Ciudad Real está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,7) y la media de noviembre de 2026 hasta el 11 de noviembre de 2026 es de 13,6 °C, 1,7 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 11 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Ciudad Real  
 **Citabilidad:** media · **Exclusivo:** sí

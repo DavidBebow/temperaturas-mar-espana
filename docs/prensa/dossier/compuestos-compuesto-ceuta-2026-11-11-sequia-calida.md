@@ -1,6 +1,6 @@
-# Sequía cálida en Ceuta: sequía extrema y 2,4 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Ceuta: sequía extrema y 2,3 °C más que lo normal en noviembre de 2026
 
-**Dato:** Ceuta está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,4) y la media de noviembre de 2026 hasta el 11 de noviembre de 2026 es de 19,7 °C, 2,4 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Ceuta está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,4) y la media de noviembre de 2026 hasta el 11 de noviembre de 2026 es de 19,6 °C, 2,3 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 11 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Ceuta  
 **Citabilidad:** media · **Exclusivo:** sí
