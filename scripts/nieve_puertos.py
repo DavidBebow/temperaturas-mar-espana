@@ -394,7 +394,7 @@ def bloque(datos: dict | None, ambito: str, clave: str | None, lugar: str | None
         return ""
     p = ['<div class="cgnv-pt">', f'<h2 class="cgnv-panel-h2">{_esc(titulo)}</h2>']
     if not tr:
-        donde = f" de {lugar}" if ambito != "hub" else ""
+        donde = " de " + (("del " + lugar[3:]) if lugar.startsWith("el ") else lugar) if ambito != "hub" else ""
         p.append(f'<p class="cgnv-psub">Sin restricciones por nieve en las carreteras{donde} que vigila la DGT, a '
                  f'{_fecha_hora(corte)}.</p>')
     else:
