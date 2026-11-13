@@ -2609,6 +2609,10 @@ def html_hub(pxs: list, xs: list) -> str:
           "La previsión de arriba junta los modelos ECMWF, ICON, ARPEGE y GFS en 106 puntos de España y se actualiza tres "
           "veces al día: dónde va a nevar en los próximos 7 días, cuánto y a qué cota. En la página de cada provincia está "
           "el detalle día a día a 15 días."),
+         ("¿Qué puertos de montaña están cerrados por nieve?",
+          "El bloque «Carreteras con nieve ahora», más arriba, lista los tramos cerrados, con cadenas obligatorias o con "
+          "restricción a camiones y autobuses según la DGT, con su hora, y los agrupa por macizo. Se actualiza tres veces al día "
+          "y no incluye Cataluña ni el País Vasco: antes de salir, mira el mapa de tráfico de la DGT."),
          ("¿Qué es la cota de nieve?",
           "La altitud a partir de la cual la precipitación cae en forma de nieve. Suele estar unos 300 metros por debajo de "
           "la isoterma de 0 °C, que es como se estima aquí con los datos de cada modelo."),
@@ -2626,8 +2630,11 @@ def html_hub(pxs: list, xs: list) -> str:
                'por provincia y seis estaciones de esquí más), el producto diario de superficie nevada IMS de la NOAA (4 km, '
                'desde 2005) y la previsión de los modelos ECMWF, ICON, ARPEGE y GFS a través de Open-Meteo. «Un año normal» es '
                'la media de las temporadas de 1991-92 a 2020-21. Las cifras de nieve caída son de modelo, en celdas de unos 30 km, '
-               'y sirven para comparar unos años con otros, no para saber cuánta nieve hay en una pista concreta. Datos en '
-               f'<a href="{PAGES}/nieve/index.json">JSON</a> y <a href="{PAGES}/nieve/satelite.csv">CSV</a> (CC BY 4.0).</p>'
+               'y sirven para comparar unos años con otros, no para saber cuánta nieve hay en una pista concreta. Las carreteras '
+               'cerradas o con cadenas vienen de las incidencias en vivo de la DGT (DATEX II v3.7, licencia CC BY; no cubre Cataluña '
+               'ni el País Vasco) y se leen en cada pasada. Datos en '
+               f'<a href="{PAGES}/nieve/index.json">JSON</a>, <a href="{PAGES}/nieve/satelite.csv">CSV</a> y '
+               f'<a href="{PAGES}/nieve/puertos.json">carreteras con nieve (JSON)</a> (CC BY 4.0).</p>'
                '<p>Sigue con <a href="/heladas/">las heladas en cada ciudad</a>, <a href="/avisos-meteorologicos-activos/">'
                'los avisos meteorológicos</a>, <a href="/el-tiempo/">el tiempo municipio a municipio</a> o '
                '<a href="/metodologia/">la metodología</a>.</p></div>')
