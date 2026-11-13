@@ -1,4 +1,4 @@
-# Granada está en sequía severa a cierre de octubre: SPI a 6 meses de −1,50, el 47 % de la lluvia normal del año hidrológico
+# Granada está en sequía severa a cierre de octubre: SPI a 6 meses de −1,50, el 82 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 3 (Sequía severa); SPI-3 −0,51, SPI-6 −1,50, SPI-12 1,13.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,7 +6,7 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Granada: 28.7 mm.
+- Lluvia desde el 1 de octubre en Granada: 50.5 mm.
 - Días sin lluvia de 1 mm en la capital: 0.
 
 ## Fuente y método

@@ -1,6 +1,6 @@
-# Sequía cálida en Huelva: sequía extrema y 2,0 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Huelva: sequía extrema y 2,1 °C más que lo normal en noviembre de 2026
 
-**Dato:** Huelva está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 12 de noviembre de 2026 es de 18,6 °C, 2,0 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Huelva está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 12 de noviembre de 2026 es de 18,7 °C, 2,1 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 12 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Huelva  
 **Citabilidad:** media · **Exclusivo:** sí
