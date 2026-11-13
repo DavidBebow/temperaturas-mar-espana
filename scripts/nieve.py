@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Nieve en España · calentamientoglobal.es  (v1.1.0: primera nevada, SEO con Keyword Planner)
+"""Nieve en España · calentamientoglobal.es  (v1.6.0: carreteras con nieve de la DGT)
 
 Qué hace
   Vigila la nieve en España con tres fuentes abiertas y gratuitas y con ellas escribe la página /nieve/ y una página
@@ -22,6 +22,8 @@ Salidas
   docs/nieve/<provincia>.json / .csv                detalle de una provincia y sus temporadas, para descargar
   docs/nieve/satelite.csv                           la serie del satélite, para descargar
   docs/nieve/publicado.json                         registro de lo publicado en WordPress
+  docs/nieve/puertos.json                           carreteras con nieve, cerradas o con cadenas según la DGT (scripts/nieve_puertos.py)
+  archivo/nieve/puertos_hist.csv                    una línea por pasada con los cuatro totales de carreteras
 
 Modos
   python scripts/nieve.py --clima [--presupuesto 1000]   baja por tandas la serie larga de ERA5-Land (pesada)
@@ -66,7 +68,10 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-VERSION = "1.5.1"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import nieve_puertos  # noqa: E402  (lector de las incidencias de la DGT)
+
+VERSION = "1.6.0"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -77,6 +82,9 @@ GEOJSON = ARCHIVO / "provincias.geojson"
 CACHE_PREV = ARCHIVO / "prevision.json"
 SALIDA = RAIZ / "docs" / "nieve"
 PUBLICADO = SALIDA / "publicado.json"
+PUERTOS_JSON = SALIDA / "puertos.json"
+PUERTOS_HIST = ARCHIVO / "puertos_hist.csv"
+PUERTOS = None                    # lo que dejó la DGT en esta pasada (o lo último guardado); lo rellena main()
 WEB = "https://calentamientoglobal.es"
 PAGES = "https://davidbebow.github.io/temperaturas-mar-espana"
 API = os.environ.get("WP_API", WEB + "/wp-json/wp/v2")
@@ -1524,7 +1532,7 @@ font:17px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Aria
 .cgnv-svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 .cgnv-m{display:none}
 .cgnv-panel{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);column-gap:40px;
-grid-template-areas:"intro hoy" "cifras cifras" "prev prev" "graf graf";grid-template-rows:repeat(4,auto);grid-auto-rows:0;
+grid-template-areas:"intro hoy" "pt pt" "cifras cifras" "prev prev" "graf graf";grid-template-rows:repeat(5,auto);grid-auto-rows:0;
 background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color:var(--p-txt);border-radius:28px;padding:40px 44px 38px}
 .cgnv-panel a{color:var(--p-cristal)}.cgnv-panel a:hover{color:#fff}
 .cgnv-intro{grid-area:intro;align-self:end}
@@ -1535,7 +1543,7 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv .lede{font-size:18.5px;line-height:1.55;margin:0;color:var(--p-sub);max-width:36em}
 .cgnv-panel .cg-ssr-slot,.cgnv-panel .cgnv-dia{display:contents}
 .cg-ssr-slot{visibility:hidden;font-size:0;line-height:0}
-.cg-ssr-slot .cgnv-hoy,.cg-ssr-slot .cgnv-cifras,.cg-ssr-slot .cgnv-prev,.cg-ssr-slot .cgnv-graf-p,.cg-ssr-slot .cgnv-top,.cg-ssr-slot .cgnv-macs{visibility:visible;font-size:17px;line-height:1.55}
+.cg-ssr-slot .cgnv-hoy,.cg-ssr-slot .cgnv-pt,.cg-ssr-slot .cgnv-cifras,.cg-ssr-slot .cgnv-prev,.cg-ssr-slot .cgnv-graf-p,.cg-ssr-slot .cgnv-top,.cg-ssr-slot .cgnv-macs{visibility:visible;font-size:17px;line-height:1.55}
 .cgnv-hoy{grid-area:hoy;align-self:end;background:rgba(255,255,255,.06);border:1px solid rgba(191,230,255,.16);border-radius:22px;padding:22px 24px}
 .cgnv .cgnv-hoy h2{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;font-weight:500;letter-spacing:0;color:var(--p-mut);margin:0}
 .cgnv .cgnv-hoy-v{margin:4px 0 8px;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
@@ -1662,7 +1670,7 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-mac .cgnv-dt{color:var(--p-mut)}.cgnv-mac .cgnv-dd{margin:0;text-align:right;color:#fff;font-weight:600}
 .cgnv-mac .cgnv-dl.cgnv-cerca{grid-template-columns:1fr auto auto;gap:6px 12px}
 .cgnv-cerca .cgnv-dt:first-child+.cgnv-dd,.cgnv-cerca .cgnv-dt:first-child+.cgnv-dd+.cgnv-dd{color:var(--p-mut);font-weight:400;font-size:12.5px}
-@media(max-width:860px){.cgnv-panel{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "hoy" "cifras" "prev" "graf";grid-template-rows:repeat(5,auto);padding:28px 22px 24px}
+@media(max-width:860px){.cgnv-panel{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "hoy" "pt" "cifras" "prev" "graf";grid-template-rows:repeat(6,auto);padding:28px 22px 24px}
 .cgnv-panel-hub{grid-template-areas:"intro" "hoy" "mapa" "top" "prev" "macs" "graf";grid-template-rows:repeat(7,auto)}
 .cgnv-hoy{margin-top:24px}.cgnv h1{font-size:40px}.cgnv-graf-p{grid-template-columns:1fr}.cgnv-top{margin-top:18px}}
 @media(max-width:600px){.cgnv{padding:12px 10px 4px;font-size:16.5px}
@@ -1683,6 +1691,19 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-fila-n{grid-area:n}.cgnv-fila-b{grid-area:b}.cgnv-chip{grid-area:c}.cgnv-fila-d{grid-area:d;font-size:13px;font-weight:400;color:var(--p-mut)}
 .cgnv-fila-d::after{content:" días de nieve en la capital"}
 .cgnv-retrasos{grid-template-columns:1fr}.cgnv-escala .cgnv-esc{width:70px}.cgnv-metodo{padding:18px 16px 6px}}
+.cgnv-pt{grid-area:pt;margin-top:20px;background:var(--p-hondo);border-radius:22px;padding:22px 24px 18px;color:var(--p-sub)}
+.cgnv-prev .cgnv-pt{grid-area:auto;margin-top:26px;padding:20px 0 0;background:none;border-top:1px solid rgba(191,230,255,.14);border-radius:0}
+.cgnv .cgnv-pt .cgnv-panel-h2{font-size:21px;line-height:1.25;color:#fff;font-weight:700;margin:0 0 8px}
+.cgnv .cgnv-pt .cgnv-psub{font-size:15.5px;line-height:1.5;color:var(--p-sub);margin:0 0 12px;max-width:none}
+.cgnv .cgnv-pt .cgnv-pie{font-size:13.5px;line-height:1.5;color:var(--p-mut);margin:14px 0 0;max-width:none}
+.cgnv .cgnv-pt a{color:var(--p-cristal)}.cgnv .cgnv-pt .cgnv-chips{margin:0 0 12px}
+.cgnv-pt-l{list-style:none;margin:0;padding:0}
+.cgnv-pt-l li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:8px 0;border-top:1px solid rgba(191,230,255,.12);font-size:15px;color:var(--p-sub)}
+.cgnv-pt-l li b{color:#fff}
+.cgnv-pt-chip{font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;background:#163a55;color:var(--p-sub)}
+.cgnv-pt-cerrado{background:#ff7a45;color:#0a1b2a}.cgnv-pt-cadenas{background:rgba(255,122,69,.18);color:#ffb08f}
+.cgnv-pt-pesados{background:rgba(140,198,238,.2);color:#bfe6ff}.cgnv-pt-nieve{background:#163a55;color:var(--p-sub)}
+@media(max-width:860px){.cgnv-pt{padding:18px 16px 14px}.cgnv-prev .cgnv-pt{padding:18px 0 0}}
 @media(prefers-reduced-motion:reduce){.cgnv *{transition:none!important}}
 </style>"""
 
@@ -1702,6 +1723,47 @@ def img_svg(nombre: str, svg: str, alt: str) -> str:
     url = f"{PAGES}/nieve/graf/{nombre}.svg?v={h(svg)[:10]}"
     return (f'<div class="cgnv-img" title="{esc(alt)}" style="background-image:url({url});padding-top:{100 * hh / w:.2f}%">'
             f'</div><span class="cgnv-sr">{esc(alt)}</span>')
+
+
+def ctx_puertos() -> "nieve_puertos.Territorio":
+    """Provincias (con los nombres que usa la DGT) y sus puntos vigilados, para asignar territorio y macizo."""
+    provs = []
+    for slug, prov, g, *_r in PROVINCIAS:
+        provs.append({"slug": slug, "nombres": [prov, g],
+                      "puntos": [(p["lat"], p["lon"], p["macizo"]) for p in PUNTOS if p["prov"] == slug and p["tipo"] != "capital"]})
+    return nieve_puertos.Territorio(provs)
+
+
+def puertos_pasada() -> None:
+    """Lee la DGT; si falla conserva el puertos.json anterior. Nunca para la herramienta de nieve."""
+    global PUERTOS
+    t0 = time.time()
+    try:
+        PUERTOS, msg = nieve_puertos.actualizar(PUERTOS_JSON, PUERTOS_HIST, ctx_puertos(), AHORA)
+    except Exception as e:     # noqa: BLE001
+        PUERTOS, msg = nieve_puertos.leer_json(PUERTOS_JSON), f"FALLO inesperado ({type(e).__name__}: {e})"
+    log(f"Carreteras (DGT): {msg} · {time.time() - t0:.1f} s")
+
+
+ENL_CAT = {"barcelona", "girona", "lleida", "tarragona"}
+ENL_EUS = {"alava", "bizkaia", "gipuzkoa"}
+
+
+def bloque_puertos(ambito: str, clave: str | None = None, lugar: str | None = None) -> str:
+    """Carreteras con nieve del día (hub, macizo o provincia); vacío si no hay dato reciente o es época sin nieve."""
+    if not PUERTOS:
+        return ""
+    enl = []
+    if (ambito == "macizo" and clave == "pirineo") or (ambito == "provincia" and clave in ENL_CAT):
+        enl.append("cat")
+    if (ambito == "macizo" and clave == "vasco") or (ambito == "provincia" and clave in ENL_EUS):
+        enl.append("eus")
+    macs = {m: (MACIZO_PAG[m]["slug"], MACIZOS[m][0]) for m in ORDEN_MACIZOS if m in MACIZO_PAG}
+    try:
+        return nieve_puertos.bloque(PUERTOS, ambito, clave, lugar, macs, AHORA, enl)
+    except Exception as e:     # noqa: BLE001
+        log(f"Carreteras (DGT): no se pudo pintar el bloque ({type(e).__name__}: {e})")
+        return ""
 
 
 def ssr_compatible(html_: str) -> str:
@@ -2157,6 +2219,7 @@ def ssr_prov(px: dict, sat: dict) -> str:
         enl.append(f'<a href="/nieve/{MACIZO_PAG[mo["macizo"]]["slug"]}/">La nieve en {esc(MACIZO_PAG[mo["macizo"]]["corto"])}</a>')
     enl += [f'<a href="{url_ficha(e["id"])}">Ficha de {esc(e["nombre"])}</a>' for e in px["extras"]]
     p.append('<p class="cgnv-enl">' + " · ".join(enl) + "</p></div>")
+    p.append(bloque_puertos("provincia", px["slug"], px["provincia"]))
     # cifras
     p.append('<div class="cgnv-cifras">')
     p.append(cifra(cm(o["ult7"]), f"de nieve en los últimos 7 días en {mo['nombre']}"))
@@ -2689,6 +2752,7 @@ def ssr_hub(pxs: list, xs: list, sat: dict, macs: list) -> str:
         x = xs[max(range(len(xs)), key=lambda k: lejos[k])]
         p.append(f'<p class="cgnv-pie">Más allá de una semana, los modelos apuntan a más nieve en {esc(x["nombre"])} '
                  f'({esc(cm(lejos[xs.index(x)]))} entre los días 8 y 15), una tendencia que aún puede cambiar mucho.</p>')
+    p.append(bloque_puertos("hub"))
     p.append(tabla_cotas(xs))
     p.append(bloque_cerca(xs))
     p.append(f'<p class="cgnv-pie">Previsión de ECMWF, ICON, ARPEGE y GFS. Actualizado el '
@@ -2931,6 +2995,7 @@ def ssr_macizo(m: dict, xs: list, sat: dict) -> str:
         p.append(f"<li>Superficie nevada según el satélite: <b>{esc(pct(m['sat']))}</b>"
                  + (f"; lo normal, {esc(pct(m['sat_normal']))}" if m["sat_normal"] is not None else "") + "</li>")
     p.append(f'</ul><p><a href="{url_ficha(macizo=m["id"])}">Descargar la ficha {esc(de(mp["corto"]))} para compartir</a></p></div>')
+    p.append(bloque_puertos("macizo", m["id"], mp["corto"]))
     # tabla de hoy
     p.append('<div class="cgnv-prev"><h2 class="cgnv-panel-h2">Montaña a montaña</h2><div class="cgnv-tw">'
              '<table class="cgnv-tp cgnv-tm"><thead><tr><th class="cgnv-mod">Lugar</th><th>Espesor hoy</th><th>Normal hoy</th>'
@@ -3030,7 +3095,10 @@ def guardar_datos(pxs: list, xs: list, sat: dict, macs: list) -> None:
     escribir(SALIDA / "index.json", json.dumps(idx, ensure_ascii=False, indent=1, default=str))
     fichas = {"generado": gen, "version": VERSION, "fuente": fuente, "licencia": "CC BY 4.0",
               "puntos": {x["id"]: ficha_punto(x) for x in xs if x["tipo"] != "capital"},
-              "macizos": {m["id"]: ficha_macizo(m, xs) for m in macs}}
+              "macizos": {m["id"]: {**ficha_macizo(m, xs), "puertos": (
+                  {"cerrados": PUERTOS["macizos"].get(m["id"], {}).get("cerrados", 0),
+                   "cadenas": PUERTOS["macizos"].get(m["id"], {}).get("cadenas", 0), "corte": PUERTOS["corte"]}
+                  if PUERTOS else None)} for m in macs}}
     escribir(SALIDA / "fichas.json", json.dumps(fichas, ensure_ascii=False, separators=(",", ":"), default=str))
     todo = sat_leer()
     if todo:
@@ -3507,6 +3575,8 @@ def main() -> None:
     if con_datos < 0.8 * len(xs):
         log("Faltan datos de demasiados puntos: no se escribe nada")
         sys.exit(1)
+    if not a.demo:
+        puertos_pasada()
     guardar_datos(pxs, xs, sat, macs)
     try:
         guardar_tiempo(pxs, xs, sat, red=not a.demo)
