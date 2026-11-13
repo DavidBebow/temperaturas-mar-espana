@@ -1,6 +1,6 @@
-# Valencia lleva en lo que va de noviembre de 2026 con 18,4 °C de media: un mes que en 1961-1990 ocurría una vez cada 21 años y ahora es 4,5 veces más probable
+# Valencia lleva en lo que va de noviembre de 2026 con 18,5 °C de media: un mes que en 1961-1990 ocurría una vez cada 24 años y ahora es 4,6 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 21 años en 1961-1990 y ahora una vez cada 4,8 años: es 4,5 veces más probable (intervalo 1,5-37). Serie: serie mensual de la estación de AEMET de València.  
+**Dato:** Un mes así ocurría una vez cada 24 años en 1961-1990 y ahora una vez cada 5,1 años: es 4,6 veces más probable (intervalo 1,5-42). Serie: serie mensual de la estación de AEMET de València.  
 **Fecha del dato:** 12 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Valencia  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -14,7 +14,7 @@
 - **Método:** Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5.
 
 ## Límites (decirlos antes de que los descubran)
-- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 1,5-37.
+- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 1,5-42.
 - Todavía no es récord ni percentil extremo de la serie: la noticia es lo que ha cambiado, no el valor.
 - Dato validado de la estación (la validación llega con 10-20 días de retraso).
 

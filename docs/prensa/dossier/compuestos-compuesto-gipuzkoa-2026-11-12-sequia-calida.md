@@ -1,6 +1,6 @@
-# Sequía cálida en Gipuzkoa: sequía extrema y 1,8 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Gipuzkoa: sequía extrema y 1,7 °C más que lo normal en noviembre de 2026
 
-**Dato:** Gipuzkoa está en «sequía extrema» en el Monitor de sequía (SPI-12 de -0,7) y la media de noviembre de 2026 hasta el 12 de noviembre de 2026 es de 14,7 °C, 1,8 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Gipuzkoa está en «sequía extrema» en el Monitor de sequía (SPI-12 de -0,7) y la media de noviembre de 2026 hasta el 12 de noviembre de 2026 es de 14,6 °C, 1,7 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 12 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Gipuzkoa  
 **Citabilidad:** alta · **Exclusivo:** sí
