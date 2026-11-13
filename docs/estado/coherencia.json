@@ -1,24 +1,24 @@
 {
- "generado": "2026-11-13T11:39:13+00:00",
- "duracion_s": 4.14,
+ "generado": "2026-11-13T20:08:01+00:00",
+ "duracion_s": 2.45,
  "comprobaciones": [
   {
    "id": "clave",
    "descripcion": "Misma clave (indicador+territorio+periodo+corte), mismo valor en todos los JSON",
-   "evaluadas": 116,
+   "evaluadas": 124,
    "fallos": 0
   },
   {
    "id": "titular",
    "descripcion": "El número del titular y del dato es el del campo estructurado",
-   "evaluadas": 36,
+   "evaluadas": 38,
    "fallos": 0
   },
   {
    "id": "hoy",
    "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
-   "evaluadas": 159,
-   "fallos": 1
+   "evaluadas": 156,
+   "fallos": 0
   },
   {
    "id": "niveles",
@@ -27,19 +27,8 @@
    "fallos": 1
   }
  ],
- "n_fallos": 2,
+ "n_fallos": 1,
  "fallos": [
-  {
-   "comprobacion": "hoy",
-   "clave": "huella-antes-raro-espana-2026-11-09|titular",
-   "valores": [
-    {
-     "ruta": "prensa/hallazgos.json#en_revision(huella-antes-raro-espana-2026-11-09)",
-     "valor": "fecha_dato 2026-11-09"
-    }
-   ],
-   "detalle": "dice «hoy» con un dato anterior a ayer"
-  },
   {
    "comprobacion": "niveles",
    "clave": "Avisos amarillos de AEMET",
@@ -60,10 +49,5 @@
    "detalle": "«Avisos amarillos de AEMET» contiene elementos de otro nivel"
   }
  ],
- "bloqueados": [
-  {
-   "id": "huella-antes-raro-espana-2026-11-09",
-   "motivo": "dice «hoy» con un dato anterior a ayer"
-  }
- ]
+ "bloqueados": []
 }
