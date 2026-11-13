@@ -24,6 +24,9 @@ Salidas
   docs/nieve/publicado.json                         registro de lo publicado en WordPress
   docs/nieve/puertos.json                           carreteras con nieve, cerradas o con cadenas según la DGT (scripts/nieve_puertos.py)
   archivo/nieve/puertos_hist.csv                    una línea por pasada con los cuatro totales de carreteras
+  docs/nieve/aludes.json                            peligro de aludes: nivel de los boletines de AEMET vigentes (scripts/nieve_aludes.py)
+  archivo/nieve/aludes_hist.csv                     una línea por boletín y emisión nueva (fecha, boletín, nivel máximo)
+  archivo/nieve/aludes_crudo/                       texto de cada boletín (y respuesta de OpenData) cada vez que cambia
 
 Modos
   python scripts/nieve.py --clima [--presupuesto 1000]   baja por tandas la serie larga de ERA5-Land (pesada)
@@ -70,8 +73,9 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import nieve_puertos  # noqa: E402  (lector de las incidencias de la DGT)
+import nieve_aludes  # noqa: E402  (lector de los boletines de peligro de aludes de AEMET)
 
-VERSION = "1.6.0"
+VERSION = "1.7.0"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 ARCHIVO = RAIZ / "archivo" / "nieve"
 ERA = ARCHIVO / "era5land"
@@ -85,6 +89,10 @@ PUBLICADO = SALIDA / "publicado.json"
 PUERTOS_JSON = SALIDA / "puertos.json"
 PUERTOS_HIST = ARCHIVO / "puertos_hist.csv"
 PUERTOS = None                    # lo que dejó la DGT en esta pasada (o lo último guardado); lo rellena main()
+ALUDES_JSON = SALIDA / "aludes.json"
+ALUDES_HIST = ARCHIVO / "aludes_hist.csv"
+ALUDES_CRUDO = ARCHIVO / "aludes_crudo"
+ALUDES = None                     # lo que dejó AEMET en esta pasada (o lo último guardado); lo rellena main()
 WEB = "https://calentamientoglobal.es"
 PAGES = "https://davidbebow.github.io/temperaturas-mar-espana"
 API = os.environ.get("WP_API", WEB + "/wp-json/wp/v2")
@@ -1703,6 +1711,10 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgnv-pt-chip{font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap;background:#163a55;color:var(--p-sub)}
 .cgnv-pt-cerrado{background:#ff7a45;color:#0a1b2a}.cgnv-pt-cadenas{background:rgba(255,122,69,.18);color:#ffb08f}
 .cgnv-pt-pesados{background:rgba(140,198,238,.2);color:#bfe6ff}.cgnv-pt-nieve{background:#163a55;color:var(--p-sub)}
+.cgnv-al-chip{display:inline-block;font-size:14px;font-weight:700;padding:3px 11px;border-radius:999px;white-space:nowrap}
+.cgnv-al-n1{background:#4caf50;color:#06210a}.cgnv-al-n2{background:#ffe14d;color:#2a2200}.cgnv-al-n3{background:#ff9f1c;color:#2a1500}
+.cgnv-al-n4{background:#d62828;color:#fff}.cgnv-al-n5{background:#6b0a10;color:#fff;box-shadow:0 0 0 1px #ff8a8a}
+.cgnv-al-b{margin:0 0 6px}
 @media(max-width:860px){.cgnv-pt{padding:18px 16px 14px}.cgnv-prev .cgnv-pt{padding:18px 0 0}}
 @media(prefers-reduced-motion:reduce){.cgnv *{transition:none!important}}
 </style>"""
@@ -1743,6 +1755,30 @@ def puertos_pasada() -> None:
     except Exception as e:     # noqa: BLE001
         PUERTOS, msg = nieve_puertos.leer_json(PUERTOS_JSON), f"FALLO inesperado ({type(e).__name__}: {e})"
     log(f"Carreteras (DGT): {msg} · {time.time() - t0:.1f} s")
+
+
+def aludes_pasada() -> None:
+    """Lee los boletines de aludes de AEMET; si falla conserva el aludes.json anterior (su vigencia se vuelve a comprobar al
+    pintar). Nunca para la herramienta de nieve."""
+    global ALUDES
+    t0 = time.time()
+    try:
+        ALUDES, msg = nieve_aludes.actualizar(ALUDES_JSON, ALUDES_HIST, ALUDES_CRUDO, AHORA)
+    except Exception as e:     # noqa: BLE001
+        ALUDES, msg = nieve_aludes.leer_json(ALUDES_JSON), f"FALLO inesperado ({type(e).__name__}: {e})"
+    log(f"Aludes (AEMET): {msg} · {time.time() - t0:.1f} s")
+
+
+def bloque_aludes(ambito: str, clave: str | None = None, lugar: str | None = None) -> str:
+    """Peligro de aludes del día (hub, macizo o provincia): solo boletines de AEMET vigentes hoy."""
+    if not ALUDES:
+        return ""
+    macs = {m: (MACIZO_PAG[m]["slug"], MACIZOS[m][0]) for m in ORDEN_MACIZOS if m in MACIZO_PAG}
+    try:
+        return nieve_aludes.bloque(ALUDES, ambito, clave, lugar, macs, AHORA)
+    except Exception as e:     # noqa: BLE001
+        log(f"Aludes (AEMET): no se pudo pintar el bloque ({type(e).__name__}: {e})")
+        return ""
 
 
 ENL_CAT = {"barcelona", "girona", "lleida", "tarragona"}
@@ -2220,6 +2256,7 @@ def ssr_prov(px: dict, sat: dict) -> str:
     enl += [f'<a href="{url_ficha(e["id"])}">Ficha de {esc(e["nombre"])}</a>' for e in px["extras"]]
     p.append('<p class="cgnv-enl">' + " · ".join(enl) + "</p></div>")
     p.append(bloque_puertos("provincia", px["slug"], px["provincia"]))
+    p.append(bloque_aludes("provincia", px["slug"], px["provincia"]))
     # cifras
     p.append('<div class="cgnv-cifras">')
     p.append(cifra(cm(o["ult7"]), f"de nieve en los últimos 7 días en {mo['nombre']}"))
@@ -2566,6 +2603,12 @@ def svg_desplazamiento(x: dict) -> str:
 
 
 
+FAQ_ALUDES = ("AEMET usa la escala europea, de cinco niveles: 1 Débil (nieve estable), 2 Limitado (inestable en algunas "
+              "pendientes muy inclinadas), 3 Notable (inestable en muchas pendientes), 4 Fuerte (inestable en la mayoría) y "
+              "5 Muy fuerte (aludes grandes, incluso espontáneos). Vale fuera de pistas balizadas y abiertas, y con nieve el "
+              "peligro nunca es cero.")
+
+
 def html_hub(pxs: list, xs: list) -> str:
     montes = [px["monte"] for px in pxs]
     con_clima = [x for x in montes if x["clima"].get("total") is not None and x["completo"]]
@@ -2613,6 +2656,7 @@ def html_hub(pxs: list, xs: list) -> str:
           "El bloque «Carreteras con nieve ahora», más arriba, lista los tramos cerrados, con cadenas obligatorias o con "
           "restricción a camiones y autobuses según la DGT, con su hora, y los agrupa por macizo. Se actualiza tres veces al día "
           "y no incluye Cataluña ni el País Vasco: antes de salir, mira el mapa de tráfico de la DGT."),
+         ("¿Qué significa el nivel de peligro de aludes?", FAQ_ALUDES),
          ("¿Qué es la cota de nieve?",
           "La altitud a partir de la cual la precipitación cae en forma de nieve. Suele estar unos 300 metros por debajo de "
           "la isoterma de 0 °C, que es como se estima aquí con los datos de cada modelo."),
@@ -2632,9 +2676,13 @@ def html_hub(pxs: list, xs: list) -> str:
                'la media de las temporadas de 1991-92 a 2020-21. Las cifras de nieve caída son de modelo, en celdas de unos 30 km, '
                'y sirven para comparar unos años con otros, no para saber cuánta nieve hay en una pista concreta. Las carreteras '
                'cerradas o con cadenas vienen de las incidencias en vivo de la DGT (DATEX II v3.7, licencia CC BY; no cubre Cataluña '
-               'ni el País Vasco) y se leen en cada pasada. Datos en '
-               f'<a href="{PAGES}/nieve/index.json">JSON</a>, <a href="{PAGES}/nieve/satelite.csv">CSV</a> y '
-               f'<a href="{PAGES}/nieve/puertos.json">carreteras con nieve (JSON)</a> (CC BY 4.0).</p>'
+               'ni el País Vasco) y se leen en cada pasada. El peligro de aludes es el nivel que escribe AEMET en sus boletines '
+               '(Pirineo, Guadarrama, Picos de Europa y Cordel y Peña Labra), con su zona y su fecha de validez: aquí no se '
+               'calcula ni se estima, y un boletín caducado no se muestra. Datos en '
+               f'<a href="{PAGES}/nieve/index.json">JSON</a>, <a href="{PAGES}/nieve/satelite.csv">CSV</a>, '
+               f'<a href="{PAGES}/nieve/puertos.json">carreteras con nieve (JSON)</a> y '
+               f'<a href="{PAGES}/nieve/aludes.json">peligro de aludes (JSON)</a> (CC BY 4.0; los niveles de aludes son de AEMET, '
+               'que autoriza su reproducción citándola).</p>'
                '<p>Sigue con <a href="/heladas/">las heladas en cada ciudad</a>, <a href="/avisos-meteorologicos-activos/">'
                'los avisos meteorológicos</a>, <a href="/el-tiempo/">el tiempo municipio a municipio</a> o '
                '<a href="/metodologia/">la metodología</a>.</p></div>')
@@ -2760,6 +2808,7 @@ def ssr_hub(pxs: list, xs: list, sat: dict, macs: list) -> str:
         p.append(f'<p class="cgnv-pie">Más allá de una semana, los modelos apuntan a más nieve en {esc(x["nombre"])} '
                  f'({esc(cm(lejos[xs.index(x)]))} entre los días 8 y 15), una tendencia que aún puede cambiar mucho.</p>')
     p.append(bloque_puertos("hub"))
+    p.append(bloque_aludes("hub"))
     p.append(tabla_cotas(xs))
     p.append(bloque_cerca(xs))
     p.append(f'<p class="cgnv-pie">Previsión de ECMWF, ICON, ARPEGE y GFS. Actualizado el '
@@ -3003,6 +3052,7 @@ def ssr_macizo(m: dict, xs: list, sat: dict) -> str:
                  + (f"; lo normal, {esc(pct(m['sat_normal']))}" if m["sat_normal"] is not None else "") + "</li>")
     p.append(f'</ul><p><a href="{url_ficha(macizo=m["id"])}">Descargar la ficha {esc(de(mp["corto"]))} para compartir</a></p></div>')
     p.append(bloque_puertos("macizo", m["id"], mp["corto"]))
+    p.append(bloque_aludes("macizo", m["id"], mp["corto"]))
     # tabla de hoy
     p.append('<div class="cgnv-prev"><h2 class="cgnv-panel-h2">Montaña a montaña</h2><div class="cgnv-tw">'
              '<table class="cgnv-tp cgnv-tm"><thead><tr><th class="cgnv-mod">Lugar</th><th>Espesor hoy</th><th>Normal hoy</th>'
@@ -3105,7 +3155,8 @@ def guardar_datos(pxs: list, xs: list, sat: dict, macs: list) -> None:
               "macizos": {m["id"]: {**ficha_macizo(m, xs), "puertos": (
                   {"cerrados": PUERTOS["macizos"].get(m["id"], {}).get("cerrados", 0),
                    "cadenas": PUERTOS["macizos"].get(m["id"], {}).get("cadenas", 0), "corte": PUERTOS["corte"]}
-                  if PUERTOS else None)} for m in macs}}
+                  if PUERTOS else None),
+                  **({"aludes": a} if (a := nieve_aludes.ficha_macizo(ALUDES, m["id"], AHORA)) else {})} for m in macs}}
     escribir(SALIDA / "fichas.json", json.dumps(fichas, ensure_ascii=False, separators=(",", ":"), default=str))
     todo = sat_leer()
     if todo:
@@ -3584,6 +3635,7 @@ def main() -> None:
         sys.exit(1)
     if not a.demo:
         puertos_pasada()
+        aludes_pasada()
     guardar_datos(pxs, xs, sat, macs)
     try:
         guardar_tiempo(pxs, xs, sat, red=not a.demo)
