@@ -55,8 +55,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Dependencia del lector de aludes (pypdf)
+        run: pip install --quiet pypdf
+
       - name: Satélite, datos, previsión y publicación
         env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
           WP_USER: ${{ secrets.WP_USER }}
           WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
           FORZAR: ${{ github.event.inputs.forzar }}
