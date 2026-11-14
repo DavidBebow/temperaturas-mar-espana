@@ -1,8 +1,8 @@
-# Sequía cálida en Cáceres: sequía extrema y 1,6 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Cádiz: sequía extrema y 2,1 °C más que lo normal en noviembre de 2026
 
-**Dato:** Cáceres está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,5) y la media de noviembre de 2026 hasta el 12 de noviembre de 2026 es de 14,5 °C, 1,6 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
-**Fecha del dato:** 12 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Cáceres  
+**Dato:** Cádiz está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,2) y la media de noviembre de 2026 hasta el 13 de noviembre de 2026 es de 20,0 °C, 2,1 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 13 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Cádiz  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
@@ -16,10 +16,9 @@
 ## Límites (decirlos antes de que los descubran)
 - SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO
 - La anomalía es de una estación (la de la capital), no de toda la provincia
-- Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/caceres/
+- Página: https://calentamientoglobal.es/sequia/cadiz/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
