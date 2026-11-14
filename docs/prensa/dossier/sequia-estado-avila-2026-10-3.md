@@ -1,4 +1,4 @@
-# Ávila está en sequía severa a cierre de octubre: SPI a 6 meses de −1,93, el 140 % de la lluvia normal del año hidrológico
+# Ávila está en sequía severa a cierre de octubre: SPI a 6 meses de −1,93, el 126 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 3 (Sequía severa); SPI-3 −1,00, SPI-6 −1,93, SPI-12 0,32.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,8 +6,8 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Ávila: 108.7 mm.
-- Días sin lluvia de 1 mm en la capital: 0.
+- Lluvia desde el 1 de octubre en Ávila: 100.5 mm.
+- Días sin lluvia de 1 mm en la capital: 1.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es

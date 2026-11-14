@@ -1,4 +1,4 @@
-# Ceuta está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,08, el 163 % de la lluvia normal del año hidrológico
+# Ceuta está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,08, el 129 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 4 (Sequía extrema); SPI-3 −1,45, SPI-6 −2,08, SPI-12 1,39.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,7 +6,7 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Ceuta: 148.0 mm.
+- Lluvia desde el 1 de octubre en Ceuta: 119.3 mm.
 - Días sin lluvia de 1 mm en la capital: 0.
 
 ## Fuente y método
