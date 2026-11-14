@@ -1,6 +1,6 @@
-# Barcelona marcó el 11 de noviembre su máxima más alta para esa fecha desde 1940: 23,7 °C
+# Barcelona registró el 11 de noviembre una máxima de 23,4 °C, la más alta para esa fecha en la serie que empieza en 1940
 
-**Dato:** 23,7 °C (corregido a escala ERA5: 23,8 °C) · récord anterior para la fecha 21,9 °C (1949)  
+**Dato:** AEMET, estación de Barcelona: 23,4 °C · reanálisis ERA5 en la celda de Barcelona: 23,8 °C · récord anterior de la serie para la fecha: 21,9 °C (1949)  
 **Fecha del dato:** 11 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Barcelona  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -16,9 +16,8 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
-- Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
 - La rareza compara dos climas (1961-1990 y 1996-2025) de la serie del reanálisis ERA5 en la celda de la capital; no atribuye este día a una causa y su intervalo es del 90 %.
-- COMPROBAR: pendiente de que AEMET publique el dato de la estación de Barcelona (llega con 2-4 días de retraso).
+- La cifra es la medida por AEMET en su estación. El carácter de récord sale de la serie diaria del reanálisis ERA5 desde 1940 (celda de ~25 km), contrastada ese día con la estación (diferencia 0,3 °C).
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-barcelona/
