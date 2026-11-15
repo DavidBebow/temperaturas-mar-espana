@@ -1,8 +1,8 @@
-# Sequía cálida en Ciudad Real: sequía moderada y 2,4 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Córdoba: sequía extrema y 3,0 °C más que lo normal en noviembre de 2026
 
-**Dato:** Ciudad Real está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,7) y la media de noviembre de 2026 hasta el 13 de noviembre de 2026 es de 14,1 °C, 2,4 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
-**Fecha del dato:** 13 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Ciudad Real  
+**Dato:** Córdoba está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,6) y la media de noviembre de 2026 hasta el 14 de noviembre de 2026 es de 18,0 °C, 3,0 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 14 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Córdoba  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
@@ -19,7 +19,7 @@
 - Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/ciudad-real/
+- Página: https://calentamientoglobal.es/sequia/cordoba/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
