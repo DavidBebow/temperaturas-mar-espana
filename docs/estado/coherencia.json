@@ -1,6 +1,6 @@
 {
- "generado": "2026-11-15T16:40:01+00:00",
- "duracion_s": 1.97,
+ "generado": "2026-11-15T23:13:40+00:00",
+ "duracion_s": 2.18,
  "comprobaciones": [
   {
    "id": "clave",
@@ -11,23 +11,43 @@
   {
    "id": "titular",
    "descripcion": "El número del titular y del dato es el del campo estructurado",
-   "evaluadas": 31,
+   "evaluadas": 43,
    "fallos": 0
   },
   {
    "id": "hoy",
    "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
-   "evaluadas": 159,
+   "evaluadas": 166,
    "fallos": 0
   },
   {
    "id": "niveles",
    "descripcion": "Las listas por nivel solo contienen elementos de su nivel",
-   "evaluadas": 0,
-   "fallos": 0
+   "evaluadas": 1,
+   "fallos": 1
   }
  ],
- "n_fallos": 0,
- "fallos": [],
+ "n_fallos": 1,
+ "fallos": [
+  {
+   "comprobacion": "niveles",
+   "clave": "Avisos amarillos de AEMET",
+   "valores": [
+    {
+     "ruta": "https://calentamientoglobal.es/el-tiempo/",
+     "valor": "A Coruña: #f2c94c"
+    },
+    {
+     "ruta": "https://calentamientoglobal.es/el-tiempo/",
+     "valor": "Pontevedra: #f2c94c"
+    },
+    {
+     "ruta": "https://calentamientoglobal.es/el-tiempo/",
+     "valor": "Asturias: #f2c94c"
+    }
+   ],
+   "detalle": "«Avisos amarillos de AEMET» contiene elementos de otro nivel"
+  }
+ ],
  "bloqueados": []
 }
