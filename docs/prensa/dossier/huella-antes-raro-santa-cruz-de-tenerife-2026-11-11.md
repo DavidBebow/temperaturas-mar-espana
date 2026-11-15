@@ -1,6 +1,6 @@
-# Santa Cruz de Tenerife registró el 11 de noviembre una máxima de 30 °C: un día que en 1961-1990 ocurría una vez cada 13 años y ahora es 7,4 veces más probable
+# Santa Cruz de Tenerife registró el 11 de noviembre una temperatura media de 26,6 °C: un día que en 1961-1990 ocurría menos de una vez cada 1.000 años y ahora es 82 veces más probable
 
-**Dato:** Un día así ocurría una vez cada 13 años en 1961-1990 y ahora una vez cada 1,8 años: es 7,4 veces más probable (intervalo 3,1-268).  
+**Dato:** Un día así ocurría menos de una vez cada 1.000 años en 1961-1990 y ahora una vez cada 12 años: es 82 veces más probable (intervalo 24-415); con tan pocos casos en 1961-1990 el cociente es un mínimo.  
 **Fecha del dato:** 11 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Santa Cruz de Tenerife  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -14,9 +14,10 @@
 - **Método:** Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5.
 
 ## Límites (decirlos antes de que los descubran)
-- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 3,1-268.
+- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 24-415.
 - Todavía no es récord ni percentil extremo de la serie: la noticia es lo que ha cambiado, no el valor.
 - Dato validado de la estación (la validación llega con 10-20 días de retraso).
+- Con tan pocos casos en 1961-1990 el cociente es un mínimo.
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-santa-cruz-de-tenerife/
