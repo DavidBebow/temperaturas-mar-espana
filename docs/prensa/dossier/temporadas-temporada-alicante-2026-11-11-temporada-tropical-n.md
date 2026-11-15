@@ -1,7 +1,7 @@
 # Alicante: 2026 bate el máximo de su serie en noches tropicales: 111, frente a 106 del máximo anterior
 
-**Dato:** 2026 bate el máximo de su serie en noches tropicales: 111, frente a 106 del máximo anterior, con datos validados de AEMET hasta el 10 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
-**Fecha del dato:** 10 de noviembre de 2026  
+**Dato:** 2026 bate el máximo de su serie en noches tropicales: 111, frente a 106 del máximo anterior, con datos validados de AEMET hasta el 11 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
+**Fecha del dato:** 11 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Alicante  
 **Citabilidad:** alta · **Exclusivo:** sí
 
