@@ -1,0 +1,58 @@
+name: Niebla · días de niebla al año (manual)
+
+# Climatología de niebla de las capitales (scripts/niebla_clima.py): baja de AEMET los valores mensuales de niebla
+# y visibilidad desde 1971 y escribe docs/niebla/clima.json. Solo a mano: se lanza una vez y, como mucho, una vez
+# al año. Es reanudable: si se queda sin tiempo o AEMET falla, se vuelve a lanzar y sigue donde lo dejó.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niebla-clima
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  clima:
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bajar y resumir
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+        run: python scripts/niebla_clima.py
+
+      - name: Guardar
+        if: always()
+        run: |
+          python scripts/niebla_clima.py --resumen || true
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs/niebla/clima.json archivo/niebla/clima_crudo.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "niebla: climatología de días de niebla"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase -X theirs --autostash && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep $((i*5))
+          done
+          exit 1

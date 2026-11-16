@@ -5,6 +5,7 @@ name: Niebla en directo
 # Horas en UTC pensadas para la hora de Madrid en invierno.
 #   octubre-marzo: cada 30 min de 04:00 a 10:00 UTC y cada hora el resto
 #   abril-septiembre: 05:30 y 17:30 UTC
+# Además escribe el bloque del día de la página /niebla/ (meta cg_ssr_html, secretos WP_USER / WP_APP_AGOSTO).
 # Solo hay commit si cambia el contenido de niebla.json más allá de la hora (lo decide el script: si no cambia, no escribe nada).
 
 on:
@@ -44,6 +45,8 @@ jobs:
       - name: Pasada de niebla
         env:
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_AGOSTO }}
         run: python scripts/niebla.py
 
       - name: Guardar
