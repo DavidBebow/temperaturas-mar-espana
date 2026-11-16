@@ -94,7 +94,8 @@ function isoZ(d){return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.
 function horaMadrid(){return +new Intl.DateTimeFormat('es-ES',{hour:'numeric',hour12:false,timeZone:TZ}).format(new Date())%24}
 function vistxt(v){return v==null?'sin dato':v>=10000?'10 km o más':v>=1000?(v/1000).toFixed(1).replace('.',',')+' km':v+' m'}
 
-var map=L.map('map',{zoomControl:false,minZoom:5,maxZoom:10}).setView([40.1,-3.6],6);
+var map=L.map('map',{zoomControl:false,minZoom:5,maxZoom:10,zoomSnap:0.25}).setView([40.1,-3.6],6);
+map.fitBounds([[35.9,-9.6],[43.9,3.6]]);
 L.control.zoom({position:'bottomright'}).addTo(map);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri'}).addTo(map);
 map.createPane('prov').style.zIndex=200;
