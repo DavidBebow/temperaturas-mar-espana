@@ -38,6 +38,7 @@ ANTES, AHORA_P = (1971, 1990), (2006, 2025)
 NORMAL = (1991, 2020)
 MIN_ANIOS = 15                  # años completos que exige cada periodo de 20
 PAUSA = 1.3                     # segundos entre llamadas
+_VISTO: list = []
 LIMITE_S = int(os.environ.get("CLIMA_LIMITE_S", "6600"))   # se para solo y se reanuda en la siguiente ejecución
 
 
@@ -63,8 +64,10 @@ def pedir(ide: str, a: int, b: int, clave: str):
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return []
+            N.log(f"    {ide} {a}-{b}: HTTP {e.code} (intento {i + 1})")
             time.sleep(65 if e.code == 429 else 8 * (i + 1))
-        except Exception:                # noqa: BLE001
+        except Exception as e:           # noqa: BLE001
+            N.log(f"    {ide} {a}-{b}: {type(e).__name__}: {str(e)[:160]} (intento {i + 1})")
             time.sleep(8 * (i + 1))
     return None
 
@@ -88,6 +91,10 @@ def bajar() -> dict:
                 _guardar(crudo)
                 return crudo
             filas = pedir(ide, a, b, clave)
+            if not _VISTO and filas:
+                _VISTO.append(1)
+                N.log(f"  primera respuesta ({ide} {clave_t}): {len(filas)} filas; campos de niebla en la primera: "
+                      f"{ {c: filas[0].get(c) for c in CAMPOS} }; fecha {filas[0].get('fecha')}")
             time.sleep(PAUSA)
             if filas is None:
                 N.log(f"  {ciudad} {clave_t}: fallo, queda pendiente")
