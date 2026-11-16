@@ -1,0 +1,74 @@
+name: Niebla en directo
+
+# Widget /niebla/ de calentamientoglobal.es (scripts/niebla.py): tramos con niebla de la DGT, METAR de aeropuertos y visibilidad
+# de AEMET -> docs/niebla/niebla.json. El satélite (EUMETView) lo carga el navegador, no pasa por aquí.
+# Horas en UTC pensadas para la hora de Madrid en invierno.
+#   octubre-marzo: cada 30 min de 04:00 a 10:00 UTC y cada hora el resto
+#   abril-septiembre: 05:30 y 17:30 UTC
+# Solo hay commit si cambia el contenido de niebla.json más allá de la hora (lo decide el script: si no cambia, no escribe nada).
+
+on:
+  workflow_dispatch:
+    inputs:
+      diag:
+        description: "Diagnóstico de la primera pasada (escribe docs/niebla/diag.json y nada más)"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "0,30 4-9 * 10-12,1-3 *"
+    - cron: "0 10 * 10-12,1-3 *"
+    - cron: "0 0-3,11-23 * 10-12,1-3 *"
+    - cron: "30 5,17 * 4-9 *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niebla
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  niebla:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Pasada de niebla
+        env:
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          DIAG: ${{ github.event.inputs.diag }}
+        run: |
+          if [ "$DIAG" = "true" ]; then python scripts/niebla.py --diag; else python scripts/niebla.py; fi
+
+      - name: Guardar
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A docs/niebla archivo/niebla
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "niebla: $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase -X theirs --autostash && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
