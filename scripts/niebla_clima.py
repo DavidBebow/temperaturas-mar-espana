@@ -37,7 +37,7 @@ INICIO = 1971
 ANTES, AHORA_P = (1971, 1990), (2006, 2025)
 NORMAL = (1991, 2020)
 MIN_ANIOS = 15                  # años completos que exige cada periodo de 20
-PAUSA = 1.3                     # segundos entre llamadas
+PAUSA = 0.7                     # segundos entre llamadas
 _VISTO: list = []
 LIMITE_S = int(os.environ.get("CLIMA_LIMITE_S", "6600"))   # se para solo y se reanuda en la siguiente ejecución
 
@@ -65,10 +65,10 @@ def pedir(ide: str, a: int, b: int, clave: str):
             if e.code == 404:
                 return []
             N.log(f"    {ide} {a}-{b}: HTTP {e.code} (intento {i + 1})")
-            time.sleep(65 if e.code == 429 else 8 * (i + 1))
+            time.sleep(65 if e.code == 429 else 3 + 2 * i)
         except Exception as e:           # noqa: BLE001
             N.log(f"    {ide} {a}-{b}: {type(e).__name__}: {str(e)[:160]} (intento {i + 1})")
-            time.sleep(8 * (i + 1))
+            time.sleep(3 + 2 * i)
     return None
 
 
