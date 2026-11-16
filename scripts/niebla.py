@@ -8,11 +8,9 @@ Fuentes de suelo (el satélite lo carga el navegador desde EUMETView, no pasa po
   AEMET    observación convencional (campo vis, km, solo estaciones con sensor). Secreto AEMET_API_KEY.
 
 Uso:  python scripts/niebla.py            pasada normal
-      python scripts/niebla.py --diag     escribe docs/niebla/diag.json (recuentos y tres ejemplos) y nada más
 """
 from __future__ import annotations
 
-import argparse
 import csv
 import hashlib
 import io
@@ -36,7 +34,6 @@ VERSION = "1.0.0"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 SALIDA = RAIZ / "docs" / "niebla"
 JSON_OUT = SALIDA / "niebla.json"
-DIAG_OUT = SALIDA / "diag.json"
 ARCHIVO = RAIZ / "archivo" / "niebla"
 HIST = ARCHIVO / "niebla_hist.csv"
 DIA = ARCHIVO / "provincias_dia.csv"
@@ -48,7 +45,7 @@ DGT_URL = "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v37.xml"
 DGT_URL_36 = "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml"
 METAR_URL = "https://aviationweather.gov/api/data/metar?ids={ids}&format=json&hours=3"
 AEMET_URL = "https://opendata.aemet.es/opendata/api/observacion/convencional/todas"
-AEMET_VIS_A_M = 1000.0           # vis viene en km (se mide en diag.json: rango y ejemplos)
+AEMET_VIS_A_M = 1000.0           # vis viene en km (confirmado: rango 0,1-30 en 93 estaciones)
 MAX_EDAD_MIN = 90                # observaciones más viejas no cuentan
 UMBRAL_NIEBLA_M = 1000
 UMBRAL_BRUMA_M = 5000
@@ -160,10 +157,9 @@ def es_niebla(r: dict) -> bool:
     return r["tipo"] == "PoorEnvironmentConditions" and any("fog" in x.lower() for x in r["v"].get("poorEnvironmentType", []))
 
 
-def leer_dgt(contenido: bytes, terr: Territorio, ahora: datetime, diag: dict | None = None) -> dict:
+def leer_dgt(contenido: bytes, terr: Territorio, ahora: datetime) -> dict:
     """Tramos activos con niebla, deduplicados por id (gana la versión más reciente)."""
     corte, vistos, n_reg = None, {}, 0
-    tipos, cualquier = {}, 0
     for _ev, el in ET.iterparse(io.BytesIO(contenido), events=("end",)):
         n = NP._l(el.tag)
         if n == "publicationTime" and corte is None:
@@ -171,10 +167,6 @@ def leer_dgt(contenido: bytes, terr: Territorio, ahora: datetime, diag: dict | N
         elif n == "situationRecord":
             n_reg += 1
             r = NP._registro(el)
-            for t in r["v"].get("poorEnvironmentType", []):
-                tipos[t] = tipos.get(t, 0) + 1
-            if any("fog" in x.lower() for x in r["v"].get("poorEnvironmentType", [])):
-                cualquier += 1
             if es_niebla(r) and r["id"] and NP.activo(r, ahora):
                 ant = vistos.get(r["id"])
                 if ant is None or r["version"] >= ant["version"]:
@@ -186,10 +178,6 @@ def leer_dgt(contenido: bytes, terr: Territorio, ahora: datetime, diag: dict | N
         raise RuntimeError("el fichero no trae ningún situationRecord")
     tramos = [_tramo(r, terr) for r in vistos.values()]
     tramos.sort(key=lambda t: (t["provincia"] or "", t["carretera"] or "", t["id"]))
-    if diag is not None:
-        diag.update({"registros": n_reg, "niebla_activos": len(tramos), "fog_en_cualquier_tipo_y_estado": cualquier,
-                     "poorEnvironmentType": dict(sorted(tipos.items(), key=lambda kv: -kv[1])[:12]),
-                     "sin_provincia": sum(1 for t in tramos if not t["provincia_slug"])})
     return {"corte": (NP._hora(corte) or ahora).astimezone(TZ).isoformat(timespec="seconds"), "n_registros": n_reg,
             "tramos": tramos}
 
@@ -336,7 +324,7 @@ def _hora_aemet(s) -> datetime | None:
     return d if d.tzinfo else d.replace(tzinfo=timezone.utc)      # fint de la observación convencional: UTC
 
 
-def leer_aemet(datos: list, terr: Territorio, ahora: datetime, diag: dict | None = None) -> dict:
+def leer_aemet(datos: list, terr: Territorio, ahora: datetime) -> dict:
     """Última observación con visibilidad de cada estación (vis en km)."""
     ult, total = {}, set()
     for o in datos:
@@ -359,12 +347,6 @@ def leer_aemet(datos: list, terr: Territorio, ahora: datetime, diag: dict | None
         puntos.append({"id": est, "tipo": "aemet", "nombre": str(o.get("ubi") or est).title(), "lat": lat, "lon": lon,
                        "vis_m": vis, "wx": "", "clase": clase(vis, ""), "hora": h.astimezone(TZ).strftime("%H:%M"),
                        "provincia_slug": terr.slug_punto(lat, lon)})
-    if diag is not None:
-        vals = [o["vis"] for _h, o in ult.values()]
-        diag.update({"estaciones_en_respuesta": len(total), "estaciones_con_vis": len(ult), "con_vis_reciente": len(puntos),
-                     "vis_rango": [min(vals), max(vals)] if vals else None,
-                     "ejemplos": [{k: o.get(k) for k in ("idema", "ubi", "fint", "vis", "lat", "lon")}
-                                  for _h, o in list(ult.values())[:3]]})
     return {"puntos": puntos, "viejos": viejos, "n_estaciones": len(total)}
 
 
@@ -589,65 +571,8 @@ def pasada(ahora: datetime, bajar_dgt=None, bajar_metar=None, bajar_aemet=None, 
     return datos, "publicado; " + resumen
 
 
-# ------------------------------------------------------------------------------------------- diagnóstico
-def diagnostico(ahora: datetime) -> None:
-    """Modo temporal de la primera pasada: recuentos y tres ejemplos por fuente. Se borra al terminar la tarea."""
-    terr = Territorio()
-    d: dict = {"generado": ahora.astimezone(timezone.utc).isoformat(timespec="seconds"), "provincias_geojson": len(terr.polis)}
-    for nombre, url in (("dgt_v37", DGT_URL), ("dgt_v36", DGT_URL_36)):
-        x: dict = {"url": url}
-        try:
-            b = NP.descargar(url)
-            x["bytes"] = len(b)
-            leido = leer_dgt(b, terr, ahora, x)
-            x["ok"] = True
-            x["corte"] = leido["corte"]
-            x["ejemplos"] = [{k: t[k] for k in ("id", "carretera", "pk_ini", "pk_fin", "municipio", "provincia", "desde", "lat1",
-                                                "lon1", "lat2", "lon2")} for t in leido["tramos"][:3]]
-            x["provincias_con_tramos"] = sorted({t["provincia_slug"] for t in leido["tramos"] if t["provincia_slug"]})
-        except Exception as e:           # noqa: BLE001
-            x.update({"ok": False, "error": f"{type(e).__name__}: {e}"})
-        d[nombre] = x
-    m: dict = {"pedidos": len(OACI)}
-    try:
-        datos = pedir_metar()
-        leido = leer_metar(datos, terr, ahora)
-        resp = set(leido["respondidos"])
-        m.update({"ok": True, "filas": len(datos), "respondidos": len(resp), "no_responden": sorted(set(OACI) - resp),
-                  "fuera_de_la_lista": sorted(resp - set(OACI)), "viejos_90min": leido["viejos"],
-                  "con_niebla": sum(1 for p in leido["puntos"] if p["clase"] == "niebla"),
-                  "con_bruma": sum(1 for p in leido["puntos"] if p["clase"] == "bruma"),
-                  "sin_provincia": [p["id"] for p in leido["puntos"] if not p["provincia_slug"]],
-                  "sin_visibilidad": sum(1 for p in leido["puntos"] if p["vis_m"] is None),
-                  "ejemplos": [{k: p[k] for k in ("id", "nombre", "vis_m", "wx", "clase", "hora", "provincia_slug")}
-                               for p in leido["puntos"][:3]],
-                  "ejemplos_raw": [{"icao": x.get("icaoId"), "rawOb": x.get("rawOb"), "wx": x.get("wxString"),
-                                    "reportTime": x.get("reportTime")} for x in datos[:3]]})
-    except Exception as e:               # noqa: BLE001
-        m.update({"ok": False, "error": f"{type(e).__name__}: {e}"})
-    d["metar"] = m
-    a: dict = {}
-    try:
-        datos = pedir_aemet()
-        a.update({"ok": True, "registros": len(datos)})
-        leer_aemet(datos, terr, ahora, a)
-        a["claves_primer_registro"] = sorted(datos[0].keys()) if datos else []
-    except Exception as e:               # noqa: BLE001
-        a.update({"ok": False, "error": f"{type(e).__name__}: {e}"})
-    d["aemet"] = a
-    SALIDA.mkdir(parents=True, exist_ok=True)
-    DIAG_OUT.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
-    log(f"diagnóstico escrito en {DIAG_OUT}")
-
-
 def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--diag", action="store_true", help="diagnóstico de la primera pasada (docs/niebla/diag.json)")
-    a = ap.parse_args()
     ahora = datetime.now(TZ)
-    if a.diag:
-        diagnostico(ahora)
-        return 0
     datos, msg = pasada(ahora)
     log(msg)
     return 0
