@@ -315,7 +315,7 @@ def pedir_aemet() -> list:
     if not clave:
         raise RuntimeError("falta el secreto AEMET_API_KEY")
     ultimo = None
-    for i in range(3):
+    for i in range(5):
         try:
             r = _aemet_get(AEMET_URL, clave)
             if not isinstance(r, dict) or not r.get("datos"):
@@ -323,8 +323,8 @@ def pedir_aemet() -> list:
             return _aemet_get(r["datos"])
         except Exception as e:           # noqa: BLE001
             ultimo = e
-            if i < 2:
-                time.sleep(6 * (i + 1))
+            if i < 4:
+                time.sleep(10 * (i + 1))
     raise RuntimeError(f"{type(ultimo).__name__}: {ultimo}")
 
 
