@@ -297,17 +297,30 @@ def pedir_metar() -> list:
 
 
 # ----------------------------------------------------------------------------------------------- AEMET
+def _aemet_get(url: str, clave: str | None = None):
+    cab = {"Accept": "application/json"}
+    if clave:
+        cab["api_key"] = clave
+    req = urllib.request.Request(url, headers=cab)
+    with urllib.request.urlopen(req, timeout=90) as r:
+        crudo = r.read()
+    try:
+        return json.loads(crudo.decode("utf-8"))
+    except UnicodeDecodeError:
+        return json.loads(crudo.decode("ISO-8859-15", "replace"))
+
+
 def pedir_aemet() -> list:
-    clave = os.environ.get("AEMET_API_KEY")
+    clave = (os.environ.get("AEMET_API_KEY") or "").strip()
     if not clave:
         raise RuntimeError("falta el secreto AEMET_API_KEY")
     ultimo = None
     for i in range(3):
         try:
-            r = _json_get(AEMET_URL, {"api_key": clave, "Accept": "application/json"}, reintentos=0)
+            r = _aemet_get(AEMET_URL, clave)
             if not isinstance(r, dict) or not r.get("datos"):
                 raise RuntimeError(f"respuesta sin datos: {str(r)[:120]}")
-            return _json_get(r["datos"], reintentos=0)
+            return _aemet_get(r["datos"])
         except Exception as e:           # noqa: BLE001
             ultimo = e
             if i < 2:
