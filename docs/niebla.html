@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Niebla en España, en directo</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#0a0806;color:#f3ede6;font-family:"DM Sans",system-ui,sans-serif}
+#map{position:absolute;inset:0;background:#0a0806}
+.panel{position:absolute;z-index:1000;background:rgba(14,11,9,.9);border:1px solid #2a221c;border-radius:14px;padding:12px 15px;backdrop-filter:blur(6px);font-size:13px;line-height:1.45}
+.panel summary{cursor:pointer;list-style:none;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#b9aea3;font-weight:700}
+.panel summary::-webkit-details-marker{display:none}
+.panel summary::after{content:"▾";float:right;margin-left:12px;color:#ff5a1f}
+.panel:not([open]) summary::after{content:"▸"}
+.panel>summary+*{margin-top:8px}
+#info{top:14px;left:14px;width:330px;max-height:calc(100% - 28px);overflow:auto}
+#info .eye{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#ff5a1f;font-weight:700}
+#info h1{font-size:20px;margin:3px 0 6px;line-height:1.15}
+#frase{font-size:14px;font-weight:500;margin:0 0 8px}
+.fte{display:flex;justify-content:space-between;gap:8px;color:#b9aea3;font-size:12px}
+.fte b{color:#f3ede6;font-weight:500}.fte .mal{color:#ff8a5c}
+#aviso{margin:9px 0 0;font-size:11.5px;color:#b9aea3;border-top:1px solid #2a221c;padding-top:8px}
+#capas{top:14px;right:14px}
+#capas label{display:block;padding:2px 0;cursor:pointer}
+#capas input[type=range]{width:150px}
+#capas button{margin-top:7px;width:100%;background:#ff5a1f;color:#0a0806;border:0;border-radius:8px;padding:7px 10px;font:700 12px "DM Sans",sans-serif;cursor:pointer}
+#capas button.sec{background:#2a221c;color:#f3ede6}
+#ley{bottom:22px;left:14px;font-size:12px;line-height:1.75}
+#ley i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:7px;vertical-align:-1px}
+#ley i.r{border-radius:2px;width:16px;height:9px;vertical-align:0}
+#ley i.l{border-radius:0;height:4px;width:16px;vertical-align:2px}
+#ley .sat{width:22px;border-radius:3px;background:linear-gradient(90deg,#9fe3c4,#d6f5e3)}
+#sathora{position:absolute;z-index:1000;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(14,11,9,.9);border:1px solid #2a221c;border-radius:99px;padding:5px 14px;font-size:12px;color:#f3ede6;white-space:nowrap}
+#cargando{color:#ff8a5c}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#14100d;color:#f3ede6;border:1px solid #2a221c}
+.leaflet-popup-content{font:13px/1.45 "DM Sans",sans-serif;margin:11px 14px}
+.leaflet-popup-content b{color:#ff5a1f}
+.leaflet-control-attribution{background:rgba(14,11,9,.75)!important;color:#b9aea3!important}
+.leaflet-control-attribution a{color:#b9aea3!important}
+@media(max-width:640px){#info{width:auto;right:14px;max-height:50%}#capas{top:auto;bottom:56px;right:14px}#ley{bottom:56px;left:14px}#sathora{bottom:14px;font-size:11px}}
+</style></head><body>
+<div id="map"></div>
+<details class="panel" id="info" open>
+  <summary>Niebla en directo</summary>
+  <div>
+    <div class="eye">Observatorio climático</div>
+    <h1>Niebla en España, en directo</h1>
+    <p id="frase">Cargando los datos de suelo…</p>
+    <div id="fuentes"></div>
+    <p id="aviso">Fuentes: EUMETSAT, DGT, AEMET y partes de aeropuerto. La DGT no incluye Cataluña ni País Vasco</p>
+  </div>
+</details>
+<details class="panel" id="capas" open>
+  <summary>Capas</summary>
+  <div>
+    <label><input type="radio" name="s" value="mtg_fd:rgb_fog"> Niebla y nubes bajas (noche)</label>
+    <label><input type="radio" name="s" value="mtg_fd:rgb_geocolour"> Color natural (día)</label>
+    <label><input type="radio" name="s" value="mtg_fd:rgb_cloudtype"> Tipo de nube</label>
+    <label style="margin-top:5px"><input type="checkbox" id="vprov" checked> Estado por provincia</label>
+    <label>Opacidad del satélite <input id="op" type="range" min="0" max="100" value="80"></label>
+    <button id="anim">Últimas 3 horas</button>
+  </div>
+</details>
+<details class="panel" id="ley" open>
+  <summary>Leyenda</summary>
+  <div>
+    <div><i class="sat"></i>Niebla o estrato bajo (satélite, capa de noche)</div>
+    <div><i class="l" style="background:#ff5a1f"></i>Tramo con niebla (DGT)</div>
+    <div><i style="background:#CC2200"></i>Punto con visibilidad &lt; 1 km o niebla</div>
+    <div><i style="background:#c98a2b"></i>Visibilidad de 1 a 5 km o bruma</div>
+    <div><i style="background:#5b6b78"></i>Sin niebla</div>
+    <div><i class="r" style="background:rgba(255,90,31,.45)"></i>Provincia con niebla
+      <i class="r" style="background:rgba(201,138,43,.4);margin-left:8px"></i>bruma
+      <i class="r" style="background:rgba(120,120,130,.25);margin-left:8px"></i>sin dato</div>
+    <div style="color:#b9aea3">Círculo grande: aeropuerto · pequeño: estación de AEMET</div>
+  </div>
+</details>
+<div id="sathora"><span id="sathtxt">Satélite: cargando…</span> <span id="cargando"></span></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+var DATOS='https://davidbebow.github.io/temperaturas-mar-espana/niebla/niebla.json';
+var GEO=['https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/spain-provinces.geojson'];
+var WMS='https://view.eumetsat.int/geoserver/wms';
+var TZ='Europe/Madrid';
+var NOMBRES={"A Coruña":"a-coruna","Araba/Álava":"alava","Albacete":"albacete","Alacant/Alicante":"alicante","Almería":"almeria","Asturias":"asturias","Ávila":"avila","Badajoz":"badajoz","Illes Balears":"baleares","Barcelona":"barcelona","Bizkaia/Vizcaya":"bizkaia","Burgos":"burgos","Cáceres":"caceres","Cádiz":"cadiz","Cantabria":"cantabria","Castelló/Castellón":"castellon","Ceuta":"ceuta","Ciudad Real":"ciudad-real","Córdoba":"cordoba","Cuenca":"cuenca","Gipuzkoa/Guipúzcoa":"gipuzkoa","Girona":"girona","Granada":"granada","Guadalajara":"guadalajara","Huelva":"huelva","Huesca":"huesca","Jaén":"jaen","León":"leon","Lleida":"lleida","Lugo":"lugo","Madrid":"madrid","Málaga":"malaga","Melilla":"melilla","Murcia":"murcia","Navarra":"navarra","Ourense":"ourense","Palencia":"palencia","Las Palmas":"las-palmas","Pontevedra":"pontevedra","La Rioja":"la-rioja","Salamanca":"salamanca","Santa Cruz De Tenerife":"santa-cruz-de-tenerife","Segovia":"segovia","Sevilla":"sevilla","Soria":"soria","Tarragona":"tarragona","Teruel":"teruel","Toledo":"toledo","València/Valencia":"valencia","Valladolid":"valladolid","Zamora":"zamora","Zaragoza":"zaragoza"};
+var ESTADO_TXT={niebla:'Niebla',bruma:'Bruma',sin_niebla:'Sin niebla',sin_dato:'Sin datos de suelo'};
+var ESTILO={niebla:{fillColor:'#ff5a1f',fillOpacity:.38},bruma:{fillColor:'#c98a2b',fillOpacity:.32},sin_niebla:{fillColor:'#2a2f33',fillOpacity:.12},sin_dato:{fillColor:'#787882',fillOpacity:.25}};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function hm(d){return new Intl.DateTimeFormat('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:TZ}).format(d)}
+function horaIso(s){if(!s)return null;var d=new Date(s);return isNaN(d)?null:d}
+function pad(n){return n<10?'0'+n:''+n}
+function isoZ(d){return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+':'+pad(d.getUTCMinutes())+':00Z'}
+function horaMadrid(){return +new Intl.DateTimeFormat('es-ES',{hour:'numeric',hour12:false,timeZone:TZ}).format(new Date())%24}
+function vistxt(v){return v==null?'sin dato':v>=10000?'10 km o más':v>=1000?(v/1000).toFixed(1).replace('.',',')+' km':v+' m'}
+
+var map=L.map('map',{zoomControl:false,minZoom:5,maxZoom:10}).setView([40.1,-3.6],6);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri'}).addTo(map);
+map.createPane('prov').style.zIndex=200;
+map.createPane('sat').style.zIndex=250;
+map.createPane('ref').style.zIndex=350;map.getPane('ref').style.pointerEvents='none';
+map.createPane('tramos').style.zIndex=450;
+map.createPane('puntos').style.zIndex=460;
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{pane:'ref'}).addTo(map);
+L.tileLayer.wms(WMS,{layers:'osmgray:ne_10m_admin_1_states_provinces_lines',format:'image/png',transparent:true,pane:'ref',opacity:.5}).addTo(map);
+
+/* ---------------- satélite ---------------- */
+var cargando=0;
+function marca(){document.getElementById('cargando').textContent=cargando>0?'· cargando…':''}
+function ranura(atras){ // última imagen disponible: múltiplo de 10 min con 40 de margen
+  var t=Date.now()-40*60000-(atras||0)*60000;
+  return new Date(Math.floor(t/600000)*600000);
+}
+function capaSat(capa,fecha,op,extra){
+  var l=L.tileLayer.wms(WMS,Object.assign({layers:capa,format:'image/png',transparent:true,version:'1.3.0',pane:'sat',opacity:op,time:isoZ(fecha),attribution:'© EUMETSAT'},extra||{}));
+  l.on('loading',function(){cargando++;marca()});
+  l.on('load',function(){cargando=Math.max(0,cargando-1);marca()});
+  l.on('tileerror',function(e){var t=e.tile;if(t&&!t.__r&&t.src){t.__r=1;var u=t.src;setTimeout(function(){t.src=u+(u.indexOf('&_r=')<0?'&_r='+Date.now():'')},900)}});
+  return l;
+}
+var capaActual=(horaMadrid()>=18||horaMadrid()<9)?'mtg_fd:rgb_fog':'mtg_fd:rgb_geocolour';
+var opac=.8,fecha=ranura(0),sat=capaSat(capaActual,fecha,opac).addTo(map),animando=null,frames=[];
+function textoSat(f){document.getElementById('sathtxt').textContent='Satélite: imagen de las '+hm(f)+' (hora de Madrid)'}
+textoSat(fecha);
+function refrescaSat(){if(animando)return;fecha=ranura(0);sat.setParams({time:isoZ(fecha),layers:capaActual});textoSat(fecha)}
+document.querySelectorAll('input[name=s]').forEach(function(r){r.checked=r.value===capaActual;r.onchange=function(){capaActual=r.value;if(animando)parar();sat.setParams({layers:capaActual});}});
+document.getElementById('op').oninput=function(e){opac=e.target.value/100;sat.setOpacity(opac);};
+
+/* animación de las últimas 3 horas: seis imágenes, una cada 30 minutos; se precargan solo al pulsar */
+var btn=document.getElementById('anim');
+function parar(){
+  clearInterval(animando);animando=null;
+  frames.forEach(function(f){map.removeLayer(f.l)});frames=[];
+  map.addLayer(sat);fecha=ranura(0);sat.setParams({time:isoZ(fecha),layers:capaActual});textoSat(fecha);
+  btn.textContent='Últimas 3 horas';btn.className='';
+}
+btn.onclick=function(){
+  if(animando){parar();return}
+  map.removeLayer(sat);
+  for(var i=5;i>=0;i--){var f=ranura(i*30);frames.push({f:f,l:capaSat(capaActual,f,0).addTo(map)})}
+  var k=0;
+  function paso(){
+    frames.forEach(function(x,j){x.l.setOpacity(j===k?opac:0)});
+    document.getElementById('sathtxt').textContent='Satélite: '+hm(frames[k].f)+' (hora de Madrid) · '+(k+1)+'/6';
+    k=(k+1)%frames.length;
+  }
+  paso();animando=setInterval(paso,900);
+  btn.textContent='Volver al directo';btn.className='sec';
+};
+
+/* ---------------- provincias ---------------- */
+var capaProv=null,provGeo=null,estadoProv={};
+function pintaProv(){
+  if(!provGeo)return;
+  if(capaProv)map.removeLayer(capaProv);
+  capaProv=L.geoJSON(provGeo,{pane:'prov',style:function(f){var s=NOMBRES[f.properties.name];var e=(estadoProv[s]||{}).estado||'sin_dato';return Object.assign({color:'#3a312a',weight:.6},ESTILO[e])},
+    onEachFeature:function(f,l){var s=NOMBRES[f.properties.name],p=estadoProv[s];if(!p)return;
+      l.bindPopup('<b>'+esc(f.properties.name)+'</b><br>'+esc(ESTADO_TXT[p.estado]||p.estado)+'<br>'+esc(p.apoyo)+'.'+(p.vis_min!=null?'<br>Visibilidad mínima: '+vistxt(p.vis_min):''))}});
+  if(document.getElementById('vprov').checked)capaProv.addTo(map);
+}
+document.getElementById('vprov').onchange=function(e){if(!capaProv)return;e.target.checked?capaProv.addTo(map):map.removeLayer(capaProv)};
+(function carga(i){
+  if(i>=GEO.length)return;
+  fetch(GEO[i]).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(g){provGeo=g;pintaProv()}).catch(function(){carga(i+1)});
+})(0);
+
+/* ---------------- datos de suelo ---------------- */
+var gTramos=L.layerGroup().addTo(map),gPuntos=L.layerGroup().addTo(map);
+function colorPunto(c){return c==='niebla'?'#CC2200':c==='bruma'?'#c98a2b':'#5b6b78'}
+function fuenteTxt(nombre,f){
+  if(!f||!f.ok)return '<div class="fte"><span>'+nombre+'</span><b class="mal">sin datos ahora</b></div>';
+  var d=horaIso(f.corte);return '<div class="fte"><span>'+nombre+'</span><b>'+(d?hm(d):'sin hora')+'</b></div>';
+}
+function pinta(d){
+  document.getElementById('frase').textContent=d.frase||'';
+  var f=d.fuentes||{};
+  document.getElementById('fuentes').innerHTML=
+    fuenteTxt('Tramos de la DGT',f.dgt)+fuenteTxt('Aeropuertos (METAR)',f.metar)+fuenteTxt('Estaciones de AEMET',f.aemet)+
+    '<div class="fte"><span>Satélite EUMETSAT</span><b>'+hm(fecha)+'</b></div>';
+  estadoProv=d.provincias||{};pintaProv();
+  gTramos.clearLayers();gPuntos.clearLayers();
+  (d.tramos||[]).forEach(function(t){
+    var ini=horaIso(t.desde),pk=(t.pk_ini!=null&&t.pk_fin!=null&&t.pk_ini!==t.pk_fin)?'pk '+t.pk_ini+' a '+t.pk_fin:(t.pk_ini!=null?'pk '+t.pk_ini:'');
+    var pop='<b>Niebla en la '+esc(t.carretera||'carretera')+'</b><br>'+esc([pk,t.municipio,t.provincia].filter(Boolean).join(' · '))+(ini?'<br>Desde las '+hm(ini):'')+'<br>Fuente: DGT';
+    if(t.lat1!=null){
+      if(t.lat2!=null&&(t.lat1!==t.lat2||t.lon1!==t.lon2))L.polyline([[t.lat1,t.lon1],[t.lat2,t.lon2]],{pane:'tramos',color:'#ff5a1f',weight:5,opacity:.95,lineCap:'round'}).addTo(gTramos).bindPopup(pop);
+      L.circleMarker([t.lat1,t.lon1],{pane:'tramos',radius:6,color:'#0a0806',weight:1.5,fillColor:'#ff5a1f',fillOpacity:.95}).addTo(gTramos).bindPopup(pop);
+    }
+  });
+  (d.puntos||[]).forEach(function(p){
+    if(p.lat==null||p.lon==null)return;
+    var aero=p.tipo==='aeropuerto',h=p.clase!=='despejado';
+    L.circleMarker([p.lat,p.lon],{pane:'puntos',radius:aero?(h?8:6):(h?6:3.5),color:'#0a0806',weight:1.5,fillColor:colorPunto(p.clase),fillOpacity:.95}).addTo(gPuntos)
+      .bindPopup('<b>'+(aero?'Aeropuerto de ':'Estación de AEMET: ')+esc(p.nombre)+'</b><br>Visibilidad: '+vistxt(p.vis_m)+(p.wx?' · '+esc(p.wx):'')+'<br>Observación de las '+esc(p.hora)+' · Fuente: '+(aero?'METAR':'AEMET'));
+  });
+}
+function cargaDatos(){
+  fetch(DATOS+'?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(pinta)
+    .catch(function(){document.getElementById('frase').textContent='No se han podido cargar los datos de suelo. El satélite sigue disponible.'});
+}
+cargaDatos();
+setInterval(function(){cargaDatos();refrescaSat()},300000);
+
+/* móvil: paneles plegados */
+if(window.matchMedia('(max-width:640px)').matches){document.querySelectorAll('.panel').forEach(function(p){p.removeAttribute('open')})}
+})();
+</script></body></html>
