@@ -1,7 +1,7 @@
-# Las Palmas lleva en lo que va de noviembre de 2026 con 23,2 °C de media: un mes que en 1961-1990 ocurría una vez cada 321 años y ahora es 69 veces más probable
+# Las Palmas lleva en lo que va de noviembre de 2026 con 22,9 °C de media: un mes que en 1961-1990 ocurría una vez cada 112 años y ahora es 32 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 321 años en 1961-1990 y ahora una vez cada 4,6 años: es 69 veces más probable (intervalo 18-más de 1.000). Serie: serie mensual de la estación de AEMET de aeropuerto de Gran Canaria.  
-**Fecha del dato:** 14 de noviembre de 2026  
+**Dato:** Un mes así ocurría una vez cada 112 años en 1961-1990 y ahora una vez cada 3,5 años: es 32 veces más probable (intervalo 8,8-345). Serie: serie mensual de la estación de AEMET de aeropuerto de Gran Canaria.  
+**Fecha del dato:** 15 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Las Palmas  
 **Citabilidad:** alta · **Exclusivo:** sí
 
@@ -14,7 +14,7 @@
 - **Método:** Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5.
 
 ## Límites (decirlos antes de que los descubran)
-- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 18-más de 1.000.
+- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 8,8-345.
 - Todavía no es récord ni percentil extremo de la serie: la noticia es lo que ha cambiado, no el valor.
 - Dato validado de la estación (la validación llega con 10-20 días de retraso).
 

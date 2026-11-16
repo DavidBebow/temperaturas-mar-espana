@@ -1,8 +1,8 @@
-# Sequía cálida en Gipuzkoa: sequía extrema y 1,6 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Granada: sequía severa y 3,1 °C más que lo normal en noviembre de 2026
 
-**Dato:** Gipuzkoa está en «sequía extrema» en el Monitor de sequía (SPI-12 de -0,7) y la media de noviembre de 2026 hasta el 14 de noviembre de 2026 es de 14,4 °C, 1,6 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
-**Fecha del dato:** 14 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Gipuzkoa  
+**Dato:** Granada está en «sequía severa» en el Monitor de sequía (SPI-12 de 1,1) y la media de noviembre de 2026 hasta el 15 de noviembre de 2026 es de 15,5 °C, 3,1 °C por encima de la media de ese mes en 1996-2025; es 4,7 veces más probable que en 1961-1990 (intervalo 1,0-77).  
+**Fecha del dato:** 15 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Granada  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
@@ -18,7 +18,7 @@
 - La anomalía es de una estación (la de la capital), no de toda la provincia
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/gipuzkoa/
+- Página: https://calentamientoglobal.es/sequia/granada/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

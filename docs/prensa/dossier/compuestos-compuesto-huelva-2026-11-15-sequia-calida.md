@@ -1,9 +1,9 @@
-# Sequía cálida en Granada: sequía severa y 3,2 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Huelva: sequía extrema y 2,2 °C más que lo normal en noviembre de 2026
 
-**Dato:** Granada está en «sequía severa» en el Monitor de sequía (SPI-12 de 1,1) y la media de noviembre de 2026 hasta el 14 de noviembre de 2026 es de 15,7 °C, 3,2 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
-**Fecha del dato:** 14 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Granada  
-**Citabilidad:** alta · **Exclusivo:** sí
+**Dato:** Huelva está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 15 de noviembre de 2026 es de 18,5 °C, 2,2 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 15 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Huelva  
+**Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
 - Menos lluvia y más calor es la combinación que seca más deprisa el suelo y los embalses.
@@ -16,9 +16,10 @@
 ## Límites (decirlos antes de que los descubran)
 - SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO
 - La anomalía es de una estación (la de la capital), no de toda la provincia
+- Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/granada/
+- Página: https://calentamientoglobal.es/sequia/huelva/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
