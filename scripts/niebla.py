@@ -11,8 +11,10 @@ Uso:  python scripts/niebla.py            pasada normal
 """
 from __future__ import annotations
 
+import base64
 import csv
 import hashlib
+import html
 import io
 import json
 import math
@@ -30,7 +32,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import nieve_puertos as NP  # noqa: E402  (descarga y lectura de registros de la DGT)
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 RAIZ = Path(os.environ.get("CG_RAIZ") or Path(__file__).resolve().parent.parent)
 SALIDA = RAIZ / "docs" / "niebla"
 JSON_OUT = SALIDA / "niebla.json"
@@ -88,6 +90,20 @@ OACI = ["LEAB", "LEAL", "LEAM", "LEAS", "LEBA", "LEBB", "LEBG", "LEBL", "LEBZ", 
         "LERI", "LERJ", "LERL", "LERS", "LERT", "LESA", "LESB", "LESO", "LEST", "LETO", "LEVC", "LEVD", "LEVT", "LEVX",
         "LEXJ", "LEZG", "LEZL", "LECI", "LEVS", "LEBT", "LEMI", "LESU", "LEAG", "LEGA", "LEMR", "LEPI", "LEVP", "LEZA",
         "GCFV", "GCGM", "GCHI", "GCLA", "GCLP", "GCRR", "GCTS", "GCXO", "GCLB", "GCLZ", "GEML", "GECE"]
+
+# Nombres en español de los aeródromos (el parte los trae en inglés: «Seville/San Pablo Arpt»)
+AER = {"GCFV": "Fuerteventura", "GCGM": "La Gomera", "GCHI": "El Hierro", "GCLA": "La Palma", "GCLP": "Gran Canaria",
+       "GCRR": "Lanzarote", "GCTS": "Tenerife Sur", "GCXO": "Tenerife Norte", "GECE": "Ceuta (helipuerto)", "GEML": "Melilla",
+       "LEAB": "Albacete", "LEAG": "Algeciras (helipuerto)", "LEAL": "Alicante-Elche", "LEAM": "Almería", "LEAS": "Asturias",
+       "LEBA": "Córdoba", "LEBB": "Bilbao", "LEBG": "Burgos", "LEBL": "Barcelona-El Prat", "LEBT": "Bétera (Valencia)",
+       "LEBZ": "Badajoz", "LECH": "Castellón", "LECO": "A Coruña", "LEDA": "Lleida-Alguaire", "LEGA": "Armilla (Granada)",
+       "LEGE": "Girona", "LEGR": "Granada", "LEGT": "Getafe (Madrid)", "LEHC": "Huesca", "LEIB": "Ibiza", "LEJR": "Jerez",
+       "LELC": "San Javier (Murcia)", "LELL": "Sabadell", "LELN": "León", "LEMD": "Madrid-Barajas", "LEMG": "Málaga",
+       "LEMH": "Menorca", "LEMI": "Región de Murcia", "LEMO": "Morón (Sevilla)", "LEPA": "Palma de Mallorca",
+       "LEPP": "Pamplona", "LERI": "Alcantarilla (Murcia)", "LERS": "Reus", "LERT": "Rota (Cádiz)", "LESA": "Salamanca",
+       "LESB": "Son Bonet (Mallorca)", "LESO": "San Sebastián", "LEST": "Santiago de Compostela",
+       "LETO": "Torrejón (Madrid)", "LEVC": "Valencia", "LEVD": "Valladolid", "LEVS": "Cuatro Vientos (Madrid)",
+       "LEVT": "Vitoria", "LEVX": "Vigo", "LEXJ": "Santander", "LEZG": "Zaragoza", "LEZL": "Sevilla"}
 
 
 def log(m: str) -> None:
@@ -274,7 +290,7 @@ def leer_metar(datos: list, terr: Territorio, ahora: datetime) -> dict:
         lat, lon = m.get("lat"), m.get("lon")
         if vis is None and not wx:
             continue
-        puntos.append({"id": icao, "tipo": "aeropuerto", "nombre": (m.get("name") or icao).split(",")[0].strip(),
+        puntos.append({"id": icao, "tipo": "aeropuerto", "nombre": AER.get(icao) or re.sub(r"\s*(Arpt|Arpr|Intl|Heliport)\b|\)$", "", (m.get("name") or icao).split(",")[0]).strip(),
                        "lat": lat, "lon": lon, "vis_m": vis, "wx": wx, "clase": clase(vis, wx),
                        "hora": h.astimezone(TZ).strftime("%H:%M"), "provincia_slug": terr.slug_punto(lat, lon)})
     return {"respondidos": sorted(ult), "viejos": viejos, "puntos": puntos}
@@ -571,10 +587,167 @@ def pasada(ahora: datetime, bajar_dgt=None, bajar_metar=None, bajar_aemet=None, 
     return datos, "publicado; " + resumen
 
 
+# ------------------------------------------------------------------------------- bloque del día en WordPress
+# La página /niebla/ (id 16898) lleva un hueco <div class="cg-ssr-slot">CGSSRSLOT</div>; el snippet cg-ssr-bloque.php
+# lo sustituye por el meta cg_ssr_html. Lista cerrada de etiquetas: aquí solo div, p, h2, ul, li, span, b.
+WP_API = os.environ.get("WP_API", "https://calentamientoglobal.es/wp-json/wp/v2")
+WP_PAGINA = 16898
+ANCLA = "CGSSRSLOT"
+PUBLICADO = ARCHIVO / "publicado.json"
+_MINUS = {"De", "Del", "La", "Las", "Los", "El", "Y", "En"}
+
+
+def esc(s) -> str:
+    return html.escape(str(s), quote=True)
+
+
+def _nombre(s: str) -> str:
+    """'Jerez De Los Caballeros' -> 'Jerez de los Caballeros'."""
+    ps = str(s or "").split()
+    return " ".join(w.lower() if i and w in _MINUS else w for i, w in enumerate(ps))
+
+
+def _vis(m) -> str:
+    m = int(m)
+    if m < 1000:
+        return f"{m} m"
+    km = m / 1000
+    return (f"{km:.1f}".replace(".", ",").replace(",0", "") if km < 10 else str(int(round(km)))) + " km"
+
+
+def _pk(x) -> str:
+    try:
+        x = float(x)
+    except (TypeError, ValueError):
+        return ""
+    return str(int(x)) if x == int(x) else f"{x:.1f}".replace(".", ",")
+
+
+def _fecha(d: datetime, anio: bool = True) -> str:
+    return f"{d.day} de {MESES[d.month - 1]}" + (f" de {d.year}" if anio else "")
+
+
+def _desde(iso: str, ahora: datetime) -> str:
+    try:
+        d = datetime.fromisoformat(iso).astimezone(TZ)
+    except (TypeError, ValueError):
+        return ""
+    if d.date() == ahora.date():
+        return f"desde las {d:%H:%M}"
+    return f"desde el {_fecha(d, False)}, {d:%H:%M}"
+
+
+def ssr(datos: dict) -> str:
+    """Bloque del día: cifra del momento, provincias y carreteras. Todo sale de niebla.json."""
+    try:
+        gen = datetime.fromisoformat(datos["generado"].replace("Z", "+00:00")).astimezone(TZ)
+    except (KeyError, ValueError):
+        gen = datetime.now(TZ)
+    provs, tramos, puntos = datos.get("provincias") or {}, datos.get("tramos") or [], datos.get("puntos") or []
+    por = {"niebla": [], "bruma": [], "sin_niebla": [], "sin_dato": []}
+    for slug, v in provs.items():
+        por.setdefault(v.get("estado") or "sin_dato", []).append((NOMBRE.get(slug, slug), slug, v))
+    for k in por:
+        por[k].sort(key=lambda z: z[0].lower().replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o")
+                    .replace("ú", "u"))
+    pn = [q for q in puntos if q.get("clase") == "niebla"]
+    n_prov, n_tr = len(por["niebla"]), len(tramos)
+    sello = f"A las {gen:%H:%M} del {_fecha(gen)}"
+
+    o = ['<div class="cgnb-hoy"><div class="cgnb-ahora"><p class="cgnb-eyeb">Ahora mismo</p>']
+    o.append(f'<p class="cgnb-cifra"><b>{n_prov}</b><span>{"provincia con niebla" if n_prov == 1 else "provincias con niebla"}'
+             f'</span></p><ul class="cgnb-kpi">')
+    o.append(f'<li><b>{n_tr}</b><span>{"tramo de carretera con niebla" if n_tr == 1 else "tramos de carretera con niebla"}'
+             f' (DGT)</span></li>')
+    o.append(f'<li><b>{len(pn)}</b><span>{"aeropuerto o estación" if len(pn) == 1 else "aeropuertos y estaciones"} con menos '
+             f'de 1 km de visibilidad</span></li>')
+    con_vis = [q for q in pn if isinstance(q.get("vis_m"), (int, float))]
+    if con_vis:
+        q = min(con_vis, key=lambda z: z["vis_m"])
+        donde = _nombre(q.get("nombre"))
+        pr = NOMBRE.get(q.get("provincia_slug"), "")
+        o.append(f'<li><b>{esc(_vis(q["vis_m"]))}</b><span>la visibilidad más baja, en {esc(donde)}'
+                 + (f" ({esc(pr)})" if pr and pr.lower() not in donde.lower() else "") + "</span></li>")
+    o.append(f'</ul><p class="cgnb-sello">{esc(sello)}</p></div>')
+
+    o.append('<div class="cgnb-prov"><h2>Niebla ahora, provincia a provincia</h2>')
+    if por["niebla"]:
+        o.append('<ul class="cgnb-pl">')
+        for nom, _slug, v in por["niebla"]:
+            vm = v.get("vis_min")
+            vis = f'<span class="cgnb-vis">{esc(_vis(vm))}</span>' if isinstance(vm, (int, float)) and vm < 5000 else ""
+            o.append(f'<li><b>{esc(nom)}</b>{vis}<span class="cgnb-ap">{esc(v.get("apoyo") or "")}</span></li>')
+        o.append("</ul>")
+    else:
+        o.append(f'<p class="cgnb-nada">{esc(sello)} no hay niebla en ninguna provincia, según los tramos de la DGT, '
+                 f'los aeropuertos y las estaciones de AEMET.</p>')
+    for clave, rot in (("bruma", "Con bruma"), ("sin_niebla", "Sin niebla"), ("sin_dato", "Sin dato de suelo")):
+        if por[clave]:
+            o.append(f'<p class="cgnb-resto cgnb-r-{clave}"><b>{rot} ({len(por[clave])})</b> '
+                     f'{esc(", ".join(n for n, _s, _v in por[clave]))}.</p>')
+    o.append("</div>")
+
+    o.append('<div class="cgnb-vias"><h2>Carreteras con niebla ahora</h2>')
+    if tramos:
+        o.append('<ul class="cgnb-vl">')
+        for t in sorted(tramos, key=lambda z: (z.get("provincia") or "", z.get("carretera") or "", z.get("pk_ini") or 0)):
+            a, b = _pk(t.get("pk_ini")), _pk(t.get("pk_fin"))
+            km = f"km {a} a {b}" if a and b and a != b else (f"km {a or b}" if (a or b) else "")
+            lugar = ", ".join(x for x in (t.get("municipio"), t.get("provincia")) if x)
+            o.append(f'<li><b>{esc(t.get("carretera") or "Carretera")}</b><span class="cgnb-km">{esc(km)}</span>'
+                     f'<span class="cgnb-lu">{esc(lugar)}</span>'
+                     f'<span class="cgnb-de">{esc(_desde(t.get("desde"), gen))}</span></li>')
+        o.append("</ul>")
+    elif (datos.get("fuentes") or {}).get("dgt", {}).get("ok"):
+        o.append(f'<p class="cgnb-nada">{esc(sello)} la DGT no tiene ningún tramo de carretera con niebla.</p>')
+    else:
+        o.append('<p class="cgnb-nada">El dato de carreteras de la DGT no está disponible en esta pasada.</p>')
+    o.append(f'<p class="cgnb-pie2">Fuente: DGT, incidencias activas. No incluye Cataluña ni el País Vasco. '
+             f'{esc(sello)}; el estado de una carretera cambia en minutos.</p></div></div>')
+    return "".join(o)
+
+
+def publicar(datos: dict, forzar: bool = False) -> str:
+    """Escribe el bloque del día en la página. Nunca tumba la pasada."""
+    usuario, clave = os.environ.get("WP_USER"), os.environ.get("WP_APP_PASSWORD")
+    if not usuario or not clave:
+        return "bloque del día: sin WP_USER / WP_APP_PASSWORD, no se publica"
+    bloque = ssr(datos)
+    hs = hashlib.sha256(bloque.encode("utf-8")).hexdigest()[:16]
+    reg = leer_json(PUBLICADO) or {}
+    if not forzar and reg.get("hs") == hs:
+        return "bloque del día: sin cambios"
+    cuerpo = json.dumps({"meta": {"cg_ssr_html": bloque, "cg_ssr_anchor": ANCLA}}).encode()
+    aut = "Basic " + base64.b64encode(f"{usuario}:{clave}".encode()).decode()
+    ultimo = None
+    for i in range(3):
+        req = urllib.request.Request(f"{WP_API}/pages/{WP_PAGINA}", data=cuerpo, method="POST", headers={
+            "Authorization": aut, "Content-Type": "application/json", "Accept": "application/json", "User-Agent": UA})
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                res = json.loads(r.read().decode("utf-8") or "null") or {}
+            if not ((res.get("meta") or {}).get("cg_ssr_html") or ""):
+                return "bloque del día: AVISO, WordPress no ha guardado el meta cg_ssr_html"
+            ARCHIVO.mkdir(parents=True, exist_ok=True)
+            PUBLICADO.write_text(json.dumps({"id": WP_PAGINA, "hs": hs, "actualizado": datos.get("generado")}),
+                                 encoding="utf-8")
+            return f"bloque del día: publicado ({len(bloque)} caracteres)"
+        except Exception as e:           # noqa: BLE001
+            ultimo = e
+            if i < 2:
+                time.sleep(8 * (i + 1))
+    return f"bloque del día: ERROR {type(ultimo).__name__}: {ultimo}"
+
+
 def main() -> int:
     ahora = datetime.now(TZ)
     datos, msg = pasada(ahora)
     log(msg)
+    if datos:
+        try:
+            log(publicar(datos, forzar="--forzar" in sys.argv))
+        except Exception as e:           # noqa: BLE001
+            log(f"bloque del día: ERROR {type(e).__name__}: {e}")
     return 0
 
 
