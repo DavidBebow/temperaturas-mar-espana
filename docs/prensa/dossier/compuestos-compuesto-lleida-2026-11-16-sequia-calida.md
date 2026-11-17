@@ -1,6 +1,6 @@
-# Sequía cálida en Lleida: sequía moderada y 1,8 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Lleida: sequía moderada y 1,9 °C más que lo normal en noviembre de 2026
 
-**Dato:** Lleida está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,3) y la media de noviembre de 2026 hasta el 16 de noviembre de 2026 es de 14,2 °C, 1,8 °C por encima de la media de ese mes en 1996-2025; es 3,5 veces más probable que en 1961-1990 (intervalo 1,2-11).  
+**Dato:** Lleida está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,3) y la media de noviembre de 2026 hasta el 16 de noviembre de 2026 es de 14,3 °C, 1,9 °C por encima de la media de ese mes en 1996-2025; es 3,7 veces más probable que en 1961-1990 (intervalo 1,2-12).  
 **Fecha del dato:** 16 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Lleida  
 **Citabilidad:** media · **Exclusivo:** sí

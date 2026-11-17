@@ -1,6 +1,6 @@
-# Ceuta lleva en lo que va de noviembre de 2026 con 19,3 °C de media: un mes que en 1961-1990 ocurría una vez cada 519 años y ahora es 8,3 veces más probable
+# Ceuta lleva en lo que va de noviembre de 2026 con 19,3 °C de media: un mes que en 1961-1990 ocurría una vez cada 546 años y ahora es 8,4 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 519 años en 1961-1990 y ahora una vez cada 63 años: es 8,3 veces más probable (intervalo 1,2-129). Serie: serie diaria de la celda de Ceuta del reanálisis ERA5.  
+**Dato:** Un mes así ocurría una vez cada 546 años en 1961-1990 y ahora una vez cada 65 años: es 8,4 veces más probable (intervalo 1,2-135). Serie: serie diaria de la celda de Ceuta del reanálisis ERA5.  
 **Fecha del dato:** 16 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Ceuta  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -14,7 +14,7 @@
 - **Método:** Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5.
 
 ## Límites (decirlos antes de que los descubran)
-- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 1,2-129.
+- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 1,2-135.
 - Todavía no es récord ni percentil extremo de la serie: la noticia es lo que ha cambiado, no el valor.
 - Reanálisis ERA5 en una celda de ~25 km, no la estación oficial: la cifra oficial puede diferir; ERA5 anterior a 1979 es una retroextensión preliminar.
 

@@ -1,14 +1,14 @@
-# Badajoz recogió el 10 de noviembre 18,3 mm, la mayor lluvia para esa fecha desde 1940
+# Madrid recogió el 11 de noviembre 38,3 mm, la mayor lluvia para esa fecha desde 1940
 
-**Dato:** 18,3 mm en un día  
-**Fecha del dato:** 10 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Badajoz  
+**Dato:** 38,3 mm en un día  
+**Fecha del dato:** 11 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Madrid  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Fuente y método
 - **Fuente:** ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0
 - **Serie desde:** 1940
-- **Método:** Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Badajoz, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.
+- **Método:** Reanálisis ERA5 (Copernicus/ECMWF) en la celda de Madrid, serie diaria desde 1940; récords calculados día del año a día del año sobre toda la serie.
 
 ## Límites (decirlos antes de que los descubran)
 - Reanálisis en una celda de ~25 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
@@ -17,9 +17,9 @@
 - COMPROBAR: cifra del reanálisis en la celda de la capital, sin contraste con la estación o el pluviómetro de AEMET; no se publica como dato de la ciudad.
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/cambio-climatico-en-badajoz/
-- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-badajoz-2026-11-10.csv
-- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-badajoz-2026-11-10.png
+- Página: https://calentamientoglobal.es/cambio-climatico-en-madrid/
+- Serie (CSV): https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-madrid-2026-11-11.csv
+- Gráfico: https://davidbebow.github.io/temperaturas-mar-espana/prensa/dossier/capitales-record-fecha-madrid-2026-11-11.png
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de ERA5 (Copernicus, ECMWF) vía Open-Meteo Archive, CC BY 4.0. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
