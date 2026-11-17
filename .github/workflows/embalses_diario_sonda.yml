@@ -1,0 +1,87 @@
+name: Embalses diario - sonda de viabilidad
+
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+# Prueba, una sola vez, que fuentes dan el dato DIARIO de embalses
+# (capa nacional SAIH del MITECO, datos abiertos de Duero, Guadalquivir,
+# Cataluna y Andalucia, y las webs SAIH del resto de cuencas).
+#
+# NO toca embalses.json ni ningun dato publicado. Solo escribe:
+#   docs/embalses/sonda_diario.json   informe completo
+#   docs/embalses/sonda_diario.md     resumen (tambien sale en el propio run)
+#
+# Se lanza sola al subir este fichero o el script, y a mano con "Run workflow".
+# No tiene horario: es una prueba puntual.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/embalses_diario_sonda.yml'
+      - 'scripts/embalses_diario_sonda.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: embalses-diario-sonda
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Comprobar que el script esta subido
+        id: hay
+        run: |
+          if [ -f scripts/embalses_diario_sonda.py ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Falta scripts/embalses_diario_sonda.py: subelo y este workflow se lanzara solo." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configurar Python
+        if: steps.hay.outputs.ok == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        if: steps.hay.outputs.ok == 'true'
+        run: pip install requests
+
+      - name: Sondear fuentes
+        if: steps.hay.outputs.ok == 'true'
+        env:
+          SALIDA_DIR: ${{ github.workspace }}/docs
+        run: python scripts/embalses_diario_sonda.py
+
+      - name: Guardar informe
+        if: steps.hay.outputs.ok == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/embalses/sonda_diario.json docs/embalses/sonda_diario.md
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "embalses diario: informe de la sonda $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase -X theirs --autostash && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
