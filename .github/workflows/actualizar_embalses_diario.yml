@@ -6,7 +6,8 @@ name: Actualizar embalses (avance diario)
 #
 # Capa de AVANCE DIARIO, aparte del boletin semanal (actualizar_embalses.yml,
 # que no se toca): lecturas provisionales de los organismos de cuenca
-# (Duero, Cataluna, Guadalquivir, Hidrosur, Segura y Galicia Costa).
+# (Duero, Cataluna, Guadalquivir, Hidrosur, Segura, Galicia Costa, Mino-Sil
+# y Jucar).
 #
 #   docs/embalses/diario.json        foto del dia + variaciones
 #   docs/embalses/diario_diag.json   salud del proceso (fuentes, sin casar)
@@ -60,7 +61,7 @@ jobs:
           python-version: '3.12'
 
       - name: Instalar dependencias
-        run: pip install requests
+        run: pip install requests aia
 
       - name: Leer las fuentes diarias
         env:
