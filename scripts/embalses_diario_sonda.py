@@ -198,7 +198,7 @@ def resumen_html(txt, url):
         out["tabla_mayor_filas"] = len(filas)
         out["tabla_mayor_muestra"] = [
             [limpiar(c)[:40] for c in re.findall(r"(?is)<t[hd][^>]*>(.*?)</t[hd]>", f)][:12]
-            for f in filas[:5]]
+            for f in filas[:12]]
     texto = limpiar(txt)
     out["menciones_hm3"] = len(re.findall(r"hm\s?[3³]", texto, re.I))
     out["menciones_embalse"] = len(re.findall(r"embalse", texto, re.I))
@@ -294,13 +294,13 @@ def pasada_api(informe):
                     informe["api"].append(r2)
 
     # MITECO: con los nombres de capa vistos, intentar leer los datos.
-    capas = list(dict.fromkeys(capas))[:4] or ["embalses_et"]
+    capas = [c for c in dict.fromkeys(capas) if c.split(":")[-1] == "embalses_et"][:1] or ["embalses_et"]
     for capa in capas:
         tn = capa if ":" in capa else "agua:" + capa
         for que, url in [
-            (f"WFS GetFeature {tn} (5)",
+            (f"WFS GetFeature {tn} (400)",
              f"{GEOSERVER_MITECO}/wfs?service=WFS&version=2.0.0&request=GetFeature"
-             f"&typeNames={tn}&count=5&outputFormat=application/json"),
+             f"&typeNames={tn}&count=400&outputFormat=application/json"),
             (f"WFS DescribeFeatureType {tn}",
              f"{GEOSERVER_MITECO}/wfs?service=WFS&version=2.0.0&request=DescribeFeatureType&typeNames={tn}"),
             (f"WMS GetFeatureInfo {tn} (toda la peninsula, 50)",
@@ -344,6 +344,30 @@ def pasada_webs(informe):
         informe["webs"].append(bloque)
 
 
+# Las webs ajenas llevan a veces claves suyas incrustadas en el JS (mapas, etc.).
+# Nunca deben acabar en nuestro informe: se tachan antes de escribir nada.
+_TACHAR = [
+    (re.compile(r"\b(?:pk|sk|tk)\.eyJ[\w\-.]+"), "[oculto]"),
+    (re.compile(r"eyJ[\w\-]{15,}\.[\w\-.]+"), "[oculto]"),
+    (re.compile(r"AIza[\w\-]{30,}"), "[oculto]"),
+    (re.compile(r"(?i)\b(api[_-]?key|apikey|access[_-]?token|token|key|secret|password|pwd|sig)=[^&\"'\s<>]+"),
+     r"\1=[oculto]"),
+    (re.compile(r"[A-Za-z0-9_\-]{44,}"), "[largo]"),
+]
+
+
+def tachar(o):
+    if isinstance(o, str):
+        for rx, sub in _TACHAR:
+            o = rx.sub(sub, o)
+        return o
+    if isinstance(o, dict):
+        return {tachar(k) if isinstance(k, str) else k: tachar(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [tachar(v) for v in o]
+    return o
+
+
 def veredicto_api(r):
     if not r.get("ok"):
         return "NO — " + (r.get("error") or f"HTTP {r.get('status')}")[:170]
@@ -353,7 +377,7 @@ def veredicto_api(r):
         n = j.get("n_features", j.get("n_elementos"))
         if j.get("ckan_recursos") is not None:
             return f"SI — CKAN, {len(j['ckan_recursos'])} recursos"
-        return f"SI — JSON, {n} registros, campos: {', '.join(map(str, (j.get('campos') or [])[:10]))}"
+        return f"SI — JSON, {n} registros, campos: {', '.join(map(str, (j.get('campos') or [])[:60]))}"
     if c == "xml":
         x = r["xml"]
         if x.get("excepcion"):
@@ -366,6 +390,7 @@ def veredicto_api(r):
 
 
 def escribir(informe):
+    informe = tachar(informe)
     os.makedirs(OUT_DIR, exist_ok=True)
     with open(os.path.join(OUT_DIR, "sonda_diario.json"), "w", encoding="utf-8") as f:
         json.dump(informe, f, ensure_ascii=False, indent=1, default=str)
@@ -394,7 +419,7 @@ def escribir(informe):
 
 def main():
     informe = {"generado": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-               "version": "1.0", "api": [], "webs": []}
+               "version": "1.1", "api": [], "webs": []}
     for nombre, pasada in (("api", pasada_api), ("webs", pasada_webs)):
         try:
             pasada(informe)
