@@ -460,6 +460,14 @@ def contrastar(h: dict, datos, res: dict) -> None:
             res["motivo"] = "contraste de veracidad: " + texto
 
 
+def ventana_vigente(h: dict):
+    """Ventana de frescura de hoy. Si la herramienta tiene ventana_h_verano,
+    se usa de abril a septiembre (cadencia reducida fuera de temporada)."""
+    if h.get("ventana_h_verano") is not None and 4 <= datetime.now(timezone.utc).month <= 9:
+        return h["ventana_h_verano"]
+    return h.get("ventana_h")
+
+
 def comprobar(h: dict) -> dict:
     res = {
         "id": h["id"],
@@ -468,7 +476,7 @@ def comprobar(h: dict) -> dict:
         "archivo": h.get("archivo"),
         "workflow": h.get("workflow"),
         "cadencia": h.get("cadencia"),
-        "ventana_h": h.get("ventana_h"),
+        "ventana_h": ventana_vigente(h),
         "pagina": h.get("pagina"),
         "fuente": h.get("fuente"),
         "estado": "ok",
@@ -537,7 +545,7 @@ def comprobar(h: dict) -> dict:
     res["horas"] = horas(gen)
 
     # --- frescura ----------------------------------------------------------------
-    ventana = h.get("ventana_h")
+    ventana = ventana_vigente(h)
     if ventana is None:
         if res["estado"] == "ok":
             res["estado"] = "estatico"
