@@ -7,9 +7,19 @@ name: Calcular normales de temperatura (una vez)
 # minima normales de cada dia del año para cada municipio con ficha, con su
 # estacion. Lo lee prediccion_municipios.py. No hace falta repetirlo salvo que
 # cambie la lista de municipios.
+#
+# 17-11-2026: por defecto solo calcula las normales CORTAS (2006-2025) de los
+# municipios sin normal 1991-2020 y es REANUDABLE: a los tope_min minutos guarda
+# lo bajado en normales_temperatura_estado.json.gz y para; al volver a lanzarlo
+# sigue donde se quedo. Hasta que termina no toca normales_temperatura.json.
 
 on:
   workflow_dispatch:
+    inputs:
+      tope_min:
+        description: 'Minutos de descarga antes de guardar y parar. Si no termina, se vuelve a lanzar y sigue donde se quedo.'
+        required: false
+        default: '290'
 
 concurrency:
   group: normales-temperatura
@@ -39,7 +49,10 @@ jobs:
 
       - name: Calcular normales
         env:
-          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          # Clave propia (la de la prediccion ya no se usa: va por XML). Asi no compite con
+          # los flujos horarios que comparten AEMET_API_KEY.
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY_PREDICCION || secrets.AEMET_API_KEY }}
+          CG_TOPE_MIN: ${{ inputs.tope_min || '290' }}
           CG_BASE: privado/municipios_base.json
           CG_MAPA: docs/municipios_mapa.json
           CG_SALIDA: normales_temperatura.json
@@ -51,10 +64,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase --autostash
           git add normales_temperatura.json
+          # Estado de la descarga (para reanudar si no ha cabido en una ejecucion).
+          if [ -f normales_temperatura_estado.json.gz ]; then git add -f normales_temperatura_estado.json.gz; fi
           if git diff --staged --quiet; then
             echo "Sin cambios."
           else
-            git commit -m "Normales de temperatura 1991-2020 por municipio (estaciones AEMET)"
+            git commit -m "Normales de temperatura por municipio (estaciones AEMET)"
             for i in 1 2 3 4 5; do
               git push && break
               git pull --rebase --autostash -X theirs origin main || { git rebase --abort; true; }
