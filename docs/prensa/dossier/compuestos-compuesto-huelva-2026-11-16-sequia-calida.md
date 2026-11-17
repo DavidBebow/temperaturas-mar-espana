@@ -1,8 +1,8 @@
-# Sequía cálida en Álava: sequía moderada y 1,5 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Huelva: sequía extrema y 2,1 °C más que lo normal en noviembre de 2026
 
-**Dato:** Álava está en «sequía moderada» en el Monitor de sequía (SPI-12 de -0,8) y la media de noviembre de 2026 hasta el 15 de noviembre de 2026 es de 11,3 °C, 1,5 °C por encima de la media de ese mes en 1996-2025; es 2,6 veces más probable que en 1961-1990 (intervalo 1,1-8,6).  
-**Fecha del dato:** 15 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Álava  
+**Dato:** Huelva está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 16 de noviembre de 2026 es de 18,3 °C, 2,1 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 16 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Huelva  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
@@ -19,7 +19,7 @@
 - Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/alava/
+- Página: https://calentamientoglobal.es/sequia/huelva/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
