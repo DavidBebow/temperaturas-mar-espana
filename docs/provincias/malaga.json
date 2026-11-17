@@ -3,8 +3,8 @@
  "provincia": "Málaga",
  "ccaa": "Andalucía",
  "capital": "Málaga",
- "generado": "2026-11-16T17:28+01:00",
- "fecha_legible": "16/11/2026 a las 17:28",
+ "generado": "2026-11-17T17:30+01:00",
+ "fecha_legible": "17/11/2026 a las 17:30",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -33,15 +33,15 @@
   },
   "firma_climatica": {
    "nombre": "Málaga",
-   "tmax": 21.7,
-   "retorno_antes": 3.0,
-   "retorno_ahora": 0.4,
+   "tmax": 23.5,
+   "retorno_antes": null,
+   "retorno_ahora": 1.2,
    "tope_anios": 30.0,
    "sin_precedente": false,
    "max_antes": 24.3,
-   "delta": 2.0,
+   "delta": 2.7,
    "delta_es_cota": false,
-   "percentil": 88.0,
+   "percentil": 96.1,
    "lado": "calor",
    "racha_sin_precedente": 0
   },
@@ -69,28 +69,28 @@
    {
     "id": "malaga",
     "nombre": "Málaga",
-    "sla_actual_cm": 30.6,
-    "desviacion_cm": 29.5,
+    "sla_actual_cm": 32.4,
+    "desviacion_cm": 31.3,
     "etiqueta_anomalia": "Nivel muy elevado",
-    "dias_consecutivos": 185
+    "dias_consecutivos": 186
    }
   ],
   "incendios_ccaa": {
    "nombre": "Andalucía",
-   "focos_activos": 13,
+   "focos_activos": 21,
    "tiene_fuego": true,
-   "etiqueta": "Actividad moderada",
+   "etiqueta": "Actividad alta",
    "dias_consecutivos": 0,
    "dias_anio_actual": 20
   },
   "lluvias": {
    "mm_ayer": 0.0,
-   "mm_semana": 40.1,
+   "mm_semana": 26.8,
    "mm_anual": 458.3,
    "media_anual_mm": 449.9,
-   "media_hasta_hoy_mm": 341.1,
-   "anomalia_semana_pct": 146.0,
-   "anomalia_anual_pct": 34.4,
+   "media_hasta_hoy_mm": 343.4,
+   "anomalia_semana_pct": 64.4,
+   "anomalia_anual_pct": 33.5,
    "etiqueta_semana": "Muy lluvioso",
    "etiqueta_anual": "Lluvioso"
   },
@@ -103,17 +103,17 @@
     "nt_anyo": 103,
     "etiqueta": "Sin datos",
     "estacion": "Málaga Aeropuerto",
-    "cobertura_anyo": 0.949
+    "cobertura_anyo": 0.95
    }
   ],
   "calidad_aire": [
    {
     "nombre": "Málaga",
-    "etiqueta": "Excelente",
-    "aqi_europeo": 20,
-    "pm25": 4.1,
-    "contaminante_dominante": "O₃",
-    "supera_oms": false,
+    "etiqueta": "Buena",
+    "aqi_europeo": 48,
+    "pm25": 8.9,
+    "contaminante_dominante": "NO₂",
+    "supera_oms": true,
     "sahariano": false
    }
   ],
@@ -135,8 +135,8 @@
    {
     "id": "malaga",
     "nombre": "Málaga (costera)",
-    "temp": 17.33,
-    "fecha": "2026-11-16",
+    "temp": 16.97,
+    "fecha": "2026-11-17",
     "max_anio": {
      "valor": 27.86,
      "fecha": "2026-08-18"
@@ -154,49 +154,60 @@
  },
  "destacados": [
   {
+   "tipo": "incendios",
+   "icono": "🔥",
+   "nivel": "alto",
+   "texto": "21 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h)",
+   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
+   "prioridad": 84,
+   "racha_dias": 105,
+   "nuevo": false,
+   "destacado_dias": 105
+  },
+  {
+   "tipo": "firma",
+   "icono": "🔬",
+   "nivel": "medio",
+   "texto": "Una máxima de 23.5 °C se daba en Málaga menos de una vez cada 30 años en el clima de 1951-1980; en el de ahora, casi todos los años",
+   "url": "https://calentamientoglobal.es/firma-climatica/",
+   "prioridad": 74,
+   "racha_dias": 1,
+   "nuevo": true,
+   "destacado_dias": 1
+  },
+  {
    "tipo": "mar_oisst_malaga",
    "icono": "🌡️",
    "nivel": "medio",
    "texto": "El mar frente a Málaga estaba el 14/11 a 19.4 °C, +2.2 °C sobre su media 1991-2020 para esa fecha (NOAA OISST), 63 días seguidos por encima de su media",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 70,
-   "racha_dias": 4,
+   "racha_dias": 5,
    "nuevo": false,
-   "destacado_dias": 4
+   "destacado_dias": 5
   },
   {
    "tipo": "boya_anomalia_malaga",
    "icono": "🌡️",
    "nivel": "medio",
-   "texto": "La boya de Málaga (costera) está +2.2 °C sobre lo normal para la época (17.33 °C)",
+   "texto": "La boya de Málaga (costera) está +2.2 °C sobre lo normal para la época (16.97 °C)",
    "url": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
    "prioridad": 69,
-   "racha_dias": 7,
+   "racha_dias": 8,
    "nuevo": false,
-   "destacado_dias": 7
+   "destacado_dias": 8
   },
   {
    "tipo": "nivel_mar_malaga",
    "icono": "🌊",
    "nivel": "medio",
-   "texto": "Nivel del mar muy elevado en Málaga: +29.5 cm sobre la media 1993-2012",
+   "texto": "Nivel del mar muy elevado en Málaga: +31.3 cm sobre la media 1993-2012",
    "url": "https://calentamientoglobal.es/nivel-del-mar-espana-ahora/",
    "prioridad": 64,
-   "racha_dias": 88,
+   "racha_dias": 89,
    "nuevo": false,
-   "destacado_dias": 88
-  },
-  {
-   "tipo": "incendios",
-   "icono": "🔥",
-   "nivel": "medio",
-   "texto": "13 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h)",
-   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
-   "prioridad": 56,
-   "racha_dias": 104,
-   "nuevo": false,
-   "destacado_dias": 104
+   "destacado_dias": 89
   }
  ],
- "texto_seo": "Situación climática en Málaga a 16/11/2026: El mar frente a Málaga estaba el 14/11 a 19.4 °C, +2.2 °C sobre su media 1991-2020 para esa fecha (NOAA OISST), 63 días seguidos por encima de su media. La boya de Málaga (costera) está +2.2 °C sobre lo normal para la época (17.33 °C). Nivel del mar muy elevado en Málaga: +29.5 cm sobre la media 1993-2012. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Málaga a 17/11/2026: 21 foco(s) de calor activos detectados por satélite en Andalucía (últimas 48 h). Una máxima de 23.5 °C se daba en Málaga menos de una vez cada 30 años en el clima de 1951-1980; en el de ahora, casi todos los años. El mar frente a Málaga estaba el 14/11 a 19.4 °C, +2.2 °C sobre su media 1991-2020 para esa fecha (NOAA OISST), 63 días seguidos por encima de su media. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }

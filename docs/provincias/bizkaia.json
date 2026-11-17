@@ -3,8 +3,8 @@
  "provincia": "Bizkaia",
  "ccaa": "País Vasco",
  "capital": "Bilbao",
- "generado": "2026-11-16T17:28+01:00",
- "fecha_legible": "16/11/2026 a las 17:28",
+ "generado": "2026-11-17T17:30+01:00",
+ "fecha_legible": "17/11/2026 a las 17:30",
  "licencia": "CC-BY 4.0 · cita: calentamientoglobal.es",
  "enlaces": {
   "mar": "https://calentamientoglobal.es/temperaturas-del-mar-espana-actualizado/",
@@ -33,23 +33,23 @@
   },
   "firma_climatica": {
    "nombre": "Bilbao",
-   "tmax": 20.5,
-   "retorno_antes": 6.0,
-   "retorno_ahora": 0.9,
+   "tmax": 22.6,
+   "retorno_antes": null,
+   "retorno_ahora": 8.0,
    "tope_anios": 30.0,
-   "sin_precedente": false,
-   "max_antes": 23.0,
-   "delta": 1.8,
-   "delta_es_cota": false,
-   "percentil": 94.7,
+   "sin_precedente": true,
+   "max_antes": 21.5,
+   "delta": 1.1,
+   "delta_es_cota": true,
+   "percentil": 98.8,
    "lado": "calor",
-   "racha_sin_precedente": 0
+   "racha_sin_precedente": 1
   },
   "avisos": {
-   "total": 4,
+   "total": 3,
    "rojos": 0,
-   "naranjas": 1,
-   "amarillos": 3,
+   "naranjas": 2,
+   "amarillos": 1,
    "items": [
     {
      "zona": "Costa - Bizkaia litoral",
@@ -61,22 +61,13 @@
      "activo_ya": false
     },
     {
-     "zona": "Bizkaia interior",
-     "nivel": "amarillo",
-     "tipo": "Viento",
-     "icono": "💨",
-     "inicio": "2026-11-16T16:00+01:00",
-     "fin": "2026-11-17T06:59+01:00",
-     "activo_ya": true
-    },
-    {
-     "zona": "Bizkaia litoral",
-     "nivel": "amarillo",
-     "tipo": "Viento",
-     "icono": "💨",
-     "inicio": "2026-11-16T16:00+01:00",
-     "fin": "2026-11-17T06:59+01:00",
-     "activo_ya": true
+     "zona": "Costa - Bizkaia litoral",
+     "nivel": "naranja",
+     "tipo": "Fenómenos costeros",
+     "icono": "🌊",
+     "inicio": "2026-11-19T00:00+01:00",
+     "fin": "2026-11-19T23:59+01:00",
+     "activo_ya": false
     },
     {
      "zona": "Costa - Bizkaia litoral",
@@ -91,20 +82,20 @@
   },
   "incendios_ccaa": {
    "nombre": "País Vasco",
-   "focos_activos": 0,
-   "tiene_fuego": false,
-   "etiqueta": "Sin detecciones recientes",
+   "focos_activos": 1,
+   "tiene_fuego": true,
+   "etiqueta": "Actividad baja",
    "dias_consecutivos": 0,
    "dias_anio_actual": 8
   },
   "lluvias": {
-   "mm_ayer": 3.1,
-   "mm_semana": 51.2,
+   "mm_ayer": 0.0,
+   "mm_semana": 49.7,
    "mm_anual": 896.3,
    "media_anual_mm": 1220.9,
-   "media_hasta_hoy_mm": 1019.0,
-   "anomalia_semana_pct": 39.9,
-   "anomalia_anual_pct": -12.0,
+   "media_hasta_hoy_mm": 1024.2,
+   "anomalia_semana_pct": 35.8,
+   "anomalia_anual_pct": -12.5,
    "etiqueta_semana": "Lluvioso",
    "etiqueta_anual": "Normal"
   },
@@ -123,10 +114,10 @@
   "calidad_aire": [
    {
     "nombre": "Bilbao",
-    "etiqueta": "Buena",
-    "aqi_europeo": 36,
-    "pm25": 8.0,
-    "contaminante_dominante": "NO₂",
+    "etiqueta": "Excelente",
+    "aqi_europeo": 24,
+    "pm25": 1.6,
+    "contaminante_dominante": "O₃",
     "supera_oms": false,
     "sahariano": false
    }
@@ -154,15 +145,26 @@
  },
  "destacados": [
   {
-   "tipo": "aviso_naranja",
-   "icono": "🟠",
+   "tipo": "firma",
+   "icono": "🔬",
    "nivel": "alto",
-   "texto": "Aviso naranja de AEMET en Bizkaia por Fenómenos costeros (1 zona(s))",
-   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
-   "prioridad": 80,
+   "texto": "En Bilbao se esperan 22.6 °C. Entre 1951 y 1980 no se registró ningún día así por estas fechas: el máximo fue 21.5 °C",
+   "url": "https://calentamientoglobal.es/firma-climatica/",
+   "prioridad": 90,
    "racha_dias": 1,
    "nuevo": true,
    "destacado_dias": 1
+  },
+  {
+   "tipo": "aviso_naranja",
+   "icono": "🟠",
+   "nivel": "alto",
+   "texto": "Aviso naranja de AEMET en Bizkaia por Fenómenos costeros (2 zona(s))",
+   "url": "https://calentamientoglobal.es/avisos-meteorologicos-activos/",
+   "prioridad": 80,
+   "racha_dias": 2,
+   "nuevo": false,
+   "destacado_dias": 2
   },
   {
    "tipo": "dias32_aemet",
@@ -171,10 +173,21 @@
    "texto": "La estación de AEMET de Bilbao Aeropuerto suma 26 días de más de 32 °C en 2026 (hasta el 23/10); su media de 1991-2020 es 8",
    "url": "https://calentamientoglobal.es/observatorio-climatico/",
    "prioridad": 62,
-   "racha_dias": 26,
+   "racha_dias": 27,
    "nuevo": false,
-   "destacado_dias": 26
+   "destacado_dias": 27
+  },
+  {
+   "tipo": "incendios",
+   "icono": "🔥",
+   "nivel": "medio",
+   "texto": "1 foco(s) de calor activos detectados por satélite en País Vasco (últimas 48 h)",
+   "url": "https://calentamientoglobal.es/calentamientoglobal-es-incendios-forestales-espana-tiempo-real/",
+   "prioridad": 56,
+   "racha_dias": 1,
+   "nuevo": true,
+   "destacado_dias": 1
   }
  ],
- "texto_seo": "Situación climática en Bizkaia a 16/11/2026: Aviso naranja de AEMET en Bizkaia por Fenómenos costeros (1 zona(s)). La estación de AEMET de Bilbao Aeropuerto suma 26 días de más de 32 °C en 2026 (hasta el 23/10); su media de 1991-2020 es 8. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
+ "texto_seo": "Situación climática en Bizkaia a 17/11/2026: En Bilbao se esperan 22.6 °C. Entre 1951 y 1980 no se registró ningún día así por estas fechas: el máximo fue 21.5 °C. Aviso naranja de AEMET en Bizkaia por Fenómenos costeros (2 zona(s)). La estación de AEMET de Bilbao Aeropuerto suma 26 días de más de 32 °C en 2026 (hasta el 23/10); su media de 1991-2020 es 8. Datos del Observatorio Climático de calentamientoglobal.es (fuentes: AEMET, NASA, Copernicus, NOAA, Open-Meteo)."
 }
