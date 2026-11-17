@@ -1,0 +1,3128 @@
+{
+ "generado": "2026-11-17 20:02 UTC",
+ "version": "1.1",
+ "api": [
+  {
+   "url": "https://gis.miteco.gob.es/geoserver/agua/embalses_et/wms?service=WMS&version=1.3.0&request=GetCapabilities",
+   "ok": true,
+   "status": 200,
+   "tipo": "text/xml",
+   "bytes": 11007,
+   "segundos": 0.5,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "xml",
+   "xml": {
+    "nombres_capa": [
+     "WMS",
+     "embalses_et",
+     "embalses_et_estilo",
+     "EF.EnvironmentalMonitoringFacilities.Default"
+    ],
+    "titulos": [
+     "Embalses: nivel/volumen",
+     "embalses_et_estilo",
+     "Environmental Monitoring Facilities Default Style"
+    ],
+    "formatos_json": true
+   },
+   "ambito": "MITECO nacional",
+   "que": "WMS capabilities"
+  },
+  {
+   "url": "https://gis.miteco.gob.es/geoserver/agua/embalses_et/wfs?service=WFS&version=2.0.0&request=GetCapabilities",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/xml",
+   "bytes": 102861,
+   "segundos": 0.5,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "xml",
+   "xml": {
+    "nombres_capa": [
+     "agua:embalses_et",
+     "agua:rios_pfaf_cx1"
+    ],
+    "titulos": [
+     "Embalses: nivel/volumen",
+     "Tramos de ríos de España clasificados según Pfafstetter modificado"
+    ],
+    "formatos_json": true
+   },
+   "ambito": "MITECO nacional",
+   "que": "WFS capabilities"
+  },
+  {
+   "url": "https://wms.mapama.gob.es/sig/agua/SAIH/Embalses/wms.aspx?service=WMS&request=GetCapabilities",
+   "ok": true,
+   "status": 200,
+   "tipo": "text/xml; charset=utf-8",
+   "bytes": 561,
+   "segundos": 0.7,
+   "cors": "*",
+   "ultima_modificacion": null,
+   "clase": "xml",
+   "xml": {
+    "nombres_capa": [],
+    "titulos": [],
+    "formatos_json": false
+   },
+   "ambito": "MITECO nacional",
+   "que": "WMS antiguo (wms.mapama)"
+  },
+  {
+   "url": "https://sig.mapama.gob.es/redes-seguimiento/",
+   "ok": false,
+   "error": "SSLError: HTTPSConnectionPool(host='www.mapa.gob.es', port=443): Max retries exceeded with url: /es/cartografia-y-sig/visores/visores-miteco (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1011)')",
+   "segundos": 0.9,
+   "ambito": "MITECO nacional",
+   "que": "Visor redes de seguimiento"
+  },
+  {
+   "url": "https://datos.chduero.es/api/3/action/package_show?id=estado_embalse",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/json;charset=utf-8",
+   "bytes": 4761,
+   "segundos": 0.5,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "json",
+   "json": {
+    "claves": [
+     "help",
+     "success",
+     "result"
+    ],
+    "ckan_titulo": "Estado Embalses",
+    "ckan_licencia": "Aviso legal CHD",
+    "ckan_frecuencia": {
+     "type": "minutes",
+     "value": "10"
+    },
+    "ckan_notas": "None",
+    "ckan_recursos": [
+     {
+      "nombre": "Estado Embalses",
+      "formato": "JSON",
+      "url": "https://datos.chduero.es/dataset/f2eebe21-10eb-4b04-bf5b-71578dc3562c/resource/9b642c38-59b8-4ab0-8abd-6580ed64d261/download/estado_embalses.json",
+      "modificado": "2026-11-17T20:00:07.629608"
+     }
+    ]
+   },
+   "ambito": "Duero",
+   "que": "CKAN package_show estado_embalse"
+  },
+  {
+   "url": "https://datos.chduero.es/dataset/f2eebe21-10eb-4b04-bf5b-71578dc3562c/resource/9b642c38-59b8-4ab0-8abd-6580ed64d261/download/estado_embalses.json",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/json",
+   "bytes": 22284,
+   "segundos": 0.6,
+   "cors": null,
+   "ultima_modificacion": "Tue, 17 Nov 2026 20:00:07 GMT",
+   "clase": "json",
+   "json": {
+    "n_elementos": 36,
+    "campos": [
+     "codigo",
+     "punto_control",
+     "cauce",
+     "sistema",
+     "municipio",
+     "provincia",
+     "utm_x",
+     "utm_y",
+     "utm_huso",
+     "altitud_masl",
+     "capacidad_hm3",
+     "superficie_ha",
+     "actualizacion",
+     "volumen_actual_hm3",
+     "volumen_actual_percent",
+     "superficie_actual_ha",
+     "q_vertido_actual_m3s"
+    ],
+    "muestra": [
+     {
+      "codigo": "E2001",
+      "punto_control": "Embalse de Cuerda del Pozo",
+      "cauce": "Duero",
+      "sistema": "Sistema Alto Duero",
+      "municipio": "Vinuesa",
+      "provincia": "Soria",
+      "utm_x": "524663",
+      "utm_y": "4636207",
+      "utm_huso": "30",
+      "altitud_masl": "1086",
+      "capacidad_hm3": "248.8",
+      "superficie_ha": "2289",
+      "actualizacion": "2026-11-17 19:50:00",
+      "volumen_actual_hm3": "131.451",
+      "volumen_actual_percent": "52.8",
+      "superficie_actual_ha": "n/d",
+      "q_vertido_actual_m3s": "1.540"
+     },
+     {
+      "codigo": "E2036",
+      "punto_control": "Embalse de Linares del Arroyo",
+      "cauce": "Riaza",
+      "sistema": "Sistema Riaza-Duratón y Cega-Eresma-Adaja",
+      "municipio": "Maderuelo",
+      "provincia": "Segovia",
+      "utm_x": "453700",
+      "utm_y": "4597750",
+      "utm_huso": "30",
+      "altitud_masl": "917",
+      "capacidad_hm3": "54.4",
+      "superficie_ha": "473",
+      "actualizacion": "2026-11-17 19:40:00",
+      "volumen_actual_hm3": "20.126",
+      "volumen_actual_percent": "37.0",
+      "superficie_actual_ha": "n/d",
+      "q_vertido_actual_m3s": "0.225"
+     },
+     {
+      "codigo": "E2030",
+      "punto_control": "Embalse de Porma",
+      "cauce": "Porma",
+      "sistema": "Sistema Esla y Órbigo",
+      "municipio": "Boñar",
+      "provincia": "León",
+      "utm_x": "313100",
+      "utm_y": "4755702",
+      "utm_huso": "30",
+      "altitud_masl": "1098",
+      "capacidad_hm3": "317.8",
+      "superficie_ha": "1249",
+      "actualizacion": "2026-11-17 19:50:00",
+      "volumen_actual_hm3": "122.297",
+      "volumen_actual_percent": "38.5",
+      "superficie_actual_ha": "n/d",
+      "q_vertido_actual_m3s": "2.247"
+     }
+    ]
+   },
+   "ambito": "Duero",
+   "que": "Recurso CKAN: Estado Embalses (JSON)"
+  },
+  {
+   "url": "https://datos.chduero.es/dataset/estado_embalse",
+   "ok": true,
+   "status": 200,
+   "tipo": "text/html; charset=utf-8",
+   "bytes": 15125,
+   "segundos": 0.7,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "html",
+   "html": {
+    "titulo": "Portal de datos abiertos de la Confederación Hidrográfica del Duero",
+    "n_tablas": 0,
+    "menciones_hm3": 4,
+    "menciones_embalse": 7,
+    "fechas_vistas": [
+     "29/09/25 00:00",
+     "17/11/26 21:00"
+    ],
+    "enlaces_interes": [
+     {
+      "url": "https://datos.chduero.es/dataset/",
+      "texto": "Catálogo de datos"
+     },
+     {
+      "url": "https://datos.chduero.es/pages/api",
+      "texto": "API"
+     },
+     {
+      "url": "https://datos.chduero.es/dataset/estado_embalse",
+      "texto": "Estado Embalses"
+     },
+     {
+      "url": "https://datos.chduero.es/dataset/estado_embalse.rdf",
+      "texto": ""
+     },
+     {
+      "url": "https://datos.chduero.es/dataset/estado_embalse.xml",
+      "texto": ""
+     },
+     {
+      "url": "https://datos.chduero.es/dataset/estado_embalse.jsonld",
+      "texto": ""
+     },
+     {
+      "url": "https://datos.chduero.es/pages/aviso-legal-y-de-responsabilidad",
+      "texto": "Aviso legal CHD"
+     },
+     {
+      "url": "https://datos.chduero.es/dataset/estado_embalse/resource/9b642c38-59b8-4ab0-8abd-6580ed64d261",
+      "texto": "Estado Embalses JSON"
+     },
+     {
+      "url": "https://datos.chduero.es/dataset/f2eebe21-10eb-4b04-bf5b-71578dc3562c/resource/9b642c38-59b8-4ab0-8abd-6580ed64d261/download/estado_embalses.json",
+      "texto": "Descargar"
+     }
+    ],
+    "pistas_api": [
+     "/dataset/estado_embalse",
+     "/dataset/estado_embalse.jsonld",
+     "/dataset/estado_embalse.rdf",
+     "/dataset/estado_embalse.xml",
+     "/dataset/estado_embalse/resource/9b642c38-59b8-4ab0-8abd-6580ed64d261",
+     "/pages/api",
+     "https://datos.chduero.es/",
+     "https://datos.chduero.es/dataset/f2eebe21-10eb-4b04-bf5b-71578dc3562c.jsonld",
+     "https://datos.chduero.es/dataset/f2eebe21-10eb-4b04-bf5b-71578dc3562c.n3",
+     "https://datos.chduero.es/dataset/f2eebe21-10eb-4b04-bf5b-71578dc3562c.ttl",
+     "https://datos.chduero.es/dataset/f2eebe21-10eb-4b04-bf5b-71578dc3562c.xml",
+     "https://datos.chduero.es/dataset/f2eebe21-10eb-4b04-bf5b-71578dc3562c/resource/9b642c38-59b8-4ab0-8abd-6580ed64d261/download/estado_embalses.json",
+     "https://datos.chduero.es/pages/aviso-legal-y-de-responsabilidad"
+    ],
+    "texto_inicio": "Portal de datos abiertos de la Confederación Hidrográfica del Duero Ir al contenido Alternar navegación Catálogo de datos API Inicio Catálogo de datos Estado Embalses Estado Embalses Información y últimos datos registrados en los embalses en la cuenca del Duero. Datos sujetos a revisión (ver Aviso Legal) codigo - Identificador del punto de control punto_control - Descripción del punto de control s"
+   },
+   "ambito": "Duero",
+   "que": "Ficha del dataset estado_embalse"
+  },
+  {
+   "url": "https://idechg.chguadalquivir.es/geoserver/ggiscloud_root/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ggiscloud_root:explotacion_saih&maxFeatures=10&outputFormat=application%2Fjson",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/json;charset=UTF-8",
+   "bytes": 4748,
+   "segundos": 0.9,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "json",
+   "json": {
+    "claves": [
+     "type",
+     "features",
+     "totalFeatures",
+     "numberMatched",
+     "numberReturned",
+     "timeStamp",
+     "crs"
+    ],
+    "n_features": 10,
+    "total_declarado": 427,
+    "campos": [
+     "id",
+     "cod_punto",
+     "nom_estsup",
+     "utmx_estsu",
+     "utmy_estsu",
+     "huso_estsu",
+     "latitud",
+     "longitud",
+     "obs_estsup",
+     "pluviomet",
+     "termomet",
+     "tanq_eva",
+     "saica",
+     "nom_muni",
+     "nom_prov"
+    ],
+    "muestra": [
+     {
+      "id": 1,
+      "cod_punto": "A01",
+      "nom_estsup": "A01 Río Guadix en Guadix",
+      "utmx_estsu": 487241,
+      "utmy_estsu": 4130048,
+      "huso_estsu": "30",
+      "latitud": 37.316992,
+      "longitud": -3.143998,
+      "obs_estsup": "Aforo",
+      "pluviomet": "Si",
+      "termomet": "No",
+      "tanq_eva": "No",
+      "saica": " ",
+      "nom_muni": "Guadix",
+      "nom_prov": "Granada"
+     },
+     {
+      "id": 2,
+      "cod_punto": "A02",
+      "nom_estsup": "A02 Río Fardes en Villanueva de las Torres",
+      "utmx_estsu": 490599,
+      "utmy_estsu": 4154198,
+      "huso_estsu": "30",
+      "latitud": 37.534714,
+      "longitud": -3.106407,
+      "obs_estsup": "Aforo",
+      "pluviomet": "Si",
+      "termomet": "No",
+      "tanq_eva": "No",
+      "saica": " ",
+      "nom_muni": "Villanueva de las Torres",
+      "nom_prov": "Granada"
+     },
+     {
+      "id": 3,
+      "cod_punto": "A03",
+      "nom_estsup": "A03 Río Guadahortuna en Alicún de Ortega",
+      "utmx_estsu": 489628,
+      "utmy_estsu": 4160772,
+      "huso_estsu": "30",
+      "latitud": 37.593959,
+      "longitud": -3.11749,
+      "obs_estsup": "Aforo",
+      "pluviomet": "Si",
+      "termomet": "No",
+      "tanq_eva": "No",
+      "saica": " ",
+      "nom_muni": "Alicún de Ortega",
+      "nom_prov": "Granada"
+     }
+    ]
+   },
+   "ambito": "Guadalquivir",
+   "que": "WFS explotacion_saih (10 features)"
+  },
+  {
+   "url": "https://idechg.chguadalquivir.es/geoserver/ggiscloud_root/wfs?service=WFS&request=DescribeFeatureType&typeName=explotacion_saih",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/gml+xml; version=3.2",
+   "bytes": 2463,
+   "segundos": 0.5,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "xml",
+   "xml": {
+    "nombres_capa": [],
+    "titulos": [],
+    "campos": [
+     "id (xsd:int)",
+     "cod_punto (xsd:string)",
+     "nom_estsup (xsd:string)",
+     "utmx_estsu (xsd:int)",
+     "utmy_estsu (xsd:int)",
+     "huso_estsu (xsd:string)",
+     "latitud (xsd:double)",
+     "longitud (xsd:double)",
+     "obs_estsup (xsd:string)",
+     "pluviomet (xsd:string)",
+     "termomet (xsd:string)",
+     "tanq_eva (xsd:string)",
+     "saica (xsd:string)",
+     "nom_muni (xsd:string)",
+     "nom_prov (xsd:string)",
+     "geom (gml:MultiPointPropertyType)",
+     "explotacion_saih (ggiscloud_root:explotacion_saihType)"
+    ],
+    "formatos_json": false
+   },
+   "ambito": "Guadalquivir",
+   "que": "WFS DescribeFeatureType"
+  },
+  {
+   "url": "https://analisi.transparenciacatalunya.cat/resource/gn9e-3qhr.json?$order=dia%20DESC&$limit=20",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/json;charset=utf-8",
+   "bytes": 3435,
+   "segundos": 0.9,
+   "cors": "*",
+   "ultima_modificacion": "Tue, 17 Nov 2026 11:00:09 GMT",
+   "clase": "json",
+   "json": {
+    "n_elementos": 20,
+    "campos": [
+     "dia",
+     "estaci",
+     "nivell_absolut",
+     "percentatge_volum_embassat",
+     "volum_embassat"
+    ],
+    "muestra": [
+     {
+      "dia": "2026-11-17T00:00:00.000",
+      "estaci": "Embassament de Riudecanyes",
+      "nivell_absolut": "206.34",
+      "percentatge_volum_embassat": "27",
+      "volum_embassat": "1.43"
+     },
+     {
+      "dia": "2026-11-17T00:00:00.000",
+      "estaci": "Embassament de Siurana (Cornudella de Montsant)",
+      "nivell_absolut": "480.6",
+      "percentatge_volum_embassat": "71.4",
+      "volum_embassat": "8.58"
+     },
+     {
+      "dia": "2026-11-17T00:00:00.000",
+      "estaci": "Embassament de la Llosa del Cavall (Navès)",
+      "nivell_absolut": "802.03",
+      "percentatge_volum_embassat": "85.9",
+      "volum_embassat": "61.44"
+     }
+    ]
+   },
+   "ambito": "Cataluna (ACA)",
+   "que": "Socrata gn9e-3qhr, 20 filas mas recientes"
+  },
+  {
+   "url": "https://analisi.transparenciacatalunya.cat/resource/gn9e-3qhr.json?$order=dia%20ASC&$limit=3",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/json;charset=utf-8",
+   "bytes": 519,
+   "segundos": 0.5,
+   "cors": "*",
+   "ultima_modificacion": "Tue, 17 Nov 2026 11:00:09 GMT",
+   "clase": "json",
+   "json": {
+    "n_elementos": 3,
+    "campos": [
+     "dia",
+     "estaci",
+     "nivell_absolut",
+     "percentatge_volum_embassat",
+     "volum_embassat"
+    ],
+    "muestra": [
+     {
+      "dia": "2000-01-01T00:00:00.000",
+      "estaci": "Embassament de Darnius Boadella (Darnius)",
+      "nivell_absolut": "147.27",
+      "percentatge_volum_embassat": "50.8",
+      "volum_embassat": "31.02"
+     },
+     {
+      "dia": "2000-01-01T00:00:00.000",
+      "estaci": "Embassament de Foix (Castellet i la Gornal)",
+      "nivell_absolut": "100.46",
+      "percentatge_volum_embassat": "149.9",
+      "volum_embassat": "5.61"
+     },
+     {
+      "dia": "2000-01-01T00:00:00.000",
+      "estaci": "Embassament de la Baells (Cercs)",
+      "nivell_absolut": "622.64",
+      "percentatge_volum_embassat": "82.6",
+      "volum_embassat": "90.41"
+     }
+    ]
+   },
+   "ambito": "Cataluna (ACA)",
+   "que": "Socrata gn9e-3qhr, 3 filas mas antiguas"
+  },
+  {
+   "url": "https://descargasrediam.cica.es/repo/s/RUR?path=%2F04_RECURSOS_NATURALES%2F04_AGUAS%2F01_SUPERFICIALES%2F00_SUPERFICIALES%2FEmbalses_al_dia",
+   "ok": false,
+   "error": "SSLError: HTTPSConnectionPool(host='descargasrediam.cica.es', port=443): Max retries exceeded with url: /repo/s/RUR?path=%2F04_RECURSOS_NATURALES%2F04_AGUAS%2F01_SUPERFICIALES%2F00_SUPERFICIALES%2FEmbalses_al_dia (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate ver",
+   "segundos": 0.5,
+   "ambito": "Andalucia (REDIAM)",
+   "que": "Descarga 'Embalses al dia'"
+  },
+  {
+   "url": "https://portalrediam.cica.es/geonetwork/static/api/records/a730254e-b0b3-43f2-a8b1-81332b99c409",
+   "ok": true,
+   "status": 200,
+   "tipo": "text/html;charset=UTF-8",
+   "bytes": 58035,
+   "segundos": 0.7,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "html",
+   "html": {
+    "titulo": "Embalses al día. Datos diarios de reserva en embalses",
+    "n_tablas": 6,
+    "tabla_mayor_filas": 2,
+    "tabla_mayor_muestra": [
+     [
+      "Protocolo",
+      "Dirección en línea",
+      "Nombre"
+     ],
+     [
+      "WWW:DOWNLOAD-1.0-http--download",
+      "https://portalrediam.cica.es/descargas?p",
+      "Descarga Embalses al día. Datos diarios "
+     ]
+    ],
+    "menciones_hm3": 0,
+    "menciones_embalse": 22,
+    "fechas_vistas": [
+     "2018-07-02",
+     "2015-11-11",
+     "2009-12-15",
+     "2010-12-08",
+     "2023-04-25T10:15"
+    ],
+    "enlaces_interes": [
+     {
+      "url": "https://portalrediam.cica.es/descargas?path=%2F04_RECURSOS_NATURALES%2F04_AGUAS%2F01_SUPERFICIALES%2F00_SUPERFICIALES%2FEmbalses_al_dia",
+      "texto": "https://portalrediam.cica.es/descargas?path=%2F04_RECURSOS_NATURALES%2"
+     },
+     {
+      "url": "https://portalrediam.cica.es/embalses/",
+      "texto": "https://portalrediam.cica.es/embalses/"
+     },
+     {
+      "url": "https://portalrediam.cica.es:/geonetwork/srv/api/records/a730254e-b0b3-43f2-a8b1-81332b99c409/formatters/xml",
+      "texto": "XML"
+     },
+     {
+      "url": "https://twitter.com/share?url=https%3A%2F%2Fportalrediam.cica.es%3A%2Fgeonetwork%2Fsrv%2Fapi%2Frecords%2Fa730254e-b0b3-43f2-a8b1-81332b99c409",
+      "texto": ""
+     },
+     {
+      "url": "https://www.facebook.com/sharer.php?u=https%3A%2F%2Fportalrediam.cica.es%3A%2Fgeonetwork%2Fsrv%2Fapi%2Frecords%2Fa730254e-b0b3-43f2-a8b1-81332b99c409",
+      "texto": ""
+     },
+     {
+      "url": "http://www.linkedin.com/shareArticle?mini=true&amp;summary=&amp;url=https%3A%2F%2Fportalrediam.cica.es%3A%2Fgeonetwork%2Fsrv%2Fapi%2Frecords%2Fa730254e-b0b3-43f2-a8b1-81332b99c409",
+      "texto": ""
+     },
+     {
+      "url": "mailto:?subject=Embalses al día. Datos diarios de reserva en embalses&amp;body=https%3A%2F%2Fportalrediam.cica.es%3A%2Fgeonetwork%2Fsrv%2Fapi%2Frecords%2Fa730254e-b0b3-43f2-a8b1-81332b99c409",
+      "texto": ""
+     },
+     {
+      "url": "https://portalrediam.cica.es/geonetwork/doc/api",
+      "texto": ""
+     }
+    ],
+    "pistas_api": [
+     "/geonetwork/doc/api",
+     "http://www.linkedin.com/shareArticle?mini=true&amp;summary=&amp;url=https%3A%2F%2Fportalrediam.cica.es%3A%2Fgeonetwork%2Fsrv%2Fapi%2Frecords%2Fa730254e-b0b3-43f2-a8b1-81332b99c409",
+     "https://portalrediam.cica.es/descargas?path=%2F04_RECURSOS_NATURALES%2F04_AGUAS%2F01_SUPERFICIALES%2F00_SUPERFICIALES%2FEmbalses_al_dia",
+     "https://portalrediam.cica.es/embalses/",
+     "https://portalrediam.cica.es:/geonetwork/srv/api/records/a730254e-b0b3-43f2-a8b1-81332b99c409",
+     "https://portalrediam.cica.es:/geonetwork/srv/api/records/a730254e-b0b3-43f2-a8b1-81332b99c409/formatters/xml",
+     "https://twitter.com/share?url=https%3A%2F%2Fportalrediam.cica.es%3A%2Fgeonetwork%2Fsrv%2Fapi%2Frecords%2Fa730254e-b0b3-43f2-a8b1-81332b99c409",
+     "https://www.facebook.com/sharer.php?u=https%3A%2F%2Fportalrediam.cica.es%3A%2Fgeonetwork%2Fsrv%2Fapi%2Frecords%2Fa730254e-b0b3-43f2-a8b1-81332b99c409"
+    ],
+    "texto_inicio": "Embalses al día. Datos diarios de reserva en embalses Catálogo REDIAM Embalses al día. Datos diarios de reserva en embalses Datos históricos diarios de reserva de agua en embalses Andaluces desde el año 2009 hasta la fecha. Se incluye localización de los embalses y metadatos básicos de caracterización de cada embalse (capacidad, provincia, sistema de explotación, disitrito o demarcación, etc). Sim"
+   },
+   "ambito": "Andalucia (REDIAM)",
+   "que": "Ficha de metadatos"
+  },
+  {
+   "url": "https://gis.miteco.gob.es/geoserver/agua/embalses_et/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=agua:embalses_et&count=400&outputFormat=application/json",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/json;charset=UTF-8",
+   "bytes": 172268,
+   "segundos": 0.6,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "json",
+   "json": {
+    "claves": [
+     "type",
+     "features",
+     "totalFeatures",
+     "numberMatched",
+     "numberReturned",
+     "timeStamp",
+     "crs",
+     "bbox"
+    ],
+    "n_features": 400,
+    "total_declarado": 848,
+    "campos": [
+     "idpunto",
+     "utm_x_30",
+     "utm_y_30",
+     "descripcion",
+     "idsaih",
+     "idtipo",
+     "baja",
+     "prot_civil",
+     "utm_x_et",
+     "utm_y_et",
+     "cod_demar",
+     "tipo"
+    ],
+    "muestra": [
+     {
+      "idpunto": "E_40 JERTE-PLASENCIA",
+      "utm_x_30": 240517.62,
+      "utm_y_30": 4439243.87,
+      "descripcion": "E_40 JERTE-PLASENCIA",
+      "idsaih": "TAJO",
+      "idtipo": "Y2",
+      "baja": "N",
+      "prot_civil": "S",
+      "utm_x_et": 240396.842348,
+      "utm_y_et": 4439113.967896,
+      "cod_demar": 31,
+      "tipo": "Capacidad embalse (%)"
+     },
+     {
+      "idpunto": "E031Z65VEMBA",
+      "utm_x_30": 650224.1,
+      "utm_y_30": 4761037,
+      "descripcion": "IRABIA",
+      "idsaih": "EBRO",
+      "idtipo": "Y2",
+      "baja": "N",
+      "prot_civil": "N",
+      "utm_x_et": 650124.799089,
+      "utm_y_et": 4760912.675064,
+      "cod_demar": 91,
+      "tipo": "Capacidad embalse (%)"
+     },
+     {
+      "idpunto": "E020C65VEMBA",
+      "utm_x_30": 717939.9,
+      "utm_y_30": 4528321,
+      "descripcion": "GALLIPUEN",
+      "idsaih": "EBRO",
+      "idtipo": "Y2",
+      "baja": "N",
+      "prot_civil": "N",
+      "utm_x_et": 717840.915918,
+      "utm_y_et": 4528190.428426,
+      "cod_demar": 91,
+      "tipo": "Capacidad embalse (%)"
+     }
+    ]
+   },
+   "ambito": "MITECO nacional",
+   "que": "WFS GetFeature agua:embalses_et (400)"
+  },
+  {
+   "url": "https://gis.miteco.gob.es/geoserver/agua/embalses_et/wfs?service=WFS&version=2.0.0&request=DescribeFeatureType&typeNames=agua:embalses_et",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/gml+xml; version=3.2",
+   "bytes": 2116,
+   "segundos": 0.5,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "xml",
+   "xml": {
+    "nombres_capa": [],
+    "titulos": [],
+    "campos": [
+     "idpunto (xsd:string)",
+     "utm_x_30 (xsd:decimal)",
+     "utm_y_30 (xsd:decimal)",
+     "descripcion (xsd:string)",
+     "idsaih (xsd:string)",
+     "idtipo (xsd:string)",
+     "baja (xsd:string)",
+     "prot_civil (xsd:string)",
+     "utm_x_et (xsd:decimal)",
+     "utm_y_et (xsd:decimal)",
+     "cod_demar (xsd:short)",
+     "tipo (xsd:string)",
+     "shape (gml:GeometryPropertyType)",
+     "embalses_et (agua:embalses_etType)"
+    ],
+    "formatos_json": false
+   },
+   "ambito": "MITECO nacional",
+   "que": "WFS DescribeFeatureType agua:embalses_et"
+  },
+  {
+   "url": "https://gis.miteco.gob.es/geoserver/agua/embalses_et/wms?service=WMS&version=1.1.1&request=GetFeatureInfo&layers=agua:embalses_et&query_layers=agua:embalses_et&styles=&srs=EPSG:4326&bbox=-9.6,35.8,3.5,43.9&width=101&height=101&x=50&y=50&buffer=120&feature_count=50&info_format=application/json",
+   "ok": true,
+   "status": 200,
+   "tipo": "application/json;charset=UTF-8",
+   "bytes": 13480,
+   "segundos": 0.5,
+   "cors": null,
+   "ultima_modificacion": null,
+   "clase": "json",
+   "json": {
+    "claves": [
+     "type",
+     "features"
+    ],
+    "n_features": 50,
+    "total_declarado": null,
+    "campos": [
+     "Nombre",
+     "Cuenca SAIH",
+     "Tipo"
+    ],
+    "muestra": [
+     {
+      "Nombre": "E_40 JERTE-PLASENCIA",
+      "Cuenca SAIH": "TAJO",
+      "Tipo": "Capacidad embalse (%)"
+     },
+     {
+      "Nombre": "E031Z65VEMBA",
+      "Cuenca SAIH": "EBRO",
+      "Tipo": "Capacidad embalse (%)"
+     },
+     {
+      "Nombre": "E020C65VEMBA",
+      "Cuenca SAIH": "EBRO",
+      "Tipo": "Capacidad embalse (%)"
+     }
+    ]
+   },
+   "ambito": "MITECO nacional",
+   "que": "WMS GetFeatureInfo agua:embalses_et (toda la peninsula, 50)"
+  }
+ ],
+ "webs": [
+  {
+   "ambito": "Ebro",
+   "paginas": [
+    {
+     "url": "https://www.saihebro.com/",
+     "ok": false,
+     "error": "ConnectTimeout: HTTPSConnectionPool(host='www.saihebro.com', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.saihebro.com', port=443) at 0x76dd7d1b6a50>, 'Connection to www.saihebro.com timed out. (connect timeout=40)'))",
+     "segundos": 40.0,
+     "nivel": 1
+    },
+    {
+     "url": "https://www.saihebro.com/saihebro/index.php?url=/informes/partes",
+     "ok": false,
+     "error": "ConnectTimeout: HTTPSConnectionPool(host='www.saihebro.com', port=443): Max retries exceeded with url: /saihebro/index.php?url=/informes/partes (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.saihebro.com', port=443) at 0x76dd7d1b74a0>, 'Connection to www.saihebro.com timed out. (connect timeout=40)'))",
+     "segundos": 40.1,
+     "nivel": 1
+    }
+   ]
+  },
+  {
+   "ambito": "Tajo",
+   "paginas": [
+    {
+     "url": "https://saihtajo.chtajo.es/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=UTF-8",
+     "bytes": 58051,
+     "segundos": 0.6,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "",
+      "n_tablas": 0,
+      "menciones_hm3": 0,
+      "menciones_embalse": 0,
+      "fechas_vistas": [],
+      "enlaces_interes": [
+       {
+        "url": "https://saihtajo.chtajo.es/{{urlexportarjson}}",
+        "texto": "JSON"
+       },
+       {
+        "url": "https://saihtajo.chtajo.es/{{urlexportarexcel}}",
+        "texto": "XLSX"
+       }
+      ],
+      "pistas_api": [
+       "https://fonts.googleapis.com",
+       "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      ],
+      "texto_inicio": ""
+     },
+     "nivel": 1
+    }
+   ]
+  },
+  {
+   "ambito": "Guadiana",
+   "paginas": [
+    {
+     "url": "https://www.saihguadiana.com/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html",
+     "bytes": 83752,
+     "segundos": 1.3,
+     "cors": null,
+     "ultima_modificacion": "Wed, 11 Nov 2026 11:51:38 GMT",
+     "url_final": "https://www.siraguadiana.com:/",
+     "clase": "html",
+     "html": {
+      "titulo": "SIRA Guadiana",
+      "n_tablas": 0,
+      "menciones_hm3": 0,
+      "menciones_embalse": 0,
+      "fechas_vistas": [],
+      "enlaces_interes": [],
+      "pistas_api": [],
+      "texto_inicio": "SIRA Guadiana"
+     },
+     "nivel": 1
+    }
+   ]
+  },
+  {
+   "ambito": "Guadalquivir",
+   "paginas": [
+    {
+     "url": "https://www.chguadalquivir.es/saih/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=utf-8",
+     "bytes": 155966,
+     "segundos": 0.7,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "Inicio",
+      "n_tablas": 65,
+      "tabla_mayor_filas": 20,
+      "tabla_mayor_muestra": [
+       [
+        "Embalse",
+        "NMN (m.s.n.m.)",
+        "Nivel (m.s.n.m.)",
+        "Capacidad (hm 3 )",
+        "Volumen (hm 3 )",
+        "%"
+       ],
+       [
+        "E01 El Tranco de Beas (JA)",
+        "641,50",
+        "632,87",
+        "505,731",
+        "361,833",
+        "71,55"
+       ],
+       [
+        "E04 El Portillo (GR)",
+        "915,50",
+        "912,94",
+        "31,336",
+        "27,860",
+        "88,91"
+       ],
+       [
+        "E06 Negrat&#237;n (GR)",
+        "637,80",
+        "625,59",
+        "571,044",
+        "328,462",
+        "57,52"
+       ],
+       [
+        "E08 Siles (JA)",
+        "702,30",
+        "698,42",
+        "30,169",
+        "22,744",
+        "75,39"
+       ],
+       [
+        "E13 Guadal&#233;n (JA)",
+        "349,50",
+        "340,92",
+        "162,548",
+        "71,231",
+        "43,82"
+       ],
+       [
+        "E14 La Fernandina (JA)",
+        "452,61",
+        "445,71",
+        "247,138",
+        "175,667",
+        "71,08"
+       ],
+       [
+        "E15 Guadalmena (JA)",
+        "600,67",
+        "593,53",
+        "344,795",
+        "254,721",
+        "73,88"
+       ],
+       [
+        "E16 Giribaile (JA)",
+        "345,50",
+        "339,13",
+        "491,143",
+        "349,335",
+        "71,13"
+       ],
+       [
+        "E23 J&#225;ndula (JA)",
+        "354,10",
+        "340,45",
+        "325,071",
+        "181,156",
+        "55,73"
+       ],
+       [
+        "E26 Yeguas (CO)",
+        "248,50",
+        "242,12",
+        "228,704",
+        "173,214",
+        "75,74"
+       ],
+       [
+        "E28 Arenoso (CO)",
+        "209,00",
+        "201,21",
+        "166,967",
+        "115,046",
+        "68,90"
+       ]
+      ],
+      "menciones_hm3": 4,
+      "menciones_embalse": 11,
+      "fechas_vistas": [
+       "17/11/2026 21:04"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chguadalquivir.es/saih/Doc/Certificado_GCDATOS.pdf",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/EmbalMapa.aspx",
+        "texto": "Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos.aspx",
+        "texto": "Versión clásica"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos_Avan.aspx",
+        "texto": "Versión Avanzada"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Informes.aspx",
+        "texto": "Informes"
+       },
+       {
+        "url": "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html",
+        "texto": "Informes Nivales"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Datos/Doc/Listado_puntos_de_control.pdf",
+        "texto": "Listado puntos de control"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosEmb.aspx",
+        "texto": "Datos Diarios"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatEmbZona.aspx",
+        "texto": "Informes de Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ZR_Informe.aspx",
+        "texto": "Informes Zonas Regables"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ListaRT.aspx",
+        "texto": "Embalses Tiempo Real"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/InformeRios.aspx",
+        "texto": "Caudales en Ríos"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ResguardoEmbalses.aspx",
+        "texto": "Resguardos"
+       }
+      ],
+      "pistas_api": [
+       "https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js",
+       "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html"
+      ],
+      "texto_inicio": "Inicio Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Inicio SAIH del Guadalquivir Información Bot Telegram SAIH Mapa del Sitio Web Red de Control Mapa Relación de Puntos Datos Tiempo Real Embalses Caudales Niveles en río Avenidas Precipitaciones Temperaturas Zonas Regables Puentes Jaén Ceuta y Melilla Datos Históricos "
+     },
+     "nivel": 1
+    },
+    {
+     "url": "https://www.chguadalquivir.es/saih/EmbalMapa.aspx",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=utf-8",
+     "bytes": 92304,
+     "segundos": 0.7,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "S.A.I.H del Guadalquivir",
+      "n_tablas": 54,
+      "tabla_mayor_filas": 2,
+      "tabla_mayor_muestra": [
+       [
+        "Usuario: *"
+       ],
+       [
+        "Contraseña: *"
+       ]
+      ],
+      "menciones_hm3": 2,
+      "menciones_embalse": 10,
+      "fechas_vistas": [
+       "17/11/2026 21:04"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chguadalquivir.es/saih/Doc/Certificado_GCDATOS.pdf",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/EmbalMapa.aspx",
+        "texto": "Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos.aspx",
+        "texto": "Versión clásica"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos_Avan.aspx",
+        "texto": "Versión Avanzada"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Informes.aspx",
+        "texto": "Informes"
+       },
+       {
+        "url": "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html",
+        "texto": "Informes Nivales"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/EmbalJA.aspx",
+        "texto": "Umbrales: RESUMEN DE LA CUENCA RESUMEN DE LA CUENCA Vol. Embalsado (hm"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Datos/Doc/Listado_puntos_de_control.pdf",
+        "texto": "Listado puntos de control"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosEmb.aspx",
+        "texto": "Datos Diarios"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatEmbZona.aspx",
+        "texto": "Informes de Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ZR_Informe.aspx",
+        "texto": "Informes Zonas Regables"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ListaRT.aspx",
+        "texto": "Embalses Tiempo Real"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/InformeRios.aspx",
+        "texto": "Caudales en Ríos"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ResguardoEmbalses.aspx",
+        "texto": "Resguardos"
+       }
+      ],
+      "pistas_api": [
+       "https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js",
+       "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html"
+      ],
+      "texto_inicio": "S.A.I.H del Guadalquivir Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Inicio SAIH del Guadalquivir Información Bot Telegram SAIH Mapa del Sitio Web Red de Control Mapa Relación de Puntos Datos Tiempo Real Embalses Caudales Niveles en río Avenidas Precipitaciones Temperaturas Zonas Regables Puentes Jaén Ceuta y Melilla"
+     },
+     "nivel": 2
+    },
+    {
+     "url": "https://www.chguadalquivir.es/saih/DatEmbZona.aspx",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=utf-8",
+     "bytes": 77469,
+     "segundos": 0.8,
+     "cors": null,
+     "ultima_modificacion": null,
+     "url_final": "https://www.chguadalquivir.es/saih/LoginError.aspx",
+     "clase": "html",
+     "html": {
+      "titulo": "S.A.I.H del Guadalquivir",
+      "n_tablas": 54,
+      "tabla_mayor_filas": 2,
+      "tabla_mayor_muestra": [
+       [
+        "Usuario: *"
+       ],
+       [
+        "Contraseña: *"
+       ]
+      ],
+      "menciones_hm3": 0,
+      "menciones_embalse": 5,
+      "fechas_vistas": [
+       "17/11/2026 21:04"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chguadalquivir.es/saih/Doc/Certificado_GCDATOS.pdf",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/EmbalMapa.aspx",
+        "texto": "Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos.aspx",
+        "texto": "Versión clásica"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos_Avan.aspx",
+        "texto": "Versión Avanzada"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Informes.aspx",
+        "texto": "Informes"
+       },
+       {
+        "url": "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html",
+        "texto": "Informes Nivales"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Datos/Doc/Listado_puntos_de_control.pdf",
+        "texto": "Listado puntos de control"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosEmb.aspx",
+        "texto": "Datos Diarios"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatEmbZona.aspx",
+        "texto": "Informes de Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ZR_Informe.aspx",
+        "texto": "Informes Zonas Regables"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ListaRT.aspx",
+        "texto": "Embalses Tiempo Real"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/InformeRios.aspx",
+        "texto": "Caudales en Ríos"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ResguardoEmbalses.aspx",
+        "texto": "Resguardos"
+       }
+      ],
+      "pistas_api": [
+       "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html"
+      ],
+      "texto_inicio": "S.A.I.H del Guadalquivir Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Inicio SAIH del Guadalquivir Información Bot Telegram SAIH Mapa del Sitio Web Red de Control Mapa Relación de Puntos Datos Tiempo Real Embalses Caudales Niveles en río Avenidas Precipitaciones Temperaturas Zonas Regables Puentes Jaén Ceuta y Melilla"
+     },
+     "nivel": 2
+    },
+    {
+     "url": "https://www.chguadalquivir.es/saih/ListaRT.aspx",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=utf-8",
+     "bytes": 77469,
+     "segundos": 0.7,
+     "cors": null,
+     "ultima_modificacion": null,
+     "url_final": "https://www.chguadalquivir.es/saih/LoginError.aspx",
+     "clase": "html",
+     "html": {
+      "titulo": "S.A.I.H del Guadalquivir",
+      "n_tablas": 54,
+      "tabla_mayor_filas": 2,
+      "tabla_mayor_muestra": [
+       [
+        "Usuario: *"
+       ],
+       [
+        "Contraseña: *"
+       ]
+      ],
+      "menciones_hm3": 0,
+      "menciones_embalse": 5,
+      "fechas_vistas": [
+       "17/11/2026 21:04"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chguadalquivir.es/saih/Doc/Certificado_GCDATOS.pdf",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/EmbalMapa.aspx",
+        "texto": "Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos.aspx",
+        "texto": "Versión clásica"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos_Avan.aspx",
+        "texto": "Versión Avanzada"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Informes.aspx",
+        "texto": "Informes"
+       },
+       {
+        "url": "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html",
+        "texto": "Informes Nivales"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Datos/Doc/Listado_puntos_de_control.pdf",
+        "texto": "Listado puntos de control"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosEmb.aspx",
+        "texto": "Datos Diarios"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatEmbZona.aspx",
+        "texto": "Informes de Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ZR_Informe.aspx",
+        "texto": "Informes Zonas Regables"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ListaRT.aspx",
+        "texto": "Embalses Tiempo Real"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/InformeRios.aspx",
+        "texto": "Caudales en Ríos"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ResguardoEmbalses.aspx",
+        "texto": "Resguardos"
+       }
+      ],
+      "pistas_api": [
+       "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html"
+      ],
+      "texto_inicio": "S.A.I.H del Guadalquivir Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Inicio SAIH del Guadalquivir Información Bot Telegram SAIH Mapa del Sitio Web Red de Control Mapa Relación de Puntos Datos Tiempo Real Embalses Caudales Niveles en río Avenidas Precipitaciones Temperaturas Zonas Regables Puentes Jaén Ceuta y Melilla"
+     },
+     "nivel": 2
+    },
+    {
+     "url": "https://www.chguadalquivir.es/saih/ResguardoEmbalses.aspx",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=utf-8",
+     "bytes": 77469,
+     "segundos": 0.8,
+     "cors": null,
+     "ultima_modificacion": null,
+     "url_final": "https://www.chguadalquivir.es/saih/LoginError.aspx",
+     "clase": "html",
+     "html": {
+      "titulo": "S.A.I.H del Guadalquivir",
+      "n_tablas": 54,
+      "tabla_mayor_filas": 2,
+      "tabla_mayor_muestra": [
+       [
+        "Usuario: *"
+       ],
+       [
+        "Contraseña: *"
+       ]
+      ],
+      "menciones_hm3": 0,
+      "menciones_embalse": 5,
+      "fechas_vistas": [
+       "17/11/2026 21:04"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chguadalquivir.es/saih/Doc/Certificado_GCDATOS.pdf",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/EmbalMapa.aspx",
+        "texto": "Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos.aspx",
+        "texto": "Versión clásica"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosHistoricos_Avan.aspx",
+        "texto": "Versión Avanzada"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Informes.aspx",
+        "texto": "Informes"
+       },
+       {
+        "url": "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html",
+        "texto": "Informes Nivales"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/Datos/Doc/Listado_puntos_de_control.pdf",
+        "texto": "Listado puntos de control"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatosEmb.aspx",
+        "texto": "Datos Diarios"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/DatEmbZona.aspx",
+        "texto": "Informes de Embalses"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ZR_Informe.aspx",
+        "texto": "Informes Zonas Regables"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ListaRT.aspx",
+        "texto": "Embalses Tiempo Real"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/InformeRios.aspx",
+        "texto": "Caudales en Ríos"
+       },
+       {
+        "url": "https://www.chguadalquivir.es/saih/ResguardoEmbalses.aspx",
+        "texto": "Resguardos"
+       }
+      ],
+      "pistas_api": [
+       "https://www.miteco.gob.es/es/agua/temas/evaluacion-de-los-recursos-hidricos/erhin/datos-interes.html"
+      ],
+      "texto_inicio": "S.A.I.H del Guadalquivir Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Aviso: Datos no contrastados Actualizados: 17/11/2026 21:04:26 Inicio SAIH del Guadalquivir Información Bot Telegram SAIH Mapa del Sitio Web Red de Control Mapa Relación de Puntos Datos Tiempo Real Embalses Caudales Niveles en río Avenidas Precipitaciones Temperaturas Zonas Regables Puentes Jaén Ceuta y Melilla"
+     },
+     "nivel": 2
+    }
+   ]
+  },
+  {
+   "ambito": "Duero",
+   "paginas": [
+    {
+     "url": "https://www.saihduero.es/",
+     "ok": false,
+     "error": "SSLError: HTTPSConnectionPool(host='www.saihduero.es', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1011)')))",
+     "segundos": 0.3,
+     "nivel": 1
+    },
+    {
+     "url": "https://www.saihduero.es/situacion-embalses",
+     "ok": false,
+     "error": "SSLError: HTTPSConnectionPool(host='www.saihduero.es', port=443): Max retries exceeded with url: /situacion-embalses (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1011)')))",
+     "segundos": 0.3,
+     "nivel": 1
+    }
+   ]
+  },
+  {
+   "ambito": "Jucar",
+   "paginas": [
+    {
+     "url": "https://saih.chj.es/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=utf-8",
+     "bytes": 246,
+     "segundos": 0.6,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "Request Rejected",
+      "n_tablas": 0,
+      "menciones_hm3": 0,
+      "menciones_embalse": 0,
+      "fechas_vistas": [],
+      "enlaces_interes": [],
+      "pistas_api": [],
+      "texto_inicio": "Request Rejected The requested URL was rejected. Please consult with your administrator. Your support ID is: 3030173391018084206 [Go Back]"
+     },
+     "nivel": 1
+    }
+   ]
+  },
+  {
+   "ambito": "Segura",
+   "paginas": [
+    {
+     "url": "https://saihweb.chsegura.es/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html;charset=UTF-8",
+     "bytes": 13805,
+     "segundos": 1.7,
+     "cors": null,
+     "ultima_modificacion": null,
+     "url_final": "https://cas.chsegura.es:443/cas/login?service=http%3A%2F%2Fsaihweb.chsegura.es%2Fauth2%2Fcas-chs",
+     "clase": "html",
+     "html": {
+      "titulo": "Login - CAS &#8211; Central Authentication Service",
+      "n_tablas": 1,
+      "tabla_mayor_filas": 1,
+      "tabla_mayor_muestra": [
+       [
+        "",
+        "SAIH Segura SAIH Segura"
+       ]
+      ],
+      "menciones_hm3": 0,
+      "menciones_embalse": 0,
+      "fechas_vistas": [],
+      "enlaces_interes": [],
+      "pistas_api": [],
+      "texto_inicio": "Login - CAS &#8211; Central Authentication Service Autenticaci&oacute;n Central de la Confederaci&oacute;n Hidrogr&aacute;fica del Segura CHS Confederaci&oacute;n Hidrogr&aacute;fica del Segura --> Browser cookies disabled Your browser does not accept cookies. Single Sign On WILL NOT WORK. SAIH Segura SAIH Segura --> --> --> --> Introduzca su nombre de usuario y contraseña. Nombre de u suario: C o"
+     },
+     "nivel": 1
+    },
+    {
+     "url": "https://www.chsegura.es/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html;charset=UTF-8",
+     "bytes": 65939,
+     "segundos": 1.9,
+     "cors": "*",
+     "ultima_modificacion": "Tue, 17 Nov 2026 20:05:47 GMT",
+     "url_final": "https://www.chsegura.es/es/",
+     "clase": "html",
+     "html": {
+      "titulo": "Confederación Hidrográfica del Segura",
+      "n_tablas": 2,
+      "tabla_mayor_filas": 7,
+      "tabla_mayor_muestra": [
+       [
+        "",
+        ""
+       ],
+       [
+        "Último dato publicado a",
+        ""
+       ],
+       [
+        "Volumen Total",
+        ""
+       ],
+       [
+        "Almacenado hoy",
+        ""
+       ],
+       [
+        "% hoy",
+        ""
+       ],
+       [
+        "Almacenado año anterior",
+        ""
+       ],
+       [
+        "% Año anterior",
+        ""
+       ]
+      ],
+      "menciones_hm3": 3,
+      "menciones_embalse": 2,
+      "fechas_vistas": [],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/",
+        "texto": "--> PARTE DIARIO"
+       },
+       {
+        "url": "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/",
+        "texto": "Ir a la versión accesible"
+       },
+       {
+        "url": "https://www.chsegura.es/es/cuenca/caracterizacion/sequias/indices-e-informes-de-seguimiento/",
+        "texto": "Ir a Índices e informes de seguimiento"
+       },
+       {
+        "url": "https://www.chsegura.es/es/cuenca/planificacion/planificacion-2022-2027/",
+        "texto": "--> ¿Puedo descargarme el plan hidrológico?"
+       },
+       {
+        "url": "https://www.chsegura.es/descargas/informaciongeneral/seguridad/docsdescarga/[largo].pdf",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chsegura.es/descargas/informaciongeneral/seguridad/docsdescarga/[largo].pdf",
+        "texto": ""
+       }
+      ],
+      "pistas_api": [
+       "/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/",
+       "https://cdn.datatables.net/plug-ins/1.10.20/api/sum().js"
+      ],
+      "texto_inicio": "Confederación Hidrográfica del Segura --> Canal de Youtube de la CHS Canal de Wordpress de la CHS Canal de LikedIn de la CHS Canal de Facebook de la CHS Canal de X de la CHS Canal de Instagram de la CHS Correo electrónico corporativo CHS-AGE SEDE ELECTRÓNIC@ Español English Valenciá Público Validar usuario CIUDADANO LA CUENCA LA CONFEDERACIÓN ÁREA PRIVADA CENTENARIO --> Previous Next Confederación"
+     },
+     "nivel": 1
+    },
+    {
+     "url": "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html;charset=UTF-8",
+     "bytes": 49076,
+     "segundos": 1.1,
+     "cors": "*",
+     "ultima_modificacion": "Tue, 17 Nov 2026 20:05:50 GMT",
+     "clase": "html",
+     "html": {
+      "titulo": "Parte diario",
+      "n_tablas": 1,
+      "tabla_mayor_filas": 7,
+      "tabla_mayor_muestra": [
+       [
+        "lun",
+        "mar",
+        "mié",
+        "jue",
+        "vie",
+        "sáb",
+        "dom"
+       ],
+       [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "1"
+       ],
+       [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+       ],
+       [
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+       ],
+       [
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22"
+       ],
+       [
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29"
+       ],
+       [
+        "30",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+       ]
+      ],
+      "menciones_hm3": 0,
+      "menciones_embalse": 1,
+      "fechas_vistas": [],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/",
+        "texto": "Parte diario"
+       },
+       {
+        "url": "http://www.facebook.com/sharer.php?u=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/index.html&t=Parte diario",
+        "texto": ""
+       },
+       {
+        "url": "https://twitter.com/intent/tweet?text=Parte diario&url=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/index.html",
+        "texto": ""
+       },
+       {
+        "url": "http://www.linkedin.com/shareArticle?url=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/index.html",
+        "texto": ""
+       },
+       {
+        "url": "mailto:?subject=Parte diario&amp;body=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/index.html",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/index.html?anio=2026&mes=9",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/index.html?anio=2026&mes=11",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chsegura.es/export/sites/chs/descargas/cuenca/redesdecontrol/estadisticashidrologicas/docsdescarga/info_parte_oficial.zip",
+        "texto": "Manual de ayuda sobre el Parte Oficial de Embalses (653,7 KB )"
+       },
+       {
+        "url": "https://www.chsegura.es/static/boletin_diario/2026-27/ParteGlobalDatosPozosCab_2026_2027.pdf",
+        "texto": "Parte Global Vertido de Pozos en Cabecera (2026)"
+       },
+       {
+        "url": "https://www.chsegura.es/static/boletin_diario/2026-27/ParteGlobalDatosCuencaNeto_2026_2027.pdf",
+        "texto": "Parte Global de Cuenca (Neto) (2026)"
+       },
+       {
+        "url": "https://www.chsegura.es/static/boletin_diario/2026-27/ParteGlobalDatosCuenca_2026_2027.pdf",
+        "texto": "Parte Global de Cuenca (Bruto) (2026)"
+       },
+       {
+        "url": "https://www.chsegura.es/static/boletin_diario/2026-27/ParteGlobalDatosTrasvase_2026_2027.pdf",
+        "texto": "Parte Global del Trasvase (2026)"
+       },
+       {
+        "url": "https://www.chsegura.es/descargas/informaciongeneral/seguridad/docsdescarga/[largo].pdf",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chsegura.es/descargas/informaciongeneral/seguridad/docsdescarga/[largo].pdf",
+        "texto": ""
+       }
+      ],
+      "pistas_api": [
+       "/static/boletin_diario/2026-27/ParteGlobalDatosCuencaNeto_2026_2027.pdf",
+       "/static/boletin_diario/2026-27/ParteGlobalDatosCuenca_2026_2027.pdf",
+       "/static/boletin_diario/2026-27/ParteGlobalDatosPozosCab_2026_2027.pdf",
+       "/static/boletin_diario/2026-27/ParteGlobalDatosTrasvase_2026_2027.pdf",
+       "https://cdn.datatables.net/plug-ins/1.10.20/api/sum().js"
+      ],
+      "texto_inicio": "Parte diario --> Canal de Youtube de la CHS Canal de Wordpress de la CHS Canal de LikedIn de la CHS Canal de Facebook de la CHS Canal de X de la CHS Canal de Instagram de la CHS Correo electrónico corporativo CHS-AGE SEDE ELECTRÓNIC@ Español English Valenciá Público Validar usuario CIUDADANO LA CUENCA LA CONFEDERACIÓN ÁREA PRIVADA CENTENARIO --> Inicio Cuenca Redes de control Estadísticas hidrológ"
+     },
+     "nivel": 2
+    },
+    {
+     "url": "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html;charset=UTF-8",
+     "bytes": 43678,
+     "segundos": 1.1,
+     "cors": "*",
+     "ultima_modificacion": "Tue, 17 Nov 2026 20:05:53 GMT",
+     "clase": "html",
+     "html": {
+      "titulo": "Estado de embalses",
+      "n_tablas": 5,
+      "tabla_mayor_filas": 32,
+      "tabla_mayor_muestra": [
+       [
+        "",
+        "Fuensanta",
+        "Talave",
+        "Cenajo",
+        "Camarillas",
+        "La Pedrera",
+        "Resto",
+        "Total (hm³)"
+       ],
+       [
+        "16/10/2026",
+        "148",
+        "8",
+        "248",
+        "10",
+        "88",
+        "51",
+        "553"
+       ],
+       [
+        "17/10/2026",
+        "148",
+        "8",
+        "247",
+        "10",
+        "88",
+        "51",
+        "552"
+       ],
+       [
+        "18/10/2026",
+        "148",
+        "8",
+        "247",
+        "10",
+        "88",
+        "51",
+        "552"
+       ],
+       [
+        "19/10/2026",
+        "147",
+        "8",
+        "246",
+        "10",
+        "89",
+        "52",
+        "552"
+       ],
+       [
+        "20/10/2026",
+        "147",
+        "8",
+        "245",
+        "10",
+        "89",
+        "52",
+        "551"
+       ],
+       [
+        "21/10/2026",
+        "146",
+        "8",
+        "245",
+        "10",
+        "89",
+        "52",
+        "550"
+       ],
+       [
+        "22/10/2026",
+        "146",
+        "8",
+        "244",
+        "10",
+        "89",
+        "52",
+        "549"
+       ],
+       [
+        "23/10/2026",
+        "146",
+        "8",
+        "243",
+        "10",
+        "89",
+        "52",
+        "548"
+       ],
+       [
+        "24/10/2026",
+        "145",
+        "8",
+        "242",
+        "10",
+        "89",
+        "52",
+        "546"
+       ],
+       [
+        "25/10/2026",
+        "145",
+        "8",
+        "242",
+        "10",
+        "89",
+        "53",
+        "547"
+       ],
+       [
+        "26/10/2026",
+        "144",
+        "8",
+        "241",
+        "10",
+        "89",
+        "53",
+        "545"
+       ]
+      ],
+      "menciones_hm3": 8,
+      "menciones_embalse": 10,
+      "fechas_vistas": [
+       "15/11/2026",
+       "01/12/2025",
+       "01/01/2026",
+       "01/02/2026",
+       "01/03/2026",
+       "01/04/2026",
+       "01/05/2026",
+       "01/06/2026"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/",
+        "texto": "Estado de embalses"
+       },
+       {
+        "url": "http://www.facebook.com/sharer.php?u=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html&t=Estado de los embalses",
+        "texto": ""
+       },
+       {
+        "url": "https://twitter.com/intent/tweet?text=Estado de los embalses&url=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html",
+        "texto": ""
+       },
+       {
+        "url": "http://www.linkedin.com/shareArticle?url=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html",
+        "texto": ""
+       },
+       {
+        "url": "mailto:?subject=Estado de los embalses&amp;body=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/partediario.html",
+        "texto": "Parte Diario"
+       },
+       {
+        "url": "https://www.chsegura.es/descargas/informaciongeneral/seguridad/docsdescarga/[largo].pdf",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chsegura.es/descargas/informaciongeneral/seguridad/docsdescarga/[largo].pdf",
+        "texto": ""
+       }
+      ],
+      "pistas_api": [
+       "/en/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html",
+       "/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/",
+       "/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html",
+       "/va/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html",
+       "http://www.facebook.com/sharer.php?u=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html&t=Estado de los embalses",
+       "http://www.linkedin.com/shareArticle?url=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html",
+       "https://cdn.datatables.net/plug-ins/1.10.20/api/sum().js",
+       "https://twitter.com/intent/tweet?text=Estado de los embalses&url=https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html",
+       "https://www.chsegura.es/es/cuenca/redes-de-control/estadisticas-hidrologicas/estado-de-embalses/index.html"
+      ],
+      "texto_inicio": "Estado de embalses --> Canal de Youtube de la CHS Canal de Wordpress de la CHS Canal de LikedIn de la CHS Canal de Facebook de la CHS Canal de X de la CHS Canal de Instagram de la CHS Correo electrónico corporativo CHS-AGE SEDE ELECTRÓNIC@ Español English Valenciá Público Validar usuario CIUDADANO LA CUENCA LA CONFEDERACIÓN ÁREA PRIVADA CENTENARIO --> Inicio Cuenca Redes de control Estadísticas hi"
+     },
+     "nivel": 2
+    }
+   ]
+  },
+  {
+   "ambito": "Mino-Sil",
+   "paginas": [
+    {
+     "url": "https://saih.chminosil.es/",
+     "ok": false,
+     "error": "SSLError: HTTPSConnectionPool(host='saih.chminosil.es', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1011)')))",
+     "segundos": 0.3,
+     "nivel": 1
+    }
+   ]
+  },
+  {
+   "ambito": "Cantabrico",
+   "paginas": [
+    {
+     "url": "https://www.chcantabrico.es/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html;charset=UTF-8",
+     "bytes": 410987,
+     "segundos": 0.9,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "Inicio",
+      "n_tablas": 0,
+      "menciones_hm3": 0,
+      "menciones_embalse": 3,
+      "fechas_vistas": [],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chcantabrico.es/reservas-hidrol%C3%B3gicas",
+        "texto": "Reservas hidrológicas"
+       },
+       {
+        "url": "https://www.chcantabrico.es/el-organismo/proteccion-de-datos",
+        "texto": "Protección de datos"
+       },
+       {
+        "url": "https://www.chcantabrico.es/servicios/control-de-volumenes",
+        "texto": "Control de volúmenes"
+       },
+       {
+        "url": "https://www.chcantabrico.es/servicios/aprovechamientos-hidroelectricos",
+        "texto": "Presas y embalses. Aprovechamientos hidroeléctricos"
+       },
+       {
+        "url": "https://www.chcantabrico.es/gestion-cuencas/obras-hidraulicas/obras-hidraulicas-y-de-mejora-del-dph/actuaciones-en-proyecto/edar-tapia",
+        "texto": "EDAR de Tapia de Casariego -->"
+       },
+       {
+        "url": "https://www.chcantabrico.es/gestion-cuencas/obras-hidraulicas/obras-hidraulicas-y-de-mejora-del-dph/actuaciones-en-proyecto/proyecto-de-reparaci%C3%[largo].-t.-m.-de-morc%C3%ADn-asturias-",
+        "texto": "Colector Alfilorios"
+       },
+       {
+        "url": "https://www.chcantabrico.es/demolici%C3%B3n-del-azud-de-jorajuria-en-el-r%C3%ADo-bidasoa-en-el-t.-m.[largo].-m.-de-arantza",
+        "texto": "Azudes Navarra"
+       },
+       {
+        "url": "https://www.chcantabrico.es/obras-accesorias.[largo]%C3%B3n-del-oria-medio-gipuzkoa-",
+        "texto": "Presa de Ibiur - ORIA MEDIO (GIPUZKOA) -->"
+       },
+       {
+        "url": "https://www.chcantabrico.es/proyecto-de-reparaciones-automatizaci%C3%B3n-y-revisi%C3%B3n-integral-del-equipamiento-electromec%C3%[largo]%C3%B3n-de-la-captaci%C3%B3n-del-arroyo-la-mortera",
+        "texto": "Reparaciones Alfilorios -->"
+       },
+       {
+        "url": "https://www.chcantabrico.es/contrato-de-servicios-de-explotaci%C3%B3n-mantenimiento-y-conservaci%C3%B3n-de-la-presa-de-los-alfilorios-y-revisi%C3%B3n-del-equipamiento-de-conservaci%C3%B3n-y-auscultaci%C3%B3n-asturias-",
+        "texto": "Explotación Alfilorios -->"
+       }
+      ],
+      "pistas_api": [
+       "/combo/?browserId=other&minifierType=&languageId=es_ES&t=1718226785277&",
+       "/combo/?browserId=other&minifierType=js&languageId=es_ES&t=1718226785277&",
+       "/documents/20143/1381602/Embalse+de+Lareo+%28Gipuzkoa%29.jpg/485ddc2c-922f-5759-da80-0c97ab8d8516?t=1765452807849",
+       "/gestion-cuencas/obras-hidraulicas/obras-hidraulicas-y-de-mejora-del-dph/actuaciones-en-proyecto/edar-tapia",
+       "/o/frontend-js-dependencies-web/__liferay__/exports/@liferay$js-api$data-set.js",
+       "/o/frontend-js-dependencies-web/__liferay__/exports/@liferay$js-api.js",
+       "/o/frontend-js-loader-modules-extender/loader.js?&mac=9WaMmhziBCkScHZwrrVcOR7VZF4=&browserId=other&languageId=es_ES&minifierType=js",
+       "https://fonts.googleapis.com",
+       "https://www.chcantabrico.es/el-organismo/proteccion-de-datos",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/carousel/owl.carousel.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/carousel/owl.carousel.min.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/main.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/modaal.custom.min.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=UUJhRnq68XqfQMKKPVAZy3Pw&key=[oculto]&maxResults=30"
+      ],
+      "texto_inicio": "Inicio . Benvidos . Bienvenidos . Ongi Etorri Barra de búsqueda . Benvidos . Bienvenidos . Ongi Etorri Barra de búsqueda Navegación Quiénes somos La Confederación Hidrográfica del Cantábrico Las cuencas cantábricas Reservas hidrológicas Órganos de gobierno y participación Unidades administrativas Información económica y patrimonial Planes de actuación y memorias de actividad Normativa Convenios Em"
+     },
+     "nivel": 1
+    },
+    {
+     "url": "https://www.chcantabrico.es/reservas-hidrol%C3%B3gicas",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html;charset=UTF-8",
+     "bytes": 227373,
+     "segundos": 0.6,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "Reservas hidrológicas",
+      "n_tablas": 0,
+      "menciones_hm3": 0,
+      "menciones_embalse": 3,
+      "fechas_vistas": [],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chcantabrico.es/c/portal/update_language?redirect=%2Freservas-hidrol%25C3%25B3gicas&amp;groupId=20143&amp;layoutId=1115&amp;languageId=gl_ES",
+        "texto": "Benvidos"
+       },
+       {
+        "url": "https://www.chcantabrico.es/c/portal/update_language?redirect=%2Freservas-hidrol%25C3%25B3gicas&amp;groupId=20143&amp;layoutId=1115&amp;languageId=eu_ES",
+        "texto": "Ongi Etorri"
+       },
+       {
+        "url": "https://www.chcantabrico.es/reservas-hidrol%C3%B3gicas",
+        "texto": "Reservas hidrológicas"
+       },
+       {
+        "url": "https://www.chcantabrico.es/el-organismo/proteccion-de-datos",
+        "texto": "Protección de datos"
+       },
+       {
+        "url": "https://www.chcantabrico.es/servicios/control-de-volumenes",
+        "texto": "Control de volúmenes"
+       },
+       {
+        "url": "https://www.chcantabrico.es/servicios/aprovechamientos-hidroelectricos",
+        "texto": "Presas y embalses. Aprovechamientos hidroeléctricos"
+       },
+       {
+        "url": "javascript:document.location.href =",
+        "texto": "Reservas hidrológicas"
+       },
+       {
+        "url": "https://www.chcantabrico.es/documents/d/guest/reservas_hidrologicas_digital",
+        "texto": ""
+       },
+       {
+        "url": "https://www.miteco.gob.es/es/agua/temas/[largo]/catalogo-nacional-de-reservas-hidrologicas.html",
+        "texto": "enlace"
+       }
+      ],
+      "pistas_api": [
+       "/combo/?browserId=other&minifierType=&languageId=es_ES&t=1718226785277&",
+       "/combo/?browserId=other&minifierType=js&languageId=es_ES&t=1718226785277&",
+       "/o/frontend-js-dependencies-web/__liferay__/exports/@liferay$js-api$data-set.js",
+       "/o/frontend-js-dependencies-web/__liferay__/exports/@liferay$js-api.js",
+       "/o/frontend-js-loader-modules-extender/loader.js?&mac=9WaMmhziBCkScHZwrrVcOR7VZF4=&browserId=other&languageId=es_ES&minifierType=js",
+       "https://fonts.googleapis.com",
+       "https://www.chcantabrico.es/el-organismo/proteccion-de-datos",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/carousel/owl.carousel.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/carousel/owl.carousel.min.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/main.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/modaal.custom.min.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000"
+      ],
+      "texto_inicio": "Reservas hidrológicas . Benvidos . Bienvenidos . Ongi Etorri Barra de búsqueda . Benvidos . Bienvenidos . Ongi Etorri Barra de búsqueda Navegación Quiénes somos La Confederación Hidrográfica del Cantábrico Las cuencas cantábricas Reservas hidrológicas Órganos de gobierno y participación Unidades administrativas Información económica y patrimonial Planes de actuación y memorias de actividad Normati"
+     },
+     "nivel": 2
+    },
+    {
+     "url": "https://www.chcantabrico.es/servicios/aprovechamientos-hidroelectricos",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html;charset=UTF-8",
+     "bytes": 403519,
+     "segundos": 0.8,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "Presas y embalses. Aprovechamientos hidroeléctricos",
+      "n_tablas": 0,
+      "menciones_hm3": 0,
+      "menciones_embalse": 12,
+      "fechas_vistas": [
+       "31-12-2025"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chcantabrico.es/reservas-hidrol%C3%B3gicas",
+        "texto": "Reservas hidrológicas"
+       },
+       {
+        "url": "https://www.chcantabrico.es/el-organismo/proteccion-de-datos",
+        "texto": "Protección de datos"
+       },
+       {
+        "url": "https://www.chcantabrico.es/servicios/control-de-volumenes",
+        "texto": "Control de volúmenes"
+       },
+       {
+        "url": "https://www.chcantabrico.es/servicios/aprovechamientos-hidroelectricos",
+        "texto": "Presas y embalses. Aprovechamientos hidroeléctricos"
+       },
+       {
+        "url": "javascript:document.location.href =",
+        "texto": "Solicitud de informe (inundabilidad y otros)"
+       },
+       {
+        "url": "https://www.chcantabrico.es/documents/d/guest/presas-y-azudes-1",
+        "texto": ""
+       },
+       {
+        "url": "https://www.chcantabrico.es/gestion-cuencas/infraestructuras-hidraulicas/embalse-de-los-alfilorios",
+        "texto": "Embalse de Los Alfilorios"
+       }
+      ],
+      "pistas_api": [
+       "/combo/?browserId=other&minifierType=&languageId=es_ES&t=1718226785277&",
+       "/combo/?browserId=other&minifierType=js&languageId=es_ES&t=1718226785277&",
+       "/o/frontend-js-dependencies-web/__liferay__/exports/@liferay$js-api$data-set.js",
+       "/o/frontend-js-dependencies-web/__liferay__/exports/@liferay$js-api.js",
+       "/o/frontend-js-loader-modules-extender/loader.js?&mac=9WaMmhziBCkScHZwrrVcOR7VZF4=&browserId=other&languageId=es_ES&minifierType=js",
+       "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=[oculto]",
+       "https://fonts.googleapis.com",
+       "https://www.chcantabrico.es/el-organismo/proteccion-de-datos",
+       "https://www.chcantabrico.es/gestion-cuencas/infraestructuras-hidraulicas/embalse-de-los-alfilorios",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/carousel/owl.carousel.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/carousel/owl.carousel.min.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/main.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/modaal.custom.min.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/servicios/informacion-cartografica-documentacion/informacion-cartografica/infraestructura-de-datos-espaciales-ide-"
+      ],
+      "texto_inicio": "Presas y embalses. Aprovechamientos hidroeléctricos . Benvidos . Bienvenidos . Ongi Etorri Barra de búsqueda . Benvidos . Bienvenidos . Ongi Etorri Barra de búsqueda Navegación Quiénes somos La Confederación Hidrográfica del Cantábrico Las cuencas cantábricas Reservas hidrológicas Órganos de gobierno y participación Unidades administrativas Información económica y patrimonial Planes de actuación y"
+     },
+     "nivel": 2
+    },
+    {
+     "url": "https://www.chcantabrico.es/gestion-cuencas/obras-hidraulicas/obras-hidraulicas-y-de-mejora-del-dph/actuaciones-en-proyecto/proyecto-de-reparaci%C3%[largo].-t.-m.-de-morc%C3%ADn-asturias-",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html;charset=UTF-8",
+     "bytes": 227845,
+     "segundos": 0.6,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "Proyecto de reparación del colector perimetral del embalse de los Alfilorios. T. M. de Morcín (Asturias)",
+      "n_tablas": 0,
+      "menciones_hm3": 0,
+      "menciones_embalse": 7,
+      "fechas_vistas": [],
+      "enlaces_interes": [
+       {
+        "url": "https://www.chcantabrico.es/c/portal/update_language?redirect=%2Fgestion-cuencas%2Fobras-hidraulicas%2Fobras-hidraulicas-y-de-mejora-del-dph%2Factuaciones-en-proyecto%2Fproyecto-de-reparaci%25C3%[largo].-t.-m.-de-morc%25C3%25ADn-asturias-&amp;groupId=20143&amp;layoutId=1105&amp;languageId=gl_ES",
+        "texto": "Benvidos"
+       },
+       {
+        "url": "https://www.chcantabrico.es/c/portal/update_language?redirect=%2Fgestion-cuencas%2Fobras-hidraulicas%2Fobras-hidraulicas-y-de-mejora-del-dph%2Factuaciones-en-proyecto%2Fproyecto-de-reparaci%25C3%[largo].-t.-m.-de-morc%25C3%25ADn-asturias-&amp;groupId=20143&amp;layoutId=1105&amp;languageId=eu_ES",
+        "texto": "Ongi Etorri"
+       },
+       {
+        "url": "https://www.chcantabrico.es/reservas-hidrol%C3%B3gicas",
+        "texto": "Reservas hidrológicas"
+       },
+       {
+        "url": "https://www.chcantabrico.es/el-organismo/proteccion-de-datos",
+        "texto": "Protección de datos"
+       },
+       {
+        "url": "https://www.chcantabrico.es/servicios/control-de-volumenes",
+        "texto": "Control de volúmenes"
+       },
+       {
+        "url": "https://www.chcantabrico.es/servicios/aprovechamientos-hidroelectricos",
+        "texto": "Presas y embalses. Aprovechamientos hidroeléctricos"
+       },
+       {
+        "url": "javascript:document.location.href =",
+        "texto": "Embalse de Los Alfilorios"
+       }
+      ],
+      "pistas_api": [
+       "/combo/?browserId=other&minifierType=&languageId=es_ES&t=1718226785277&",
+       "/combo/?browserId=other&minifierType=js&languageId=es_ES&t=1718226785277&",
+       "/o/frontend-js-dependencies-web/__liferay__/exports/@liferay$js-api$data-set.js",
+       "/o/frontend-js-dependencies-web/__liferay__/exports/@liferay$js-api.js",
+       "/o/frontend-js-loader-modules-extender/loader.js?&mac=9WaMmhziBCkScHZwrrVcOR7VZF4=&browserId=other&languageId=es_ES&minifierType=js",
+       "https://fonts.googleapis.com",
+       "https://www.chcantabrico.es/el-organismo/proteccion-de-datos",
+       "https://www.chcantabrico.es/gestion-cuencas/infraestructuras-hidraulicas/embalse-de-los-alfilorios",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/carousel/owl.carousel.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/carousel/owl.carousel.min.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/main.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000",
+       "https://www.chcantabrico.es/o/new-chc-theme/js/modaal.custom.min.js?browserId=other&amp;minifierType=js&amp;languageId=es_ES&amp;t=1761551452000"
+      ],
+      "texto_inicio": "Proyecto de reparación del colector perimetral del embalse de los Alfilorios. T. M. de Morcín (Asturias) . Benvidos . Bienvenidos . Ongi Etorri Barra de búsqueda . Benvidos . Bienvenidos . Ongi Etorri Barra de búsqueda Navegación Quiénes somos La Confederación Hidrográfica del Cantábrico Las cuencas cantábricas Reservas hidrológicas Órganos de gobierno y participación Unidades administrativas Info"
+     },
+     "nivel": 2
+    }
+   ]
+  },
+  {
+   "ambito": "Andalucia (Hidrosur)",
+   "paginas": [
+    {
+     "url": "http://www.redhidrosurmedioambiente.es/saih/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=UTF-8",
+     "bytes": 162285,
+     "segundos": 2.3,
+     "cors": null,
+     "ultima_modificacion": null,
+     "url_final": "https://www.redhidrosurmedioambiente.es/saih/",
+     "clase": "html",
+     "html": {
+      "titulo": "Visor Web | S.A.I.H. Hidrosur",
+      "n_tablas": 0,
+      "menciones_hm3": 0,
+      "menciones_embalse": 4,
+      "fechas_vistas": [
+       "17-11-2026 20:00"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "javascript:;",
+        "texto": "Informes"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info Anual_2025-2026.pdf",
+        "texto": "Informe Anual 2025/2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_OCT2026.pdf",
+        "texto": "Oct - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_SEP2026.pdf",
+        "texto": "Sep - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_AGO2026.pdf",
+        "texto": "Ago - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_JUL2026.pdf",
+        "texto": "Jul - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_JUN2026.pdf",
+        "texto": "Jun - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_MAY2026.pdf",
+        "texto": "May - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_ABR2026.pdf",
+        "texto": "Abr - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_MAR2026.pdf",
+        "texto": "Mar - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_FEB2026.pdf",
+        "texto": "Feb - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_ENE2026.pdf",
+        "texto": "Ene - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_DIC2025.pdf",
+        "texto": "Dic - 2025"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_NOV2025.pdf",
+        "texto": "Nov - 2025"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/informe/nieve",
+        "texto": "Informe de nieve"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/informe/embalses",
+        "texto": "Informe de embalses"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/InformeSequia.pdf",
+        "texto": "Informe actual completo"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/informes/sequia/about",
+        "texto": "Acerca de este informe"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/embalses",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/variacion",
+        "texto": "Variaci&oacute;n de volumen"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/volumen/comparado",
+        "texto": "Volumen semanal"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/rios",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/precipitacion",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/temperaturas",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/datos/a/la/carta",
+        "texto": "Datos a la carta"
+       }
+      ],
+      "pistas_api": [
+       "https://fonts.googleapis.com/css?family=Open+Sans",
+       "https://www.redhidrosurmedioambiente.es/saih/assets/visorSAIH/lib/togeojson/togeojson.js",
+       "https://www.redhidrosurmedioambiente.es/saih/datos/a/la/carta",
+       "https://www.redhidrosurmedioambiente.es/saih/informe/embalses",
+       "https://www.redhidrosurmedioambiente.es/saih/manifest.json",
+       "https://www.redhidrosurmedioambiente.es/saih/resumen/embalses"
+      ],
+      "texto_inicio": "Visor Web | S.A.I.H. Hidrosur Skip to main content AVISO IMPORTANTE: Estamos de mantenimiento --> Toggle navigation Informes Informe Anual 2025/2026 Informes mensuales Oct - 2026 Sep - 2026 Ago - 2026 Jul - 2026 Jun - 2026 May - 2026 Abr - 2026 Mar - 2026 Feb - 2026 Ene - 2026 Dic - 2025 Nov - 2025 Informe de nieve Informe de embalses Informe de escasez y sequ&iacute;a Escenario de escasez Oct - 2"
+     },
+     "nivel": 1
+    },
+    {
+     "url": "https://www.redhidrosurmedioambiente.es/saih/informe/embalses",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=UTF-8",
+     "bytes": 76033,
+     "segundos": 0.6,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "Informe de Embalses | S.A.I.H. Hidrosur",
+      "n_tablas": 1,
+      "tabla_mayor_filas": 46,
+      "tabla_mayor_muestra": [
+       [
+        "TOP",
+        "Capacidad total (hm³)",
+        "Volumen actual 17/11/2026",
+        "%",
+        "Volumen semana anterior",
+        "%",
+        "Volumen año anterior",
+        "%",
+        "Promedio últimos 8 años"
+       ],
+       [
+        "371 EMBALSE DE CHANZA",
+        "341.38",
+        "189.46",
+        "55.5",
+        "166.07",
+        "48.6",
+        "209.82",
+        "61.5",
+        "153.6"
+       ],
+       [
+        "373 EMBALSE DE PIEDRAS",
+        "59.50",
+        "24.00",
+        "40.3",
+        "22.96",
+        "38.6",
+        "26.68",
+        "44.8",
+        "32.3"
+       ],
+       [
+        "374 EMBALSE DE LOS MACHOS",
+        "12.00",
+        "3.41",
+        "28.4",
+        "2.52",
+        "21.0",
+        "6.56",
+        "54.7",
+        "6.3"
+       ],
+       [
+        "375 EMBALSE DE CUEVA DE LA MORA",
+        "2.00",
+        "1.98",
+        "99.0",
+        "1.34",
+        "67.0",
+        "2.01",
+        "100.5",
+        "1.6"
+       ],
+       [
+        "376 EMBALSE DE SOTIEL - OLIVARGAS",
+        "29.00",
+        "22.64",
+        "78.1",
+        "20.46",
+        "70.6",
+        "26.48",
+        "91.3",
+        "26.6"
+       ],
+       [
+        "377 EMBALSE DE CORUMBEL BAJO",
+        "18.00",
+        "12.68",
+        "70.4",
+        "12.31",
+        "68.4",
+        "14.36",
+        "79.8",
+        "7.5"
+       ],
+       [
+        "379 EMBALSE DE JARRAMA",
+        "42.64",
+        "25.97",
+        "60.9",
+        "24.91",
+        "58.4",
+        "35.46",
+        "83.2",
+        "28.0"
+       ],
+       [
+        "380 EMBALSE DE ANDÉVALO",
+        "634.40",
+        "537.74",
+        "84.8",
+        "536.62",
+        "84.6",
+        "343.92",
+        "54.2",
+        "314.6"
+       ],
+       [
+        "Total sistema TOP",
+        "1,138.92",
+        "817.88",
+        "71.8",
+        "787.19",
+        "69.1",
+        "665.29",
+        "58.4",
+        "570.3"
+       ],
+       [
+        "Total TOP",
+        "1,138.92",
+        "817.88",
+        "71.8",
+        "787.19",
+        "69.1",
+        "665.29",
+        "58.4",
+        "570.3"
+       ],
+       [
+        "Guadalete-Barbate",
+        "Capacidad total (hm³)",
+        "Volumen actual 17/11/2026",
+        "%",
+        "Volumen semana anterior",
+        "%",
+        "Volumen año anterior",
+        "%",
+        "Promedio últimos 10 años"
+       ]
+      ],
+      "menciones_hm3": 3,
+      "menciones_embalse": 64,
+      "fechas_vistas": [
+       "29/05/2025 8:00",
+       "17/11/2026",
+       "17/11/2026 08:00",
+       "17-11-2026 20:00"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "javascript:;",
+        "texto": "Informes"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info Anual_2025-2026.pdf",
+        "texto": "Informe Anual 2025/2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_OCT2026.pdf",
+        "texto": "Oct - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_SEP2026.pdf",
+        "texto": "Sep - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_AGO2026.pdf",
+        "texto": "Ago - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_JUL2026.pdf",
+        "texto": "Jul - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_JUN2026.pdf",
+        "texto": "Jun - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_MAY2026.pdf",
+        "texto": "May - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_ABR2026.pdf",
+        "texto": "Abr - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_MAR2026.pdf",
+        "texto": "Mar - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_FEB2026.pdf",
+        "texto": "Feb - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_ENE2026.pdf",
+        "texto": "Ene - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_DIC2025.pdf",
+        "texto": "Dic - 2025"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_NOV2025.pdf",
+        "texto": "Nov - 2025"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/informe/nieve",
+        "texto": "Informe de nieve"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/informe/embalses",
+        "texto": "Informe de embalses"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/InformeSequia.pdf",
+        "texto": "Informe actual completo"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/informes/sequia/about",
+        "texto": "Acerca de este informe"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/embalses",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/variacion",
+        "texto": "Variaci&oacute;n de volumen"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/volumen/comparado",
+        "texto": "Volumen semanal"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/rios",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/precipitacion",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/temperaturas",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/datos/a/la/carta",
+        "texto": "Datos a la carta"
+       }
+      ],
+      "pistas_api": [
+       "https://fonts.googleapis.com/css?family=Open+Sans",
+       "https://www.redhidrosurmedioambiente.es/saih/assets/js/informe_embalses.js",
+       "https://www.redhidrosurmedioambiente.es/saih/assets/visorSAIH/lib/togeojson/togeojson.js",
+       "https://www.redhidrosurmedioambiente.es/saih/datos/a/la/carta",
+       "https://www.redhidrosurmedioambiente.es/saih/informe/embalses",
+       "https://www.redhidrosurmedioambiente.es/saih/manifest.json",
+       "https://www.redhidrosurmedioambiente.es/saih/resumen/embalses"
+      ],
+      "texto_inicio": "Informe de Embalses | S.A.I.H. Hidrosur Skip to main content AVISO IMPORTANTE: Estamos de mantenimiento --> Toggle navigation Informes Informe Anual 2025/2026 Informes mensuales Oct - 2026 Sep - 2026 Ago - 2026 Jul - 2026 Jun - 2026 May - 2026 Abr - 2026 Mar - 2026 Feb - 2026 Ene - 2026 Dic - 2025 Nov - 2025 Informe de nieve Informe de embalses Informe de escasez y sequ&iacute;a Escenario de escas"
+     },
+     "nivel": 2
+    },
+    {
+     "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/embalses",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=UTF-8",
+     "bytes": 88576,
+     "segundos": 0.8,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "Resumen de niveles de embalses | S.A.I.H. Hidrosur",
+      "n_tablas": 1,
+      "tabla_mayor_filas": 63,
+      "tabla_mayor_muestra": [
+       [
+        "",
+        "Fecha Actual: 17/11/2026",
+        "Sem. Anterior: 10/11/2026",
+        "Año Anterior: 17/11/2025",
+        ""
+       ],
+       [
+        "CÁDIZ",
+        "Porcentaje actual",
+        "Capacidad total ( Hm 3 )",
+        "Pluv. acum. año hidro. ( mm )",
+        "Vol ( Hm 3 )",
+        "Pluv. acum. año hidro. ( mm )",
+        "Vol ( Hm 3 )",
+        "Pluv. acum. año hidro. ( mm )",
+        "Vol ( Hm 3 )",
+        "GRÁFICA"
+       ],
+       [
+        "3",
+        "EMBALSE DE CHARCO REDONDO",
+        "58,72%",
+        "79,17",
+        "206,60",
+        "46,49",
+        "127,80",
+        "46,77",
+        "150,00",
+        "47,24",
+        ""
+       ],
+       [
+        "8",
+        "EMBALSE DE GUADARRANQUE",
+        "78,46%",
+        "83,15",
+        "126,00",
+        "65,24",
+        "65,30",
+        "64,84",
+        "107,50",
+        "57,71",
+        ""
+       ],
+       [
+        "269",
+        "EMBALSE DE ZAHARA - EL GASTOR",
+        "63,88%",
+        "222,70",
+        "131,50",
+        "142,25",
+        "63,40",
+        "141,61",
+        "199,00",
+        "49,49",
+        ""
+       ],
+       [
+        "270",
+        "EMBALSE DE BORNOS",
+        "65,16%",
+        "200,20",
+        "144,10",
+        "130,45",
+        "60,00",
+        "128,08",
+        "119,90",
+        "112,23",
+        ""
+       ],
+       [
+        "271",
+        "EMBALSE ARCOS DE LA FRONTERA",
+        "92,40%",
+        "14,60",
+        "165,50",
+        "13,49",
+        "96,00",
+        "13,53",
+        "129,20",
+        "13,69",
+        ""
+       ],
+       [
+        "272",
+        "EMBALSE DE HURONES",
+        "59,28%",
+        "135,30",
+        "6,70",
+        "80,21",
+        "1,00",
+        "0,00",
+        "211,20",
+        "83,64",
+        ""
+       ],
+       [
+        "273",
+        "EMBALSE DE GUADALCACÍN",
+        "83,62%",
+        "800,30",
+        "175,30",
+        "669,23",
+        "104,70",
+        "667,79",
+        "133,60",
+        "326,64",
+        ""
+       ],
+       [
+        "275",
+        "EMBALSE DE BARBATE",
+        "74,63%",
+        "207,72 **",
+        "114,40",
+        "155,02",
+        "46,50",
+        "153,32",
+        "107,10",
+        "86,33",
+        ""
+       ],
+       [
+        "276",
+        "EMBALSE DE CELEMÍN",
+        "75,15%",
+        "43,98 **",
+        "146,90",
+        "33,05",
+        "72,00",
+        "32,54",
+        "89,60",
+        "16,76",
+        ""
+       ],
+       [
+        "277",
+        "EMBALSE DE ALMODÓVAR",
+        "63,74%",
+        "4,44 **",
+        "124,90",
+        "2,83",
+        "47,90",
+        "2,81",
+        "130,60",
+        "3,01",
+        ""
+       ]
+      ],
+      "menciones_hm3": 37,
+      "menciones_embalse": 36,
+      "fechas_vistas": [
+       "17-11-2026 20:00",
+       "17/11/2026",
+       "10/11/2026",
+       "17/11/2025"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "javascript:;",
+        "texto": "Informes"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info Anual_2025-2026.pdf",
+        "texto": "Informe Anual 2025/2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_OCT2026.pdf",
+        "texto": "Oct - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_SEP2026.pdf",
+        "texto": "Sep - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_AGO2026.pdf",
+        "texto": "Ago - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_JUL2026.pdf",
+        "texto": "Jul - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_JUN2026.pdf",
+        "texto": "Jun - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_MAY2026.pdf",
+        "texto": "May - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_ABR2026.pdf",
+        "texto": "Abr - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_MAR2026.pdf",
+        "texto": "Mar - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_FEB2026.pdf",
+        "texto": "Feb - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_ENE2026.pdf",
+        "texto": "Ene - 2026"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_DIC2025.pdf",
+        "texto": "Dic - 2025"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/Informes/Info_Periodico_NOV2025.pdf",
+        "texto": "Nov - 2025"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/informe/nieve",
+        "texto": "Informe de nieve"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/informe/embalses",
+        "texto": "Informe de embalses"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/assets/pdf/InformeSequia.pdf",
+        "texto": "Informe actual completo"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/informes/sequia/about",
+        "texto": "Acerca de este informe"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/embalses",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/variacion",
+        "texto": "Variaci&oacute;n de volumen"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/volumen/comparado",
+        "texto": "Volumen semanal"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/rios",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/precipitacion",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/resumen/temperaturas",
+        "texto": "Datos de última hora"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/datos/a/la/carta",
+        "texto": "Datos a la carta"
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/mapa/tiempo/real/grafica/total/provincia/6/volumen",
+        "texto": ""
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/mapa/tiempo/real/grafica/total/provincia/2/volumen",
+        "texto": ""
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/mapa/tiempo/real/grafica/total/provincia/3/volumen",
+        "texto": ""
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/mapa/tiempo/real/grafica/total/provincia/4/volumen",
+        "texto": ""
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/mapa/tiempo/real/grafica/total/provincia/5/volumen",
+        "texto": ""
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/mapa/tiempo/real/grafica/total/demarcacion/1/volumen",
+        "texto": ""
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/mapa/tiempo/real/grafica/total/demarcacion/2/volumen",
+        "texto": ""
+       },
+       {
+        "url": "https://www.redhidrosurmedioambiente.es/saih/mapa/tiempo/real/grafica/total/demarcacion/3/volumen",
+        "texto": ""
+       }
+      ],
+      "pistas_api": [
+       "https://fonts.googleapis.com/css?family=Open+Sans",
+       "https://www.redhidrosurmedioambiente.es/saih/datos/a/la/carta",
+       "https://www.redhidrosurmedioambiente.es/saih/informe/embalses",
+       "https://www.redhidrosurmedioambiente.es/saih/manifest.json",
+       "https://www.redhidrosurmedioambiente.es/saih/resumen/embalses"
+      ],
+      "texto_inicio": "Resumen de niveles de embalses | S.A.I.H. Hidrosur Skip to main content AVISO IMPORTANTE: Estamos de mantenimiento --> Toggle navigation Informes Informe Anual 2025/2026 Informes mensuales Oct - 2026 Sep - 2026 Ago - 2026 Jul - 2026 Jun - 2026 May - 2026 Abr - 2026 Mar - 2026 Feb - 2026 Ene - 2026 Dic - 2025 Nov - 2025 Informe de nieve Informe de embalses Informe de escasez y sequ&iacute;a Escenar"
+     },
+     "nivel": 2
+    }
+   ]
+  },
+  {
+   "ambito": "Galicia Costa",
+   "paginas": [
+    {
+     "url": "https://augasdegalicia.xunta.gal/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html;charset=UTF-8",
+     "bytes": 65296,
+     "segundos": 0.5,
+     "cors": null,
+     "ultima_modificacion": null,
+     "clase": "html",
+     "html": {
+      "titulo": "Portada - Augas de Galicia",
+      "n_tablas": 1,
+      "tabla_mayor_filas": 10,
+      "tabla_mayor_muestra": [
+       [
+        "BAIONA",
+        "20,28 %",
+        "BARRIÉ DE LA MAZA",
+        "40,22 %"
+       ],
+       [
+        "BECHE",
+        "36,63 %",
+        "CALDAS DE REIS",
+        "54,15 %"
+       ],
+       [
+        "CECEBRE",
+        "55,94 %",
+        "EIRAS",
+        "53,41 %"
+       ],
+       [
+        "EUME",
+        "70,92 %",
+        "FERVENZA",
+        "43,62 %"
+       ],
+       [
+        "FORCADAS",
+        "41,56 %",
+        "PONTILLÓN DE CASTRO",
+        "78,43 %"
+       ],
+       [
+        "PORTODEMOUROS",
+        "51,63 %",
+        "RIBEIRA",
+        "52,26 %"
+       ],
+       [
+        "RÍO COVO",
+        "40,67 %",
+        "STA. UXIA",
+        "65,10 %"
+       ],
+       [
+        "TOURO",
+        "94,71 %",
+        "VILAGARCÍA",
+        "11,88 %"
+       ],
+       [
+        "VILAGUDÍN",
+        "92,85 %",
+        "VILASENÍN",
+        "70,00 %"
+       ],
+       [
+        "ZAMÁNS",
+        "44,55 %",
+        "",
+        ""
+       ]
+      ],
+      "menciones_hm3": 0,
+      "menciones_embalse": 1,
+      "fechas_vistas": [
+       "17/11/2026",
+       "16/11/2026",
+       "06/11/2026",
+       "05/11/2026",
+       "26/10/2026",
+       "21/10/2026",
+       "20/10/2026",
+       "20/06/2026"
+      ],
+      "enlaces_interes": [
+       {
+        "url": "https://augasdegalicia.xunta.gal/seccion-tema/c/Control_caudais_reservas?content=/Portal-Web/Contidos_Augas_Galicia/Seccions/rede-encoros/seccion.html&amp;std=ultimo-boletin.html",
+        "texto": ""
+       },
+       {
+        "url": "https://augasdegalicia.xunta.gal/novas?content=nova_029680.html",
+        "texto": "A Xunta incentivará a concellos e empresas para avanzar na redución da"
+       },
+       {
+        "url": "https://augasdegalicia.xunta.gal/seccion-tema/c/Control_caudais_reservas?content=/Portal-Web/Contidos_Augas_Galicia/Seccions/rede-aforos/seccion.html&amp;std=descripcion.html",
+        "texto": "Rede de aforos de Galicia-Costa"
+       },
+       {
+        "url": "http://augas.cmati.xunta.es/seccion-tema/c/Control_caudais_reservas?content=/Portal-Web/Contidos_Augas_Galicia/Seccions/rede-encoros/seccion.html&std=ultimo-boletin.html",
+        "texto": "+ informaci&oacute;n"
+       }
+      ],
+      "pistas_api": [
+       "/html/portal/css.jsp?browserId=other&amp;themeId=temaportadaauga_WAR_temaportalcmati&amp;colorSchemeId=01&amp;minifierType=css&amp;t=1348207760000",
+       "/tema-portal-cmati/javascript/javascript.js?browserId=other&amp;minifierType=js&amp;t=1785499912000"
+      ],
+      "texto_inicio": "Portada - Augas de Galicia GALEGO | CASTELLANO Suxestións | Mapa do portal | Accesibilidade | Atendémolo/a CMATI A Administración Hidraúlica de Galicia Saneamento e depuración Abastecemento Demarcación hidrográfica Galicia-Costa Novas 17/11/2026 A Xunta e o Concello de Boqueixón abordan cuestións de interese municipal en materia de augas 16/11/2026 A Xunta dá luz verde ambiental ao proxecto para c"
+     },
+     "nivel": 1
+    },
+    {
+     "url": "https://augasdegalicia.xunta.gal/seccion-tema/c/Control_caudais_reservas?content=/Portal-Web/Contidos_Augas_Galicia/Seccions/rede-encoros/seccion.html&amp;std=ultimo-boletin.html",
+     "ok": false,
+     "error": "robots.txt no lo permite: no se pide",
+     "nivel": 2
+    },
+    {
+     "url": "https://augasdegalicia.xunta.gal/seccion-tema/c/Control_caudais_reservas?content=/Portal-Web/Contidos_Augas_Galicia/Seccions/rede-aforos/seccion.html&amp;std=descripcion.html",
+     "ok": false,
+     "error": "robots.txt no lo permite: no se pide",
+     "nivel": 2
+    }
+   ]
+  },
+  {
+   "ambito": "Pais Vasco (URA)",
+   "paginas": [
+    {
+     "url": "https://www.uragentzia.euskadi.eus/",
+     "ok": true,
+     "status": 200,
+     "tipo": "text/html; charset=ISO-8859-1",
+     "bytes": 91012,
+     "segundos": 0.8,
+     "cors": null,
+     "ultima_modificacion": null,
+     "url_final": "https://www.uragentzia.euskadi.eus/hasiera/",
+     "clase": "html",
+     "html": {
+      "titulo": "URA - Uraren Euskal Agentzia",
+      "n_tablas": 0,
+      "menciones_hm3": 0,
+      "menciones_embalse": 0,
+      "fechas_vistas": [],
+      "enlaces_interes": [
+       {
+        "url": "https://www.uragentzia.euskadi.eus/informazioa/[largo]/webura00-010204legislacion/eu/",
+        "texto": "Uholde-arriskua"
+       },
+       {
+        "url": "https://www.uragentzia.euskadi.eus/[largo]/webura00-contents/eu/",
+        "texto": "Informazio publikoa Informazio publikoaren fasean dauden izapideak"
+       },
+       {
+        "url": "https://www.uragentzia.euskadi.eus/albistea/2026/izurtza/webura00-contents/eu/",
+        "texto": "URAk Mañaria ibaiaren jarraitutasuna berrezarri du Izurtzan, bi presa "
+       },
+       {
+        "url": "https://www.uragentzia.euskadi.eus/albistea/2026/medizabalpresa/webura00-contents/eu/",
+        "texto": ""
+       },
+       {
+        "url": "https://www.uragentzia.euskadi.eus/[largo]/webura00-01020102planrevision/eu/",
+        "texto": "Tramitazioa"
+       },
+       {
+        "url": "https://www.uragentzia.euskadi.eus/[largo]/webura00-01020202revisionplan/eu/",
+        "texto": "Uholde Arriskuaren zuzentarauaren faseak eta tramitazioa"
+       },
+       {
+        "url": "https://www.uragentzia.euskadi.eus/informazioa/[largo]/webura00-01020101planhidrologico/eu/",
+        "texto": "Tramitazioa"
+       }
+      ],
+      "pistas_api": [
+       "/[largo]/webura00-01020102planrevision/eu/",
+       "https://fonts.googleapis.com",
+       "https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap"
+      ],
+      "texto_inicio": "URA - Uraren Euskal Agentzia Joan edukira eu (Euskara) es (Espa&ntilde;ol) Menu nagusi URA Uraren Euskal Agentzia Nortzuk gara Organigrama Memoriak Gardentasuna Erakundearen inguruko informazioa Harremana herritar eta Interesdunarekin Plangintza prozesuak Ur baliabide eta erabileren kudeaketa Gardentasun ekonomiko finantziaria Kontratu eta Lizitazioak Arau-hausteen berri eman (BIS) Araudia Urak Ko"
+     },
+     "nivel": 1
+    }
+   ]
+  }
+ ]
+}
