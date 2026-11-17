@@ -1,0 +1,89 @@
+name: Actualizar embalses (avance diario)
+
+# Va en el repo PUBLICO (temperaturas-mar-espana): .github/workflows/
+# Ejecuta desde el publico, trae el script del repo privado (clima-scripts)
+# y commitea los datos en el propio repo publico (GitHub Pages).
+#
+# Capa de AVANCE DIARIO, aparte del boletin semanal (actualizar_embalses.yml,
+# que no se toca): lecturas provisionales de los organismos de cuenca
+# (Duero, Cataluna, Guadalquivir, Hidrosur, Segura y Galicia Costa).
+#
+#   docs/embalses/diario.json        foto del dia + variaciones
+#   docs/embalses/diario_diag.json   salud del proceso (fuentes, sin casar)
+#   archivo/embalses_diario/*.csv    archivo acumulado: el historico diario
+#
+# Tres pasadas al dia (hora peninsular de invierno): 08:40, 12:40 y 20:10.
+# La de las 12:40 recoge la lectura de las 08:00 de Hidrosur ya publicada.
+# Si una fuente falla, las demas siguen; si fallan todas, no se escribe nada.
+
+on:
+  schedule:
+    - cron: '40 7 * * *'
+    - cron: '40 11 * * *'
+    - cron: '10 19 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/actualizar_embalses_diario.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: actualizar-embalses-diario
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Descargar repo publico (este)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Descargar scripts privados (clima-scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: DavidBebow/clima-scripts
+          token: ${{ secrets.SCRIPTS_TOKEN }}
+          path: clima-scripts
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Leer las fuentes diarias
+        env:
+          SALIDA_DIR: ${{ github.workspace }}/docs
+          ARCHIVO_DIR: ${{ github.workspace }}/archivo/embalses_diario
+        run: python clima-scripts/embalses_diario_generar.py
+
+      - name: Guardar cambios
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/embalses/diario.json docs/embalses/diario_diag.json archivo/embalses_diario 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git commit -m "Embalses, avance diario: $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase -X theirs --autostash && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            echo "Push rechazado (intento $i), reintento en $((i*5)) s"
+            sleep $((i*5))
+          done
+          echo "No se pudo publicar tras 6 intentos"
+          exit 1
