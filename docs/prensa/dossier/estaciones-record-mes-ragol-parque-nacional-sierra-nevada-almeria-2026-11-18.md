@@ -1,6 +1,6 @@
 # Rágol, Parque Nacional Sierra Nevada (Almería) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 28,3 °C entre las 13:00 y las 14:00 frente a los 27,6 °C de 2023
 
-**Dato:** Medido por AEMET en su estación de Rágol, Parque Nacional Sierra Nevada, a 601 m, máxima de 28,3 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 27,6 °C (14 de noviembre de 2023) · récord absoluto de la estación: 43 °C (12 de julio de 2023) · día en curso, con observaciones hasta las 18:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Rágol, Parque Nacional Sierra Nevada, a 601 m, máxima de 28,3 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 27,6 °C (14 de noviembre de 2023) · récord absoluto de la estación: 43 °C (12 de julio de 2023) · día en curso, con observaciones hasta las 21:00 (hora local)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Rágol, Parque Nacional Sierra Nevada (Almería)  
 **Citabilidad:** media · **Exclusivo:** sí
