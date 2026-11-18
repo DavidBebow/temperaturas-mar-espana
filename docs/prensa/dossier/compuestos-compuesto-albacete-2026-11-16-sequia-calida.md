@@ -1,6 +1,6 @@
 # Sequía cálida en Albacete: sequía extrema y 3,0 °C más que lo normal en noviembre de 2026
 
-**Dato:** Albacete está en «sequía extrema» en el Monitor de sequía (SPI-12 de -0,2) y la media de noviembre de 2026 hasta el 16 de noviembre de 2026 es de 13,7 °C, 3,0 °C por encima de la media de ese mes en 1996-2025; es 4,4 veces más probable que en 1961-1990 (intervalo 1,0-38).  
+**Dato:** Albacete está en «sequía extrema» en el Monitor de sequía (SPI-12 de -0,2) y la media de noviembre de 2026 hasta el 16 de noviembre de 2026 es de 13,7 °C, 3,0 °C por encima de la media de ese mes en 1996-2025; es 4,4 veces más probable que en 1961-1990 (intervalo 1,0-40).  
 **Fecha del dato:** 16 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Albacete  
 **Citabilidad:** alta · **Exclusivo:** sí
