@@ -1,49 +1,33 @@
 {
- "generado": "2026-11-17T16:32:03+00:00",
- "duracion_s": 2.17,
+ "generado": "2026-11-18T01:24:12+00:00",
+ "duracion_s": 2.31,
  "comprobaciones": [
   {
    "id": "clave",
    "descripcion": "Misma clave (indicador+territorio+periodo+corte), mismo valor en todos los JSON",
-   "evaluadas": 124,
+   "evaluadas": 160,
    "fallos": 0
   },
   {
    "id": "titular",
    "descripcion": "El número del titular y del dato es el del campo estructurado",
-   "evaluadas": 39,
+   "evaluadas": 42,
    "fallos": 0
   },
   {
    "id": "hoy",
    "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
-   "evaluadas": 156,
+   "evaluadas": 163,
    "fallos": 0
   },
   {
    "id": "niveles",
    "descripcion": "Las listas por nivel solo contienen elementos de su nivel",
    "evaluadas": 1,
-   "fallos": 1
+   "fallos": 0
   }
  ],
- "n_fallos": 1,
- "fallos": [
-  {
-   "comprobacion": "niveles",
-   "clave": "Avisos naranjas de AEMET",
-   "valores": [
-    {
-     "ruta": "https://calentamientoglobal.es/el-tiempo/",
-     "valor": "Baleares: #f2c94c"
-    },
-    {
-     "ruta": "https://calentamientoglobal.es/el-tiempo/",
-     "valor": "Pontevedra: #f2c94c"
-    }
-   ],
-   "detalle": "«Avisos naranjas de AEMET» contiene elementos de otro nivel"
-  }
- ],
+ "n_fallos": 0,
+ "fallos": [],
  "bloqueados": []
 }
