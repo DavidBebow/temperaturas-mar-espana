@@ -1,6 +1,6 @@
-# Sequía cálida en Ávila: sequía severa y 1,8 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Ávila: sequía severa y 1,9 °C más que lo normal en noviembre de 2026
 
-**Dato:** Ávila está en «sequía severa» en el Monitor de sequía (SPI-12 de 0,3) y la media de noviembre de 2026 hasta el 17 de noviembre de 2026 es de 9,3 °C, 1,8 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Ávila está en «sequía severa» en el Monitor de sequía (SPI-12 de 0,3) y la media de noviembre de 2026 hasta el 17 de noviembre de 2026 es de 9,4 °C, 1,9 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 17 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Ávila  
 **Citabilidad:** media · **Exclusivo:** sí

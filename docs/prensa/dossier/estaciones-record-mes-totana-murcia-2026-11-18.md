@@ -1,12 +1,12 @@
-# Totana (Murcia) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 29,9 °C entre las 13:00 y las 14:00 frente a los 29,8 °C de 2022
+# Totana (Murcia) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 30,5 °C entre las 15:00 y las 16:00 frente a los 29,8 °C de 2022
 
-**Dato:** Medido por AEMET en su estación de Totana, a 281 m, máxima de 29,9 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 29,8 °C (1 de noviembre de 2022) · récord absoluto de la estación: 43,8 °C (18 de agosto de 2025) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Totana, a 281 m, máxima de 30,5 °C el 18 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 29,8 °C (1 de noviembre de 2022) · récord absoluto de la estación: 43,8 °C (18 de agosto de 2025) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Totana (Murcia)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 0,1 °C.
+- Supera el récord anterior en 0,7 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2019.
 
 ## Fuente y método

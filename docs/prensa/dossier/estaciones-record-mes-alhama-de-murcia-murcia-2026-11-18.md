@@ -1,6 +1,6 @@
 # Alhama de Murcia (Murcia) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 31,3 °C entre las 13:00 y las 14:00 frente a los 30,9 °C de 2013
 
-**Dato:** Medido por AEMET en su estación de Alhama de Murcia, a 157 m, máxima de 31,3 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 30,9 °C (6 de noviembre de 2013) · récord absoluto de la estación: 45,4 °C (10 de agosto de 2012) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Alhama de Murcia, a 157 m, máxima de 31,3 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 30,9 °C (6 de noviembre de 2013) · récord absoluto de la estación: 45,4 °C (10 de agosto de 2012) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Alhama de Murcia (Murcia)  
 **Citabilidad:** alta · **Exclusivo:** sí

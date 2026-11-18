@@ -1,12 +1,12 @@
-# Garrucha (Almería) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 29 °C entre las 13:00 y las 14:00 frente a los 28,6 °C de 2009
+# Garrucha (Almería) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 30,5 °C entre las 15:00 y las 16:00 frente a los 28,6 °C de 2009
 
-**Dato:** Medido por AEMET en su estación de Garrucha, a 28 m, máxima de 29 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 28,6 °C (15 de noviembre de 2009) · récord absoluto de la estación: 42,6 °C (23 de julio de 2009) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Garrucha, a 28 m, máxima de 30,5 °C el 18 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 28,6 °C (15 de noviembre de 2009) · récord absoluto de la estación: 42,6 °C (23 de julio de 2009) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Garrucha (Almería)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 0,4 °C.
+- Supera el récord anterior en 1,9 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2009.
 
 ## Fuente y método

@@ -1,6 +1,6 @@
 # La Mola, Maó (Illes Balears) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 25,6 °C entre las 13:00 y las 14:00 frente a los 25 °C de 2023
 
-**Dato:** Medido por AEMET en su estación de La Mola, Maó, a 78 m, máxima de 25,6 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 25 °C (12 de noviembre de 2023) · récord absoluto de la estación: 37,7 °C (8 de julio de 2026) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de La Mola, Maó, a 78 m, máxima de 25,6 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 25 °C (12 de noviembre de 2023) · récord absoluto de la estación: 37,7 °C (8 de julio de 2026) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** La Mola, Maó (Illes Balears)  
 **Citabilidad:** media · **Exclusivo:** sí

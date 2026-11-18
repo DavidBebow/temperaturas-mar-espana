@@ -1,12 +1,12 @@
-# Murcia ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 32 °C entre las 14:00 y las 15:00 frente a los 31 °C de 2013
+# Murcia ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 32,2 °C entre las 15:00 y las 16:00 frente a los 31 °C de 2013
 
-**Dato:** Medido por AEMET en su estación de Murcia, a 62 m, máxima de 32 °C el 18 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 31 °C (6 de noviembre de 2013) · récord absoluto de la estación: 46,2 °C (15 de agosto de 2021) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Murcia, a 62 m, máxima de 32,2 °C el 18 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 31 °C (6 de noviembre de 2013) · récord absoluto de la estación: 46,2 °C (15 de agosto de 2021) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Murcia  
 **Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 1 °C.
+- Supera el récord anterior en 1,2 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 1984.
 
 ## Fuente y método

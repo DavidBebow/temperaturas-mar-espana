@@ -1,6 +1,6 @@
 # Muro, S'Albufera (Illes Balears) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 28 °C entre las 12:00 y las 13:00 frente a los 27,7 °C de 2013
 
-**Dato:** Medido por AEMET en su estación de Muro, S'Albufera, a 2 m, máxima de 28 °C el 18 de noviembre (entre las 12:00 y las 13:00, hora local) · récord anterior de noviembre en la estación: 27,7 °C (6 de noviembre de 2013) · récord absoluto de la estación: 41,5 °C (11 de julio de 2023) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Muro, S'Albufera, a 2 m, máxima de 28 °C el 18 de noviembre (entre las 12:00 y las 13:00, hora local) · récord anterior de noviembre en la estación: 27,7 °C (6 de noviembre de 2013) · récord absoluto de la estación: 41,5 °C (11 de julio de 2023) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Muro, S'Albufera (Illes Balears)  
 **Citabilidad:** alta · **Exclusivo:** sí

@@ -1,6 +1,6 @@
 # Ciutadella, Cala Galdana (Illes Balears) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 26,7 °C entre las 12:00 y las 13:00 frente a los 26 °C de 2022
 
-**Dato:** Medido por AEMET en su estación de Ciutadella, Cala Galdana, a 43 m, máxima de 26,7 °C el 18 de noviembre (entre las 12:00 y las 13:00, hora local) · récord anterior de noviembre en la estación: 26 °C (1 de noviembre de 2022) · récord absoluto de la estación: 38,7 °C (14 de agosto de 2022) · día en curso, con observaciones hasta las 15:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Ciutadella, Cala Galdana, a 43 m, máxima de 26,7 °C el 18 de noviembre (entre las 12:00 y las 13:00, hora local) · récord anterior de noviembre en la estación: 26 °C (1 de noviembre de 2022) · récord absoluto de la estación: 38,7 °C (14 de agosto de 2022) · día en curso, con observaciones hasta las 18:00 (hora local)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Ciutadella, Cala Galdana (Illes Balears)  
 **Citabilidad:** media · **Exclusivo:** sí
