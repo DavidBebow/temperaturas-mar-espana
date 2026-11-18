@@ -1,9 +1,9 @@
-# Sequía cálida en Álava: sequía moderada y 1,6 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Albacete: sequía extrema y 3,1 °C más que lo normal en noviembre de 2026
 
-**Dato:** Álava está en «sequía moderada» en el Monitor de sequía (SPI-12 de -0,8) y la media de noviembre de 2026 hasta el 16 de noviembre de 2026 es de 11,3 °C, 1,6 °C por encima de la media de ese mes en 1996-2025; es 3,1 veces más probable que en 1961-1990 (intervalo 1,1-15).  
-**Fecha del dato:** 16 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Álava  
-**Citabilidad:** media · **Exclusivo:** sí
+**Dato:** Albacete está en «sequía extrema» en el Monitor de sequía (SPI-12 de -0,2) y la media de noviembre de 2026 hasta el 17 de noviembre de 2026 es de 13,7 °C, 3,1 °C por encima de la media de ese mes en 1996-2025; es 5,8 veces más probable que en 1961-1990 (intervalo 1,4-55).  
+**Fecha del dato:** 17 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Albacete  
+**Citabilidad:** alta · **Exclusivo:** sí
 
 ## Contexto
 - Menos lluvia y más calor es la combinación que seca más deprisa el suelo y los embalses.
@@ -16,10 +16,9 @@
 ## Límites (decirlos antes de que los descubran)
 - SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO
 - La anomalía es de una estación (la de la capital), no de toda la provincia
-- Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/alava/
+- Página: https://calentamientoglobal.es/sequia/albacete/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

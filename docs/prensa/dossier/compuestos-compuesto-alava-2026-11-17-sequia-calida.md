@@ -1,8 +1,8 @@
-# Sequía cálida en Ceuta: sequía extrema y 2,3 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Álava: sequía moderada y 2,1 °C más que lo normal en noviembre de 2026
 
-**Dato:** Ceuta está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,4) y la media de noviembre de 2026 hasta el 16 de noviembre de 2026 es de 19,3 °C, 2,3 °C por encima de la media de ese mes en 1996-2025; es 8,4 veces más probable que en 1961-1990 (intervalo 1,2-135).  
-**Fecha del dato:** 16 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Ceuta  
+**Dato:** Álava está en «sequía moderada» en el Monitor de sequía (SPI-12 de -0,8) y la media de noviembre de 2026 hasta el 17 de noviembre de 2026 es de 11,7 °C, 2,1 °C por encima de la media de ese mes en 1996-2025; es 4,0 veces más probable que en 1961-1990 (intervalo 1,2-21).  
+**Fecha del dato:** 17 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Álava  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
@@ -19,7 +19,7 @@
 - Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/ceuta/
+- Página: https://calentamientoglobal.es/sequia/alava/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

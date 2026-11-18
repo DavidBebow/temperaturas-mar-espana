@@ -1,8 +1,8 @@
-# Sequía cálida en Huelva: sequía extrema y 2,1 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Ceuta: sequía extrema y 2,4 °C más que lo normal en noviembre de 2026
 
-**Dato:** Huelva está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 16 de noviembre de 2026 es de 18,3 °C, 2,1 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
-**Fecha del dato:** 16 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Huelva  
+**Dato:** Ceuta está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,4) y la media de noviembre de 2026 hasta el 17 de noviembre de 2026 es de 19,3 °C, 2,4 °C por encima de la media de ese mes en 1996-2025; es 10 veces más probable que en 1961-1990 (intervalo 2,0-181).  
+**Fecha del dato:** 17 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Ceuta  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
@@ -19,7 +19,7 @@
 - Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/huelva/
+- Página: https://calentamientoglobal.es/sequia/ceuta/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
