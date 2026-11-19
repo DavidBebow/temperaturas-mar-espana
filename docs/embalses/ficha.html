@@ -59,6 +59,9 @@ h1 b{color:var(--agua)}
 #tip{position:absolute;pointer-events:none;background:#1d1d1f;color:#fff;font-size:11.5px;line-height:1.45;padding:7px 9px;border-radius:8px;white-space:nowrap;display:none;z-index:9;font-variant-numeric:tabular-nums}
 .fuente{margin-top:18px;padding-top:12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--soft);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .fuente a{color:var(--agua);text-decoration:none;font-weight:600}
+.prov{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--prev);background:#f1ebfa;border-radius:6px;padding:3px 8px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+#cardHoy{display:none}
+#cardHoy .kpi .v{font-size:21px}
 #err{padding:40px 10px;text-align:center;color:var(--soft)}
 #app{display:none}
 @media(max-width:720px){.band{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
@@ -80,6 +83,14 @@ h1 b{color:var(--agua)}
     <div class="stat"><div class="n" id="p10" style="color:#556270"></div><div class="l">media de los últimos 10 años</div><div class="d" id="d10"></div></div>
   </div>
   <div class="frase" id="frase"></div>
+
+  <div class="card" id="cardHoy">
+    <h2>Lectura diaria <span class="prov">dato provisional</span></h2>
+    <div class="sub" id="subHoy"></div>
+    <div class="kpis" id="kpisHoy"></div>
+    <div class="chart" id="cHoy"></div>
+    <div class="nota" id="notaHoy"></div>
+  </div>
 
   <div class="card">
     <h2>Los últimos 12 meses</h2>
@@ -124,6 +135,9 @@ h1 b{color:var(--agua)}
 
 <script>
 const BASE='https://davidbebow.github.io/temperaturas-mar-espana/embalses/fichas/';
+// Avance diario (lecturas de los organismos de cuenca). Capa aparte del boletín:
+// solo existe para parte de los embalses y nunca sustituye a la cifra semanal.
+const DIARIO='https://davidbebow.github.io/temperaturas-mar-espana/embalses/diario_fichas.json';
 const MAPA_CAUDAL='https://calentamientoglobal.es/caudal-rios-espana-mapa/';
 const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const MESESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -152,14 +166,15 @@ const ancho=el=>Math.max(280,el.clientWidth||640);
 const mobile=()=>window.innerWidth<720;
 
 const slug=slugActual();
-let F=null, RIOS=null;
+let F=null, RIOS=null, DIA=null;
 if(!slug){ document.getElementById('err').textContent='Embalse no indicado (…/ficha.html?e=la-serena)'; }
 else{
   const t='?_='+Date.now();
   Promise.all([
     fetch(BASE+slug+'.json'+t).then(r=>{if(!r.ok)throw 0;return r.json();}),
-    fetch(BASE+'rios.json'+t).then(r=>r.ok?r.json():null).catch(()=>null)
-  ]).then(([f,r])=>{F=f;RIOS=r;pintar();})
+    fetch(BASE+'rios.json'+t).then(r=>r.ok?r.json():null).catch(()=>null),
+    fetch(DIARIO+t).then(r=>r.ok?r.json():null).catch(()=>null)
+  ]).then(([f,r,d])=>{F=f;RIOS=r;DIA=d;pintar();})
    .catch(()=>{document.getElementById('err').textContent='No hay datos para este embalse.';});
 }
 
@@ -206,12 +221,61 @@ function pintar(){
   document.getElementById('frase').innerHTML=fr;
   document.getElementById('fecha').textContent='Boletín del '+f.fecha_legible;
 
+  hoy();
   dibujarTodo();
   rios();
   avisar(); setTimeout(avisar,400); setTimeout(avisar,1500);
 }
+
+// ── Lectura diaria (si este embalse la tiene y es posterior al boletín) ──────
+function hoy(){
+  const card=document.getElementById('cardHoy');
+  const d=DIA&&DIA.embalses&&DIA.embalses[slug];
+  if(!d||d.volumen_hm3==null||(F.boletin_fecha&&d.fecha_dato<F.boletin_fecha)){ card.style.display='none'; return; }
+  card.style.display='block';
+  const fu=(DIA.fuentes||{})[d.fuente]||{};
+  const dec=n=>Math.abs(n)<100?2:1;
+  const col=n=>n==null||Math.abs(n)<0.05?'#6e6e73':n>0?'#2e7d46':'#CC2200';
+  const vr=n=>n==null?'—':Math.abs(n)<0.05?'sin cambios':(n>0?'+':'−')+fmt(Math.abs(n),dec(n));
+  const kpi=(k,v,u,c)=>'<div class="kpi"><div class="k">'+k+'</div><div class="v"'+(c?' style="color:'+c+'"':'')+'>'+v+'</div><div class="u">'+u+'</div></div>';
+  const desdeBol=F.volumen_hm3!=null?Math.round((d.volumen_hm3-F.volumen_hm3)*100)/100:null;
+  document.getElementById('subHoy').textContent='Lectura del '+fLarga(d.fecha_dato)+(d.hora_dato?' a las '+d.hora_dato:'')+
+    '. El resto de la ficha usa el dato oficial del boletín semanal.';
+  document.getElementById('kpisHoy').innerHTML=
+    kpi('Agua embalsada',fmt(d.volumen_hm3,dec(d.volumen_hm3)),'hm³ · '+pctTxt(d.pct)+' de su capacidad')+
+    kpi('En 24 horas',vr(d.var_24h_hm3),d.var_24h_hm3==null?'sin lectura del día anterior':'hm³',col(d.var_24h_hm3))+
+    kpi('En 7 días',vr(d.var_7d_hm3),d.var_7d_hm3==null?'aún no hay una semana de lecturas':'hm³',col(d.var_7d_hm3))+
+    kpi('Desde el boletín del '+fCorta(F.boletin_fecha),vr(desdeBol),desdeBol==null?'':'hm³',col(desdeBol));
+  document.getElementById('notaHoy').innerHTML='<b>Dato provisional y sin validar</b>, publicado por '+
+    (fu.url?'<a href="'+esc(fu.url)+'" target="_blank" rel="noopener" style="color:var(--agua);font-weight:600;text-decoration:none">'+esc(fu.nombre||'el organismo de cuenca')+'</a>':esc(fu.nombre||'el organismo de cuenca'))+'. '+
+    (d.volumen_estimado?'Esta fuente solo publica el porcentaje de llenado: el volumen se ha calculado con la capacidad del boletín. ':'')+
+    'Puede no coincidir con el boletín del MITECO, que es la cifra oficial y la comparable con el resto de España.';
+  cHoy(d);
+}
+function cHoy(d){
+  const el=document.getElementById('cHoy');
+  // solo el tramo reciente y continuo de la serie (hay fuentes que traen fechas sueltas antiguas)
+  const fin=D(d.fecha_dato).getTime();
+  const pts=(d.serie||[]).filter(p=>fin-D(p[0]).getTime()<=45*864e5).map(p=>({t:D(p[0]).getTime(),v:p[1],f:p[0]}));
+  if(pts.length<3){ el.innerHTML=''; return; }
+  const W=ancho(el), H=118, m={l:8,r:8,t:16,b:22}, iw=W-m.l-m.r, ih=H-m.t-m.b;
+  let lo=Math.min(...pts.map(p=>p.v)), hi=Math.max(...pts.map(p=>p.v));
+  const pad=Math.max((hi-lo)*0.18,(d.capacidad_hm3||hi||1)*0.002); lo-=pad; hi+=pad;
+  const t0=pts[0].t, t1=pts[pts.length-1].t;
+  const X=t=>m.l+(t1===t0?iw/2:(t-t0)/(t1-t0)*iw), Y=v=>m.t+(1-(v-lo)/(hi-lo))*ih;
+  const linea=pts.map((p,i)=>(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)).join(' ');
+  const u=pts[pts.length-1], p0=pts[0];
+  let s='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'" role="img" aria-label="Volumen diario del embalse">'+
+    '<path d="'+linea+' L'+X(t1).toFixed(1)+' '+(m.t+ih)+' L'+X(t0).toFixed(1)+' '+(m.t+ih)+' Z" fill="#0071b8" opacity=".08"/>'+
+    '<path d="'+linea+'" fill="none" stroke="#0071b8" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+  pts.forEach(p=>{ s+='<circle cx="'+X(p.t).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(p===u?3.6:pts.length>20?0:2)+'" fill="#0071b8"><title>'+fCorta(p.f)+': '+fmt(p.v,2)+' hm³</title></circle>'; });
+  s+='<text x="'+m.l+'" y="'+(H-6)+'" font-size="10.5" fill="#6e6e73">'+fCorta(p0.f)+' · '+fmt(p0.v,dec2(p0.v))+' hm³</text>'+
+     '<text x="'+(W-m.r)+'" y="'+(H-6)+'" font-size="10.5" fill="#6e6e73" text-anchor="end">'+fCorta(u.f)+' · '+fmt(u.v,dec2(u.v))+' hm³</text></svg>';
+  el.innerHTML=s;
+}
+const dec2=n=>Math.abs(n)<100?2:1;
 function dibujarTodo(){ c12(); cAnual(); cSerie(); }
-let rT=null; window.addEventListener('resize',()=>{ clearTimeout(rT); rT=setTimeout(()=>{ if(F){ dibujarTodo(); rios(); avisar(); } },150); });
+let rT=null; window.addEventListener('resize',()=>{ clearTimeout(rT); rT=setTimeout(()=>{ if(F){ hoy(); dibujarTodo(); rios(); avisar(); } },150); });
 const avisar=()=>parent.postMessage({embalsesAltura:document.body.scrollHeight,slug:'ficha-'+slug},'*');
 
 /* ───────── gráfico 1: últimos 12 meses ───────── */
