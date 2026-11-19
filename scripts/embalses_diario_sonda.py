@@ -56,52 +56,31 @@ GEOSERVER_MITECO = "https://gis.miteco.gob.es/geoserver/agua/embalses_et"
 
 # API / servicios publicados en catalogos oficiales de datos abiertos.
 API = [
-    ("MITECO nacional", "WMS capabilities",
-     GEOSERVER_MITECO + "/wms?service=WMS&version=1.3.0&request=GetCapabilities"),
-    ("MITECO nacional", "WFS capabilities",
-     GEOSERVER_MITECO + "/wfs?service=WFS&version=2.0.0&request=GetCapabilities"),
-    ("MITECO nacional", "WMS antiguo (wms.mapama)",
-     "https://wms.mapama.gob.es/sig/agua/SAIH/Embalses/wms.aspx?service=WMS&request=GetCapabilities"),
-    ("MITECO nacional", "Visor redes de seguimiento",
-     "https://sig.mapama.gob.es/redes-seguimiento/"),
-    ("Duero", "CKAN package_show estado_embalse",
-     "https://datos.chduero.es/api/3/action/package_show?id=estado_embalse"),
-    ("Duero", "Ficha del dataset estado_embalse",
-     "https://datos.chduero.es/dataset/estado_embalse"),
-    ("Guadalquivir", "WFS explotacion_saih (10 features)",
-     "https://idechg.chguadalquivir.es/geoserver/ggiscloud_root/ows?service=WFS&version=1.0.0"
-     "&request=GetFeature&typeName=ggiscloud_root:explotacion_saih&maxFeatures=10"
-     "&outputFormat=application%2Fjson"),
-    ("Guadalquivir", "WFS DescribeFeatureType",
-     "https://idechg.chguadalquivir.es/geoserver/ggiscloud_root/wfs?service=WFS"
-     "&request=DescribeFeatureType&typeName=explotacion_saih"),
-    ("Cataluna (ACA)", "Socrata gn9e-3qhr, 20 filas mas recientes",
-     "https://analisi.transparenciacatalunya.cat/resource/gn9e-3qhr.json?$order=dia%20DESC&$limit=20"),
-    ("Cataluna (ACA)", "Socrata gn9e-3qhr, 3 filas mas antiguas",
-     "https://analisi.transparenciacatalunya.cat/resource/gn9e-3qhr.json?$order=dia%20ASC&$limit=3"),
-    ("Andalucia (REDIAM)", "Descarga 'Embalses al dia'",
-     "https://descargasrediam.cica.es/repo/s/RUR?path=%2F04_RECURSOS_NATURALES%2F04_AGUAS"
-     "%2F01_SUPERFICIALES%2F00_SUPERFICIALES%2FEmbalses_al_dia"),
-    ("Andalucia (REDIAM)", "Ficha de metadatos",
-     "https://portalrediam.cica.es/geonetwork/static/api/records/a730254e-b0b3-43f2-a8b1-81332b99c409"),
+    # Ebro: ¿algún nombre de servidor del SAIH acepta conexiones desde GitHub?
+    ("Ebro", "API volúmenes (www)", "https://www.saihebro.com/api/principal/getVolumenesEmbalsados"),
+    ("Ebro", "API volúmenes (ssl)", "https://ssl.saihebro.com/api/principal/getVolumenesEmbalsados"),
+    ("Ebro", "API volúmenes (website)", "https://website.saihebro.com/api/principal/getVolumenesEmbalsados"),
+    ("Ebro", "API volúmenes (ebs)", "https://ebs.saihebro.com/api/principal/getVolumenesEmbalsados"),
+    ("Ebro", "API volúmenes (apidocs)", "https://apidocs.saihebro.com/api/principal/getVolumenesEmbalsados"),
+    ("Ebro", "Informes: parte diario de embalses (ssl)", "https://ssl.saihebro.com/datos/informes"),
+    ("Ebro", "Informes: parte diario de embalses (apidocs)", "https://apidocs.saihebro.com/datos/informes"),
+    # Madrid: datos abiertos del Canal de Isabel II (embalses del Tajo en Madrid)
+    ("Madrid (Canal de Isabel II)", "JSON de datos abiertos",
+     "https://datos.comunidad.madrid/dataset/7fdba62f-03e0-4f36-a35f-7771652ecf6e/resource/"
+     "e3d2e0d0-5241-467e-9f9d-d9b3bb61d6a5/download/"
+     "volumen-de-agua-embalsada-en-los-embalses-del-canal-de-isabel-ii.json"),
+    ("Madrid (Canal de Isabel II)", "CKAN package_show",
+     "https://datos.comunidad.madrid/api/3/action/package_show?id=7fdba62f-03e0-4f36-a35f-7771652ecf6e"),
+    # API pública de MapasDeEmbalses.es (un embalse del Tajo y uno del Ebro, de muestra)
+    ("MapasDeEmbalses.es", "API pública: Buendía", "https://mapasdeembalses.es/api/v1/embalses/buendia"),
+    ("MapasDeEmbalses.es", "API pública: Mequinenza", "https://mapasdeembalses.es/api/v1/embalses/mequinenza"),
+    ("MapasDeEmbalses.es", "API pública: Alarcón", "https://mapasdeembalses.es/api/v1/embalses/alarcon"),
 ]
 
 # Webs SAIH: se abre la portada, se listan los enlaces de interes y se visitan
 # hasta MAX_SEGUNDO_NIVEL paginas que hablen de embalses. Respetan robots.txt.
 WEBS = [
-    ("Ebro", ["https://www.saihebro.com/",
-              "https://www.saihebro.com/saihebro/index.php?url=/informes/partes"]),
-    ("Tajo", ["https://saihtajo.chtajo.es/"]),
-    ("Guadiana", ["https://www.saihguadiana.com/"]),
-    ("Guadalquivir", ["https://www.chguadalquivir.es/saih/"]),
-    ("Duero", ["https://www.saihduero.es/", "https://www.saihduero.es/situacion-embalses"]),
-    ("Jucar", ["https://saih.chj.es/"]),
-    ("Segura", ["https://saihweb.chsegura.es/", "https://www.chsegura.es/"]),
-    ("Mino-Sil", ["https://saih.chminosil.es/"]),
-    ("Cantabrico", ["https://www.chcantabrico.es/"]),
-    ("Andalucia (Hidrosur)", ["http://www.redhidrosurmedioambiente.es/saih/"]),
-    ("Galicia Costa", ["https://augasdegalicia.xunta.gal/"]),
-    ("Pais Vasco (URA)", ["https://www.uragentzia.euskadi.eus/"]),
+    ("MITECO, visor nacional de redes de seguimiento", ["https://sig.miteco.gob.es/redes-seguimiento/"]),
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -159,7 +138,7 @@ def resumen_json(obj):
                                      "url": r.get("url"), "modificado": r.get("last_modified")}
                                     for r in res["resources"]]
         if "claves" in out and len(out) == 1:
-            out["muestra"] = str(obj)[:1500]
+            out["muestra"] = str(obj)[:2600]
     elif isinstance(obj, list):
         out["n_elementos"] = len(obj)
         if obj and isinstance(obj[0], dict):
@@ -293,26 +272,6 @@ def pasada_api(informe):
                     r2.update(ambito="Duero", que=f"Recurso CKAN: {rec.get('nombre')} ({rec.get('formato')})")
                     informe["api"].append(r2)
 
-    # MITECO: con los nombres de capa vistos, intentar leer los datos.
-    capas = [c for c in dict.fromkeys(capas) if c.split(":")[-1] == "embalses_et"][:1] or ["embalses_et"]
-    for capa in capas:
-        tn = capa if ":" in capa else "agua:" + capa
-        for que, url in [
-            (f"WFS GetFeature {tn} (400)",
-             f"{GEOSERVER_MITECO}/wfs?service=WFS&version=2.0.0&request=GetFeature"
-             f"&typeNames={tn}&count=400&outputFormat=application/json"),
-            (f"WFS DescribeFeatureType {tn}",
-             f"{GEOSERVER_MITECO}/wfs?service=WFS&version=2.0.0&request=DescribeFeatureType&typeNames={tn}"),
-            (f"WMS GetFeatureInfo {tn} (toda la peninsula, 50)",
-             f"{GEOSERVER_MITECO}/wms?service=WMS&version=1.1.1&request=GetFeatureInfo"
-             f"&layers={tn}&query_layers={tn}&styles=&srs=EPSG:4326&bbox=-9.6,35.8,3.5,43.9"
-             f"&width=101&height=101&x=50&y=50&buffer=120&feature_count=50"
-             f"&info_format=application/json"),
-        ]:
-            print(f"[API] MITECO nacional — {que}")
-            r, _ = pedir(url)
-            r.update(ambito="MITECO nacional", que=que)
-            informe["api"].append(r)
 
 
 def pasada_webs(informe):
@@ -419,7 +378,7 @@ def escribir(informe):
 
 def main():
     informe = {"generado": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-               "version": "1.1", "api": [], "webs": []}
+               "version": "2.0", "api": [], "webs": []}
     for nombre, pasada in (("api", pasada_api), ("webs", pasada_webs)):
         try:
             pasada(informe)
