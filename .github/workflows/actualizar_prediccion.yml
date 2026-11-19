@@ -61,6 +61,8 @@ jobs:
           CG_SALIDA: docs/prediccion
           CG_PAUSA: '2.5'
           CG_TOPE_MIN: '100'
+          # Horaria para todos los municipios con pagina de El tiempo (999 desde el 19-11-2026)
+          CG_PRIORITARIOS: '999'
         run: python privado/prediccion_municipios.py
 
       - name: Publicar cambios
