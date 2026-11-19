@@ -1,6 +1,6 @@
-# Castellón lleva en lo que va de noviembre de 2026 con 17,4 °C de media: un mes que en 1961-1990 ocurría una vez cada 236 años y ahora es 11 veces más probable
+# Castellón lleva en lo que va de noviembre de 2026 con 17,5 °C de media: un mes que en 1961-1990 ocurría una vez cada 304 años y ahora es 13 veces más probable
 
-**Dato:** Un mes así ocurría una vez cada 236 años en 1961-1990 y ahora una vez cada 21 años: es 11 veces más probable (intervalo 1,9-94). Serie: serie diaria de la celda de Castellón del reanálisis ERA5.  
+**Dato:** Un mes así ocurría una vez cada 304 años en 1961-1990 y ahora una vez cada 24 años: es 13 veces más probable (intervalo 2,0-118). Serie: serie diaria de la celda de Castellón del reanálisis ERA5.  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Castellón  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -14,7 +14,7 @@
 - **Método:** Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5.
 
 ## Límites (decirlos antes de que los descubran)
-- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 1,9-94.
+- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 2,0-118.
 - Todavía no es récord ni percentil extremo de la serie: la noticia es lo que ha cambiado, no el valor.
 - Reanálisis ERA5 en una celda de ~25 km, no la estación oficial: la cifra oficial puede diferir; ERA5 anterior a 1979 es una retroextensión preliminar.
 
