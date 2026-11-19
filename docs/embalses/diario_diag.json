@@ -1,6 +1,6 @@
 {
  "version": "1.4.0",
- "generado": "2026-11-19T20:30:16+00:00",
+ "generado": "2026-11-19T20:40:55+00:00",
  "fuentes": {
   "duero": {
    "id": "duero",
@@ -22,7 +22,7 @@
    "filas_nuevas": 0,
    "embalses_casados": 7,
    "fecha_dato": "2026-11-19",
-   "segundos": 0.9
+   "segundos": 0.8
   },
   "guadalquivir": {
    "id": "guadalquivir",
@@ -33,7 +33,7 @@
    "filas_nuevas": 39,
    "embalses_casados": 47,
    "fecha_dato": "2026-11-19",
-   "segundos": 8.6
+   "segundos": 4.8
   },
   "hidrosur": {
    "id": "hidrosur",
@@ -44,7 +44,7 @@
    "filas_nuevas": 0,
    "embalses_casados": 27,
    "fecha_dato": "2026-11-19",
-   "segundos": 1.4
+   "segundos": 1.1
   },
   "segura": {
    "id": "segura",
@@ -55,7 +55,7 @@
    "filas_nuevas": 0,
    "embalses_casados": 5,
    "fecha_dato": "2026-11-16",
-   "segundos": 2.9
+   "segundos": 1.3
   },
   "galicia": {
    "id": "galicia",
@@ -77,21 +77,25 @@
    "filas_nuevas": 20,
    "embalses_casados": 18,
    "fecha_dato": "2026-11-19",
-   "segundos": 12.8
+   "segundos": 6.4
   },
   "jucar": {
    "id": "jucar",
    "nombre": "SAIH de la Confederación Hidrográfica del Júcar",
    "url": "https://saih.chj.es/embalses",
    "ok": false,
-   "error": "ValueError: sin relevo: el plugin del WordPress no responde (HTTPError: 404 Client Error: Not Found for url: https://calentamientoglobal.es/wp-json/cg-embalses/v1/relevo)"
+   "error": "ValueError: sin relevo: el servidor de la web aún no ha podido leer esta fuente (rechazado por el cortafuegos del servidor)"
   },
   "ebro": {
    "id": "ebro",
    "nombre": "SAIH de la Confederación Hidrográfica del Ebro",
    "url": "https://www.saihebro.com/tiempo-real/mapa-embalses-HG-toda-la-cuenca",
-   "ok": false,
-   "error": "ValueError: sin relevo: el plugin del WordPress no responde (HTTPError: 404 Client Error: Not Found for url: https://calentamientoglobal.es/wp-json/cg-embalses/v1/relevo)"
+   "ok": true,
+   "lecturas": 68,
+   "filas_nuevas": 68,
+   "embalses_casados": 55,
+   "fecha_dato": "2026-11-19",
+   "segundos": 0.0
   }
  },
  "sin_casar": [
@@ -113,11 +117,11 @@
   },
   {
    "fuente": "cataluna",
-   "nombre": "Embassament de Siurana (Cornudella de Montsant)"
+   "nombre": "Embassament de Foix (Castellet i la Gornal)"
   },
   {
    "fuente": "cataluna",
-   "nombre": "Embassament de Foix (Castellet i la Gornal)"
+   "nombre": "Embassament de Siurana (Cornudella de Montsant)"
   },
   {
    "fuente": "guadalquivir",
@@ -170,6 +174,58 @@
   {
    "fuente": "minosil",
    "nombre": "E009 - MONTEARENAS"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "CERECEDA"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "MAIRAGA"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "ARDISA"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "LAS NAVAS"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "ARGUIS"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "GUARA"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "ALBAGÉS"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "FLIX"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "VALCOMUNA-J MARIA PUYOL"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "GALLIPUEN"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "MULARROYA"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "TABESCAN"
+  },
+  {
+   "fuente": "ebro",
+   "nombre": "MEZALOCHA"
   }
  ],
  "descartadas": [],
@@ -353,6 +409,63 @@
    "E033 - FRIEIRA": "FRIEIRA",
    "E035 - AS CONCHAS": "CONCHAS LAS",
    "E036 - SALAS": "SALAS"
+  },
+  "ebro": {
+   "ALLOZ": "ALLOZ",
+   "BARASONA": "BARASONA",
+   "BASERCA": "BASERCA",
+   "BELSUÉ": "SANTA MARIA DE BELSUE",
+   "BÚBAL": "BUBAL",
+   "CALANDA": "CALANDA",
+   "CAMARASA": "CAMARASA",
+   "CANELLES": "CANELLES",
+   "CASPE": "CASPE",
+   "CAVALLERS": "CAVALLERS",
+   "CAÑON-SANTOLEA": "CANON DE SANTOLEA",
+   "CUEVA FORADADA": "CUEVA FORADADA",
+   "EBRO": "EBRO",
+   "EL GRADO": "GRADO EL",
+   "ENCISO": "ENCISO",
+   "ESCALES": "ESCALES",
+   "EUGUI": "EUGUI",
+   "GONZALEZ LACASA": "GONZALEZ LACASA",
+   "GUIAMETS": "GUIAMETS",
+   "IRABIA": "IRABIA",
+   "ITOIZ": "ITOIZ",
+   "LA ESTANCA": "ALCANIZ (ESTANCA)",
+   "LA PEÑA": "PENA LA",
+   "LANUZA": "LANUZA",
+   "LAS TORCAS": "TORCAS LAS",
+   "LECHAGO": "LECHAGO",
+   "MAIDEVERA": "MAIDEVERA",
+   "MANSILLA": "MANSILLA",
+   "MEDIANO": "MEDIANO",
+   "MEQUINENZA": "MEQUINENZA",
+   "MONEVA": "MONEVA",
+   "MONTEAGUDO": "MONTEAGUDO",
+   "MONTEARAGÓN": "MONTEARAGON",
+   "NAGORE": "NAGORE",
+   "OLIANA": "OLIANA",
+   "PAJARES": "PAJARES",
+   "PENA": "PENA",
+   "PUENTE SANTOLEA": "PUENTE DE SANTOLEA",
+   "RIALB": "RIALB",
+   "RIBARROJA": "RIBARROJA",
+   "SAN BARTOLOME": "SAN BARTOLOME",
+   "SAN LORENZO": "SAN LORENZO",
+   "SANTA ANA": "SANTA ANA",
+   "SANTOLEA": "SANTOLEA",
+   "SOBRON": "SOBRON",
+   "SOTONERA": "SOTONERA",
+   "TALARN": "TREMP O TALARN",
+   "TERRADETS": "TERRADETS",
+   "TRANQUERA": "TRANQUERA LA",
+   "ULLIVARRI": "ULLIVARRI",
+   "URDALUR": "URDALUR",
+   "URRUNAGA": "URRUNAGA",
+   "VADIELLO": "VADIELLO",
+   "VAL": "VAL EL",
+   "YESA": "YESA"
   }
  },
  "dudosas": [
@@ -366,7 +479,7 @@
    "capacidad_hm3": 2649.0
   }
  ],
- "fichas_con_diario": 134,
+ "fichas_con_diario": 189,
  "extra": {
   "guadalquivir_parte": {
    "fecha": "2026-11-19",
