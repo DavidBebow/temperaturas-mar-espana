@@ -20,7 +20,7 @@
    2025
   ]
  },
- "fecha_dato": "2026-11-17",
+ "fecha_dato": "2026-11-18",
  "provisional": true,
  "fuente_dia": "reanálisis/predicción, pendiente de validar por AEMET",
  "fuente_diaria": "era5",
@@ -34,55 +34,57 @@
  },
  "hoy": {
   "tmax": {
-   "valor": 18.3,
+   "valor": 18.7,
    "lado": "calido",
    "metodo": "normal",
-   "T_antes": 0.5,
-   "T_ahora": 0.4,
+   "T_antes": 0.8,
+   "T_ahora": 0.5,
    "T_tope": false,
-   "PR": 1.4,
+   "PR": 1.5,
    "pr_min": 0.9,
-   "pr_max": 2.4,
+   "pr_max": 2.8,
    "significativo": false,
    "nivel": 0,
-   "p_antes": 0.0603953,
-   "p_ahora": 0.0866235,
+   "p_antes": 0.0391389,
+   "p_ahora": 0.0589193,
    "anios_antes": 30,
    "anios_ahora": 30
   },
   "tmin": {
-   "valor": 11.9,
+   "valor": 16.6,
    "lado": "calido",
-   "metodo": "normal",
-   "T_antes": 1.0,
-   "T_ahora": 0.8,
+   "metodo": "GEV",
+   "T_antes": 96,
+   "T_ahora": 582,
    "T_tope": false,
-   "PR": 1.3,
-   "pr_min": 0.7,
-   "pr_max": 2.2,
+   "PR": 0.2,
+   "pr_min": 0.0,
+   "pr_max": 1000,
    "significativo": false,
    "nivel": 0,
-   "p_antes": 0.0307926,
-   "p_ahora": 0.0390364,
+   "p_antes": 0.0104294,
+   "p_ahora": 0.00171961,
    "anios_antes": 30,
-   "anios_ahora": 30
+   "anios_ahora": 30,
+   "nota": "cola extrema: estimación del extremo anual del mes (GEV por L-momentos)"
   },
   "tmed": {
-   "valor": 15.1,
+   "valor": 17.7,
    "lado": "calido",
-   "metodo": "normal",
-   "T_antes": 1.2,
-   "T_ahora": 0.8,
+   "metodo": "GEV",
+   "T_antes": 50,
+   "T_ahora": 15,
    "T_tope": false,
-   "PR": 1.6,
-   "pr_min": 0.8,
-   "pr_max": 3.0,
+   "PR": 3.2,
+   "pr_min": 0.4,
+   "pr_max": 128,
    "significativo": false,
    "nivel": 0,
-   "p_antes": 0.0270743,
-   "p_ahora": 0.0421243,
+   "p_antes": 0.0198847,
+   "p_ahora": 0.0645884,
    "anios_antes": 30,
-   "anios_ahora": 30
+   "anios_ahora": 30,
+   "nota": "cola extrema: estimación del extremo anual del mes (GEV por L-momentos)"
   },
   "indice": 0,
   "nivel_texto": "Nivel 0: dentro de lo que ya era normal"
@@ -91,41 +93,37 @@
   "referencia": {
    "mes": "2026-11",
    "mes_nombre": "noviembre de 2026",
-   "dias": 17,
+   "dias": 18,
    "tipo": "en_curso",
    "desde": "2026-11-01",
-   "hasta": "2026-11-17"
+   "hasta": "2026-11-18"
   },
   "media": {
-   "valor": 13.8,
+   "valor": 13.9,
    "lado": "calido",
    "metodo": "normal",
-   "T_antes": 46,
-   "T_ahora": 18,
+   "T_antes": 77,
+   "T_ahora": 24,
    "T_tope": false,
-   "PR": 2.5,
+   "PR": 3.2,
    "pr_min": 0.7,
-   "pr_max": 13,
+   "pr_max": 20,
    "significativo": false,
    "nivel": 0,
-   "p_antes": 0.0218409,
-   "p_ahora": 0.0551397,
+   "p_antes": 0.013064,
+   "p_ahora": 0.0413038,
    "anios_antes": 30,
    "anios_ahora": 30,
-   "media_antes": 10.7,
-   "media_ahora": 11.3,
+   "media_antes": 10.6,
+   "media_ahora": 11.2,
    "unidad": "°C",
    "fuente_mensual": "era5",
    "citabilidad": "media",
-   "frase": "Un mes así ocurría una vez cada 46 años en 1961-1990 y ahora una vez cada 18 años: es 2,5 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1). Serie: serie diaria de la celda de Toledo del reanálisis ERA5."
+   "frase": "Un mes así ocurría una vez cada 77 años en 1961-1990 y ahora una vez cada 24 años: es 3,2 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1). Serie: serie diaria de la celda de Toledo del reanálisis ERA5."
   },
   "lluvia": null
  },
  "ultimos_30": [
-  {
-   "fecha": "2026-10-19",
-   "indice": -1
-  },
   {
    "fecha": "2026-10-20",
    "indice": 0
@@ -228,7 +226,7 @@
   },
   {
    "fecha": "2026-11-14",
-   "indice": 1
+   "indice": 0
   },
   {
    "fecha": "2026-11-15",
@@ -241,19 +239,23 @@
   {
    "fecha": "2026-11-17",
    "indice": 0
+  },
+  {
+   "fecha": "2026-11-18",
+   "indice": 0
   }
  ],
  "resumen_30": {
   "dias_3_o_mas": 0,
-  "dias_negativos": 1,
+  "dias_negativos": 0,
   "dias_con_dato": 30,
   "media_indice": 0.6
  },
  "textos": {
-  "frase_hoy": "El 17 de noviembre de 2026 la temperatura media en Toledo (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET) fue de 15,1 °C. Un día así ocurría una vez cada 1,2 años en 1961-1990 y ahora unas 1,3 veces al año: es 1,6 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1). Nivel 0: dentro de lo que ya era normal.",
-  "base": "Basado en la temperatura media del 17 de noviembre de 2026 en Toledo (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET); dato provisional: se compara con el clima de la celda ERA5 de la capital y puede cambiar al validarse.",
+  "frase_hoy": "El 18 de noviembre de 2026 la temperatura media en Toledo (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET) fue de 17,7 °C. Un día así ocurría una vez cada 50 años en 1961-1990 y ahora una vez cada 15 años: es 3,2 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1). Nivel 0: dentro de lo que ya era normal.",
+  "base": "Basado en la temperatura media del 18 de noviembre de 2026 en Toledo (reanálisis/predicción de Open-Meteo, pendiente de validar por AEMET); dato provisional: se compara con el clima de la celda ERA5 de la capital y puede cambiar al validarse.",
   "metodo_corto": "Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5."
  },
  "licencia": "CC BY 4.0",
- "generado": "2026-11-18T18:03:36Z"
+ "generado": "2026-11-19T00:03:48Z"
 }

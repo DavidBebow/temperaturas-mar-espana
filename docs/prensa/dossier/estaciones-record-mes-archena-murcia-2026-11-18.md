@@ -1,6 +1,6 @@
-# Archena (Murcia) ya supera hoy, 18 de noviembre, su récord de máxima para un mes de noviembre: 31,1 °C entre las 14:00 y las 15:00 frente a los 30,6 °C de 2013
+# Archena (Murcia) alcanzó el 18 de noviembre al menos 31,1 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Archena, a 150 m, máxima de 31,1 °C el 18 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 30,6 °C (6 de noviembre de 2013) · récord absoluto de la estación: 45,8 °C (15 de agosto de 2021) · día en curso, con observaciones hasta las 21:00 (hora local)  
+**Dato:** Medido por AEMET en su estación de Archena, a 150 m, máxima de 31,1 °C el 18 de noviembre (entre las 14:00 y las 15:00, hora local) · récord anterior de noviembre en la estación: 30,6 °C (6 de noviembre de 2013) · récord absoluto de la estación: 45,8 °C (15 de agosto de 2021) · 22 de 24 horas del día con observación  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Archena (Murcia)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -19,7 +19,7 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 9 de noviembre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2008.
-- Día en curso: la cifra puede cambiar hasta la medianoche (hora UTC). Citar siempre con la hora.
+- Al día le faltan 2 horas de observación en OpenData: la máxima real pudo ser mayor (citar «al menos»).
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces
