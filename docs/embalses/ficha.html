@@ -237,15 +237,18 @@ function hoy(){
   const dec=n=>Math.abs(n)<100?2:1;
   const col=n=>n==null||Math.abs(n)<0.05?'#6e6e73':n>0?'#2e7d46':'#CC2200';
   const vr=n=>n==null?'—':Math.abs(n)<0.05?'sin cambios':(n>0?'+':'−')+fmt(Math.abs(n),dec(n));
+  // variación relativa: sobre el volumen que había antes del cambio
+  const pc=n=>{ if(n==null) return ''; const base=d.volumen_hm3-n; if(!(base>0)) return '';
+    const p=n/base*100; return Math.abs(p)<0.005?' · 0 %':' · '+(p>0?'+':'−')+fmt(Math.abs(p),Math.abs(p)<10?2:1)+' %'; };
   const kpi=(k,v,u,c)=>'<div class="kpi"><div class="k">'+k+'</div><div class="v"'+(c?' style="color:'+c+'"':'')+'>'+v+'</div><div class="u">'+u+'</div></div>';
   const desdeBol=F.volumen_hm3!=null?Math.round((d.volumen_hm3-F.volumen_hm3)*100)/100:null;
   document.getElementById('subHoy').textContent='Lectura del '+fLarga(d.fecha_dato)+(d.hora_dato?' a las '+d.hora_dato:'')+
     '. El resto de la ficha usa el dato oficial del boletín semanal.';
   document.getElementById('kpisHoy').innerHTML=
     kpi('Agua embalsada',fmt(d.volumen_hm3,dec(d.volumen_hm3)),'hm³ · '+pctTxt(d.pct)+' de su capacidad')+
-    kpi('En 24 horas',vr(d.var_24h_hm3),d.var_24h_hm3==null?'sin lectura del día anterior':'hm³',col(d.var_24h_hm3))+
-    kpi('En 7 días',vr(d.var_7d_hm3),d.var_7d_hm3==null?'aún no hay una semana de lecturas':'hm³',col(d.var_7d_hm3))+
-    kpi('Desde el boletín del '+fCorta(F.boletin_fecha),vr(desdeBol),desdeBol==null?'':'hm³',col(desdeBol));
+    kpi('En 24 horas',vr(d.var_24h_hm3),d.var_24h_hm3==null?'sin lectura del día anterior':'hm³'+pc(d.var_24h_hm3),col(d.var_24h_hm3))+
+    kpi('En 7 días',vr(d.var_7d_hm3),d.var_7d_hm3==null?'aún no hay una semana de lecturas':'hm³'+pc(d.var_7d_hm3),col(d.var_7d_hm3))+
+    kpi('Desde el boletín del '+fCorta(F.boletin_fecha),vr(desdeBol),desdeBol==null?'':'hm³'+pc(desdeBol),col(desdeBol));
   document.getElementById('notaHoy').innerHTML='<b>Dato provisional y sin validar</b>, publicado por '+
     (fu.url?'<a href="'+esc(fu.url)+'" target="_blank" rel="noopener" style="color:var(--agua);font-weight:600;text-decoration:none">'+esc(fu.nombre||'el organismo de cuenca')+'</a>':esc(fu.nombre||'el organismo de cuenca'))+'. '+
     (d.volumen_estimado?'Esta fuente solo publica el porcentaje de llenado: el volumen se ha calculado con la capacidad del boletín. ':'')+
