@@ -1,7 +1,7 @@
 # Bilbao: 2026 bate el máximo de su serie en días de 30 °C o más: 46, frente a 35 del máximo anterior
 
-**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 46, frente a 35 del máximo anterior, con datos validados de AEMET hasta el 8 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
-**Fecha del dato:** 8 de noviembre de 2026  
+**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 46, frente a 35 del máximo anterior, con datos validados de AEMET hasta el 15 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
+**Fecha del dato:** 15 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Bilbao  
 **Citabilidad:** alta · **Exclusivo:** sí
 

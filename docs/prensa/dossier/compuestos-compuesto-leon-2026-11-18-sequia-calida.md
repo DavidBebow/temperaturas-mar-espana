@@ -1,6 +1,6 @@
-# Sequía cálida en León: sequía moderada y 2,0 °C más que lo normal en noviembre de 2026
+# Sequía cálida en León: sequía moderada y 1,9 °C más que lo normal en noviembre de 2026
 
-**Dato:** León está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,8) y la media de noviembre de 2026 hasta el 18 de noviembre de 2026 es de 10,0 °C, 2,0 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** León está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,8) y la media de noviembre de 2026 hasta el 18 de noviembre de 2026 es de 9,9 °C, 1,9 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** León  
 **Citabilidad:** alta · **Exclusivo:** sí
