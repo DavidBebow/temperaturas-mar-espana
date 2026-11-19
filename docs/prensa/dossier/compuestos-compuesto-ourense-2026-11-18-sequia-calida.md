@@ -1,7 +1,7 @@
-# Sequía cálida en Ourense: sequía severa y 2,7 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Ourense: sequía severa y 2,8 °C más que lo normal en noviembre de 2026
 
-**Dato:** Ourense está en «sequía severa» en el Monitor de sequía (SPI-12 de 0,1) y la media de noviembre de 2026 hasta el 17 de noviembre de 2026 es de 14,6 °C, 2,7 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
-**Fecha del dato:** 17 de noviembre de 2026  
+**Dato:** Ourense está en «sequía severa» en el Monitor de sequía (SPI-12 de 0,1) y la media de noviembre de 2026 hasta el 18 de noviembre de 2026 es de 14,6 °C, 2,8 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Ourense  
 **Citabilidad:** media · **Exclusivo:** sí
 
