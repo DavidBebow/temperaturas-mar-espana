@@ -1,6 +1,6 @@
-# Orihuela (Alicante) alcanzó el 18 de noviembre al menos 30,7 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
+# Orihuela (Alicante) alcanzó el 18 de noviembre 30,7 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Orihuela, a 26 m, máxima de 30,7 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 29 °C (6 de noviembre de 2013) · récord absoluto de la estación: 44,9 °C (18 de agosto de 2025) · 22 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Orihuela, a 26 m, máxima de 30,7 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 29 °C (6 de noviembre de 2013) · récord absoluto de la estación: 44,9 °C (18 de agosto de 2025) · 24 de 24 horas del día con observación  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Orihuela (Alicante)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -19,7 +19,6 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 2 de noviembre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2008.
-- Al día le faltan 2 horas de observación en OpenData: la máxima real pudo ser mayor (citar «al menos»).
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces

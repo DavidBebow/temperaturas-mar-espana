@@ -1,6 +1,6 @@
-# Murcia alcanzó el 18 de noviembre al menos 32,2 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
+# Murcia alcanzó el 18 de noviembre 32,2 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Murcia, a 62 m, máxima de 32,2 °C el 18 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 31 °C (6 de noviembre de 2013) · récord absoluto de la estación: 46,2 °C (15 de agosto de 2021) · 23 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Murcia, a 62 m, máxima de 32,2 °C el 18 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 31 °C (6 de noviembre de 2013) · récord absoluto de la estación: 46,2 °C (15 de agosto de 2021) · 24 de 24 horas del día con observación  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Murcia  
 **Citabilidad:** alta · **Exclusivo:** sí
@@ -19,7 +19,6 @@
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 9 de noviembre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 1984.
-- Al día le faltan 1 horas de observación en OpenData: la máxima real pudo ser mayor (citar «al menos»).
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/records-de-temperatura/
