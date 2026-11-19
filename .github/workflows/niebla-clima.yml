@@ -31,7 +31,7 @@ jobs:
 
       - name: Bajar y resumir
         env:
-          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+          AEMET_API_KEY: ${{ secrets.AEMET_API_KEY_PREDICCION || secrets.AEMET_API_KEY }}
         run: python scripts/niebla_clima.py
 
       - name: Guardar
