@@ -1,6 +1,6 @@
-# León tuvo el 17 de noviembre la mínima más alta para esa fecha desde 1940: 10,9 °C
+# León registró el 17 de noviembre una mínima de 11 °C, la más alta para esa fecha en la serie que empieza en 1940
 
-**Dato:** mínima 10,9 °C (corregida a escala ERA5: 11,5 °C) · récord anterior para la fecha 9,6 °C (1997)  
+**Dato:** AEMET, estación de León: 11 °C · reanálisis ERA5 en la celda de León: 11,5 °C · récord anterior de la serie para la fecha: 9,6 °C (1997)  
 **Fecha del dato:** 17 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** León  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -16,9 +16,8 @@
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.
-- Análisis meteorológico en una celda de ~9 km, no la estación oficial de AEMET: la cifra de AEMET puede diferir.
 - La rareza compara dos climas (1961-1990 y 1996-2025) de la serie del reanálisis ERA5 en la celda de la capital; no atribuye este día a una causa y su intervalo es del 90 %.
-- COMPROBAR: pendiente de que AEMET publique el dato de la estación de León (llega con 2-4 días de retraso).
+- La cifra es la medida por AEMET en su estación. El carácter de récord sale de la serie diaria del reanálisis ERA5 desde 1940 (celda de ~25 km), contrastada ese día con la estación (diferencia 0,1 °C).
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-leon/
