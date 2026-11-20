@@ -1,6 +1,6 @@
 # Sequía cálida en Huesca: sequía moderada y 1,6 °C más que lo normal en noviembre de 2026
 
-**Dato:** Huesca está en «sequía moderada» en el Monitor de sequía (SPI-12 de -0,4) y la media de noviembre de 2026 hasta el 18 de noviembre de 2026 es de 12,3 °C, 1,6 °C por encima de la media de ese mes en 1996-2025; es 2,4 veces más probable que en 1961-1990 (intervalo 1,1-9,0).  
+**Dato:** Huesca está en «sequía moderada» en el Monitor de sequía (SPI-12 de -0,4) y la media de noviembre de 2026 hasta el 18 de noviembre de 2026 es de 12,3 °C, 1,6 °C por encima de la media de ese mes en 1996-2025; es 2,4 veces más probable que en 1961-1990 (intervalo 1,0-9,0).  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Huesca  
 **Citabilidad:** alta · **Exclusivo:** sí
