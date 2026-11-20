@@ -5,7 +5,8 @@ name: Nieve en España
 #   · añade los últimos días del satélite IMS de la NOAA (superficie nevada, 4 km);
 #   · refresca ERA5-Land reciente (nieve caída y espesor) y la previsión de ECMWF, ICON, ARPEGE y GFS (Open-Meteo);
 #   · deja docs/nieve/ (JSON y CSV para descargar) y publica en WordPress el contenido fijo (solo si cambia) y el
-#     bloque del día (meta cg_ssr_html).
+#     bloque del día (meta cg_ssr_html);
+#   · calcula «¿Subo este fin de semana?» (docs/nieve/finde.json y docs/nieve/og/<macizo>.png) de los macizos activados.
 # Cada página se queda en borrador hasta que su serie larga 1971-2025 está completa («Nieve: serie larga»).
 # Necesita los secretos WP_USER y WP_APP_AGOSTO, los mismos que «Heladas en cada capital».
 
@@ -55,8 +56,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Dependencia del lector de aludes (pypdf)
-        run: pip install --quiet pypdf
+      - name: Dependencias (pypdf para los aludes; Pillow para la imagen de Open Graph del fin de semana)
+        run: pip install --quiet pypdf pillow
 
       - name: Satélite, datos, previsión y publicación
         env:
