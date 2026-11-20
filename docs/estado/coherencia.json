@@ -1,24 +1,24 @@
 {
- "generado": "2026-11-19T21:02:46+00:00",
- "duracion_s": 2.63,
+ "generado": "2026-11-20T02:42:10+00:00",
+ "duracion_s": 2.74,
  "comprobaciones": [
   {
    "id": "clave",
    "descripcion": "Misma clave (indicador+territorio+periodo+corte), mismo valor en todos los JSON",
-   "evaluadas": 188,
+   "evaluadas": 180,
    "fallos": 0
   },
   {
    "id": "titular",
    "descripcion": "El número del titular y del dato es el del campo estructurado",
-   "evaluadas": 76,
+   "evaluadas": 71,
    "fallos": 0
   },
   {
    "id": "hoy",
    "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
-   "evaluadas": 188,
-   "fallos": 0
+   "evaluadas": 184,
+   "fallos": 1
   },
   {
    "id": "niveles",
@@ -27,7 +27,24 @@
    "fallos": 0
   }
  ],
- "n_fallos": 0,
- "fallos": [],
- "bloqueados": []
+ "n_fallos": 1,
+ "fallos": [
+  {
+   "comprobacion": "hoy",
+   "clave": "huella-antes-raro-espana-2026-11-18|titular",
+   "valores": [
+    {
+     "ruta": "prensa/hallazgos.json#en_revision(huella-antes-raro-espana-2026-11-18)",
+     "valor": "fecha_dato 2026-11-18"
+    }
+   ],
+   "detalle": "dice «hoy» con un dato anterior a ayer"
+  }
+ ],
+ "bloqueados": [
+  {
+   "id": "huella-antes-raro-espana-2026-11-18",
+   "motivo": "dice «hoy» con un dato anterior a ayer"
+  }
+ ]
 }
