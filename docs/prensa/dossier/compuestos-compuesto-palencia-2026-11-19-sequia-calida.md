@@ -1,6 +1,6 @@
-# Sequía cálida en Palencia: sequía moderada y 2,3 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Palencia: sequía moderada y 2,4 °C más que lo normal en noviembre de 2026
 
-**Dato:** Palencia está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 19 de noviembre de 2026 es de 11,1 °C, 2,3 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Palencia está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 19 de noviembre de 2026 es de 11,2 °C, 2,4 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 19 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Palencia  
 **Citabilidad:** media · **Exclusivo:** sí

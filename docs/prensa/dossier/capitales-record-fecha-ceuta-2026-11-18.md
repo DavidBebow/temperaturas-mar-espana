@@ -1,18 +1,18 @@
 # Ceuta tuvo el 18 de noviembre la mínima más alta para esa fecha desde 1940: 19,6 °C
 
-**Dato:** mínima 19,6 °C (corregida a escala ERA5: 18,9 °C) · récord anterior para la fecha 17 °C (1984)  
+**Dato:** mínima 19,6 °C (corregida a escala ERA5: 19 °C) · récord anterior para la fecha 17 °C (1984)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Ceuta  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
 - Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).
-- Rareza: Una noche así ocurría una vez cada 36 años en 1961-1990 y ahora una vez cada 6,4 años: es 5,7 veces más probable (intervalo 2,6-42).
+- Rareza: Una noche así ocurría una vez cada 40 años en 1961-1990 y ahora una vez cada 6,7 años: es 6,0 veces más probable (intervalo 2,6-50).
 
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026
 - **Serie desde:** 1940
-- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Ceuta, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +0,2 °C, mínimas +0,7 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
+- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Ceuta, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas +0,2 °C, mínimas +0,6 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.

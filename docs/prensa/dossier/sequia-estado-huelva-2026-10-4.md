@@ -1,4 +1,4 @@
-# Huelva está en sequía extrema a cierre de octubre: SPI a 6 meses de ≤ −3,00, el 85 % de la lluvia normal del año hidrológico, con los embalses al 74.2 %
+# Huelva está en sequía extrema a cierre de octubre: SPI a 6 meses de ≤ −3,00, el 60 % de la lluvia normal del año hidrológico, con los embalses al 74.2 %
 
 **Dato:** Nivel 4 (Sequía extrema); SPI-3 ≤ −3,00, SPI-6 ≤ −3,00, SPI-12 0,22.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,8 +6,8 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Huelva: 94.2 mm.
-- Días sin lluvia de 1 mm en la capital: 1.
+- Lluvia desde el 1 de octubre en Huelva: 69.1 mm.
+- Días sin lluvia de 1 mm en la capital: 2.
 - Embalses de la provincia al 74.2 % (hace un año 65.0 %; media de 10 años 53.2 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,22). La sequía meteorológica ha empezado antes de que se note en los pantanos.
 
 ## Fuente y método
