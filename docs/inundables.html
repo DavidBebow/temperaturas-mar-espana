@@ -115,7 +115,7 @@ var BASE = 'https://davidbebow.github.io/calentamientoglobal-inundables/';
 var VISOR = 'https://gis.miteco.gob.es/web/snczi/';
 var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 var COLOR = {10:'#2a9df4', 50:'#0b6dc0', 100:'#0b4aa8', 500:'#5b3fb0'};
-var ZOOM_DETALLE = 11, MAX_DETALLE = 40;
+var ZOOM_PROV = 8, ZOOM_DETALLE = 11, MAX_DETALLE = 40;   // zoom <8: fichero nacional; 8-10: provincias; >=11: municipios
 var $ = function (id) { return document.getElementById(id); };
 var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
 function fmt(n, d) {
@@ -130,14 +130,14 @@ function cap(s) { return s.split('-').map(function (w) { return w.charAt(0).toUp
 
 var params = new URLSearchParams(window.location.search);
 var IDX = null, T = 100, provBox = {}, sel = null, selProv = null, pend = 0;
-var cache = { prov: {}, mun: {}, ficha: {} };
-var grupoOv = L.layerGroup(), grupoDe = L.layerGroup();
+var cache = { nac: {}, prov: {}, mun: {}, ficha: {} };
+var grupoNa = L.layerGroup(), grupoOv = L.layerGroup(), grupoDe = L.layerGroup();
 
 var map = L.map('map', { minZoom: 5, maxZoom: 17, center: [40.2, -3.7], zoom: 6, zoomControl: true });
 L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',
   { attribution: '&copy; Instituto Geográfico Nacional · Zonas inundables: &copy; MITECO (SNCZI)', maxZoom: 19 }).addTo(map);
 var renderer = L.canvas({ padding: .3 });
-grupoOv.addTo(map); grupoDe.addTo(map);
+grupoNa.addTo(map); grupoOv.addTo(map); grupoDe.addTo(map);
 
 function estilo() { return { color: '#0b3d91', weight: .6, opacity: .7, fillColor: COLOR[T] || '#0b6dc0', fillOpacity: .38 }; }
 
@@ -159,11 +159,17 @@ function contenidoPopup(p, ine) {
   return h;
 }
 
-function capa(geo, ine) {
+function contenidoNac(p) {
+  var h = '<h3>' + esc(p.rio || 'Cauce sin nombre') + '</h3>';
+  if (typeof p.q === 'number') h += '<table><tr><td>Caudal de la avenida</td><td>' + fmt(p.q, p.q < 10 ? 1 : 0) + ' m³/s</td></tr></table>';
+  return h + '<div style="margin-top:6px;color:#5b7088;font-size:11.5px">Acerca el mapa para ver el detalle.</div>';
+}
+
+function capa(geo, ine, nac) {
   return L.geoJSON(geo, {
     renderer: renderer, style: estilo,
     onEachFeature: function (f, l) {
-      l.on('click', function (e) { L.popup({ maxWidth: 280 }).setLatLng(e.latlng).setContent(contenidoPopup(f.properties, ine)).openOn(map); });
+      l.on('click', function (e) { L.popup({ maxWidth: 280 }).setLatLng(e.latlng).setContent(nac ? contenidoNac(f.properties) : contenidoPopup(f.properties, ine)).openOn(map); });
       l.on('mouseover', function () { l.setStyle({ fillOpacity: .6, weight: 1.4 }); });
       l.on('mouseout', function () { l.setStyle(estilo()); });
     }
@@ -175,6 +181,11 @@ function pedir(url, ok, fail) {
   fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(ok).catch(function (e) { if (fail) fail(e); })
     .then(function () { pend--; if (!pend) $('cargando').style.display = 'none'; sync(); });
+}
+function cargarNac() {
+  var k = T; if (cache.nac[k] !== undefined) return;
+  cache.nac[k] = null;
+  pedir(BASE + 'nac/t' + T + '.json?v=' + IDX.generado, function (g) { cache.nac[k] = capa(g, null, true); }, function () { delete cache.nac[k]; });
 }
 function cargarProv(slug) {
   var k = T + '|' + slug; if (cache.prov[k] !== undefined) return;
@@ -208,16 +219,18 @@ function munVisibles() {
 var ultimoDetalle = [];
 function refrescar() {
   if (!IDX) return;
-  provVisibles().forEach(cargarProv);
+  if (map.getZoom() < ZOOM_PROV) cargarNac(); else provVisibles().forEach(cargarProv);
   if (map.getZoom() >= ZOOM_DETALLE) { ultimoDetalle = munVisibles(); ultimoDetalle.forEach(cargarMun); } else ultimoDetalle = [];
   sync();
 }
 function sync() {
   if (!IDX) return;
-  var pv = provVisibles(), detalle = map.getZoom() >= ZOOM_DETALLE;
+  var z = map.getZoom(), nacional = z < ZOOM_PROV, pv = nacional ? [] : provVisibles(), detalle = z >= ZOOM_DETALLE;
   var detOk = detalle && ultimoDetalle.length && ultimoDetalle.every(function (i) { return cache.mun[T + '|' + i]; });
   grupoDe.clearLayers();
   if (detalle) ultimoDetalle.forEach(function (i) { var l = cache.mun[T + '|' + i]; if (l) grupoDe.addLayer(l); });
+  grupoNa.clearLayers();
+  if (nacional && cache.nac[T]) grupoNa.addLayer(cache.nac[T]);
   grupoOv.clearLayers();
   if (!detOk) pv.forEach(function (s) { var l = cache.prov[T + '|' + s]; if (l) grupoOv.addLayer(l); });
 }
@@ -240,7 +253,7 @@ function pintarPeriodo() {
 }
 function fijarPeriodo(t, noUrl) {
   if (IDX.periodos.indexOf(t) < 0 || t === T) return;
-  T = t; pintarPeriodo(); pintarNumeros(); refrescar(); if (sel) pintarMun(); if (!noUrl) actualizarUrl();
+  T = t; poblarListas(); pintarPeriodo(); pintarNumeros(); refrescar(); if (sel) pintarMun(); if (!noUrl) actualizarUrl();
 }
 
 function actualizarUrl() {
@@ -326,6 +339,18 @@ function buscador() {
   });
 }
 
+function poblarListas() {
+  var s0 = $('sel').value;
+  $('sel').innerHTML = '<option value="">Toda España</option>';
+  Object.keys(IDX.provincias).filter(function (s) { return IDX.provincias[s][T]; })
+    .sort(function (a, b) { return IDX.provincias[a].nombre.localeCompare(IDX.provincias[b].nombre, 'es'); })
+    .forEach(function (s) { var o = document.createElement('option'); o.value = s; o.textContent = IDX.provincias[s].nombre; $('sel').appendChild(o); });
+  $('sel').value = s0 && IDX.provincias[s0] && IDX.provincias[s0][T] ? s0 : '';
+  $('top').innerHTML = '';
+  var tops = IDX.clasificaciones[T] ? IDX.clasificaciones[T].municipios_ha.slice(0, 10) : [];
+  tops.forEach(function (m) { var b = document.createElement('button'); b.innerHTML = esc(m.municipio) + ' <span>' + fmt(m.ha) + ' ha</span>'; b.onclick = function () { elegirMun(m.ine); }; $('top').appendChild(b); });
+}
+
 function iniciar(idx) {
   IDX = idx;
   Object.keys(IDX.municipios).forEach(function (ine) {
@@ -343,12 +368,8 @@ function iniciar(idx) {
   orden.forEach(function (b) { $('per').appendChild(b); });
   var tp = parseInt(params.get('t'), 10);
   T = IDX.periodos.indexOf(tp) >= 0 ? tp : (IDX.periodos.indexOf(100) >= 0 ? 100 : IDX.periodos[0]);
-  Object.keys(IDX.provincias).filter(function (s) { return IDX.provincias[s][T]; })
-    .sort(function (a, b) { return IDX.provincias[a].nombre.localeCompare(IDX.provincias[b].nombre, 'es'); })
-    .forEach(function (s) { var o = document.createElement('option'); o.value = s; o.textContent = IDX.provincias[s].nombre; $('sel').appendChild(o); });
   $('sel').onchange = function () { elegirProv(this.value); };
-  var tops = IDX.clasificaciones[T] ? IDX.clasificaciones[T].municipios_ha.slice(0, 10) : [];
-  tops.forEach(function (m) { var b = document.createElement('button'); b.innerHTML = esc(m.municipio) + ' <span>' + fmt(m.ha) + ' ha</span>'; b.onclick = function () { elegirMun(m.ine); }; $('top').appendChild(b); });
+  poblarListas();
   buscador(); pintarPeriodo(); pintarNumeros();
   var m = params.get('m'), p = params.get('p');
   if (m && IDX.nombres[m]) elegirMun(m);
