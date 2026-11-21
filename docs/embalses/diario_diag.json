@@ -1,6 +1,6 @@
 {
  "version": "1.4.0",
- "generado": "2026-11-21T00:46:26+00:00",
+ "generado": "2026-11-21T15:35:53+00:00",
  "fuentes": {
   "duero": {
    "id": "duero",
@@ -11,25 +11,29 @@
    "filas_nuevas": 34,
    "embalses_casados": 32,
    "fecha_dato": "2026-11-21",
-   "segundos": 0.8
+   "segundos": 1.0
   },
   "cataluna": {
    "id": "cataluna",
    "nombre": "Agència Catalana de l'Aigua (datos abiertos de la Generalitat)",
    "url": "https://analisi.transparenciacatalunya.cat/d/gn9e-3qhr",
    "ok": true,
-   "lecturas": 397,
-   "filas_nuevas": 0,
+   "lecturas": 406,
+   "filas_nuevas": 15,
    "embalses_casados": 7,
-   "fecha_dato": "2026-11-20",
-   "segundos": 0.9
+   "fecha_dato": "2026-11-21",
+   "segundos": 0.6
   },
   "guadalquivir": {
    "id": "guadalquivir",
    "nombre": "SAIH de la Confederación Hidrográfica del Guadalquivir",
    "url": "https://www.chguadalquivir.es/saih/",
-   "ok": false,
-   "error": "HTTPError: 404 Client Error: Not Found for url: https://www.chguadalquivir.es/saih/"
+   "ok": true,
+   "lecturas": 69,
+   "filas_nuevas": 69,
+   "embalses_casados": 47,
+   "fecha_dato": "2026-11-21",
+   "segundos": 9.5
   },
   "hidrosur": {
    "id": "hidrosur",
@@ -37,10 +41,10 @@
    "url": "https://www.redhidrosurmedioambiente.es/saih/informe/embalses",
    "ok": true,
    "lecturas": 28,
-   "filas_nuevas": 0,
+   "filas_nuevas": 28,
    "embalses_casados": 27,
-   "fecha_dato": "2026-11-20",
-   "segundos": 1.6
+   "fecha_dato": "2026-11-21",
+   "segundos": 1.2
   },
   "segura": {
    "id": "segura",
@@ -51,7 +55,7 @@
    "filas_nuevas": 0,
    "embalses_casados": 5,
    "fecha_dato": "2026-11-19",
-   "segundos": 1.7
+   "segundos": 1.9
   },
   "galicia": {
    "id": "galicia",
@@ -62,7 +66,7 @@
    "filas_nuevas": 0,
    "embalses_casados": 11,
    "fecha_dato": "2026-11-20",
-   "segundos": 0.7
+   "segundos": 0.9
   },
   "minosil": {
    "id": "minosil",
@@ -73,7 +77,7 @@
    "filas_nuevas": 19,
    "embalses_casados": 18,
    "fecha_dato": "2026-11-21",
-   "segundos": 10.6
+   "segundos": 10.2
   },
   "jucar": {
    "id": "jucar",
@@ -113,11 +117,23 @@
   },
   {
    "fuente": "cataluna",
-   "nombre": "Embassament de Siurana (Cornudella de Montsant)"
+   "nombre": "Embassament de Foix (Castellet i la Gornal)"
   },
   {
    "fuente": "cataluna",
-   "nombre": "Embassament de Foix (Castellet i la Gornal)"
+   "nombre": "Embassament de Siurana (Cornudella de Montsant)"
+  },
+  {
+   "fuente": "guadalquivir",
+   "nombre": "DAÑADOR (JA)"
+  },
+  {
+   "fuente": "guadalquivir",
+   "nombre": "GUADANUÑO (CO)"
+  },
+  {
+   "fuente": "guadalquivir",
+   "nombre": "E53 Peñaflor"
   },
   {
    "fuente": "hidrosur",
@@ -257,6 +273,74 @@
    "Embassament de la Baells (Cercs)": "LA BAELLS",
    "Embassament de la Llosa del Cavall (Navès)": "LA LLOSA DEL CAVALL"
   },
+  "guadalquivir": {
+   "AGRIO (SE)": "AGRIO (AZNALCOLLAR)",
+   "AGUASCEBAS (JA)": "AGUASCEBAS",
+   "ARACENA (HU)": "ARACENA",
+   "ARENOSO (CO)": "ARENOSO",
+   "BEMBÉZAR (CO)": "BEMBEZAR",
+   "BERMEJALES (GR)": "BERMEJALES",
+   "BREÑA (CO)": "BRENA II LA",
+   "CALA (SE)": "CALA",
+   "CANALES (GR)": "CANALES",
+   "COLOMERA (GR)": "COLOMERA",
+   "CUBILLAS (GR)": "CUBILLAS",
+   "E01 El Tranco de Beas (JA)": "TRANCO DE BEAS",
+   "E04 El Portillo (GR)": "EL PORTILLO",
+   "E06 Negratín (GR)": "NEGRATIN",
+   "E08 Siles (JA)": "SILES",
+   "E13 Guadalén (JA)": "GUADALEN",
+   "E14 La Fernandina (JA)": "FERNANDINA LA",
+   "E15 Guadalmena (JA)": "GUADALMENA",
+   "E16 Giribaile (JA)": "GIRIBAILE",
+   "E23 Jándula (JA)": "JANDULA",
+   "E26 Yeguas (CO)": "YEGUAS",
+   "E28 Arenoso (CO)": "ARENOSO",
+   "E30 San Rafael Navallana (CO)": "SAN RAFAEL DE NAVALLANA",
+   "E32 Vadomojón (CO)": "VADOMOJON",
+   "E34 Puente Nuevo (CO)": "PUENTE NUEVO",
+   "E36 La Breña II (CO)": "BRENA II LA",
+   "E48 Iznájar (CO)": "IZNAJAR",
+   "E54 José Torán (SE)": "JOSE TORAN",
+   "E55 La Puebla de Cazalla (SE)": "PUEBLA DE CAZALLA",
+   "E68 La Torre del Águila (SE)": "TORRE DEL AGUILA",
+   "FERNANDINA (JA)": "FERNANDINA LA",
+   "FRANCISCO ABELLÁN (GR)": "FRANCISCO ABELLAN",
+   "FRESNEDA (CR)": "FRESNEDA",
+   "GERGAL (SE)": "GERGAL",
+   "GIRIBAILE (JA)": "GIRIBAILE",
+   "GUADALMELLATO (CO)": "GUADALMELLATO",
+   "GUADALMENA (JA)": "GUADALMENA",
+   "GUADALÉN (JA)": "GUADALEN",
+   "HUESNA (SE)": "HUESNA",
+   "IZNÁJAR (CO)": "IZNAJAR",
+   "JOSÉ TORÁN (SE)": "JOSE TORAN",
+   "JÁNDULA (JA)": "JANDULA",
+   "LA BOLERA (JA)": "BOLERA LA",
+   "LA MINILLA (SE)": "MINILLA LA",
+   "MARTÍN GONZALO (CO)": "MARTIN GONZALO",
+   "MELONARES (SE)": "MELONARES LOS",
+   "MONTORO (CR)": "MONTORO",
+   "NEGRATÍN (GR)": "NEGRATIN",
+   "PINTADO (SE)": "PINTADO EL",
+   "PORTILLO (GR)": "EL PORTILLO",
+   "PUEBLA DE CAZALLA (SE)": "PUEBLA DE CAZALLA",
+   "PUENTE NUEVO (CO)": "PUENTE NUEVO",
+   "QUIEBRAJANO (JA)": "QUIEBRAJANO",
+   "QUÉNTAR (GR)": "QUENTAR",
+   "RETORTILLO (CO)": "RETORTILLO",
+   "RUMBLAR (JA)": "RUMBLAR",
+   "SAN CLEMENTE (GR)": "SAN CLEMENTE",
+   "SAN RAFAEL NAVALLANA (CO)": "SAN RAFAEL DE NAVALLANA",
+   "SIERRA BOYERA (CO)": "SIERRA BOYERA",
+   "SILES (JA)": "SILES",
+   "TORRE DEL ÁGUILA (SE)": "TORRE DEL AGUILA",
+   "TRANCO DE BEAS (JA)": "TRANCO DE BEAS",
+   "VADOMOJÓN (CO)": "VADOMOJON",
+   "VÍBORAS (JA)": "VIBORAS",
+   "YEGUAS (CO)": "YEGUAS",
+   "ZUFRE (HU)": "ZUFRE"
+  },
   "hidrosur": {
    "16 EMBALSE DE LA CONCEPCIÓN": "CONCEPCION",
    "19 EMBALSE DE CASASOLA": "CASASOLA",
@@ -390,7 +474,7 @@
    "nombre": "Almendra",
    "fuente": "duero",
    "fecha_dato": "2026-11-21",
-   "volumen_hm3": 1.07,
+   "volumen_hm3": 1.06,
    "vol_boletin_hm3": 1063.0,
    "capacidad_hm3": 2649.0
   }
@@ -398,7 +482,43 @@
  "fichas_con_diario": 189,
  "extra": {
   "guadalquivir_parte": {
-   "error": "HTTPError: 404 Client Error: Not Found for url: https://www.chguadalquivir.es/saih/Informes.aspx"
+   "fecha": "2026-11-21",
+   "hora": "08:00",
+   "lineas": 136,
+   "lecturas": 49,
+   "filas_que_no_cuadran": [],
+   "muestra": [
+    "35 GERGAL (SE) 45,510 35,041 24,983 71,30 0,035 0,135 0,002 0,0 A=0,121 E=0,014",
+    "36 TORRE DEL ÁGUILA (SE) (*) 44,244 48,160 7,482 15,54 0,000 (3) 0,000 0,004 0,0",
+    "37 AGRIO (SE) 96,340 20,344 17,558 86,30 0,050 0,005 0,003 0,0 DF=0,005",
+    "38 SAN CLEMENTE (GR) 1026,659 117,043 19,831 16,94 0,046 0,051 0,002 0,0 DF=0,006",
+    "39 PORTILLO (GR) (*) 913,303 31,336 28,338 90,43 0,173 0,093 0,002 0,0 E=0,070",
+    "40 LA BOLERA (JA) 956,069 53,891 21,121 39,19 0,046 0,046 0,002 0,0 TM=0,012 A=0,009 R=0,003",
+    "41 NEGRATÍN (GR) (*) 625,594 571,044 328,556 57,54 0,027 0,200 0,025 0,0 C=0,029 TM=0,115 T(R,A)=0,114",
+    "42 FRANCISCO ABELLÁN (GR) 936,818 58,007 25,568 44,08 0,042 0,035 0,002 0,0 DF=0,027",
+    "43 COLOMERA (GR) 808,147 40,181 31,159 77,55 0,013 0,003 0,003 0,0 TM=0,002 R=0,013 E=0,004",
+    "44 CUBILLAS (GR) 638,337 13,532 8,235 60,86 0,041 0,022 0,001 0,0 TM=0,003 R=0,005",
+    "45 QUÉNTAR (GR) 969,249 13,526 0,593 4,39 0,050 0,094 0,000 0,0 TM=0,066",
+    "46 CANALES (GR) 948,593 69,100 56,044 81,11 0,149 0,098 0,002 0,0 C=0,072 TM=0,077",
+    "47 BERMEJALES (GR) 822,686 91,011 61,563 67,64 0,036 0,010 0,007 0,0 E=0,003",
+    "48 FRESNEDA (CR) 715,069 18,669 14,567 78,03 0,004 0,005 0,003 0,0 A=0,004 E=0,001",
+    "49 MONTORO (CR) 563,029 105,373 90,922 86,29 0,000 (3) 0,059 0,001 0,0 TM=0,044 A=0,003 E=0,008",
+    "TOTAL CUENCA GUADALQUIVIR 8.031,573 5.557,857 69,20 3,460 2,317 0,381",
+    "TOTAL S.R.G. 5.647,010 3.915,389 69,34 2,352 1,202 0,232",
+    "(1)Fallo en un sensor.",
+    "(2)Falta algún dato geométrico.",
+    "(3)Aportación Negativa por ajuste de cota.",
+    "(4)Resguardo Superado.",
+    "(#)Fallo en nivel Página: 2 de 2",
+    "OTROS EMBALSES DE INTERÉS",
+    "COTA CAPAC. VOLUMEN EMBALSADO DESEMBALSE en 24 h. LLUVIA en 24 h OBSERVACIONES",
+    "m.s.n.m. hm3 hm3 % S/CAP. hm3 l/m2",
+    "ENCINAREJO (JA) 277,740 15,210 13,063 85,88 0,009 0,0 DF=0,009",
+    "HORNACHUELOS (CO) 96,587 11,771 11,554 98,16 0,000 0,0 A=0,001",
+    "DER. RETORTILLO (CO) 89,073 3,409 3,021 88,63 0,062 0,0 A=0,062",
+    "AFOROS EN RÍO Y CENTRALES",
+    "FLUYENTES"
+   ]
   }
  },
  "sin_slug_de_ficha": []
