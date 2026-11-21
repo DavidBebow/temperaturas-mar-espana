@@ -1,12 +1,12 @@
-# Garrucha (Almería) alcanzó el 18 de noviembre 30,5 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
+# Garrucha (Almería) alcanzó el 18 de noviembre 30,8 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de Garrucha, a 28 m, máxima de 30,5 °C el 18 de noviembre (entre las 15:00 y las 16:00, hora local) · récord anterior de noviembre en la estación: 28,6 °C (15 de noviembre de 2009) · récord absoluto de la estación: 42,6 °C (23 de julio de 2009) · 24 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de Garrucha, a 28 m, máxima de 30,8 °C el 18 de noviembre (hora de la máxima: 15:03) · récord anterior de noviembre en la estación: 28,6 °C (15 de noviembre de 2009) · récord absoluto de la estación: 42,6 °C (23 de julio de 2009) · valor climatológico diario validado por AEMET: 30,8 °C  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Garrucha (Almería)  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Supera el récord anterior en 1,9 °C.
+- Supera el récord anterior en 2,2 °C.
 - La tabla de valores extremos de la estación recoge récords al menos desde 2009.
 
 ## Fuente y método
@@ -15,7 +15,7 @@
 - **Método:** Máxima diaria de la estación (día de 0 a 24 h UTC) obtenida de la observación horaria que publica AEMET OpenData (campo «tamax», extremo de cada hora), comparada con los valores climatológicos extremos mensuales y absolutos que AEMET publica para esa estación (tabla consultada el 9 de noviembre de 2026).
 
 ## Límites (decirlos antes de que los descubran)
-- Observación en tiempo real, sin validar: AEMET revisa el dato en 2-4 días y puede corregirlo. El observatorio vuelve a comprobarlo con el valor validado y marca el hallazgo como confirmado o lo retira.
+- Confirmado con el valor climatológico diario validado por AEMET (30,8 °C el 18 de noviembre).
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 9 de noviembre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2009.

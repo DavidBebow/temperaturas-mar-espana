@@ -1,6 +1,6 @@
-# La Mola, Maó (Illes Balears) alcanzó el 18 de noviembre al menos 25,6 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
+# La Mola, Maó (Illes Balears) alcanzó el 18 de noviembre 25,6 °C, la temperatura más alta en un mes de noviembre desde que hay registros en su estación de AEMET
 
-**Dato:** Medido por AEMET en su estación de La Mola, Maó, a 78 m, máxima de 25,6 °C el 18 de noviembre (entre las 13:00 y las 14:00, hora local) · récord anterior de noviembre en la estación: 25 °C (12 de noviembre de 2023) · récord absoluto de la estación: 37,7 °C (8 de julio de 2026) · 23 de 24 horas del día con observación  
+**Dato:** Medido por AEMET en su estación de La Mola, Maó, a 78 m, máxima de 25,6 °C el 18 de noviembre (hora de la máxima: 12:10) · récord anterior de noviembre en la estación: 25 °C (12 de noviembre de 2023) · récord absoluto de la estación: 37,7 °C (8 de julio de 2026) · valor climatológico diario validado por AEMET: 25,6 °C  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** La Mola, Maó (Illes Balears)  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -15,11 +15,10 @@
 - **Método:** Máxima diaria de la estación (día de 0 a 24 h UTC) obtenida de la observación horaria que publica AEMET OpenData (campo «tamax», extremo de cada hora), comparada con los valores climatológicos extremos mensuales y absolutos que AEMET publica para esa estación (tabla consultada el 14 de noviembre de 2026).
 
 ## Límites (decirlos antes de que los descubran)
-- Observación en tiempo real, sin validar: AEMET revisa el dato en 2-4 días y puede corregirlo. El observatorio vuelve a comprobarlo con el valor validado y marca el hallazgo como confirmado o lo retira.
+- Confirmado con el valor climatológico diario validado por AEMET (25,6 °C el 18 de noviembre).
 - Récord de la estación, no de la ciudad ni de la provincia: otras estaciones de AEMET de la zona pueden tener valores distintos.
 - El récord anterior es el que figuraba en la tabla de valores extremos de AEMET OpenData el 14 de noviembre de 2026; AEMET la actualiza con retraso.
 - OpenData no publica el año en que empieza la serie de la estación; sus récords se remontan al menos a 2010.
-- Al día le faltan 1 horas de observación en OpenData: la máxima real pudo ser mayor (citar «al menos»).
 - Serie corta: la estación tiene menos de 20 años de extremos conocidos.
 
 ## Enlaces
