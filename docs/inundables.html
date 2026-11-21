@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de zonas inundables en España por periodo de retorno · Calentamiento Global</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{--bg:#eef3f7;--ink:#0b2030;--soft:#5b7088;--line:rgba(10,40,70,.12);--panel:rgba(255,255,255,.93);--accent:#0b6dc0;--deep:#0b3d91}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  #map{position:absolute;inset:0;z-index:1}
+  .leaflet-container{background:#dfe8ee;font-family:inherit}
+  .leaflet-control-attribution{background:rgba(255,255,255,.75)!important;font-size:10px!important}
+  details.box{position:absolute;z-index:1000;background:var(--panel);border:1px solid var(--line);border-radius:18px;backdrop-filter:blur(18px) saturate(140%);box-shadow:0 18px 50px rgba(10,40,70,.14)}
+  details.box>summary{list-style:none;cursor:pointer;padding:10px 16px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);font-weight:700;display:flex;justify-content:space-between;gap:10px}
+  details.box>summary::-webkit-details-marker{display:none}
+  details.box>summary::after{content:"▾";font-size:12px}
+  details.box[open]>summary::after{content:"▴"}
+  #panel{top:16px;left:56px;width:318px;max-height:calc(100% - 200px);overflow:auto}
+  #side{top:16px;right:16px;width:250px;max-height:calc(100% - 100px);overflow:auto}
+  .in{padding:0 18px 16px}
+  h1{font-size:18px;line-height:1.2;margin:2px 0 10px;letter-spacing:-.01em}
+  h1 b{color:var(--accent)}
+  h2{font-size:16px;line-height:1.25;margin:2px 0 4px;letter-spacing:-.01em}
+  h2 small{font-weight:500;color:var(--soft);font-size:12px;margin-left:4px}
+  .k{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);font-weight:700;margin:12px 0 5px}
+  .per{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:5px;margin:2px 0 10px}
+  .per button{font:inherit;font-size:12.5px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:6px 0;cursor:pointer}
+  .per button[aria-pressed=true]{background:var(--deep);border-color:var(--deep);color:#fff}
+  .per button:disabled{opacity:.35;cursor:default}
+  .big{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--deep)}
+  .big small{font-size:15px;font-weight:700}
+  .scn{font-size:12.5px;color:var(--soft);line-height:1.4;margin:4px 0 12px}
+  .nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;border-top:1px solid var(--line);padding-top:10px}
+  .nums div{font-size:10.5px;color:var(--soft);line-height:1.25}
+  .nums b{display:block;font-size:17px;color:var(--ink);letter-spacing:-.01em}
+  .frase{font-size:13px;line-height:1.45;margin:6px 0 8px}
+  .vacio{font-size:13px;line-height:1.45;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin:8px 0}
+  table.t{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+  table.t th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);text-align:right;font-weight:700;padding:2px 0}
+  table.t th:first-child,table.t td:first-child{text-align:left}
+  table.t td{padding:3px 0;text-align:right;border-top:1px solid var(--line)}
+  table.t tr.on td{font-weight:700;color:var(--deep)}
+  ul.c{list-style:none;margin:0;padding:0;font-size:12.5px}
+  ul.c li{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid var(--line)}
+  ul.c li span{color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .mas{font-size:11.5px;color:var(--soft);margin-top:4px}
+  .cerrar{border:0;background:transparent;color:var(--accent);font:inherit;font-size:12px;cursor:pointer;padding:0;margin-top:8px}
+  #buscar{width:100%;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;color:var(--ink)}
+  #res{margin-top:4px}
+  #sel{width:100%;font:inherit;font-size:13px;border:1px solid var(--line);border-radius:10px;padding:7px 8px;background:#fff;color:var(--ink)}
+  .side-b button,#res button{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;border:0;background:transparent;font:inherit;font-size:12.5px;color:var(--ink);padding:6px;border-radius:8px;cursor:pointer}
+  .side-b button span,#res button span{color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .side-b button:hover,#res button:hover{background:rgba(11,109,192,.1);color:var(--accent)}
+  #cargando{position:absolute;z-index:1000;left:50%;top:14px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:11.5px;color:var(--soft);display:none}
+  .note{position:absolute;bottom:18px;left:16px;z-index:1000;max-width:430px;font-size:10.5px;line-height:1.45;color:var(--soft);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 11px;backdrop-filter:blur(10px)}
+  .note a{color:var(--accent)}
+  .leaflet-popup-content{font-size:12.5px;line-height:1.45;margin:12px 14px}
+  .leaflet-popup-content h3{margin:0 0 6px;font-size:15px;letter-spacing:-.01em}
+  .leaflet-popup-content table{border-collapse:collapse;width:100%}
+  .leaflet-popup-content td{padding:2px 0;vertical-align:top}
+  .leaflet-popup-content td:first-child{color:var(--soft);padding-right:12px;white-space:nowrap}
+  .leaflet-popup-content td:last-child{font-weight:600;text-align:right}
+  .leaflet-popup-content .lk{display:inline-block;margin-top:6px;color:var(--accent);cursor:pointer;font-size:12px}
+  @media(max-width:760px){
+    #panel{top:10px;left:10px;width:calc(100% - 20px);max-height:68%}
+    #side{top:auto;bottom:62px;right:10px;left:10px;width:auto;max-height:55%}
+    .note{left:10px;right:10px;bottom:10px;max-width:none;font-size:9.5px;padding:6px 9px}
+    .leaflet-control-zoom{display:none}
+    .big{font-size:30px}
+    #cargando{top:auto;bottom:112px}
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="cargando">Cargando…</div>
+
+<details class="box" id="panel" open>
+  <summary><span id="sum">Zonas inundables · periodo de retorno</span></summary>
+  <div class="in">
+    <h1 id="titulo">Zonas inundables <b>en España</b></h1>
+    <div class="per" id="per" role="group" aria-label="Periodo de retorno"></div>
+    <div class="big" id="big">–</div>
+    <div class="scn" id="scn"></div>
+    <div class="nums">
+      <div><b id="n-ram">–</b>ríos y ramblas con estudio</div>
+      <div><b id="n-km">–</b>km de cauce estudiado</div>
+      <div><b id="n-ha">–</b>hectáreas inundables</div>
+    </div>
+    <div id="mun"></div>
+  </div>
+</details>
+
+<details class="box" id="side" open>
+  <summary><span>Buscar y navegar</span></summary>
+  <div class="in side-b">
+    <input id="buscar" type="search" placeholder="Busca un municipio" autocomplete="off" aria-label="Buscar municipio">
+    <div id="res"></div>
+    <div class="k">Provincia</div>
+    <select id="sel" aria-label="Provincia"><option value="">Toda España</option></select>
+    <div class="k">Más hectáreas inundables</div>
+    <div id="top"></div>
+  </div>
+</details>
+
+<div class="note" id="nota">Cargando datos…</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+'use strict';
+var BASE = 'https://davidbebow.github.io/calentamientoglobal-inundables/';
+var VISOR = 'https://gis.miteco.gob.es/web/snczi/';
+var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+var COLOR = {10:'#2a9df4', 50:'#0b6dc0', 100:'#0b4aa8', 500:'#5b3fb0'};
+var ZOOM_DETALLE = 11, MAX_DETALLE = 40;
+var $ = function (id) { return document.getElementById(id); };
+var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+function fmt(n, d) {
+  d = d || 0;
+  var s = Math.abs(n).toFixed(d), p = s.split('.'), ent = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (n < 0 ? '-' : '') + ent + (p[1] ? ',' + p[1] : '');
+}
+function fecha(iso) { var a = iso.split('-'); return MESES[+a[1] - 1] + ' de ' + a[0]; }
+function fechaAp(s) { if (!s) return 'sin fecha'; var a = s.split('-'); return MESES[+a[1] - 1] + ' de ' + a[0]; }
+function norm(s) { return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+function cap(s) { return s.split('-').map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' '); }
+
+var params = new URLSearchParams(window.location.search);
+var IDX = null, T = 100, provBox = {}, sel = null, selProv = null, pend = 0;
+var cache = { prov: {}, mun: {}, ficha: {} };
+var grupoOv = L.layerGroup(), grupoDe = L.layerGroup();
+
+var map = L.map('map', { minZoom: 5, maxZoom: 17, center: [40.2, -3.7], zoom: 6, zoomControl: true });
+L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',
+  { attribution: '&copy; Instituto Geográfico Nacional · Zonas inundables: &copy; MITECO (SNCZI)', maxZoom: 19 }).addTo(map);
+map.createPane('labels'); map.getPane('labels').style.zIndex = 650; map.getPane('labels').style.pointerEvents = 'none';
+L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBaseTodo-nofondo&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
+  { opacity: .95, maxZoom: 19, pane: 'labels' }).addTo(map);
+var renderer = L.canvas({ padding: .3 });
+grupoOv.addTo(map); grupoDe.addTo(map);
+
+function estilo() { return { color: '#0b3d91', weight: .6, opacity: .7, fillColor: COLOR[T] || '#0b6dc0', fillOpacity: .38 }; }
+
+function probAnual(t) { var p = 100 / t; return fmt(p, p < 1 ? 1 : 0) + ' %'; }
+function en30(t) { return Math.round(100 * (1 - Math.pow(1 - 1 / t, 30))); }
+
+function contenidoPopup(p, ine) {
+  var q = (typeof p.q === 'number') ? fmt(p.q, p.q < 10 ? 1 : 0) + ' m³/s' : 'sin dato';
+  var h = '<h3>' + esc(p.rio || 'Cauce sin nombre') + '</h3><table>'
+    + '<tr><td>Caudal de la avenida</td><td>' + q + '</td></tr>';
+  if (p.km != null) h += '<tr><td>Tramo estudiado</td><td>' + fmt(p.km, 1) + ' km</td></tr>';
+  if (p.ha != null) h += '<tr><td>Superficie en el municipio</td><td>' + fmt(p.ha, p.ha < 10 ? 1 : 0) + ' ha</td></tr>';
+  if (p.rg) h += '<tr><td>Régimen</td><td>' + (p.rg === 'a' ? 'alterado por embalses' : 'natural') + '</td></tr>';
+  if (p.km != null) h += '<tr><td>Estudio aprobado</td><td>' + fechaAp(p.ap) + '</td></tr>';
+  if (p.gm) h += '<tr><td>Método</td><td>geomorfológico</td></tr>';
+  h += '<tr><td>Probabilidad anual</td><td>' + probAnual(T) + '</td></tr></table>';
+  if (ine && IDX.nombres[ine]) h += '<span class="lk" data-ine="' + ine + '">Cifras de ' + esc(IDX.nombres[ine][0]) + ' →</span>';
+  else h += '<div style="margin-top:6px;color:#5b7088;font-size:11.5px">Acerca el mapa para ver el detalle por municipio.</div>';
+  return h;
+}
+
+function capa(geo, ine) {
+  return L.geoJSON(geo, {
+    renderer: renderer, style: estilo,
+    onEachFeature: function (f, l) {
+      l.on('click', function (e) { L.popup({ maxWidth: 280 }).setLatLng(e.latlng).setContent(contenidoPopup(f.properties, ine)).openOn(map); });
+      l.on('mouseover', function () { l.setStyle({ fillOpacity: .6, weight: 1.4 }); });
+      l.on('mouseout', function () { l.setStyle(estilo()); });
+    }
+  });
+}
+
+function pedir(url, ok, fail) {
+  pend++; $('cargando').style.display = 'block';
+  fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(ok).catch(function (e) { if (fail) fail(e); })
+    .then(function () { pend--; if (!pend) $('cargando').style.display = 'none'; sync(); });
+}
+function cargarProv(slug) {
+  var k = T + '|' + slug; if (cache.prov[k] !== undefined) return;
+  cache.prov[k] = null;
+  pedir(BASE + 'prov/t' + T + '/' + slug + '.json?v=' + IDX.generado, function (g) { cache.prov[k] = capa(g, null); }, function () { delete cache.prov[k]; });
+}
+function cargarMun(ine) {
+  var k = T + '|' + ine; if (cache.mun[k] !== undefined) return;
+  cache.mun[k] = null;
+  pedir(BASE + 'mun/t' + T + '/' + ine + '.json?v=' + IDX.generado, function (g) { cache.mun[k] = capa(g, ine); }, function () { delete cache.mun[k]; });
+}
+
+function bboxCorta(b, bb) { return !(bb[2] < b.getWest() || bb[0] > b.getEast() || bb[3] < b.getSouth() || bb[1] > b.getNorth()); }
+function provVisibles() {
+  var b = map.getBounds(), c = map.getCenter(), out = [];
+  Object.keys(provBox).forEach(function (s) {
+    if (IDX.provincias[s] && IDX.provincias[s][T] && bboxCorta(b, provBox[s])) out.push(s);
+  });
+  return out;
+}
+function munVisibles() {
+  var b = map.getBounds(), c = map.getCenter(), out = [];
+  Object.keys(IDX.municipios).forEach(function (ine) {
+    var e = IDX.municipios[ine];
+    if (e[5].indexOf(T) >= 0 && bboxCorta(b, e)) out.push([ine, Math.pow((e[0] + e[2]) / 2 - c.lng, 2) + Math.pow((e[1] + e[3]) / 2 - c.lat, 2)]);
+  });
+  out.sort(function (a, b2) { return a[1] - b2[1]; });
+  return out.slice(0, MAX_DETALLE).map(function (x) { return x[0]; });
+}
+
+var ultimoDetalle = [];
+function refrescar() {
+  if (!IDX) return;
+  provVisibles().forEach(cargarProv);
+  if (map.getZoom() >= ZOOM_DETALLE) { ultimoDetalle = munVisibles(); ultimoDetalle.forEach(cargarMun); } else ultimoDetalle = [];
+  sync();
+}
+function sync() {
+  if (!IDX) return;
+  var pv = provVisibles(), detalle = map.getZoom() >= ZOOM_DETALLE;
+  var detOk = detalle && ultimoDetalle.length && ultimoDetalle.every(function (i) { return cache.mun[T + '|' + i]; });
+  grupoDe.clearLayers();
+  if (detalle) ultimoDetalle.forEach(function (i) { var l = cache.mun[T + '|' + i]; if (l) grupoDe.addLayer(l); });
+  grupoOv.clearLayers();
+  if (!detOk) pv.forEach(function (s) { var l = cache.prov[T + '|' + s]; if (l) grupoOv.addLayer(l); });
+}
+map.on('moveend', refrescar);
+
+function pintarNumeros() {
+  var s = selProv && IDX.provincias[selProv] && IDX.provincias[selProv][T];
+  var n = s || IDX.nacional[T];
+  $('n-ram').textContent = fmt(n.cauces); $('n-km').textContent = fmt(n.km); $('n-ha').textContent = fmt(n.ha);
+  $('titulo').innerHTML = selProv ? 'Zonas inundables <b>en ' + esc(IDX.provincias[selProv].nombre) + '</b>' : 'Zonas inundables <b>en España</b>';
+}
+function pintarPeriodo() {
+  var pa = probAnual(T);
+  $('big').innerHTML = pa.replace(' %', ' %') + '<small> cada año</small>';
+  $('scn').innerHTML = 'Es la probabilidad de que el agua ocupe la zona azul en un año cualquiera. En 30 años, la de una hipoteca, son <b>' + en30(T) + ' de cada 100</b>.';
+  Array.prototype.forEach.call($('per').children, function (b) { b.setAttribute('aria-pressed', String(+b.dataset.t === T)); });
+  var f = IDX.fuente.ficheros[T];
+  $('nota').innerHTML = 'La mancha es la zona inundable con periodo de retorno de ' + T + ' años según los estudios oficiales. Donde no hay mancha no hay estudio publicado: no significa que no haya riesgo. Pulsa una zona para ver el cauce, el caudal y la fecha del estudio.<br>'
+    + 'Fuente: ' + esc(IDX.fuente.texto) + ' (fichero de ' + fecha(f.fecha) + '). Geometría simplificada. <b>Cartografía orientativa: para trámites, consulte el <a href="' + VISOR + '" target="_blank" rel="noopener">visor oficial del SNCZI</a>.</b>';
+}
+function fijarPeriodo(t, noUrl) {
+  if (IDX.periodos.indexOf(t) < 0 || t === T) return;
+  T = t; pintarPeriodo(); pintarNumeros(); refrescar(); if (sel) pintarMun(); if (!noUrl) actualizarUrl();
+}
+
+function actualizarUrl() {
+  var p = new URLSearchParams();
+  if (sel) p.set('m', sel); else if (selProv) p.set('p', selProv);
+  if (T !== 100 || sel || selProv) p.set('t', T);
+  try { window.history.replaceState(null, '', p.toString() ? '?' + p.toString() : window.location.pathname); } catch (e) {}
+}
+
+function pintarMun() {
+  var box = $('mun'), ine = sel; if (!ine) { box.innerHTML = ''; $('sum').textContent = 'Zonas inundables · periodo de retorno'; return; }
+  $('sum').textContent = 'Zonas inundables · ' + (IDX.nombres[ine] ? IDX.nombres[ine][0] : ine) + ' · T=' + T;
+  var n = IDX.nombres[ine], nombre = n ? n[0] : ine, pn = n && IDX.provincias[n[1]] ? IDX.provincias[n[1]].nombre : (n ? cap(n[1]) : '');
+  var cab = '<div class="k">Municipio</div><h2>' + esc(nombre) + '<small>' + esc(pn) + '</small></h2>';
+  var e = IDX.municipios[ine];
+  if (!e) {
+    box.innerHTML = cab + '<div class="vacio">Sin estudio de zonas inundables publicado en este municipio. No significa que no haya riesgo.</div><button class="cerrar" id="x">Cerrar municipio</button>';
+    $('x').onclick = cerrarMun; return;
+  }
+  var f = cache.ficha[ine];
+  if (!f) { box.innerHTML = cab + '<div class="vacio">Cargando cifras…</div>'; return; }
+  var h = cab, p = f.periodos[T];
+  if (p) h += '<p class="frase">' + esc(p.frase) + '</p>';
+  else h += '<div class="vacio">Sin mancha publicada para el periodo de ' + T + ' años en este municipio.</div>';
+  h += '<table class="t"><tr><th>Periodo</th><th>Hectáreas</th><th>% del término</th></tr>';
+  IDX.periodos.forEach(function (t) {
+    var q = f.periodos[t];
+    h += '<tr' + (t === T ? ' class="on"' : '') + '><td>' + t + ' años</td><td>' + (q ? fmt(q.ha, q.ha < 10 ? 1 : 0) : 'sin mancha') + '</td><td>' + (q ? (q.pct < 0.1 ? 'menos de 0,1 %' : fmt(q.pct, 1) + ' %') : '') + '</td></tr>';
+  });
+  h += '</table>';
+  if (p && p.cauces.length) {
+    h += '<div class="k">Cauces con estudio (' + p.n_cauces + ')</div><ul class="c">';
+    p.cauces.slice(0, 12).forEach(function (c) { h += '<li>' + esc(c.rio) + '<span>' + (c.q ? fmt(c.q, c.q < 10 ? 1 : 0) + ' m³/s' : 'sin dato') + '</span></li>'; });
+    h += '</ul>';
+    if (p.n_cauces > 12) h += '<div class="mas">y ' + (p.n_cauces - 12) + ' más</div>';
+  }
+  box.innerHTML = h + '<button class="cerrar" id="x">Cerrar municipio</button>';
+  $('x').onclick = cerrarMun;
+}
+function cerrarMun() { sel = null; pintarMun(); actualizarUrl(); }
+
+function elegirMun(ine, volar) {
+  if (!IDX.nombres[ine]) return;
+  sel = ine; var n = IDX.nombres[ine];
+  if (IDX.provincias[n[1]]) { selProv = n[1]; $('sel').value = n[1]; }
+  pintarNumeros(); pintarMun(); actualizarUrl();
+  if (window.innerWidth >= 760) $('panel').open = true;
+  var e = IDX.municipios[ine];
+  if (volar !== false) {
+    if (e) map.flyToBounds([[e[1], e[0]], [e[3], e[2]]], { maxZoom: 14, duration: 1 });
+    else if (n.length > 3) map.flyTo([n[2], n[3]], 12, { duration: 1 });
+    else if (provBox[n[1]]) { var b = provBox[n[1]]; map.flyToBounds([[b[1], b[0]], [b[3], b[2]]], { duration: 1 }); }
+  }
+  if (e && !cache.ficha[ine]) {
+    fetch(BASE + 'mun/' + ine + '.json?v=' + IDX.generado).then(function (r) { return r.json(); }).then(function (f) { cache.ficha[ine] = f; if (sel === ine) pintarMun(); });
+  }
+}
+function elegirProv(slug) {
+  selProv = slug || null; sel = null; pintarNumeros(); pintarMun(); actualizarUrl();
+  if (slug && provBox[slug]) { var b = provBox[slug]; map.flyToBounds([[b[1], b[0]], [b[3], b[2]]], { duration: 1 }); }
+  else if (!slug) map.flyTo([40.2, -3.7], 6, { duration: 1 });
+}
+
+map.on('popupopen', function (ev) {
+  var el = ev.popup.getElement(), lk = el && el.querySelector('.lk');
+  if (lk) lk.onclick = function () { elegirMun(lk.dataset.ine, false); map.closePopup(); };
+});
+
+function buscador() {
+  var lista = Object.keys(IDX.nombres).map(function (i) { return [i, norm(IDX.nombres[i][0])]; });
+  $('buscar').addEventListener('input', function () {
+    var q = norm(this.value.trim()), box = $('res'); box.innerHTML = '';
+    if (q.length < 2) return;
+    var a = [], b = [];
+    lista.forEach(function (x) { var p = x[1].indexOf(q); if (p === 0) a.push(x[0]); else if (p > 0) b.push(x[0]); });
+    a.concat(b).slice(0, 8).forEach(function (i) {
+      var n = IDX.nombres[i], pn = IDX.provincias[n[1]] ? IDX.provincias[n[1]].nombre : cap(n[1]);
+      var bt = document.createElement('button');
+      bt.innerHTML = esc(n[0]) + ' <span>' + esc(pn) + (IDX.municipios[i] ? '' : ' · sin estudio') + '</span>';
+      bt.onclick = function () { $('buscar').value = ''; box.innerHTML = ''; elegirMun(i); };
+      box.appendChild(bt);
+    });
+  });
+}
+
+function iniciar(idx) {
+  IDX = idx;
+  Object.keys(IDX.municipios).forEach(function (ine) {
+    var e = IDX.municipios[ine], n = IDX.nombres[ine]; if (!n) return;
+    var b = provBox[n[1]]; provBox[n[1]] = b ? [Math.min(b[0], e[0]), Math.min(b[1], e[1]), Math.max(b[2], e[2]), Math.max(b[3], e[3])] : e.slice(0, 4);
+  });
+  IDX.periodos.forEach(function (t) {
+    var b = document.createElement('button'); b.textContent = 'T=' + t; b.dataset.t = t; b.title = 'Avenida de ' + t + ' años';
+    b.onclick = function () { fijarPeriodo(t); }; $('per').appendChild(b);
+  });
+  [10, 50, 100, 500].forEach(function (t) {
+    if (IDX.periodos.indexOf(t) < 0) { var b = document.createElement('button'); b.textContent = 'T=' + t; b.disabled = true; b.title = 'Periodo aún no disponible'; $('per').appendChild(b); }
+  });
+  var orden = [].slice.call($('per').children).sort(function (a, b) { return parseInt(a.textContent.slice(2)) - parseInt(b.textContent.slice(2)); });
+  orden.forEach(function (b) { $('per').appendChild(b); });
+  var tp = parseInt(params.get('t'), 10);
+  T = IDX.periodos.indexOf(tp) >= 0 ? tp : (IDX.periodos.indexOf(100) >= 0 ? 100 : IDX.periodos[0]);
+  Object.keys(IDX.provincias).filter(function (s) { return IDX.provincias[s][T]; })
+    .sort(function (a, b) { return IDX.provincias[a].nombre.localeCompare(IDX.provincias[b].nombre, 'es'); })
+    .forEach(function (s) { var o = document.createElement('option'); o.value = s; o.textContent = IDX.provincias[s].nombre; $('sel').appendChild(o); });
+  $('sel').onchange = function () { elegirProv(this.value); };
+  var tops = IDX.clasificaciones[T] ? IDX.clasificaciones[T].municipios_ha.slice(0, 10) : [];
+  tops.forEach(function (m) { var b = document.createElement('button'); b.innerHTML = esc(m.municipio) + ' <span>' + fmt(m.ha) + ' ha</span>'; b.onclick = function () { elegirMun(m.ine); }; $('top').appendChild(b); });
+  buscador(); pintarPeriodo(); pintarNumeros();
+  var m = params.get('m'), p = params.get('p');
+  if (m && IDX.nombres[m]) elegirMun(m);
+  else if (p && IDX.provincias[p]) { $('sel').value = p; elegirProv(p); }
+  else refrescar();
+}
+
+if (window.innerWidth < 760) { $('panel').open = false; $('side').open = false; }
+fetch(BASE + 'index.json?_=' + Date.now()).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(iniciar)
+  .catch(function () { $('nota').textContent = 'No se han podido cargar los datos de zonas inundables. Inténtalo de nuevo en unos minutos.'; });
+})();
+</script>
+<script src="https://davidbebow.github.io/temperaturas-mar-espana/reutilizar/reutilizar.js" defer></script>
+</body>
+</html>
