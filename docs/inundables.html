@@ -136,9 +136,6 @@ var grupoOv = L.layerGroup(), grupoDe = L.layerGroup();
 var map = L.map('map', { minZoom: 5, maxZoom: 17, center: [40.2, -3.7], zoom: 6, zoomControl: true });
 L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBase-gris&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix={z}&TileCol={x}&TileRow={y}',
   { attribution: '&copy; Instituto Geográfico Nacional · Zonas inundables: &copy; MITECO (SNCZI)', maxZoom: 19 }).addTo(map);
-map.createPane('labels'); map.getPane('labels').style.zIndex = 650; map.getPane('labels').style.pointerEvents = 'none';
-L.tileLayer('https://www.ign.es/wmts/ign-base?layer=IGNBaseTodo-nofondo&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/png&TileMatrix={z}&TileCol={x}&TileRow={y}',
-  { opacity: .95, maxZoom: 19, pane: 'labels' }).addTo(map);
 var renderer = L.canvas({ padding: .3 });
 grupoOv.addTo(map); grupoDe.addTo(map);
 
