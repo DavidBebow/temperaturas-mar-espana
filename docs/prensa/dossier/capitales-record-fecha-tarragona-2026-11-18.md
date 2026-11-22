@@ -1,18 +1,18 @@
 # Tarragona registró el 18 de noviembre una mínima de 16 °C, la más alta para esa fecha en la serie que empieza en 1940
 
-**Dato:** AEMET, estación de Tarragona: 16 °C · reanálisis ERA5 en la celda de Tarragona: 17,7 °C · récord anterior de la serie para la fecha: 14,7 °C (1947)  
+**Dato:** AEMET, estación de Tarragona: 16 °C · reanálisis ERA5 en la celda de Tarragona: 17,8 °C · récord anterior de la serie para la fecha: 14,7 °C (1947)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Tarragona  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
 - Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).
-- Rareza: Una noche así ocurría una vez cada 113 años en 1961-1990 y ahora una vez cada 31 años: es 3,6 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).
+- Rareza: Una noche así ocurría una vez cada 132 años en 1961-1990 y ahora una vez cada 35 años: es 3,8 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).
 
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026
 - **Serie desde:** 1940
-- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Tarragona, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,1 °C, mínimas -1,4 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
+- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Tarragona, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0 °C, mínimas -1,5 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.

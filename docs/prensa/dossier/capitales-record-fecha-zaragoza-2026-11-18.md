@@ -1,18 +1,18 @@
 # Zaragoza registró el 18 de noviembre una máxima de 23,1 °C, la más alta para esa fecha en la serie que empieza en 1940
 
-**Dato:** AEMET, estación de Zaragoza: 23,1 °C · reanálisis ERA5 en la celda de Zaragoza: 23,7 °C · récord anterior de la serie para la fecha: 22,3 °C (1947)  
+**Dato:** AEMET, estación de Zaragoza: 23,1 °C · reanálisis ERA5 en la celda de Zaragoza: 23,8 °C · récord anterior de la serie para la fecha: 22,3 °C (1947)  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Zaragoza  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
 - Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).
-- Rareza: Un día así ocurría una vez cada 15 años en 1961-1990 y ahora una vez cada 7,9 años: es 1,9 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).
+- Rareza: Un día así ocurría una vez cada 16 años en 1961-1990 y ahora una vez cada 8,2 años: es 1,9 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).
 
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026
 - **Serie desde:** 1940
-- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Zaragoza, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,8 °C, mínimas +0,5 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
+- **Método:** Dato del día tomado del análisis IFS del ECMWF (9 km, Open-Meteo) sobre Zaragoza, corregido del sesgo frente a ERA5 (calibrado con 21 días de solape: sesgo IFS−ERA5 máximas -0,9 °C, mínimas +0,4 °C) y comparado con el récord para esa fecha de la serie ERA5 diaria desde 1940. Solo cuenta como récord si lo superan tanto el valor IFS como el corregido, con 0,3 °C de margen.
 
 ## Límites (decirlos antes de que los descubran)
 - Dato provisional: ERA5 lo consolidará en unos seis días y puede moverlo unas décimas.

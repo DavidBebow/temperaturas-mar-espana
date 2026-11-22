@@ -7,7 +7,7 @@
 
 ## Contexto
 - Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).
-- Rareza: Un día así ocurría una vez cada 6,8 años en 1961-1990 y ahora una vez cada 2,9 años: es 2,3 veces más probable (intervalo 1,1-4,8).
+- Rareza: Un día así ocurría una vez cada 6,6 años en 1961-1990 y ahora una vez cada 2,8 años: es 2,3 veces más probable (intervalo 1,1-4,8).
 
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026

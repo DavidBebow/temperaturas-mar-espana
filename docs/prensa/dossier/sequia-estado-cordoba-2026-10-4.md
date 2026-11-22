@@ -1,4 +1,4 @@
-# Córdoba está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,15, el 93 % de la lluvia normal del año hidrológico, con los embalses al 74.0 %
+# Córdoba está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,15, el 94 % de la lluvia normal del año hidrológico, con los embalses al 74.0 %
 
 **Dato:** Nivel 4 (Sequía extrema); SPI-3 −1,94, SPI-6 −2,15, SPI-12 0,59.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,7 +6,7 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Córdoba: 128.4 mm.
+- Lluvia desde el 1 de octubre en Córdoba: 128.6 mm.
 - Días sin lluvia de 1 mm en la capital: 1.
 - Embalses de la provincia al 74.0 % (hace un año 45.7 %; media de 10 años 31.0 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,59). La sequía meteorológica ha empezado antes de que se note en los pantanos.
 
