@@ -1,6 +1,6 @@
 {
- "generado": "2026-11-21T19:51:40+00:00",
- "duracion_s": 2.42,
+ "generado": "2026-11-22T01:43:12+00:00",
+ "duracion_s": 2.15,
  "comprobaciones": [
   {
    "id": "clave",
@@ -11,23 +11,23 @@
   {
    "id": "titular",
    "descripcion": "El número del titular y del dato es el del campo estructurado",
-   "evaluadas": 57,
+   "evaluadas": 56,
    "fallos": 0
   },
   {
    "id": "hoy",
    "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
-   "evaluadas": 187,
+   "evaluadas": 193,
    "fallos": 1
   },
   {
    "id": "niveles",
    "descripcion": "Las listas por nivel solo contienen elementos de su nivel",
    "evaluadas": 1,
-   "fallos": 1
+   "fallos": 0
   }
  ],
- "n_fallos": 2,
+ "n_fallos": 1,
  "fallos": [
   {
    "comprobacion": "hoy",
@@ -39,25 +39,6 @@
     }
    ],
    "detalle": "dice «hoy» con un dato anterior a ayer"
-  },
-  {
-   "comprobacion": "niveles",
-   "clave": "Avisos amarillos de AEMET",
-   "valores": [
-    {
-     "ruta": "https://calentamientoglobal.es/el-tiempo/",
-     "valor": "A Coruña: #f2c94c"
-    },
-    {
-     "ruta": "https://calentamientoglobal.es/el-tiempo/",
-     "valor": "Ourense: #f2c94c"
-    },
-    {
-     "ruta": "https://calentamientoglobal.es/el-tiempo/",
-     "valor": "Salamanca: #f2c94c"
-    }
-   ],
-   "detalle": "«Avisos amarillos de AEMET» contiene elementos de otro nivel"
   }
  ],
  "bloqueados": [
