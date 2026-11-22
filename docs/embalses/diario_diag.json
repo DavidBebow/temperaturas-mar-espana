@@ -1,6 +1,6 @@
 {
  "version": "1.4.0",
- "generado": "2026-11-21T23:45:53+00:00",
+ "generado": "2026-11-22T15:38:58+00:00",
  "fuentes": {
   "duero": {
    "id": "duero",
@@ -10,30 +10,30 @@
    "lecturas": 36,
    "filas_nuevas": 34,
    "embalses_casados": 32,
-   "fecha_dato": "2026-11-21",
-   "segundos": 0.8
+   "fecha_dato": "2026-11-22",
+   "segundos": 0.5
   },
   "cataluna": {
    "id": "cataluna",
    "nombre": "Agència Catalana de l'Aigua (datos abiertos de la Generalitat)",
    "url": "https://analisi.transparenciacatalunya.cat/d/gn9e-3qhr",
    "ok": true,
-   "lecturas": 397,
-   "filas_nuevas": 0,
+   "lecturas": 406,
+   "filas_nuevas": 13,
    "embalses_casados": 7,
-   "fecha_dato": "2026-11-21",
-   "segundos": 1.2
+   "fecha_dato": "2026-11-22",
+   "segundos": 0.6
   },
   "guadalquivir": {
    "id": "guadalquivir",
    "nombre": "SAIH de la Confederación Hidrográfica del Guadalquivir",
    "url": "https://www.chguadalquivir.es/saih/",
    "ok": true,
-   "lecturas": 52,
-   "filas_nuevas": 52,
-   "embalses_casados": 38,
+   "lecturas": 69,
+   "filas_nuevas": 69,
+   "embalses_casados": 47,
    "fecha_dato": "2026-11-22",
-   "segundos": 8.1
+   "segundos": 9.6
   },
   "hidrosur": {
    "id": "hidrosur",
@@ -41,10 +41,10 @@
    "url": "https://www.redhidrosurmedioambiente.es/saih/informe/embalses",
    "ok": true,
    "lecturas": 28,
-   "filas_nuevas": 0,
+   "filas_nuevas": 28,
    "embalses_casados": 27,
-   "fecha_dato": "2026-11-21",
-   "segundos": 1.6
+   "fecha_dato": "2026-11-22",
+   "segundos": 0.9
   },
   "segura": {
    "id": "segura",
@@ -55,7 +55,7 @@
    "filas_nuevas": 0,
    "embalses_casados": 5,
    "fecha_dato": "2026-11-19",
-   "segundos": 1.8
+   "segundos": 1.0
   },
   "galicia": {
    "id": "galicia",
@@ -66,7 +66,7 @@
    "filas_nuevas": 0,
    "embalses_casados": 11,
    "fecha_dato": "2026-11-20",
-   "segundos": 0.8
+   "segundos": 0.5
   },
   "minosil": {
    "id": "minosil",
@@ -77,7 +77,7 @@
    "filas_nuevas": 19,
    "embalses_casados": 18,
    "fecha_dato": "2026-11-22",
-   "segundos": 7.6
+   "segundos": 7.3
   },
   "jucar": {
    "id": "jucar",
@@ -94,7 +94,7 @@
    "lecturas": 68,
    "filas_nuevas": 68,
    "embalses_casados": 55,
-   "fecha_dato": "2026-11-21",
+   "fecha_dato": "2026-11-22",
    "segundos": 0.0
   }
  },
@@ -117,23 +117,19 @@
   },
   {
    "fuente": "cataluna",
-   "nombre": "Embassament de Foix (Castellet i la Gornal)"
-  },
-  {
-   "fuente": "cataluna",
    "nombre": "Embassament de Siurana (Cornudella de Montsant)"
   },
   {
-   "fuente": "guadalquivir",
-   "nombre": "GUADANUÑO (CO)   1,637"
+   "fuente": "cataluna",
+   "nombre": "Embassament de Foix (Castellet i la Gornal)"
   },
   {
    "fuente": "guadalquivir",
-   "nombre": "BREÑA (CO)     823,400"
+   "nombre": "DAÑADOR (JA)"
   },
   {
    "fuente": "guadalquivir",
-   "nombre": "AGRIO (SE)   20,344"
+   "nombre": "GUADANUÑO (CO)"
   },
   {
    "fuente": "guadalquivir",
@@ -278,13 +274,17 @@
    "Embassament de la Llosa del Cavall (Navès)": "LA LLOSA DEL CAVALL"
   },
   "guadalquivir": {
-   "AGUASCEBAS (JA)   6,374": "AGUASCEBAS",
-   "ARACENA (HU)   128,658": "ARACENA",
-   "BEMBÉZAR (CO)   327,982": "BEMBEZAR",
-   "BERMEJALES (GR)   91,011": "BERMEJALES",
-   "CALA (SE)   58,768": "CALA",
-   "COLOMERA (GR)   40,181": "COLOMERA",
-   "CUBILLAS (GR)   13,532": "CUBILLAS",
+   "AGRIO (SE)": "AGRIO (AZNALCOLLAR)",
+   "AGUASCEBAS (JA)": "AGUASCEBAS",
+   "ARACENA (HU)": "ARACENA",
+   "ARENOSO (CO)": "ARENOSO",
+   "BEMBÉZAR (CO)": "BEMBEZAR",
+   "BERMEJALES (GR)": "BERMEJALES",
+   "BREÑA (CO)": "BRENA II LA",
+   "CALA (SE)": "CALA",
+   "CANALES (GR)": "CANALES",
+   "COLOMERA (GR)": "COLOMERA",
+   "CUBILLAS (GR)": "CUBILLAS",
    "E01 El Tranco de Beas (JA)": "TRANCO DE BEAS",
    "E04 El Portillo (GR)": "EL PORTILLO",
    "E06 Negratín (GR)": "NEGRATIN",
@@ -304,28 +304,42 @@
    "E54 José Torán (SE)": "JOSE TORAN",
    "E55 La Puebla de Cazalla (SE)": "PUEBLA DE CAZALLA",
    "E68 La Torre del Águila (SE)": "TORRE DEL AGUILA",
-   "FERNANDINA (JA)     247,138": "FERNANDINA LA",
-   "FRANCISCO ABELLÁN (GR)   58,007": "FRANCISCO ABELLAN",
-   "GIRIBAILE (JA)     491,143": "GIRIBAILE",
-   "GUADALÉN (JA)     162,548": "GUADALEN",
-   "HUESNA (SE)   134,598": "HUESNA",
-   "JOSÉ TORÁN (SE)     100,911": "JOSE TORAN",
-   "JÁNDULA (JA)     325,071": "JANDULA",
-   "LA BOLERA (JA)   53,891": "BOLERA LA",
-   "LA MINILLA (SE)   54,547": "MINILLA LA",
-   "MONTORO (CR)   105,373": "MONTORO",
-   "PINTADO (SE)   214,596": "PINTADO EL",
-   "PUEBLA DE CAZALLA (SE)     63,087": "PUEBLA DE CAZALLA",
-   "RETORTILLO (CO)   61,142": "RETORTILLO",
-   "RUMBLAR (JA)   140,080": "RUMBLAR",
-   "SAN CLEMENTE (GR)   117,043": "SAN CLEMENTE",
-   "SIERRA BOYERA (CO)   39,476": "SIERRA BOYERA",
-   "SILES (JA)     30,169": "SILES",
-   "TRANCO DE BEAS (JA)     505,731": "TRANCO DE BEAS",
-   "VADOMOJÓN (CO)     145,190": "VADOMOJON",
-   "VÍBORAS (JA)   16,922": "VIBORAS",
-   "YEGUAS (CO)     228,704": "YEGUAS",
-   "ZUFRE (HU)   175,268": "ZUFRE"
+   "FERNANDINA (JA)": "FERNANDINA LA",
+   "FRANCISCO ABELLÁN (GR)": "FRANCISCO ABELLAN",
+   "FRESNEDA (CR)": "FRESNEDA",
+   "GERGAL (SE)": "GERGAL",
+   "GIRIBAILE (JA)": "GIRIBAILE",
+   "GUADALMELLATO (CO)": "GUADALMELLATO",
+   "GUADALMENA (JA)": "GUADALMENA",
+   "GUADALÉN (JA)": "GUADALEN",
+   "HUESNA (SE)": "HUESNA",
+   "IZNÁJAR (CO)": "IZNAJAR",
+   "JOSÉ TORÁN (SE)": "JOSE TORAN",
+   "JÁNDULA (JA)": "JANDULA",
+   "LA BOLERA (JA)": "BOLERA LA",
+   "LA MINILLA (SE)": "MINILLA LA",
+   "MARTÍN GONZALO (CO)": "MARTIN GONZALO",
+   "MELONARES (SE)": "MELONARES LOS",
+   "MONTORO (CR)": "MONTORO",
+   "NEGRATÍN (GR)": "NEGRATIN",
+   "PINTADO (SE)": "PINTADO EL",
+   "PORTILLO (GR)": "EL PORTILLO",
+   "PUEBLA DE CAZALLA (SE)": "PUEBLA DE CAZALLA",
+   "PUENTE NUEVO (CO)": "PUENTE NUEVO",
+   "QUIEBRAJANO (JA)": "QUIEBRAJANO",
+   "QUÉNTAR (GR)": "QUENTAR",
+   "RETORTILLO (CO)": "RETORTILLO",
+   "RUMBLAR (JA)": "RUMBLAR",
+   "SAN CLEMENTE (GR)": "SAN CLEMENTE",
+   "SAN RAFAEL NAVALLANA (CO)": "SAN RAFAEL DE NAVALLANA",
+   "SIERRA BOYERA (CO)": "SIERRA BOYERA",
+   "SILES (JA)": "SILES",
+   "TORRE DEL ÁGUILA (SE)": "TORRE DEL AGUILA",
+   "TRANCO DE BEAS (JA)": "TRANCO DE BEAS",
+   "VADOMOJÓN (CO)": "VADOMOJON",
+   "VÍBORAS (JA)": "VIBORAS",
+   "YEGUAS (CO)": "YEGUAS",
+   "ZUFRE (HU)": "ZUFRE"
   },
   "hidrosur": {
    "16 EMBALSE DE LA CONCEPCIÓN": "CONCEPCION",
@@ -459,209 +473,38 @@
    "clave": "ALMENDRA",
    "nombre": "Almendra",
    "fuente": "duero",
-   "fecha_dato": "2026-11-21",
-   "volumen_hm3": 1.06,
+   "fecha_dato": "2026-11-22",
+   "volumen_hm3": 1.08,
    "vol_boletin_hm3": 1063.0,
    "capacidad_hm3": 2649.0
-  },
-  {
-   "clave": "AGUASCEBAS",
-   "nombre": "Aguascebas",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 3.0,
-   "capacidad_hm3": 6.0
-  },
-  {
-   "clave": "ARACENA",
-   "nombre": "Aracena",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 111.0,
-   "capacidad_hm3": 129.0
-  },
-  {
-   "clave": "BEMBEZAR",
-   "nombre": "Bembézar",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.02,
-   "vol_boletin_hm3": 250.0,
-   "capacidad_hm3": 328.0
-  },
-  {
-   "clave": "BERMEJALES",
-   "nombre": "Bermejales",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 61.0,
-   "capacidad_hm3": 91.0
-  },
-  {
-   "clave": "BOLERA LA",
-   "nombre": "Bolera, La",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.03,
-   "vol_boletin_hm3": 21.0,
-   "capacidad_hm3": 54.0
-  },
-  {
-   "clave": "CALA",
-   "nombre": "Cala",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 28.0,
-   "capacidad_hm3": 59.0
-  },
-  {
-   "clave": "COLOMERA",
-   "nombre": "Colomera",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.0,
-   "vol_boletin_hm3": 31.0,
-   "capacidad_hm3": 40.0
-  },
-  {
-   "clave": "CUBILLAS",
-   "nombre": "Cubillas",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 8.0,
-   "capacidad_hm3": 14.0
-  },
-  {
-   "clave": "FRANCISCO ABELLAN",
-   "nombre": "Francisco Abellán",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.03,
-   "vol_boletin_hm3": 25.0,
-   "capacidad_hm3": 58.0
-  },
-  {
-   "clave": "HUESNA",
-   "nombre": "Huesna",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.04,
-   "vol_boletin_hm3": 93.0,
-   "capacidad_hm3": 135.0
-  },
-  {
-   "clave": "MINILLA LA",
-   "nombre": "Minilla, La",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 30.0,
-   "capacidad_hm3": 58.0
-  },
-  {
-   "clave": "MONTORO",
-   "nombre": "Montoro",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.05,
-   "vol_boletin_hm3": 91.0,
-   "capacidad_hm3": 105.0
-  },
-  {
-   "clave": "PINTADO EL",
-   "nombre": "Pintado, El",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 173.0,
-   "capacidad_hm3": 215.0
-  },
-  {
-   "clave": "RETORTILLO",
-   "nombre": "Retortillo",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 46.0,
-   "capacidad_hm3": 61.0
-  },
-  {
-   "clave": "RUMBLAR",
-   "nombre": "Rumblar",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 79.0,
-   "capacidad_hm3": 140.0
-  },
-  {
-   "clave": "SIERRA BOYERA",
-   "nombre": "Sierra Boyera",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 28.0,
-   "capacidad_hm3": 39.0
-  },
-  {
-   "clave": "VIBORAS",
-   "nombre": "Víboras",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.01,
-   "vol_boletin_hm3": 8.0,
-   "capacidad_hm3": 17.0
-  },
-  {
-   "clave": "ZUFRE",
-   "nombre": "Zufre",
-   "fuente": "guadalquivir",
-   "fecha_dato": "2026-11-22",
-   "volumen_hm3": 0.02,
-   "vol_boletin_hm3": 134.0,
-   "capacidad_hm3": 175.0
   }
  ],
- "fichas_con_diario": 171,
+ "fichas_con_diario": 189,
  "extra": {
   "guadalquivir_parte": {
    "fecha": "2026-11-22",
    "hora": "08:00",
    "lineas": 136,
-   "lecturas": 32,
-   "filas_que_no_cuadran": [
-    "3 GUADALMENA (JA) (*) (1) 344,795 0,00 0,017 0,290 0,0 C=0,291",
-    "21 PUENTE NUEVO (CO) (*) (1) 281,259 0,00 0,106 0,099 0,1 C=0,098 A=0,001",
-    "25 IZNÁJAR (CO) (*) (1) 920,233 0,00 0,288 0,141 0,0 C=0,104 TM=0,036 A=0,036 E=0,001",
-    "35 GERGAL (SE) (1) 35,041 0,00 0,037 0,080 1,5 A=0,071 E=0,009",
-    "39 PORTILLO (GR) (*) (1) 31,336 0,00 0,088 0,062 0,0 E=0,062",
-    "41 NEGRATÍN (GR) (*) (1) 571,044 0,00 0,032 0,149 0,0 C=0,028 TM=0,110 T(R,A)=0,110",
-    "45 QUÉNTAR (GR) (1) 13,526 0,00 0,030 0,063 0,0 TM=0,059",
-    "46 CANALES (GR) (1) 69,100 0,00 0,078 0,082 0,0 C=0,065 TM=0,068"
-   ],
+   "lecturas": 49,
+   "filas_que_no_cuadran": [],
    "muestra": [
-    "35 GERGAL (SE) (1) 35,041 0,00 0,037 0,080 1,5 A=0,071 E=0,009",
-    "36 TORRE DEL ÁGUILA (SE) (*) (1) 48,160 0,00 0,000 (3) 0,000 0,0",
-    "37 AGRIO (SE) (1) 20,344 0,00 0,009 0,004 2,5 DF=0,004",
-    "38 SAN CLEMENTE (GR) (1) 117,043 0,00 0,029 0,034 0,0 DF=0,004",
-    "39 PORTILLO (GR) (*) (1) 31,336 0,00 0,088 0,062 0,0 E=0,062",
-    "40 LA BOLERA (JA) (1) 53,891 0,00 0,030 0,031 0,0 TM=0,008 A=0,006 R=0,002",
-    "41 NEGRATÍN (GR) (*) (1) 571,044 0,00 0,032 0,149 0,0 C=0,028 TM=0,110 T(R,A)=0,110",
-    "42 FRANCISCO ABELLÁN (GR) (1) 58,007 0,00 0,044 0,034 0,0 DF=0,029",
-    "43 COLOMERA (GR) (1) 40,181 0,00 0,007 0,002 0,0 TM=0,001 R=0,009 E=0,003",
-    "44 CUBILLAS (GR) (1) 13,532 0,00 0,038 0,015 0,0 TM=0,002 R=0,004",
-    "45 QUÉNTAR (GR) (1) 13,526 0,00 0,030 0,063 0,0 TM=0,059",
-    "46 CANALES (GR) (1) 69,100 0,00 0,078 0,082 0,0 C=0,065 TM=0,068",
-    "47 BERMEJALES (GR) (1) 91,011 0,00 0,040 0,008 0,0 E=0,004",
-    "48 FRESNEDA (CR) (1) 18,669 0,00 0,000 (3) 0,006 0,3 A=0,005",
-    "49 MONTORO (CR) (1) 105,373 0,00 0,008 0,051 0,5 TM=0,036 A=0,003 E=0,007",
-    "TOTAL CUENCA GUADALQUIVIR 8.031,573 0,000 0,00 2,046 1,669 0,000",
-    "TOTAL S.R.G. 5.647,010 0,000 0,00 1,390 0,894 0,000",
+    "35 GERGAL (SE) 45,470 35,041 24,907 71,08 0,058 0,120 1,5 A=0,106 E=0,014",
+    "36 TORRE DEL ÁGUILA (SE) (*) 44,237 48,160 7,457 15,48 0,000 (3) 0,000 0,0",
+    "37 AGRIO (SE) 96,355 20,344 17,580 86,42 0,016 0,005 2,5 DF=0,005",
+    "38 SAN CLEMENTE (GR) 1026,669 117,043 19,844 16,95 0,029 0,051 0,0 DF=0,006",
+    "39 PORTILLO (GR) (*) 913,339 31,336 28,387 90,59 0,135 0,093 0,0 E=0,093",
+    "40 LA BOLERA (JA) 956,063 53,891 21,111 39,17 0,031 0,046 0,1 TM=0,011 A=0,009 R=0,003",
+    "41 NEGRATÍN (GR) (*) 625,603 571,044 328,714 57,56 0,225 0,209 0,0 C=0,028 TM=0,165 T(R,A)=0,165",
+    "42 FRANCISCO ABELLÁN (GR) 936,833 58,007 25,586 44,11 0,062 0,044 0,0 DF=0,036",
+    "43 COLOMERA (GR) 808,152 40,181 31,170 77,57 0,017 0,003 0,2 TM=0,002 R=0,013 E=0,004",
+    "44 CUBILLAS (GR) 638,365 13,532 8,279 61,18 0,063 0,022 0,0 TM=0,003 R=0,005",
+    "45 QUÉNTAR (GR) 968,453 13,526 0,551 4,07 0,030 0,094 0,0 TM=0,088",
+    "46 CANALES (GR) 948,612 69,100 56,070 81,14 0,078 0,118 0,0 C=0,093 TM=0,098",
+    "47 BERMEJALES (GR) 822,699 91,011 61,616 67,70 0,040 0,012 0,0 E=0,005",
+    "48 FRESNEDA (CR) 715,062 18,669 14,553 77,95 0,000 (3) 0,009 0,5 A=0,008",
+    "49 MONTORO (CR) 563,021 105,373 90,880 86,25 0,023 0,074 0,6 TM=0,054 A=0,009 E=0,010",
+    "TOTAL CUENCA GUADALQUIVIR 8.031,573 5.559,613 69,22 3,481 2,190 0,000",
+    "TOTAL S.R.G. 5.647,010 3.917,123 69,37 2,427 1,041 0,000",
     "(1)Fallo en un sensor.",
     "(2)Falta algún dato geométrico.",
     "(3)Aportación Negativa por ajuste de cota.",
@@ -670,9 +513,9 @@
     "OTROS EMBALSES DE INTERÉS",
     "COTA CAPAC. VOLUMEN EMBALSADO DESEMBALSE en 24 h. LLUVIA en 24 h OBSERVACIONES",
     "m.s.n.m. hm3 hm3 % S/CAP. hm3 l/m2",
-    "ENCINAREJO (JA) 15,210 0,00 0,006 0,2 DF=0,006",
-    "HORNACHUELOS (CO) 11,771 0,00 0,000 0,1 A=0,001",
-    "DER. RETORTILLO (CO) 3,409 0,00 0,042 0,3 A=0,042",
+    "ENCINAREJO (JA) 277,739 15,210 13,060 85,87 0,009 2,7 DF=0,009",
+    "HORNACHUELOS (CO) 96,612 11,771 11,580 98,38 0,000 1,8 A=0,001",
+    "DER. RETORTILLO (CO) 88,964 3,409 2,975 87,27 0,063 1,2 A=0,063",
     "AFOROS EN RÍO Y CENTRALES",
     "FLUYENTES"
    ]
