@@ -7,7 +7,7 @@
 
 ## Contexto
 - Serie de récords 1940-2026 (ERA5); dato del día provisional (análisis IFS).
-- Rareza: Una noche así ocurría una vez cada 34 años en 1961-1990 y ahora una vez cada 19 años: es 1,8 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).
+- Rareza: Una noche así ocurría una vez cada 33 años en 1961-1990 y ahora una vez cada 18 años: es 1,8 veces más probable, pero la diferencia no es significativa (el intervalo del 90 % incluye 1).
 
 ## Fuente y método
 - **Fuente:** ECMWF IFS (análisis) vía Open-Meteo, CC BY 4.0; récords sobre ERA5 (Copernicus) 1940-2026

@@ -6,8 +6,8 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Huelva: 69.1 mm.
-- Días sin lluvia de 1 mm en la capital: 3.
+- Lluvia desde el 1 de octubre en Huelva: 71.5 mm.
+- Días sin lluvia de 1 mm en la capital: 0.
 - Embalses de la provincia al 74.2 % (hace un año 65.0 %; media de 10 años 53.2 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,22). La sequía meteorológica ha empezado antes de que se note en los pantanos.
 
 ## Fuente y método

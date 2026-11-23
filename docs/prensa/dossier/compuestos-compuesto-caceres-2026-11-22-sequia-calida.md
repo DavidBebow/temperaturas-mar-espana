@@ -1,6 +1,6 @@
-# Sequía cálida en Cáceres: sequía extrema y 2,3 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Cáceres: sequía extrema y 2,4 °C más que lo normal en noviembre de 2026
 
-**Dato:** Cáceres está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,5) y la media de noviembre de 2026 hasta el 22 de noviembre de 2026 es de 14,4 °C, 2,3 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Cáceres está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,5) y la media de noviembre de 2026 hasta el 22 de noviembre de 2026 es de 14,5 °C, 2,4 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 22 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Cáceres  
 **Citabilidad:** media · **Exclusivo:** sí

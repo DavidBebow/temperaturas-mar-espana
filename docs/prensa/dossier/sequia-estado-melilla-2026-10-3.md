@@ -1,4 +1,4 @@
-# Melilla está en sequía severa a cierre de octubre: SPI a 6 meses de −1,72, el 48 % de la lluvia normal del año hidrológico
+# Melilla está en sequía severa a cierre de octubre: SPI a 6 meses de −1,72, el 46 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 3 (Sequía severa); SPI-3 −1,29, SPI-6 −1,72, SPI-12 0,08.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -7,7 +7,7 @@
 
 ## Contexto
 - Lluvia desde el 1 de octubre en Melilla: 35.7 mm.
-- Días sin lluvia de 1 mm en la capital: 9.
+- Días sin lluvia de 1 mm en la capital: 11.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es
