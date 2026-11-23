@@ -42,7 +42,13 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).parent))
 from balance_mensual import ESTACIONES, NORMAL, PROVINCIA, SIN_SERIE, Historia, f1, r1  # noqa: E402,F401
 
-VERSION = "1.1.1"
+VERSION = "1.2.0"
+# 1.2.0 (22-11-2026): el SPI y el semáforo de un mes cerrado se marcan como PROVISIONALES mientras alguno de
+# los meses que entran en el SPI (los 12 últimos) tenga días que AEMET aún no ha validado (cola de Open-Meteo
+# o días de ERA5). Caso real: en 7 provincias se publicaron dos SPI-6 distintos para octubre de 2026; en
+# Granada, Murcia y Segovia porque la cola provisional se sustituyó por el dato validado (Granada pasó de
+# «moderada» a «severa»); en Cádiz, Huelva, Barcelona y Albacete por el cambio de método de la 1.1.1 (8-11).
+# Además cada JSON lleva "version_metodo" para distinguir un cambio de método de uno de datos.
 RAIZ = Path(__file__).resolve().parent.parent
 DOCS = RAIZ / "docs"
 SALIDA = DOCS / "sequia"
@@ -888,6 +894,17 @@ def calcular(hist: Historia, cod: str, slug: str, url_web_emb: dict, nieve_idx: 
         todos = sorted(spi_all[12].values())
         puesto = {"puesto": 1 + sum(1 for v in todos if r2(v) < r2(s[12])), "de": len(todos)}
     provisional_desde = min((x for x in dia.cola if x not in dia.base), default=None)
+    # 1.2.0: meses provisionales dentro de la ventana del SPI más largo (12 meses hasta el mes cerrado)
+    meses_prov = [c for c in meses[-12:] if mensual[c] and mensual[c].get("prov")]
+    res.update({
+        "version_metodo": VERSION,
+        "spi_provisional": bool(meses_prov and nv != 5),
+        "meses_provisionales": meses_prov,
+        "provisional_texto": (("Provisional: " + " y ".join(mes_txt(c) for c in meses_prov)
+                               + (" incluye" if len(meses_prov) == 1 else " incluyen")
+                               + " días de lluvia que AEMET aún no ha validado; el SPI y el semáforo pueden cambiar "
+                                 "cuando llegue el dato definitivo.") if meses_prov and nv != 5 else None),
+    })
     res.update({
         "fuente_serie": ("ERA5 en la capital (reanálisis Copernicus/ECMWF)" if era5 else "AEMET (precipitación oficial)"),
         "inicio_serie": inicio, "ultimo_mes_cerrado": cerrado,
@@ -1133,6 +1150,7 @@ def fila_index(r: dict) -> dict:
     return {"slug": r["slug"], "provincia": r["provincia"], "capital": r["capital"], "nivel": r["nivel"],
             "nivel_texto": r["nivel_texto"], "spi3": r["spi"]["3"]["valor"], "spi6": r["spi"]["6"]["valor"],
             "spi12": r["spi"]["12"]["valor"], "ultimo_mes_cerrado": r["ultimo_mes_cerrado"],
+            "provisional": bool(r.get("spi_provisional")),
             "puesto_spi12": (r["puesto_actual"] or {}).get("puesto"),
             "hidro_pct": (r["hidro"] or {}).get("pct"), "hidro_mm": (r["hidro"] or {}).get("mm"),
             "dias_sin_lluvia": (r["dias"] or {}).get("sin_lluvia"),
@@ -1148,7 +1166,7 @@ def nacional(res: list[dict], emb_nac: dict | None) -> dict:
 
     def corto(r):
         return {"slug": r["slug"], "provincia": r["provincia"], "spi12": r["spi"]["12"]["valor"], "nivel": r["nivel"],
-                "url": r["urls"]["pagina"]}
+                "provisional": bool(r.get("spi_provisional")), "url": r["urls"]["pagina"]}
     # media ponderada por superficie: lluvia del año hidrológico / lluvia normal de la misma ventana
     num = den = 0.0
     for r in res:

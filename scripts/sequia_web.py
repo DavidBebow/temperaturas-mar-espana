@@ -136,7 +136,7 @@ background:radial-gradient(1100px 520px at 88% -12%,#1d4a6e 0,#0c2133 58%);color
 .cgsq .cgsq-dia h3{font-size:16px;color:#fff;margin:14px 0 4px}.cgsq .cgsq-dia p{font-size:15.5px;line-height:1.5;color:var(--sub);max-width:none;margin:0 0 8px}
 .cgsq .cgsq-dia b{color:#fff}.cgsq .cgsq-dia small{display:block;font-size:13px;color:var(--mut)}
 .cgsq .cgsq-fecha{font-size:14px!important;color:var(--mut)!important}
-.cgsq .cgsq-nivel{display:flex;align-items:center;gap:12px;margin:6px 0 10px!important}.cgsq-nivel b{font:760 36px/1.05 "Bricolage Grotesque",sans-serif;letter-spacing:-.015em}
+.cgsq .cgsq-prov{margin:0 0 10px!important;padding:8px 12px;border-radius:10px;background:rgba(233,211,106,.14);color:#f3e6a6!important;font-size:14px!important;line-height:1.45}.cgsq .cgsq-nivel{display:flex;align-items:center;gap:12px;margin:6px 0 10px!important}.cgsq-nivel b{font:760 36px/1.05 "Bricolage Grotesque",sans-serif;letter-spacing:-.015em}
 .cgsq-dot{display:inline-block;width:22px;height:22px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.55)}
 .cgsq-n0,.cgsq-c0 i{background:#3d8bd1}.cgsq-n1,.cgsq-c1 i{background:#e9d36a}.cgsq-n2,.cgsq-c2 i{background:#f0a04b}.cgsq-n3,.cgsq-c3 i{background:#e0552b}.cgsq-n4,.cgsq-c4 i{background:#8b1a1a}.cgsq-n5,.cgsq-c5 i{background:#6b7c8a}.cgsq-ex{background:#1f6f5b}
 .cgsq-chips{list-style:none;margin:8px 0 12px;padding:0;display:flex;flex-wrap:wrap;gap:8px}.cgsq-chips li{background:var(--cel);border-radius:14px;padding:8px 12px;font-size:14px;color:var(--sub);min-width:92px}
@@ -332,10 +332,12 @@ def ssr_prov(r: dict) -> str:
     p = ['<div class="cgsq-dia">']
     # ---- hoy
     p.append(f'<div class="cgsq-hoy"><h2>Hoy en {esc(prov)}</h2><p class="cgsq-fecha">{esc(S.fecha_txt(hoy))}</p>'
-             f'<p class="cgsq-nivel"><span class="cgsq-dot cgsq-n{nv}"></span><b>{esc(r["nivel_texto"])}</b></p>')
+             f'<p class="cgsq-nivel"><span class="cgsq-dot cgsq-n{nv}"></span><b>{esc(r["nivel_texto"])}</b></p>'
+             + (f'<p class="cgsq-prov">{esc(r["provisional_texto"])}</p>' if r.get("spi_provisional") and r.get("provisional_texto") else ""))
     if nv != 5 or any(r["spi"][k]["valor"] is not None for k in ("3", "6", "12")):
         p.append('<ul class="cgsq-chips">' + "".join(
-            f'<li>SPI {k} meses<b>{esc(num(r["spi"][k]["valor"], 2))}</b><small>{esc(r["spi"][k]["clase"] or "sin dato")}</small></li>'
+            f'<li>SPI {k} meses<b>{esc(num(r["spi"][k]["valor"], 2))}</b><small>{esc(r["spi"][k]["clase"] or "sin dato")}'
+            f'{" · provisional" if r.get("spi_provisional") and r["spi"][k]["valor"] is not None else ""}</small></li>'
             for k in ("3", "6", "12")) + "</ul>")
     p.append(f'<p>{esc(r["textos"]["frase_nivel"])}</p><p class="cgsq-fecha">SPI hasta {esc(S.mes_txt(r["ultimo_mes_cerrado"]))}. '
              f'{esc(estacion_txt(r))}</p></div>')
@@ -622,7 +624,7 @@ def ssr_hub(idx: dict, nac: dict, rs: dict, pub: set) -> str:
         hid = f'{S.p0(r["hidro"]["pct"])} %' if r.get("hidro") else "—"
         dsl = str(r["dias"]["sin_lluvia"]) if r.get("dias") else "—"
         emb = f'{num(r["embalses"]["pct"])} %' if r.get("embalses") else "—"
-        cuerpo = (f'<span><b>{esc(r["provincia"])}</b><small>{esc(r["nivel_texto"])}</small></span><span>{esc(spi)}</span><span>{esc(hid)}</span>'
+        cuerpo = (f'<span><b>{esc(r["provincia"])}</b><small>{esc(r["nivel_texto"])}{" · provisional" if r.get("spi_provisional") else ""}</small></span><span>{esc(spi)}</span><span>{esc(hid)}</span>'
                   f'<span>{esc(dsl)}</span><span>{esc(emb)}</span>')
         fila.append(f'<a class="cgsq-fila" href="/sequia/{r["slug"]}/">{cuerpo}</a>' if r["slug"] in pub
                     else f'<div class="cgsq-fila">{cuerpo}</div>')
