@@ -6,8 +6,8 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Albacete: 39.6 mm.
-- Días sin lluvia de 1 mm en la capital: 3.
+- Lluvia desde el 1 de octubre en Albacete: 39.5 mm.
+- Días sin lluvia de 1 mm en la capital: 4.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es

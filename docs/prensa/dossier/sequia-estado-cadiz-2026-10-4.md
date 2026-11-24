@@ -1,4 +1,4 @@
-# Cádiz está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,23, el 55 % de la lluvia normal del año hidrológico, con los embalses al 73.5 %
+# Cádiz está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,23, el 53 % de la lluvia normal del año hidrológico, con los embalses al 73.5 %
 
 **Dato:** Nivel 4 (Sequía extrema); SPI-3 −2,39, SPI-6 −2,23, SPI-12 1,17.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -7,7 +7,7 @@
 
 ## Contexto
 - Lluvia desde el 1 de octubre en Cádiz: 75.4 mm.
-- Días sin lluvia de 1 mm en la capital: 3.
+- Días sin lluvia de 1 mm en la capital: 4.
 - Embalses de la provincia al 73.5 % (hace un año 43.7 %; media de 10 años 37.8 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 1,17). La sequía meteorológica ha empezado antes de que se note en los pantanos.
 
 ## Fuente y método

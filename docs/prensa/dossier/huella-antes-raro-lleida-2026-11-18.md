@@ -1,6 +1,6 @@
-# Lleida registró el 18 de noviembre una temperatura media de 18,3 °C: un día que en 1961-1990 ocurría una vez cada 22 años y ahora es 3,3 veces más probable
+# Lleida registró el 18 de noviembre una temperatura media de 19,8 °C: un día que en 1961-1990 ocurría una vez cada 189 años y ahora es 7,4 veces más probable
 
-**Dato:** Un día así ocurría una vez cada 22 años en 1961-1990 y ahora una vez cada 6,6 años: es 3,3 veces más probable (intervalo 1,4-14).  
+**Dato:** Un día así ocurría una vez cada 189 años en 1961-1990 y ahora una vez cada 26 años: es 7,4 veces más probable (intervalo 1,1-528).  
 **Fecha del dato:** 18 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Lleida  
 **Citabilidad:** media · **Exclusivo:** sí
@@ -14,7 +14,7 @@
 - **Método:** Compara la probabilidad del valor observado en el clima de 1961-1990 y en el de 1996-2025 de la misma serie (ventana de ±15 días, ajuste normal y GEV en la cola, intervalo del 90 % por remuestreo de años); el índice sale del cociente de probabilidad con los umbrales 1,5 · 2 · 3 · 4 · 5.
 
 ## Límites (decirlos antes de que los descubran)
-- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 1,4-14.
+- La rareza compara dos climas observados (1961-1990 y 1996-2025) de la misma serie; no atribuye este día a una causa. Intervalo del 90 % por remuestreo de años: 1,1-528.
 - Todavía no es récord ni percentil extremo de la serie: la noticia es lo que ha cambiado, no el valor.
 - Reanálisis ERA5 en una celda de ~25 km, no la estación oficial: la cifra oficial puede diferir; ERA5 anterior a 1979 es una retroextensión preliminar.
 - Cola extrema: estimación del extremo anual del mes con una GEV sobre 30 máximos anuales; el intervalo es amplio.

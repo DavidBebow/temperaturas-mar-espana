@@ -1,4 +1,4 @@
-# Segovia está en sequía severa a cierre de octubre: SPI a 6 meses de −1,86, el 184 % de la lluvia normal del año hidrológico
+# Segovia está en sequía severa a cierre de octubre: SPI a 6 meses de −1,86, el 145 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 3 (Sequía severa); SPI-3 −0,85, SPI-6 −1,86, SPI-12 −0,12.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,8 +6,8 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Segovia: 181.9 mm.
-- Días sin lluvia de 1 mm en la capital: 0.
+- Lluvia desde el 1 de octubre en Segovia: 145.0 mm.
+- Días sin lluvia de 1 mm en la capital: 1.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es
