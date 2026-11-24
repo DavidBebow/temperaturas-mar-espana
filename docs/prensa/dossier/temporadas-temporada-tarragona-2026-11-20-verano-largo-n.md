@@ -1,7 +1,7 @@
 # Tarragona: 2026 bate el máximo de su serie en días de 30 °C o más: 128, frente a 121 del máximo anterior
 
-**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 128, frente a 121 del máximo anterior, con datos validados de AEMET hasta el 13 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
-**Fecha del dato:** 13 de noviembre de 2026  
+**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 128, frente a 121 del máximo anterior, con datos validados de AEMET hasta el 20 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
+**Fecha del dato:** 20 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Tarragona  
 **Citabilidad:** alta · **Exclusivo:** sí
 
