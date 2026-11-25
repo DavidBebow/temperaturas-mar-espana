@@ -1852,6 +1852,12 @@ def compuestos():
     CT.al_detector(sys.modules[__name__])
 
 
+def enviables_con_almacen(lista: list[dict], tope: int = 25, extra: int = 5) -> list[dict]:
+    """Top `tope` por fuerza + hasta `extra` hallazgos del detector del almacén que hayan quedado fuera del corte."""
+    cola = [h for h in lista[tope:] if str(h.get("serie", "")).startswith("almacen_")][:extra]
+    return lista[:tope] + cola
+
+
 def almacen():
     """Detector del almacén (scripts/detector_almacen.py): las reglas calibradas del observatorio-datos, evaluadas con las referencias
     de docs/prensa/referencias/ y los datos del día. Máximo 5 historias nuevas al día; pasan por anadir() con su `novedad`."""
@@ -2452,7 +2458,9 @@ def main():
         "total": len(unicos),
         "por_citabilidad": {k: sum(1 for h in unicos if h["citabilidad"] == k) for k in ("alta", "media", "contexto")},
         # lo publicable primero y aparte; lo que espera revisión (p. ej. confirmación de AEMET) no ocupa sitio
-        "enviables": [h for h in unicos if h["citabilidad"] in ("alta", "media") and not h["requiere_revision"]][:25],
+        # 25-11-2026: las 25 más fuertes, y además las del detector del almacén (máx. 5 al día, ya limitadas por el propio detector)
+        # aunque queden por debajo del corte: anadir() les resta fuerza por citabilidad y, sin esto, nunca entrarían en la lista.
+        "enviables": enviables_con_almacen([h for h in unicos if h["citabilidad"] in ("alta", "media") and not h["requiere_revision"]]),
         "en_revision": [h for h in unicos if h["citabilidad"] in ("alta", "media") and h["requiere_revision"]][:60],
         "contexto": [h for h in unicos if h["citabilidad"] == "contexto"],
         "locales": locales,
