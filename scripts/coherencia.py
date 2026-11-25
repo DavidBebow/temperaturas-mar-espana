@@ -110,6 +110,21 @@ def registros(docs: Path = DOCS):
             for c in ("PR", "T_antes", "T_ahora"):
                 add(ind, terr, per, x.get("fecha_dato"), c, r.get(c), ruta)
 
+    # detector del almacén (25-11-2026): la clave {indicador, territorio, periodo, corte} de cada hallazgo `almacen_*` lleva la misma
+    # cifra en hallazgos.json y en prensa/almacen/hoy.json (todos los candidatos del día). Cifra canónica = la del hallazgo.
+    fuentes = [("prensa/hallazgos.json", [(l, h.get(l) or []) for l in ("enviables", "en_revision", "contexto", "locales")]),
+               ("prensa/almacen/hoy.json", [("hallazgos", (leer(docs / "prensa" / "almacen" / "hoy.json") or {}).get("hallazgos") or [])])]
+    for ruta_json, listas in fuentes:
+        for lista, items in listas:
+            for i, x in enumerate(items):
+                if not str(x.get("serie", "")).startswith("almacen_"):
+                    continue
+                cl = x.get("clave") or {}
+                ruta = f"{ruta_json}#{lista}[{i}]({x.get('id')})"
+                for k, v in (x.get("cifra") or {}).items():
+                    if isinstance(v, (int, float)):
+                        add(f"{x.get('regla')}:{cl.get('indicador')}", cl.get("territorio"), "periodo:" + str(cl.get("periodo")), cl.get("corte"), "cifra." + k, v, ruta)
+
     # huella/antes_raro.json (candidatos del último cálculo)
     a = leer(docs / "huella" / "antes_raro.json") or {}
     for i, x in enumerate(a.get("candidatos") or []):
@@ -144,7 +159,7 @@ def c_clave(docs: Path = DOCS):
             continue
         evaluadas += 1
         base = vs[0][0]
-        tol = 0.051 if campo in ("valor", "T_ahora") else 0.51
+        tol = 0.051 if campo in ("valor", "T_ahora") or campo.startswith("cifra.") else 0.51
         if any(abs(float(v) - float(base)) > tol for v, _ in vs[1:]):
             fallos.append({
                 "comprobacion": "clave", "clave": "|".join(clave) + "|" + campo,

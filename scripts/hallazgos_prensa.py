@@ -304,6 +304,8 @@ def anadir(h: dict):
     rz = h.get("rareza")
     if rz and rz.get("significativo") and (rz.get("PR_num") or 0) > 1:
         fuerza = min(100.0, fuerza * min(rz["PR_num"], RAREZA_PR_TOPE) / 2.0)
+    if h.get("novedad"):   # 25-11-2026: rareza × población × lugar × avance del detector del almacén (1 = igual que antes)
+        fuerza = min(100.0, fuerza * h["novedad"])
     if h["citabilidad"] == "contexto":
         fuerza *= 0.5
     h["fuerza"] = round(fuerza, 1)
@@ -1850,6 +1852,13 @@ def compuestos():
     CT.al_detector(sys.modules[__name__])
 
 
+def almacen():
+    """Detector del almacén (scripts/detector_almacen.py): las reglas calibradas del observatorio-datos, evaluadas con las referencias
+    de docs/prensa/referencias/ y los datos del día. Máximo 5 historias nuevas al día; pasan por anadir() con su `novedad`."""
+    import detector_almacen as DA
+    DA.al_detector(sys.modules[__name__])
+
+
 def agregar():
     grupos: dict[tuple, list[dict]] = {}
     for h in hallazgos:
@@ -2390,7 +2399,7 @@ def main():
     ap.add_argument("--salida", default=str(PRENSA / "hallazgos.json"))
     args = ap.parse_args()
 
-    for fn in (capitales, capitales_ayer, lluvia_aemet, estaciones_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta, sequia, huella, compuestos, municipal):
+    for fn in (capitales, capitales_ayer, lluvia_aemet, estaciones_aemet, avisos_envivo, mediterraneo, danas, dias32, embalses, caudal, planeta, sequia, huella, compuestos, municipal, almacen):
         try:
             fn()
         except Exception as e:

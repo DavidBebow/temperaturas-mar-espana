@@ -425,7 +425,29 @@ def c_coherencia(d: dict) -> list:
     return out
 
 
+def c_almacen(d: dict) -> list:
+    """Detector del almacén (scripts/detector_almacen.py, 25-11-2026): referencias vigentes, datos del día y valores saltados."""
+    out = []
+    est = d.get("estado")
+    ref = d.get("referencias") or {}
+    if est == "referencias_caducadas":
+        out.append(("error", f"el detector del almacén no emite nada: sus referencias valían hasta el {ref.get('valido_hasta')} y hay que refrescarlas desde el Air"))
+    elif est == "sin_referencias":
+        out.append(("error", "el detector del almacén no emite nada: no encuentra las referencias en docs/prensa/referencias/"))
+    elif est == "datos_atrasados":
+        out.append(("aviso", "el detector del almacén tiene datos atrasados: " + str(d.get("mensaje"))[:200]))
+    dias = ref.get("dias_restantes")
+    if est == "ok" and dias is not None and dias <= 7:
+        out.append(("aviso", f"las referencias del detector del almacén caducan en {dias} días ({ref.get('valido_hasta')}): refrescarlas desde el Air"))
+    if d.get("datos_descartados"):
+        out.append(("aviso", f"{len(d['datos_descartados'])} valores imposibles o ficheros rotos saltados por el detector del almacén"))
+    out.append(("info", f"referencias hasta el {ref.get('valido_hasta')} (datos hasta el {ref.get('datos_hasta')}); datos del día: {d.get('datos')}; "
+                        f"{d.get('n_candidatos', 0)} candidatos, {d.get('n_hoy', 0)} historias para hoy"))
+    return out
+
+
 CONTRASTES = {
+    "almacen": c_almacen,
     "coherencia": c_coherencia,
     "calor_mortalidad": c_calor_mortalidad,
     "temperaturas_mar": c_temperaturas_mar,
