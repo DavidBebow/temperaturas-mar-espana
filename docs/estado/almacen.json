@@ -1,0 +1,71 @@
+{
+ "generado": "2026-11-25T12:15:40Z",
+ "estado": "ok",
+ "mensaje": "",
+ "referencias": {
+  "calculado_el": "2026-11-25T12:04:34Z",
+  "datos_hasta": "2026-11-15",
+  "valido_desde": "2026-11-16",
+  "valido_hasta": "2026-12-30",
+  "dias_restantes": 35
+ },
+ "datos": {
+  "capitales_hasta": "2026-11-18",
+  "estaciones_hasta": "2026-11-20",
+  "monitor": "2026-11-24",
+  "hielo": "2026-11-23"
+ },
+ "reglas_no_evaluadas": [
+  {
+   "reglas": "R02, R10 (municipios)",
+   "motivo": "usan ERA5-Land por celda, que solo está en el almacén del Air"
+  },
+  {
+   "reglas": "R11, R12",
+   "motivo": "previsión guardada y revisiones: las evalúa el Air (parte interno)"
+  }
+ ],
+ "sin_lista_de_calidad": "calidad.py corre en el Air: aquí no hay lista de datos sospechosos de las estaciones",
+ "n_candidatos": 14,
+ "n_hoy": 5,
+ "descartados": [
+  {
+   "id": "almacen-r09-capital-era5-fecha-tmax-cap-30-2026-11-18",
+   "motivo": "fuera del tope de 5 historias al día (fuerza 54.9); sigue disponible mientras no caduque"
+  },
+  {
+   "id": "almacen-r09-capital-era5-fecha-tmax-cap-03-2026-11-18",
+   "motivo": "fuera del tope de 5 historias al día (fuerza 54.6); sigue disponible mientras no caduque"
+  },
+  {
+   "id": "almacen-r01-estacion-aemet-estacion-calor-est-5402-2026-11-19",
+   "motivo": "fuera del tope de 5 historias al día (fuerza 48.4); sigue disponible mientras no caduque"
+  },
+  {
+   "id": "almacen-r09-capital-era5-mes-tmin-alta-agregado-2026-11-18",
+   "motivo": "fuera del tope de 5 historias al día (fuerza 47.2); sigue disponible mientras no caduque"
+  },
+  {
+   "id": "almacen-r07-calor-sequia-agregado-2026-11-18",
+   "motivo": "fuera del tope de 5 historias al día (fuerza 45.2); sigue disponible mientras no caduque"
+  },
+  {
+   "id": "almacen-r01-capital-era5-estacion-calor-cap-50-2026-11-18",
+   "motivo": "fuera del tope de 5 historias al día (fuerza 44.7); sigue disponible mientras no caduque"
+  },
+  {
+   "id": "almacen-r01-capital-era5-estacion-noches-cap-18-2026-11-18",
+   "motivo": "fuera del tope de 5 historias al día (fuerza 43.0); sigue disponible mientras no caduque"
+  },
+  {
+   "id": "almacen-r01-capital-era5-estacion-noches-cap-06-2026-11-18",
+   "motivo": "fuera del tope de 5 historias al día (fuerza 41.2); sigue disponible mientras no caduque"
+  },
+  {
+   "id": "almacen-r03-capital-era5-calor-cap-50-2026-11-16",
+   "motivo": "fuera del tope de 5 historias al día (fuerza 47.5); sigue disponible mientras no caduque"
+  }
+ ],
+ "datos_descartados": [],
+ "vigentes_al_empezar": 223
+}

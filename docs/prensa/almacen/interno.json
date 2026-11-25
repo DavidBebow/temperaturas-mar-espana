@@ -1,0 +1,102 @@
+{
+ "generado": "2026-11-25T12:15:40Z",
+ "estado_detector": "ok",
+ "avisos_detector": [
+  {
+   "nivel": "info",
+   "texto": "descartado almacen-r09-capital-era5-fecha-tmax-cap-30-2026-11-18: fuera del tope de 5 historias al día (fuerza 54.9); sigue disponible mientras no caduque"
+  },
+  {
+   "nivel": "info",
+   "texto": "descartado almacen-r09-capital-era5-fecha-tmax-cap-03-2026-11-18: fuera del tope de 5 historias al día (fuerza 54.6); sigue disponible mientras no caduque"
+  },
+  {
+   "nivel": "info",
+   "texto": "descartado almacen-r01-estacion-aemet-estacion-calor-est-5402-2026-11-19: fuera del tope de 5 historias al día (fuerza 48.4); sigue disponible mientras no caduque"
+  },
+  {
+   "nivel": "info",
+   "texto": "descartado almacen-r09-capital-era5-mes-tmin-alta-agregado-2026-11-18: fuera del tope de 5 historias al día (fuerza 47.2); sigue disponible mientras no caduque"
+  },
+  {
+   "nivel": "info",
+   "texto": "descartado almacen-r07-calor-sequia-agregado-2026-11-18: fuera del tope de 5 historias al día (fuerza 45.2); sigue disponible mientras no caduque"
+  },
+  {
+   "nivel": "info",
+   "texto": "descartado almacen-r01-capital-era5-estacion-calor-cap-50-2026-11-18: fuera del tope de 5 historias al día (fuerza 44.7); sigue disponible mientras no caduque"
+  },
+  {
+   "nivel": "info",
+   "texto": "descartado almacen-r01-capital-era5-estacion-noches-cap-18-2026-11-18: fuera del tope de 5 historias al día (fuerza 43.0); sigue disponible mientras no caduque"
+  },
+  {
+   "nivel": "info",
+   "texto": "descartado almacen-r01-capital-era5-estacion-noches-cap-06-2026-11-18: fuera del tope de 5 historias al día (fuerza 41.2); sigue disponible mientras no caduque"
+  },
+  {
+   "nivel": "info",
+   "texto": "descartado almacen-r03-capital-era5-calor-cap-50-2026-11-16: fuera del tope de 5 historias al día (fuerza 47.5); sigue disponible mientras no caduque"
+  }
+ ],
+ "air": {
+  "generado": "2026-11-25T12:04:57Z",
+  "desde": "2026-11-18",
+  "hasta": "2026-11-25",
+  "secciones": [
+   {
+    "titulo": "Fallos de calidad (calidad.py)",
+    "destino": "interno",
+    "estado_regla": null,
+    "items": [
+     {
+      "fecha": "2026-11-25",
+      "titular": "huecos:obs_estacion_dia: {'series': 989, 'series_con_huecos': 949, 'dias_hueco': 215315}",
+      "territorio": null
+     },
+     {
+      "fecha": "2026-11-25",
+      "titular": "paradas:obs_estacion_dia: 21",
+      "territorio": null
+     },
+     {
+      "fecha": "2026-11-25",
+      "titular": "huecos:obs_lluvia_estacion_dia: {'series': 899, 'series_con_huecos': 843, 'dias_hueco': 616860}",
+      "territorio": null
+     },
+     {
+      "fecha": "2026-11-25",
+      "titular": "paradas:obs_lluvia_estacion_dia: 18",
+      "territorio": null
+     },
+     {
+      "fecha": "2026-11-25",
+      "titular": "huecos:obs_capital_dia: {'series': 208, 'series_con_huecos': 8, 'dias_hueco': 8}",
+      "territorio": null
+     },
+     {
+      "fecha": "2026-11-25",
+      "titular": "huecos:obs_celda_dia: {'series': 7462, 'series_con_huecos': 0, 'dias_hueco': 0}",
+      "territorio": null
+     },
+     {
+      "fecha": "2026-11-25",
+      "titular": "rango_fisico: {'obs_estacion_dia: tmax fuera de rango': 1, 'obs_estacion_dia: tmin fuera de rango': 3, 'obs_estacion_dia: tmin mayor que tmax': 1, 'obs_estacion_dia: lluvia diaria imposible': 1, 'obs_lluvia_estacion_dia: lluvia diaria imposible': 4, 'obs_capital_dia: temperatura fuera de rango': 0, 'obs_capital_dia: tmin mayor que tmax': 0, 'obs_capital_dia: lluvia diaria imposible': 0, 'obs_celda_dia: lluvia negativa (más allá del ruido −3e-5 del diferenciado ERA5)': 0, 'obs_celda_dia: lluvia diaria imposible': 0, 'obs_estacion_dia_aemet: humedad fuera de 0-100': 0, 'embalses_diario: embalse por encima de su capacidad o negativo': 2, 'lecturas: embalses % imposible': 0, 'prevision: previsión fuera de rango': 3, 'sequia: SPI fuera de ±3 (artefacto de la gamma con acumulados casi nulos)': 2}",
+      "territorio": null
+     },
+     {
+      "fecha": "2026-11-25",
+      "titular": "saltos_tmax:obs_estacion_dia: 2",
+      "territorio": null
+     },
+     {
+      "fecha": "2026-11-25",
+      "titular": "paradas:lecturas: 5",
+      "territorio": null
+     }
+    ]
+   }
+  ]
+ },
+ "nota": "Parte interno: no sale en /prensa/. Lo del Air (acierto de modelos, avisos sin respaldo, revisiones, fallos de calidad) llega cuando se sube interno_air.json."
+}
