@@ -36,6 +36,7 @@ REFS = DOCS / "prensa" / "referencias"
 SALIDA = DOCS / "prensa" / "almacen"
 ESTADO = DOCS / "estado" / "almacen.json"
 
+ANIOS_ESTACION = 40      # serie de AEMET que «aguanta» (criterio de la mesa de redacción, 25-11-2026)
 MAX_DIARIAS = 5          # historias del detector que llegan a /prensa/ cada día
 FRAC_MIN = 2 / 3         # «lo que va de…»: fracción mínima del periodo transcurrida (decisión de David, 25-11-2026)
 EXCLUSIVO = False        # ninguna historia en exclusiva: David reparte las noticias
@@ -179,6 +180,14 @@ class Contexto:
         self.pob_prov = M["pob_prov"]
         self.q_lluvia = M["q_lluvia"]
         self.q_temp = M["q_temp"]
+        # 25-11-2026 · mesa de redacción: «primero la estación AEMET». Provincias con una estación de AEMET de serie larga
+        # (≥ ANIOS_ESTACION años con dato en las referencias): ahí el reanálisis de la capital no publica nada por su cuenta.
+        self.est_larga = {}
+        for ent, dias in (self.R["estaciones"].get("dia") or {}).items():
+            n = max(((v or [0] * 7)[6] or 0) for v in dias.values()) if dias else 0
+            prov = self.est_prov.get(ent)
+            if prov and n >= ANIOS_ESTACION and n > self.est_larga.get(prov, (None, 0))[1]:
+                self.est_larga[prov] = (ent, n)
         self.sospechosos = {}   # calidad.py solo corre en el Air: aquí no hay lista de datos sospechosos (se dice en el estado)
 
     def u(self, clave, defecto=None):
@@ -411,7 +420,7 @@ def r03(C, fam, D, desde, hasta, salida, vigentes):
                        "frio": f"días seguidos con la máxima {a} °C o más por debajo de lo normal", "tropical": "noches tropicales seguidas",
                        "helada": "días seguidos de helada"}[tipo]
                 n_prev = ref["dia"][ent][str(d)][6]
-                tit = f"{'La estación de AEMET de ' if fam == 'estaciones' else ''}{nom} lleva {largo} {que}: nunca había habido una racha así un {fd(d)} en {n_prev} años"
+                tit = f"{'La estación de AEMET de ' if fam == 'estaciones' else ''}{nom} lleva {largo} {que}: nunca había habido una racha así un {fd(d)} en {n_prev} años{'' if fam == 'estaciones' else ' (reanálisis)'}"
                 salida.append(hallazgo(C, regla="R03", variante=f"{serie_reg}:{tipo}", tipo="racha", ent=ent, fecha=d, indicador=tipo,
                                        titular=tit, dato=f"{largo} días; la más larga en curso un {fd(d)} hasta ahora: {top[0][0]} ({top[0][1]})",
                                        cifra={"dias": largo}, comparacion={"puesto": 1, "de": n_prev + 1, "anterior": top[0], "periodo": f"racha a {d}"},
@@ -420,6 +429,10 @@ def r03(C, fam, D, desde, hasta, salida, vigentes):
                                        invalidar="días sin dato rompen la racha; en reanálisis, la lluvia de celda puede no coincidir con el pluviómetro"))
 
 def r08(C, fam, D, desde, hasta, salida):
+    # 25-11-2026 · R08 usa umbrales absolutos (0, 20 y 30 °C): sobre el reanálisis de celda no se publica. Solo estación de AEMET.
+    # (Murcia «día de 30 °C más tardío» y Palma «noche tropical más tardía» del 25-11 salían de la celda ERA5.)
+    if fam == "capitales":
+        return
     ref = C.R[fam]
     serie_reg = "capital_era5" if fam == "capitales" else "estacion_aemet"
     for ent, dd in D.items():
@@ -482,13 +495,17 @@ def r09(C, fam, D, desde, hasta, salida):
                 rm = None
             if dia and tx is not None and dia[3] and tx - dia[3][0] >= mf:
                 salida.append(hallazgo(C, regla="R09", variante=f"{serie_reg}:fecha_tmax", tipo="record_fecha", ent=ent, fecha=d, indicador="tmax",
-                    titular=f"{quien} bate por {f1(tx - dia[3][0])} °C su máxima más alta para un {fd(d)}{val(tx)}", dato=f"récord anterior {dia[3][1]}",
+                    titular=(f"{quien} bate por {f1(tx - dia[3][0])} °C su máxima más alta para un {fd(d)}{val(tx)}" if fam == "estaciones" else
+                             f"{nom}: la máxima más alta para un {fd(d)} en {dia[6] + 1} años de reanálisis ERA5, {f1(tx - dia[3][0])} °C por encima del récord anterior ({dia[3][1]})"),
+                    dato=f"récord anterior {dia[3][1]}",
                     cifra={"valor": tx if fam == "estaciones" else None, "margen": round(tx - dia[3][0], 1)}, comparacion={"puesto": 1, "de": dia[6] + 1, "anterior": dia[3], "periodo": str(d)},
                     muestra=f"{dia[6]} años", calidad="reanálisis" if fam == "capitales" else "validado", serie=SERIE_TXT[fam], T=dia[6] + 1, cola="calor",
                     pob=C.pob_cap.get(ent), invalidar="un dato erróneo de un día da récords falsos: contrastar con la estación vecina"))
             if dia and tn is not None and dia[4] and tn - dia[4][0] >= mn:
                 salida.append(hallazgo(C, regla="R09", variante=f"{serie_reg}:fecha_tmin_alta", tipo="record_fecha", ent=ent, fecha=d, indicador="tmin_alta",
-                    titular=f"{quien} tiene la noche más cálida para un {fd(d)}, {f1(tn - dia[4][0])} °C por encima del récord{val(tn)}", dato=f"récord anterior {dia[4][1]}",
+                    titular=(f"{quien} tiene la noche más cálida para un {fd(d)}, {f1(tn - dia[4][0])} °C por encima del récord{val(tn)}" if fam == "estaciones" else
+                             f"{nom}: la noche más cálida para un {fd(d)} en {dia[6] + 1} años de reanálisis ERA5, {f1(tn - dia[4][0])} °C por encima del récord anterior ({dia[4][1]})"),
+                    dato=f"récord anterior {dia[4][1]}",
                     cifra={"valor": tn if fam == "estaciones" else None, "margen": round(tn - dia[4][0], 1)}, comparacion={"puesto": 1, "de": dia[6] + 1, "anterior": dia[4], "periodo": str(d)},
                     muestra=f"{dia[6]} años", calidad="reanálisis" if fam == "capitales" else "validado", serie=SERIE_TXT[fam], T=dia[6] + 1, cola="noches",
                     pob=C.pob_cap.get(ent), invalidar="nubosidad o viento nocturno puntuales; contrastar con estación vecina"))
@@ -498,7 +515,9 @@ def r09(C, fam, D, desde, hasta, salida):
                     rm[i] = [v, d.year]
                     q = "máxima" if var == "tmax" else "mínima"
                     salida.append(hallazgo(C, regla="R09", variante=f"{serie_reg}:mes_{var}", tipo="record_mes", ent=ent, fecha=d, indicador=f"mes_{var}",
-                        titular=f"{quien}: la {q} más alta de cualquier {MESES[d.month - 1]} en {rm[2]} años{val(v)}", dato=f"anterior: {rm[i][1] if False else 'récord del mes'}",
+                        titular=(f"{quien}: la {q} más alta de cualquier {MESES[d.month - 1]} en {rm[2]} años{val(v)}" if fam == "estaciones" else
+                                 f"{nom}: la {q} más alta de cualquier {MESES[d.month - 1]} en {rm[2]} años de reanálisis ERA5"),
+                        dato="récord del mes",
                         cifra={"valor": v if fam == "estaciones" else None}, comparacion={"puesto": 1, "de": rm[2], "periodo": MESES[d.month - 1]},
                         muestra=f"{rm[2]} {MESES[d.month - 1]}s", calidad="reanálisis" if fam == "capitales" else "validado", serie=SERIE_TXT[fam],
                         T=rm[2] * 30, cola="calor" if var == "tmax" else "noches", pob=C.pob_cap.get(ent), invalidar="dato de un solo día: contrastar"))
@@ -698,11 +717,20 @@ def slug_id(*partes):
 
 
 def una_por_provincia(C, pub):
-    """Capital (reanálisis) y estación de AEMET dan la misma historia en una provincia: manda la estación, la capital es el respaldo."""
+    """Primero la estación de AEMET (25-11-2026). Una historia de reanálisis de capital (R01, R03, R08, R09) solo se publica si su provincia
+    no tiene estación de AEMET con ≥ ANIOS_ESTACION años: si la tiene y la estación no ha disparado, el reanálisis no basta. Si la estación
+    ha dado la misma historia, manda la estación (como hasta ahora)."""
     est = [h for h in pub if h["variante"].split(":")[0] == "estacion_aemet"]
     quitadas = []
     for h in list(pub):
         if h["variante"].split(":")[0] != "capital_era5" or h["regla"] not in ("R01", "R03", "R08", "R09"):
+            continue
+        prov = C.provincia(h["ent_id"])[0]
+        larga = C.est_larga.get(prov)
+        if larga:
+            quitadas.append({"id": h["id"], "motivo": f"reanálisis: la provincia tiene estación de AEMET de {larga[1]} años "
+                                                       f"({C.nom.get(larga[0], larga[0])}); manda la estación"})
+            pub.remove(h)
             continue
         clave = h["variante"].split(":", 1)[1]
         prov = C.provincia(h["ent_id"])[0]

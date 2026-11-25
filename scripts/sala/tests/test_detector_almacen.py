@@ -65,12 +65,22 @@ class DiaReal(unittest.TestCase):
             self.assertGreaterEqual(x["fecha_dato"], "2026-11-16")   # nada de antes de la validez de las referencias
         self.assertEqual(len({x["id"] for x in self.h}), len(self.h))
 
-    def test_una_historia_de_verdad(self):
-        murcia = [x for x in self.h if x["regla"] == "R09" and x["territorio"] == "Murcia"]
-        self.assertEqual(len(murcia), 1)
-        self.assertIn("18 de noviembre", murcia[0]["titular"])
-        self.assertEqual(murcia[0]["calidad"], "reanálisis")
-        self.assertNotIn("°C de máxima", murcia[0]["limites"])   # el reanálisis no publica valores absolutos de un punto como dato de la ciudad
+    def test_estacion_primero(self):
+        """25-11-2026 · mesa de redacción: Murcia tiene estación de AEMET de serie larga (7178I), así que su récord del 18-11 en la celda
+        ERA5 no se publica; se anota el motivo. Ninguna historia de reanálisis lleva umbral absoluto ni le falta la palabra."""
+        C = DA.Contexto(REAL / "docs" / "prensa" / "referencias")
+        self.assertIn("prov:30", C.est_larga)
+        murcia = [x for x in self.res["candidatos"] if x["territorio"] == "Murcia" and x["variante"].startswith("capital_era5")]
+        self.assertEqual(murcia, [])
+        motivos = [d["motivo"] for d in self.res["estado"]["descartados"] if "murcia" in d["id"].lower() or "cap-30" in d["id"].lower()]
+        self.assertTrue(any("manda la estación" in m for m in motivos), motivos)
+        for x in self.res["candidatos"]:
+            if x["variante"].startswith("capital_era5"):
+                self.assertNotEqual(x["regla"], "R08")
+                self.assertIn("reanálisis", x["titular"])
+                self.assertNotIn("30 °C", x["titular"])
+                self.assertIsNone((x.get("cifra") or {}).get("valor"))
+                self.assertNotIn(C.provincia(x["ent_id"])[0], C.est_larga)
 
     def test_lo_que_va_de_exige_dos_tercios(self):
         for x in self.res["candidatos"]:
