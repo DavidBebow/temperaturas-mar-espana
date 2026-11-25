@@ -1,9 +1,9 @@
-# Sequía cálida en Gipuzkoa: sequía extrema y 2,4 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Cáceres: sequía extrema y 2,2 °C más que lo normal en noviembre de 2026
 
-**Dato:** Gipuzkoa está en «sequía extrema» en el Monitor de sequía (SPI-12 de -0,7) y la media de noviembre de 2026 hasta el 23 de noviembre de 2026 es de 14,4 °C, 2,4 °C por encima de la media de ese mes en 1996-2025; es 2,7 veces más probable que en 1961-1990 (intervalo 1,1-8,4).  
-**Fecha del dato:** 23 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Gipuzkoa  
-**Citabilidad:** alta · **Exclusivo:** sí
+**Dato:** Cáceres está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,5) y la media de noviembre de 2026 hasta el 24 de noviembre de 2026 es de 14,1 °C, 2,2 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 24 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Cáceres  
+**Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
 - Menos lluvia y más calor es la combinación que seca más deprisa el suelo y los embalses.
@@ -16,9 +16,10 @@
 ## Límites (decirlos antes de que los descubran)
 - SPI calculado por calentamientoglobal.es, no es el índice oficial de MITECO
 - La anomalía es de una estación (la de la capital), no de toda la provincia
+- Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/gipuzkoa/
+- Página: https://calentamientoglobal.es/sequia/caceres/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.

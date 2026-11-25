@@ -1,8 +1,8 @@
-# Sequía cálida en Cáceres: sequía extrema y 2,2 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Ceuta: sequía extrema y 2,3 °C más que lo normal en noviembre de 2026
 
-**Dato:** Cáceres está en «sequía extrema» en el Monitor de sequía (SPI-12 de 0,5) y la media de noviembre de 2026 hasta el 23 de noviembre de 2026 es de 14,2 °C, 2,2 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
-**Fecha del dato:** 23 de noviembre de 2026  
-**Ámbito:** provincial · **Territorio:** Cáceres  
+**Dato:** Ceuta está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,4) y la media de noviembre de 2026 hasta el 24 de noviembre de 2026 es de 18,8 °C, 2,3 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 24 de noviembre de 2026  
+**Ámbito:** provincial · **Territorio:** Ceuta  
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
@@ -19,7 +19,7 @@
 - Temperatura de la celda ERA5 de la capital: reanálisis, no medida
 
 ## Enlaces
-- Página: https://calentamientoglobal.es/sequia/caceres/
+- Página: https://calentamientoglobal.es/sequia/ceuta/
 
 ## Atribución
 Observatorio climático de calentamientoglobal.es, a partir de AEMET, ERA5 (Copernicus/ECMWF) y cálculo propio de calentamientoglobal.es. Cálculo propio reutilizable con CC BY 4.0 citando a CalentamientoGlobal.es; los datos de origen conservan la licencia de su organismo.
