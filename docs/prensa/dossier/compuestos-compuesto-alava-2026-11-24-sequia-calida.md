@@ -1,6 +1,6 @@
-# Sequía cálida en Álava: sequía moderada y 2,8 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Álava: sequía moderada y 2,9 °C más que lo normal en noviembre de 2026
 
-**Dato:** Álava está en «sequía moderada» en el Monitor de sequía (SPI-12 de -0,8) y la media de noviembre de 2026 hasta el 24 de noviembre de 2026 es de 11,8 °C, 2,8 °C por encima de la media de ese mes en 1996-2025; es 6,8 veces más probable que en 1961-1990 (intervalo 1,5-68).  
+**Dato:** Álava está en «sequía moderada» en el Monitor de sequía (SPI-12 de -0,8) y la media de noviembre de 2026 hasta el 24 de noviembre de 2026 es de 11,9 °C, 2,9 °C por encima de la media de ese mes en 1996-2025; es 7,2 veces más probable que en 1961-1990 (intervalo 1,5-75).  
 **Fecha del dato:** 24 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Álava  
 **Citabilidad:** media · **Exclusivo:** sí

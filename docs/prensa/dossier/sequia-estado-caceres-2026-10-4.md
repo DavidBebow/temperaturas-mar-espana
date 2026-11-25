@@ -1,4 +1,4 @@
-# Cáceres está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,03, el 100 % de la lluvia normal del año hidrológico
+# Cáceres está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,03, el 103 % de la lluvia normal del año hidrológico, con los embalses al 60.2 %
 
 **Dato:** Nivel 4 (Sequía extrema); SPI-3 −2,35, SPI-6 −2,03, SPI-12 0,49.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,8 +6,9 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Cáceres: 145.8 mm.
-- Días sin lluvia de 1 mm en la capital: 2.
+- Lluvia desde el 1 de octubre en Cáceres: 153.4 mm.
+- Días sin lluvia de 1 mm en la capital: 0.
+- Embalses de la provincia al 60.2 % (hace un año 59.7 %; media de 10 años 54.4 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,49). La sequía meteorológica ha empezado antes de que se note en los pantanos.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es

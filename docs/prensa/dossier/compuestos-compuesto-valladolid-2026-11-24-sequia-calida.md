@@ -1,6 +1,6 @@
-# Sequía cálida en Valladolid: sequía moderada y 2,1 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Valladolid: sequía moderada y 2,2 °C más que lo normal en noviembre de 2026
 
-**Dato:** Valladolid está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 24 de noviembre de 2026 es de 10,9 °C, 2,1 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Valladolid está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 24 de noviembre de 2026 es de 11,0 °C, 2,2 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 24 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Valladolid  
 **Citabilidad:** media · **Exclusivo:** sí
