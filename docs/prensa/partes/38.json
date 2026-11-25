@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-25T15:03:46Z",
+ "generado": "2026-11-25T17:24:36Z",
  "fecha": "2026-11-25",
  "cod": "38",
  "provincia": "Santa Cruz de Tenerife",
@@ -69,7 +69,7 @@
     "angulo": "ayer",
     "clase": "comparacion",
     "titular": "La estación de AEMET de San Sebastián de la Gomera lleva 13 días seguidos sin recoger 1 mm de lluvia (hasta el 24 de noviembre)",
-    "dato": "13 días seguidos con menos de 1 mm en la estación de AEMET de San Sebastián de la Gomera, hasta el 24 de noviembre incluido · el 25 de noviembre lleva 0 mm hasta las 14:00",
+    "dato": "13 días seguidos con menos de 1 mm en la estación de AEMET de San Sebastián de la Gomera, hasta el 24 de noviembre incluido · el 25 de noviembre lleva 0 mm hasta las 16:00",
     "contexto": [],
     "fuente": "AEMET OpenData · observación convencional",
     "metodo": "Días consecutivos, hasta el último día completo, en que la estación de AEMET recogió menos de 1 mm.",
@@ -83,42 +83,39 @@
     "csv": null,
     "grafico": null,
     "requiere_revision": false
-   },
-   {
-    "id": "38-ayer-santa-cruz-de-tenerife-2026-bate-el-maximo-de-su-serie-en-dias-de-30-2026-11-16",
-    "angulo": "ayer",
-    "clase": "extremo",
-    "titular": "Santa Cruz de Tenerife: 2026 bate el máximo de su serie en días de 30 °C o más: 59, frente a 47 del máximo anterior",
-    "dato": "2026 bate el máximo de su serie en días de 30 °C o más: 59, frente a 47 del máximo anterior, con datos validados de AEMET hasta el 16 de noviembre de 2026 (serie desde 1961; temporada aún abierta).",
-    "contexto": [
-     "Serie de la estación de AEMET de Santa Cruz de Tenerife, con 65 años válidos."
-    ],
-    "fuente": "AEMET OpenData (valores climatológicos diarios validados); cálculo de calentamientoglobal.es",
-    "metodo": "Se mira cada año por separado entre el 1/3 y el 30/11 con la máxima diaria validada (umbral 30 °C); solo cuentan años con al menos 90 % de días con dato.",
-    "limites": [
-     "Datos validados de AEMET con 10-20 días de retraso; la temporada sigue abierta, la cifra puede subir",
-     "Una estación mide un punto, no toda la provincia"
-    ],
-    "citabilidad": "alta",
-    "fecha_dato": "2026-11-16",
-    "edad_dias": 9,
-    "provisional": true,
-    "pagina": "https://calentamientoglobal.es/el-tiempo/santa-cruz-de-tenerife/",
-    "fuerza": 41.6,
-    "csv": null,
-    "grafico": null,
-    "requiere_revision": false,
-    "id_hallazgo": "temporadas-temporada-santa-cruz-de-tenerife-2026-11-16-verano-largo-n"
    }
   ],
-  "semana": [],
+  "semana": [
+   {
+    "id": "38-semana-aemet-da-una-probabilidad-de-lluvia-del-80-o-mas-el-sabado-28-en-san-2026-11-25",
+    "angulo": "semana",
+    "clase": "prevision",
+    "titular": "AEMET da una probabilidad de lluvia del 80 % o más el sábado 28 en Santa Cruz de Tenerife, Adeje, Arafo y otras 42 localidades",
+    "dato": "45 de las 45 localidades de Santa Cruz de Tenerife que sigue el observatorio con probabilidad ≥ 80 % el 28 de noviembre · otros días con la misma probabilidad en al menos 11 localidades: el jueves 26, el viernes 27, el domingo 29, el lunes 30, el martes 1 · predicción de AEMET del 25 de noviembre",
+    "contexto": [],
+    "fuente": "AEMET · predicción por municipios (www.aemet.es/xml)",
+    "metodo": "Probabilidad de precipitación diaria de la predicción municipal de AEMET.",
+    "limites": [
+     "Es una predicción: AEMET la actualiza dos veces al día y puede cambiar. Citar siempre como «AEMET prevé»."
+    ],
+    "citabilidad": "alta",
+    "fecha_dato": "2026-11-25",
+    "edad_dias": 0,
+    "provisional": false,
+    "pagina": "https://calentamientoglobal.es/el-tiempo/santa-cruz-de-tenerife/",
+    "fuerza": 70.0,
+    "csv": null,
+    "grafico": null,
+    "requiere_revision": false
+   }
+  ],
   "agua": [],
   "municipios": [
    {
     "id": "38-municipios-otono-al-118-de-la-lluvia-normal-en-santa-cruz-de-tenerife-segun-el-2026-11-25",
     "angulo": "municipios",
     "clase": "cifra",
-    "titular": "Otoño al 118 % de la lluvia normal en Santa Cruz de Tenerife, según el reanálisis ERA5: de La Matanza de Acentejo (46 %) a Frontera (314 %)",
+    "titular": "Otoño al 118 % de la lluvia normal en Santa Cruz de Tenerife, según el reanálisis ERA5: de La Matanza de Acentejo (46 %) a Frontera (313 %)",
     "dato": "29 municipios · media 118 % · 6 por debajo del 50 % · 7 por encima del 150 %",
     "contexto": [],
     "fuente": "AEMET OpenData: valores climatológicos diarios y observación horaria",
@@ -205,9 +202,17 @@
    "valor": "23,5 °C",
    "nota": "dato del 24 de noviembre",
    "fuente": "Puertos del Estado"
+  },
+  {
+   "etiqueta": "Semana que viene (AEMET)",
+   "valor": "+0,7 °C",
+   "nota": "máximas frente a lo normal, media de los municipios",
+   "fuente": "AEMET"
   }
  ],
  "n_items": 6,
- "errores": [],
+ "errores": [
+  "<lambda>: KeyError: 'fuente'"
+ ],
  "licencia": "Cálculo propio de CalentamientoGlobal.es · CC BY 4.0 · los datos de origen conservan la licencia de su organismo"
 }

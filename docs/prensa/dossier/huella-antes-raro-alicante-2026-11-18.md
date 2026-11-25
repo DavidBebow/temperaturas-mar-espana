@@ -18,7 +18,6 @@
 - Todavía no es récord ni percentil extremo de la serie: la noticia es lo que ha cambiado, no el valor.
 - Dato validado de la estación (la validación llega con 10-20 días de retraso).
 - Cola extrema: estimación del extremo anual del mes con una GEV sobre 30 máximos anuales; el intervalo es amplio.
-- COMPROBAR: coherencia: dice «hoy» con un dato anterior a ayer
 
 ## Enlaces
 - Página: https://calentamientoglobal.es/cambio-climatico-en-alicante/
