@@ -1,12 +1,12 @@
 {
- "generado": "2026-11-25T12:15:40Z",
+ "generado": "2026-11-25T12:26:24Z",
  "hoy": "2026-11-25",
  "seleccionados": [
   "almacen-r08-capital-era5-tropical-tardia-agregado-2026-11-18",
   "almacen-r09-capital-era5-fecha-tmin-alta-agregado-2026-11-17",
   "almacen-r08-capital-era5-calor-tardio-cap-30-2026-11-18",
-  "almacen-r04-monitor-pais-es-2026-11-24",
-  "almacen-r06-monitor-agregado-2026-11-24"
+  "almacen-r09-capital-era5-fecha-tmax-cap-30-2026-11-18",
+  "almacen-r09-capital-era5-fecha-tmax-cap-03-2026-11-18"
  ],
  "hallazgos": [
   {
@@ -293,8 +293,7 @@
     "T_anios": 87
    },
    "ent_id": "cap:30",
-   "id": "almacen-r08-capital-era5-calor-tardio-cap-30-2026-11-18",
-   "_rank": 35.843999999999994
+   "id": "almacen-r08-capital-era5-calor-tardio-cap-30-2026-11-18"
   },
   {
    "regla": "R09",
@@ -469,62 +468,6 @@
    "_rank": 31.459999999999994
   },
   {
-   "regla": "R04",
-   "variante": "monitor",
-   "destino": "publicable",
-   "serie": "almacen_r04",
-   "tipo": "episodio",
-   "indicador": "R04_monitor",
-   "territorio": "España",
-   "provincia": null,
-   "ambito": "nacional",
-   "fecha_dato": "2026-11-24",
-   "titular": "5 provincias en sequía severa o extrema con los embalses por encima del 65 %: el agua es del año pasado",
-   "dato": "Huelva (SPI-6 −3,0; embalses 74 %), Sevilla (SPI-6 −2,4; embalses 68 %), Cádiz (SPI-6 −2,2; embalses 74 %), Córdoba (SPI-6 −2,1; embalses 74 %), Badajoz (SPI-6 −1,8; embalses 74 %)",
-   "clave": {
-    "indicador": "monitor",
-    "territorio": "pais:es",
-    "periodo": "2026-11-24",
-    "corte": "2026-11-24"
-   },
-   "cifra": {
-    "provincias": 5
-   },
-   "comparacion": {
-    "periodo": "2026-11-24"
-   },
-   "muestra": "52 provincias, Monitor de sequía",
-   "calidad": "provisional",
-   "invalidar": "el SPI de un mes cerrado se revisa (Cádiz −2,23 → −1,84): citar el nivel, no el decimal; el % de embalse es de la provincia, no de quien la abastece",
-   "metodo": "Monitor de sequía del observatorio (SPI con estaciones AEMET) y embalses MITECO. Regla R04 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
-   "limites": [],
-   "contexto": [],
-   "citabilidad": "media",
-   "exclusivo": false,
-   "requiere_revision": false,
-   "fuerza": 57.4,
-   "fuerza_detalle": {
-    "fuerza": 57.4,
-    "novedad": 1.172,
-    "r_est": 1.0,
-    "r_pob": 1.172,
-    "r_lugar": 1.0,
-    "r_avance": 1.0,
-    "empate": false,
-    "T_anios": null
-   },
-   "ent_id": "pais:es",
-   "miembros": [
-    "prov:06",
-    "prov:11",
-    "prov:14",
-    "prov:21",
-    "prov:41"
-   ],
-   "id": "almacen-r04-monitor-pais-es-2026-11-24",
-   "_rank": 57.4
-  },
-  {
    "regla": "R08",
    "variante": "capital_era5:tropical_tardia",
    "destino": "publicable",
@@ -581,8 +524,7 @@
     "cap:03",
     "cap:11"
    ],
-   "agregado": true,
-   "_rank": 46.632
+   "agregado": true
   },
   {
    "regla": "R09",
@@ -712,8 +654,7 @@
     "cap:44",
     "cap:11"
    ],
-   "agregado": true,
-   "_rank": 37.944
+   "agregado": true
   },
   {
    "regla": "R07",
@@ -771,64 +712,6 @@
    ],
    "agregado": true,
    "_rank": 26.216
-  },
-  {
-   "regla": "R06",
-   "variante": "monitor",
-   "destino": "publicable",
-   "serie": "almacen_r06",
-   "tipo": "episodio",
-   "indicador": "R06_monitor",
-   "territorio": "España",
-   "provincia": null,
-   "ambito": "nacional",
-   "fecha_dato": "2026-11-24",
-   "titular": "4 lugares a la vez — Sequía severa en A Coruña, donde lo normal son 1.166 mm al año (SPI-6 −1,8) (también Pontevedra, Gipuzkoa, Ourense)",
-   "dato": "nivel 3; año hidrológico al 70 %",
-   "clave": {
-    "indicador": "monitor",
-    "territorio": "pais:es",
-    "periodo": "2026-11-24",
-    "corte": "2026-11-24"
-   },
-   "cifra": {
-    "spi6": -1.75,
-    "nivel": 3
-   },
-   "comparacion": {
-    "normal_anual_mm": 1166.0,
-    "periodo": "2026-11-24"
-   },
-   "muestra": "Monitor de sequía",
-   "calidad": "provisional",
-   "invalidar": "SPI sobre pocas estaciones; revisiones del mes cerrado",
-   "metodo": "Monitor de sequía del observatorio. Regla R06 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
-   "limites": [],
-   "contexto": [],
-   "citabilidad": "media",
-   "exclusivo": false,
-   "requiere_revision": false,
-   "fuerza": 49.0,
-   "fuerza_detalle": {
-    "fuerza": 49.0,
-    "novedad": 1.0,
-    "r_est": 1.0,
-    "r_pob": 1.0,
-    "r_lugar": 1.0,
-    "r_avance": 1.0,
-    "empate": false,
-    "T_anios": null
-   },
-   "ent_id": "prov:15",
-   "id": "almacen-r06-monitor-agregado-2026-11-24",
-   "miembros": [
-    "prov:15",
-    "prov:36",
-    "prov:20",
-    "prov:32"
-   ],
-   "agregado": true,
-   "_rank": 49.0
   }
  ]
 }
