@@ -889,13 +889,17 @@ def al_detector(M):
     est = res["estado"]
     if est["estado"] in ("referencias_caducadas", "sin_referencias"):
         M.descartar("almacen", "España", est["mensaje"])
+    print(f"  almacén: {est['estado']} · {len(res['hallazgos'])} para hoy de {est.get('n_candidatos')} candidatos")
     for h in res["hallazgos"]:
         x = {k: v for k, v in h.items() if not k.startswith("_")}
         x["id_fijo"] = x.pop("id")
         x["exclusivo"] = EXCLUSIVO
         x["novedad"] = (x.get("fuerza_detalle") or {}).get("novedad", 1.0)
         x["limites"] = list(x.get("limites", [])) + [f"Cifra de la serie: {x.get('muestra')}. Qué podría invalidarla: {x.get('invalidar')}."]
+        n0, d0 = len(M.hallazgos), len(M.descartes)
         M.anadir(x)
+        if len(M.hallazgos) == n0:
+            print(f"  almacén: {x['id_fijo']} NO entró en la cola: {[d['motivo'] for d in M.descartes[d0:]]}")
 
 
 def main():
