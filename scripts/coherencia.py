@@ -125,6 +125,18 @@ def registros(docs: Path = DOCS):
                     if isinstance(v, (int, float)):
                         add(f"{x.get('regla')}:{cl.get('indicador')}", cl.get("territorio"), "periodo:" + str(cl.get("periodo")), cl.get("corte"), "cifra." + k, v, ruta)
 
+    # portada.json (mesa de redacción, 25-11-2026): las historias agrupadas llevan la clave de la agregada y la de cada miembro. La clave de
+    # cada miembro es la misma que la de su hallazgo en hallazgos.json (indicador, territorio, periodo, corte): mismo valor, mismo PR.
+    for lista, i, x in _items_portada(docs):
+        for j, v in enumerate(x.get("versiones_provinciales") or []):
+            if not v.get("indicador") or not v.get("fecha_dato") or v.get("serie") != "huella":
+                continue
+            terr = v.get("provincia_slug") or v.get("territorio")
+            per = _periodo(v.get("ambito_tiempo"), v.get("fecha_dato"))
+            ruta = f"prensa/portada.json#{lista}[{i}].versiones[{j}]({v.get('id')})"
+            add(v["indicador"], terr, per, v["fecha_dato"], "valor", v.get("valor"), ruta)
+            add(v["indicador"], terr, per, v["fecha_dato"], "PR", v.get("PR"), ruta)
+
     # huella/antes_raro.json (candidatos del último cálculo)
     a = leer(docs / "huella" / "antes_raro.json") or {}
     for i, x in enumerate(a.get("candidatos") or []):
@@ -149,6 +161,17 @@ def registros(docs: Path = DOCS):
     return out
 
 
+def _items_portada(docs: Path = DOCS):
+    p = leer(docs / "prensa" / "portada.json") or {}
+    out = []
+    if p.get("historia_del_dia"):
+        out.append(("historia_del_dia", 0, p["historia_del_dia"]))
+    for lista in ("mas", "datos_del_dia", "contexto"):
+        for i, x in enumerate(p.get(lista) or []):
+            out.append((lista, i, x))
+    return out
+
+
 def c_clave(docs: Path = DOCS):
     grupos = {}
     for clave, campo, valor, ruta in registros(docs):
@@ -166,6 +189,44 @@ def c_clave(docs: Path = DOCS):
                 "valores": [{"ruta": r, "valor": v} for v, r in vs],
                 "detalle": "la misma clave tiene valores distintos"})
     return evaluadas, fallos
+
+
+# ----------------------------------------------------------------------------- 1b · agrupadas (mesa de redacción)
+_RE_N_LUGARES = re.compile(r"\b(?:En\s+)?(\d{1,3})\s+(?:capitales|estaciones|lugares|provincias)\b")
+
+
+def c_agrupadas(docs: Path = DOCS):
+    """Una historia nacional agrupada de portada.json: el número de lugares del titular es el de sus miembros, y la clave de la agregada
+    (indicador + periodo) es la misma que la de cada miembro. Un miembro de la agregada no puede estar además en la lista como historia
+    aparte (titulares repetidos por ciudad)."""
+    fallos, n = [], 0
+    items = _items_portada(docs)
+    visibles = {}
+    for lista, i, x in items:
+        visibles.setdefault(slug(x.get("titular")), []).append((lista, i))
+    for lista, i, x in items:
+        vers = x.get("versiones_provinciales") or []
+        if x.get("ambito") != "nacional" or not vers:
+            continue
+        n += 1
+        ruta = f"prensa/portada.json#{lista}[{i}]({x.get('id')})"
+        cifras = x.get("cifras") or []
+        esperado = None
+        m = _RE_N_LUGARES.search(x.get("titular") or "")
+        if m:
+            esperado = int(m.group(1))
+        miembros = x.get("n_miembros")
+        if esperado is not None and miembros is not None and esperado != int(miembros):
+            fallos.append({"comprobacion": "agrupadas", "clave": f"{x.get('id')}|n_miembros",
+                           "valores": [{"ruta": ruta + " · titular", "valor": esperado}, {"ruta": ruta + " · n_miembros", "valor": int(miembros)}],
+                           "detalle": "el número de lugares del titular no es el de los miembros de la agregada"})
+        for v in vers:
+            if v.get("titular") and slug(v["titular"]) in visibles and any(
+                    (l, k) != (lista, i) for l, k in visibles[slug(v["titular"])]):
+                fallos.append({"comprobacion": "agrupadas", "clave": f"{x.get('id')}|{slug(v.get('territorio'))}|repetida",
+                               "valores": [{"ruta": ruta, "valor": v.get("territorio")}],
+                               "detalle": "un miembro de la agregada sale también como historia aparte"})
+    return n, fallos
 
 
 # ----------------------------------------------------------------------------- 2 · titular
@@ -214,11 +275,21 @@ def c_titular(docs: Path = DOCS):
 # ----------------------------------------------------------------------------- 3 · «hoy»
 # «es hoy al menos X veces más probable» = «en el clima actual»: no es una etiqueta de fecha
 _RE_HOY = re.compile(r"(?<!\bes )\bhoy\b(?! al menos)", re.I)
+# 25-11-2026 (fallo huella-antes-raro-espana-2026-11-18): «…una vez cada 10 años o menos y hoy son al menos tres veces más probables»
+# habla del clima actual (1996-2025), no del día del dato. Un «hoy» seguido, en la misma frase, de una probabilidad o un periodo de
+# retorno no es una etiqueta de fecha.
+_RE_HOY_CLIMA = re.compile(r"\bhoy\b[^.;]{0,60}?(?:m[aá]s\s+probables?|una\s+vez\s+cada|al\s+menos|veces\s+m[aá]s)", re.I)
+
+
+def _hoy_de_fecha(texto: str) -> bool:
+    """True si el texto tiene un «hoy» que sea etiqueta de fecha (no «es hoy al menos…», no «hoy son … más probables»)."""
+    clima = [m.start() for m in _RE_HOY_CLIMA.finditer(texto)]
+    return any(m.start() not in clima for m in _RE_HOY.finditer(texto))
 
 
 def fallo_hoy(texto: str, fecha_dato: str, ahora: datetime | None = None) -> bool:
     """True si el texto dice «hoy» y la fecha del dato es anterior a ayer."""
-    if not texto or not fecha_dato or not _RE_HOY.search(texto):
+    if not texto or not fecha_dato or not _hoy_de_fecha(texto):
         return False
     try:
         f = date.fromisoformat(str(fecha_dato)[:10])
@@ -288,6 +359,7 @@ def c_niveles(html: str | None = None):
 # ----------------------------------------------------------------------------- orquestación
 COMPROBACIONES = [
     ("clave", "Misma clave (indicador+territorio+periodo+corte), mismo valor en todos los JSON", c_clave),
+    ("agrupadas", "Las historias agrupadas: lugares del titular = miembros, y misma clave que cada miembro", c_agrupadas),
     ("titular", "El número del titular y del dato es el del campo estructurado", c_titular),
     ("hoy", "Ningún bloque «hoy» con fecha_dato anterior a ayer", c_hoy),
     ("niveles", "Las listas por nivel solo contienen elementos de su nivel", c_niveles),

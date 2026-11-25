@@ -795,8 +795,11 @@ def ejecutar(raiz: Path = RAIZ, hoy: date | None = None, ref: Path | None = None
             ESTADO_P = docs / "estado" / "almacen.json"
             ESTADO_P.parent.mkdir(parents=True, exist_ok=True)
             ESTADO_P.write_text(json.dumps(est, ensure_ascii=False, indent=1), encoding="utf-8")
-            salida_dir.mkdir(parents=True, exist_ok=True)
-            (salida_dir / "interno.json").write_text(json.dumps(construir_interno(resultado, docs, ahora), ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+            # 25-11-2026: el parte interno deja de publicarse en docs/ (era público en Pages). Se escribe fuera de docs/, sin commit, y el
+            # workflow lo envía a WordPress (scripts/sala/parte_interno_wp.py); lo pinta el shortcode [cg_parte_interno] solo a administradores.
+            priv = raiz / "salida_privada"
+            priv.mkdir(parents=True, exist_ok=True)
+            (priv / "parte_interno.json").write_text(json.dumps(construir_interno(resultado, docs, ahora), ensure_ascii=False, indent=1, default=str), encoding="utf-8")
         return resultado
 
     try:
@@ -895,7 +898,7 @@ def ejecutar(raiz: Path = RAIZ, hoy: date | None = None, ref: Path | None = None
 def construir_interno(res: dict, docs: Path, ahora: datetime) -> dict:
     """Parte interno (destinos interno y web): lo que evalúa el Air (previsión, avisos, revisiones) más los avisos del propio detector."""
     est = res["estado"]
-    aire = leer_json(docs / "prensa" / "almacen" / "interno_air.json", {}) or {}
+    aire = {}      # lo del Air lo envía el propio Air a WordPress (meta cg_parte_interno_air); el shortcode junta las dos mitades
     avisos = []
     if est["estado"] != "ok":
         avisos.append({"nivel": "aviso" if est["estado"] == "datos_atrasados" else "error", "texto": f"detector del almacén: {est['estado']} · {est['mensaje']}"})
@@ -907,7 +910,7 @@ def construir_interno(res: dict, docs: Path, ahora: datetime) -> dict:
     for d in est.get("descartados", [])[:20]:
         avisos.append({"nivel": "info", "texto": f"descartado {d['id']}: {d['motivo']}"})
     return {"generado": est["generado"], "estado_detector": est["estado"], "avisos_detector": avisos, "air": aire,
-            "nota": "Parte interno: no sale en /prensa/. Lo del Air (acierto de modelos, avisos sin respaldo, revisiones, fallos de calidad) llega cuando se sube interno_air.json."}
+            "nota": "Parte interno: no sale en /prensa/ ni en docs/. Lo del Air (acierto de modelos, avisos sin respaldo, revisiones, fallos de calidad) lo envía el Air a WordPress."}
 
 
 # ------------------------------------------------------------------------------------------ enganche con hallazgos_prensa.py

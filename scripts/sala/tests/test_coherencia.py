@@ -62,7 +62,7 @@ class Real(unittest.TestCase):
     def test_json_reales(self):
         t = time.time(); est = C.ejecutar(C.DOCS, salida=None, html_hub="")
         self.assertLess(time.time() - t, 60)
-        self.assertEqual(len(est["comprobaciones"]), 4)
+        self.assertEqual(len(est["comprobaciones"]), 5)
         txt = json.dumps(est, ensure_ascii=False)
         for malo in ("None", "NaN", "Array"):
             self.assertNotIn(malo, txt.replace('"nota"', ""))

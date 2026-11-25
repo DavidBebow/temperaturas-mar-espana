@@ -138,7 +138,7 @@ class DiaRoto(unittest.TestCase):
         est = json.loads((r / "docs" / "estado" / "almacen.json").read_text())
         self.assertEqual(est["estado"], "referencias_caducadas")
         self.assertIn("refresquen", est["mensaje"])
-        interno = json.loads((r / "docs" / "prensa" / "almacen" / "interno.json").read_text())
+        interno = json.loads((r / "salida_privada" / "parte_interno.json").read_text())
         self.assertTrue(any("referencias_caducadas" in a["texto"] for a in interno["avisos_detector"]))
 
     def test_sin_referencias_no_emiten(self):

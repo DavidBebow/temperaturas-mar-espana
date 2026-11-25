@@ -374,6 +374,8 @@ def serie_diaria(indicativo: str, raiz: Path = RAIZ) -> dict:
 
 
 PERIODOS = ("mes", "estacion", "anio", "hidro")
+# Decisión 5 de David (25-11-2026): el año hidrológico es una unidad de la lluvia, no del calor: solo las colas lluvioso y seco.
+COLAS_POR_PERIODO = {"hidro": ("lluvioso", "seco")}
 COLAS = {"calor": (0, +1, "más cálido"), "noches": (1, +1, "de noches más cálidas"), "lluvioso": (2, +1, "más lluvioso"),
          "seco": (2, -1, "más seco"), "frio": (0, -1, "más frío")}
 ESTACION_TXT = {12: "invierno", 1: "invierno", 2: "invierno", 3: "primavera", 4: "primavera", 5: "primavera", 6: "verano", 7: "verano",
@@ -479,6 +481,8 @@ def marcos_grandes(hoy: date, lag: int = 5, raiz: Path = RAIZ, colas=("calor", "
             candidatos.append((ini_prev, ini - timedelta(days=1), (hasta - (ini - timedelta(days=1))).days == 0))
         for (i0, h0, recien) in candidatos:
             for cola in colas:
+                if cola not in COLAS_POR_PERIODO.get(per, tuple(COLAS)):
+                    continue
                 idx, signo, adj = COLAS[cola]
                 filas = []
                 for cod, (ind, ciudad, est) in estaciones.items():
@@ -495,7 +499,7 @@ def marcos_grandes(hoy: date, lag: int = 5, raiz: Path = RAIZ, colas=("calor", "
                     if idx == 2 and cola == "lluvioso" and val < 20:
                         continue
                     filas.append({"cod": cod, "ciudad": ciudad, "estacion": est, "ind": ind, "puesto": puesto, "n": n, "valor": round(val, 2), "empate": empate,
-                                  "anterior": top[0] if top else None, "desde": desde})
+                                  "anterior": top[0] if top else None, "desde": desde, "top": top})
                 if not filas:
                     continue
                 corto, largo = nombre_periodo(i0, per, h0)
@@ -534,6 +538,7 @@ def _historia_marco_capital(f, per, cola, adj, corto, largo, cerrado, i0, h0, ho
             "fecha_dato": str(h0), "fecha_disponible": str(h0 + timedelta(days=lag)), "titular": tit, "entradilla": ent,
             "clave": {"indicador": f"marco:{per}:{cola}", "territorio": f"est:{f['ind']}", "periodo": f"{i0}", "corte": str(h0)},
             "cifra": {"puesto": f["puesto"]}, "valor": f["valor"], "comparacion": {"puesto": f["puesto"], "de": f["n"], "anterior": ant, "periodo": corto},
+            "top": f.get("top") or [], "estacion": f["estacion"],
             "calidad": "validado", "fuente": "AEMET, serie diaria validada de la estación", "cerrado": cerrado, "periodo": per, "cola": cola,
             "invalidar": "AEMET valida con retraso y puede corregir días; cambios de emplazamiento de la estación; días sin dato en el periodo",
             "citabilidad": "alta"}
@@ -558,6 +563,8 @@ def _historia_marco_nacional(primeros, filas, per, cola, adj, corto, largo, cerr
             "marco": {"n_primeros": n, "n_top3": len(filas), "total": total, "cerrado": cerrado, "lider": lider["ciudad"], "periodo": per, "cola": cola,
                       "hito": str(h0) if (h0 + timedelta(days=1)).day == 1 else None},
             "cifra": {"n_primeros": n}, "comparacion": {"puesto": 1, "de": lider["n"], "periodo": corto},
+            "tabla": [{"ciudad": f["ciudad"], "estacion": f["estacion"], "puesto": f["puesto"], "valor": f["valor"], "anterior": f["anterior"],
+                       "n": f["n"], "desde": f["desde"]} for f in sorted(filas, key=lambda f: (f["puesto"], -f["n"]))],
             "_miembros_territorios": [f["ciudad"] for f in primeros], "miembros": [f"est:{f['ind']}" for f in primeros],
             "versiones_provinciales": [f["ciudad"] for f in filas],
             "calidad": "validado", "fuente": "AEMET, series diarias validadas de las estaciones de las capitales", "cerrado": cerrado,

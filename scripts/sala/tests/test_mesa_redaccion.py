@@ -2,6 +2,7 @@
 """Pruebas de la mesa de redacción (scripts/mesa_redaccion.py): agrupación, escala única, marcos grandes (H1) y día sin noticia.
 Uso: python -m pytest -q scripts/sala/tests/test_mesa_redaccion.py"""
 import sys
+from datetime import datetime
 from datetime import date
 from pathlib import Path
 
@@ -81,3 +82,109 @@ def test_dia_sin_noticia():
     assert p2["sin_noticia"] and p2["historia_del_dia"] is None
     c3 = dict(c, marco={"n_primeros": 26, "cerrado": False, "hito": "2026-11-30"}, rasgos=dict(c["rasgos"]))
     assert M.portada([c3], HOY, emitidos)["historia_del_dia"] is not None   # se cierra el mes: sí
+
+
+# ============================================================================ chat 2 (25-11-2026): decisión 5, día real, día roto y portada
+import json  # noqa: E402
+import shutil  # noqa: E402
+
+import portada_prensa as P  # noqa: E402
+import coherencia as C  # noqa: E402
+
+RAIZ = Path(__file__).resolve().parent.parent.parent.parent
+
+
+def _raiz_tmp(tmp_path, hoy_json=True, hallazgos="real"):
+    """Raíz de pruebas: solo docs/prensa con los JSON reales de la web (o rotos); el archivo de AEMET se lee del repo."""
+    d = tmp_path / "docs" / "prensa" / "noticias"
+    d.mkdir(parents=True)
+    if hallazgos == "real":
+        shutil.copy(RAIZ / "docs" / "prensa" / "hallazgos.json", tmp_path / "docs" / "prensa" / "hallazgos.json")
+    elif hallazgos == "roto":
+        (tmp_path / "docs" / "prensa" / "hallazgos.json").write_text('{"enviables": [{"id": ', encoding="utf-8")
+    if hoy_json:
+        shutil.copy(RAIZ / "docs" / "prensa" / "noticias" / "hoy.json", d / "hoy.json")
+    return tmp_path
+
+
+def test_hidro_solo_lluvia_y_sequia():
+    """Decisión 5: el año hidrológico (cerrado el 30-9) no emite las colas calor y noches; el año natural sí."""
+    hs = M.marcos_grandes(date(2026, 10, 8), lag=8)
+    pares = {(h["periodo"], h["cola"]) for h in hs}
+    assert ("hidro", "calor") not in pares and ("hidro", "noches") not in pares
+    assert ("anio", "calor") in pares and ("anio", "noches") in pares
+    assert M.COLAS_POR_PERIODO["hidro"] == ("lluvioso", "seco")
+
+
+def test_agrupacion_real_antes_raro():
+    """Con los hallazgos reales de hoy, las huellas «antes era raro» de cada capital pasan a una nacional con sus versiones dentro."""
+    h = json.load(open(RAIZ / "docs" / "prensa" / "hallazgos.json"))
+    lista = [x for x in h["enviables"] + h["locales"] if x.get("serie") == "huella" and x.get("tipo") == "antes_raro"
+             and x.get("ambito") == "provincial" and x.get("indicador") == "mes_media_alta"]
+    g = M.agrupar(lista)
+    nac = [x for x in g if x.get("agregada_por_mesa")]
+    assert len(nac) >= 1
+    assert sum(len(x["versiones_provinciales"]) for x in nac) >= 20
+    assert not [x for x in g if x.get("ambito") == "provincial" and x.get("indicador") == "mes_media_alta"
+                and x["fecha_dato"][:7] == nac[0]["fecha_dato"][:7]]    # ninguna capital repetida fuera de su nacional
+
+
+def test_escala_componentes_acotados_y_orden():
+    base = {"pob": 1_000_000, "ambito": "provincial", "fuente": "estacion", "puesto": 1, "n_anios": 80, "edad": 1, "calidad": "validado",
+            "novedad": 1, "invalidar": "x", "plantilla": True, "titular": "t"}
+    a = M.puntuar(base)
+    b = M.puntuar({**base, "n_anios": 8, "fuente": "corta"})
+    c = M.puntuar({**base, "puesto": 3})
+    assert all(0 <= a[k] <= 1 for k in "ARNFQ") and 0 <= a["puntos"] <= 100
+    assert a["puntos"] > c["puntos"] > b["puntos"] or a["puntos"] > b["puntos"]
+    em = M.puntuar({**base, "emergencia": True, "fuente": "sin_serie", "puesto": None, "n_anios": None})
+    assert em["puertas"]["rareza"]                                  # la emergencia abre aunque no sea récord (decisión 1)
+
+
+def test_dia_real_y_sin_noticia(tmp_path):
+    """Día real (25-11-2026): con lo emitido ayer, ninguna historia es nueva → «sin noticia» con el marco vigente; relanzar el mismo día no cambia nada."""
+    raiz = _raiz_tmp(tmp_path)
+    ayer = P.generar(date(2026, 11, 24), raiz)             # primer día: el marco de 2026 abre
+    assert not ayer["sin_noticia"] and "capitales" in ayer["historia_del_dia"]["titular"]
+    hoy = P.generar(date(2026, 11, 25), raiz)
+    assert hoy["sin_noticia"] and hoy["historia_del_dia"] is None
+    assert hoy["sin_noticia_texto"]["titular"].startswith("Hoy no hay nada excepcional en los datos")
+    assert "25 capitales" in hoy["sin_noticia_texto"]["titular"] and hoy["marco_vigente"]["n_primeros"] >= 25
+    assert hoy["retraso_validado_dias"] == 8
+    otra = P.generar(date(2026, 11, 25), raiz)              # relanzado el mismo día: igual
+    assert otra["sin_noticia"] and otra["totales"] == hoy["totales"]
+    assert json.load(open(raiz / "docs" / "prensa" / "portada.json"))["fecha"] == "2026-11-25"
+    # la rutina está en «Datos del día», no en la portada; sin titulares repetidos por ciudad
+    assert hoy["datos_del_dia"] and all(x["puntos"] >= 0 for x in hoy["datos_del_dia"])
+    titulares = [x["titular"] for k in ("mas", "datos_del_dia", "contexto") for x in hoy[k]]
+    assert len(titulares) == len(set(titulares))
+
+
+def test_primer_dia_emite_y_guarda_ficheros(tmp_path):
+    raiz = _raiz_tmp(tmp_path)
+    s = P.generar(date(2026, 11, 25), raiz)
+    d = s["historia_del_dia"]
+    assert d and d["nota"] and (raiz / "docs" / d["nota"]).exists()
+    assert d["grafico"] and (raiz / "docs" / d["grafico"]["svg"]).read_text().startswith("<svg")
+    assert d["versiones_provinciales"] and d["citar"] and d["puertas"] and set(d["componentes"]) == set("ARNFQ")
+    assert "NaN" not in json.dumps(s) and "None" not in json.dumps(s)
+
+
+def test_dia_roto_no_cae(tmp_path):
+    """Día roto: hallazgos.json truncado y sin noticias/hoy.json. La portada sale con lo que hay y dice qué falta."""
+    raiz = _raiz_tmp(tmp_path, hoy_json=False, hallazgos="roto")
+    P.generar(date(2026, 11, 24), raiz)
+    s = P.generar(date(2026, 11, 25), raiz)
+    assert s["sin_noticia"] and s["sin_noticia_texto"]["titular"].startswith("Hoy no hay nada excepcional")
+    assert any("hallazgos.json" in a for a in s["avisos"]) and any("hoy.json" in a for a in s["avisos"])
+    assert s["datos_del_dia"] == []
+    ruta = tmp_path / "docs" / "prensa" / "portada.json"
+    assert json.load(open(ruta))["sin_noticia"] is True
+
+
+def test_coherencia_hoy_del_clima_no_es_fecha():
+    """Fallo huella-antes-raro-espana-2026-11-18: «hoy son al menos tres veces más probables» habla del clima actual."""
+    t = ("11 capitales tuvieron el 18 de noviembre temperaturas medias que en 1961-1990 eran raras (una vez cada 10 años o menos) "
+         "y hoy son al menos tres veces más probables")
+    assert not C.fallo_hoy(t, "2026-11-18", datetime(2026, 11, 25, 12, 0, tzinfo=C.MADRID))
+    assert C.fallo_hoy("Hoy llueve en Murcia", "2026-11-18", datetime(2026, 11, 25, 12, 0, tzinfo=C.MADRID))
