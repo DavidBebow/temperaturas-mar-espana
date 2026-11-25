@@ -1,6 +1,6 @@
-# Sequía cálida en Zamora: sequía moderada y 1,6 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Zamora: sequía moderada y 1,7 °C más que lo normal en noviembre de 2026
 
-**Dato:** Zamora está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 24 de noviembre de 2026 es de 10,8 °C, 1,6 °C por encima de la media de ese mes en 1996-2025; es 3,5 veces más probable que en 1961-1990 (intervalo 1,3-18).  
+**Dato:** Zamora está en «sequía moderada» en el Monitor de sequía (SPI-12 de 0,2) y la media de noviembre de 2026 hasta el 24 de noviembre de 2026 es de 10,9 °C, 1,7 °C por encima de la media de ese mes en 1996-2025; es 3,7 veces más probable que en 1961-1990 (intervalo 1,3-20).  
 **Fecha del dato:** 24 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Zamora  
 **Citabilidad:** alta · **Exclusivo:** sí

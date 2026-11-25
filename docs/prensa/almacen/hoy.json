@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-25T12:34:14Z",
+ "generado": "2026-11-25T15:03:38Z",
  "hoy": "2026-11-25",
  "seleccionados": [
   "almacen-r08-capital-era5-tropical-tardia-agregado-2026-11-18",
@@ -464,6 +464,61 @@
    "ent_id": "est:5402",
    "id": "almacen-r01-estacion-aemet-estacion-calor-est-5402-2026-11-19",
    "_rank": 31.459999999999994
+  },
+  {
+   "regla": "R03",
+   "variante": "estacion_aemet:calor",
+   "destino": "publicable",
+   "serie": "almacen_r03",
+   "tipo": "racha",
+   "indicador": "R03_estacion_aemet_calor",
+   "territorio": "IZAÑA",
+   "provincia": "Santa Cruz de Tenerife",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-21",
+   "titular": "La estación de AEMET de Izaña lleva 7 días seguidos con la máxima 4 °C o más por encima de lo normal: nunca había habido una racha así un 21 de noviembre en 104 años",
+   "dato": "7 días; la más larga en curso un 21 de noviembre hasta ahora: 5 (1997)",
+   "clave": {
+    "indicador": "estacion_aemet:calor",
+    "territorio": "est:C430E",
+    "periodo": "racha a 2026-11-21",
+    "corte": "2026-11-21"
+   },
+   "cifra": {
+    "dias": 7
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 105,
+    "anterior": [
+     5,
+     1997
+    ],
+    "periodo": "racha a 2026-11-21"
+   },
+   "muestra": "104 años con dato ese día",
+   "calidad": "validado",
+   "invalidar": "días sin dato rompen la racha; en reanálisis, la lluvia de celda puede no coincidir con el pluviómetro",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R03 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 48.8,
+   "fuerza_detalle": {
+    "fuerza": 48.8,
+    "novedad": 1.34,
+    "r_est": 1.156,
+    "r_pob": 1.0,
+    "r_lugar": 1.159,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 105
+   },
+   "ent_id": "est:C430E",
+   "id": "almacen-r03-estacion-aemet-calor-est-c430e-2026-11-21",
+   "_rank": 38.552
   },
   {
    "regla": "R08",
