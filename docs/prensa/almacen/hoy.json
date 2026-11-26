@@ -1,8 +1,73 @@
 {
- "generado": "2026-11-26T12:03:32Z",
+ "generado": "2026-11-26T15:04:01Z",
  "hoy": "2026-11-26",
- "seleccionados": [],
+ "seleccionados": [
+  "almacen-r08-estacion-aemet-calor-tardio-est-7228-2026-11-18",
+  "almacen-r01-estacion-aemet-estacion-calor-est-7228-2026-11-18",
+  "almacen-r01-estacion-aemet-estacion-noches-est-9207-2026-11-18",
+  "almacen-r09-estacion-aemet-mes-tmax-est-7228-2026-11-18"
+ ],
  "hallazgos": [
+  {
+   "regla": "R01",
+   "variante": "estacion_aemet:estacion:calor",
+   "destino": "publicable",
+   "serie": "almacen_r01",
+   "tipo": "puesto_extremo",
+   "indicador": "R01_estacion_aemet_estacion_calor",
+   "territorio": "ALCANTARILLA, BASE AÉREA",
+   "provincia": "Murcia",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-18",
+   "titular": "La estación de AEMET de Alcantarilla, Base Aérea: lo que va de otoño, el más cálido en 83 años (28,87 °C de media de las máximas; récord anterior 28,87 en 2022)",
+   "dato": "28,9 °C de media de las máximas · +2,3 °C sobre 1991-2020 · puesto 1 de 83",
+   "clave": {
+    "indicador": "estacion_aemet:estacion:calor",
+    "territorio": "est:7228",
+    "periodo": "el otoño de 2026",
+    "corte": "2026-11-18"
+   },
+   "cifra": {
+    "valor": 28.87,
+    "anomalia": 2.31
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 83,
+    "anterior": [
+     28.87,
+     2022
+    ],
+    "segundo": [
+     28.69,
+     2023
+    ],
+    "periodo": "el otoño de 2026"
+   },
+   "muestra": "83 años con el periodo completo hasta el día 79",
+   "calidad": "validado",
+   "invalidar": "dato validado por AEMET con retraso; cambios de emplazamiento; días que faltan en el periodo",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R01 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 43.9,
+   "fuerza_detalle": {
+    "fuerza": 43.9,
+    "novedad": 1.044,
+    "r_est": 1.126,
+    "r_pob": 1.12,
+    "r_lugar": 1.014,
+    "r_avance": 0.96,
+    "empate": true,
+    "T_anios": 83
+   },
+   "ent_id": "est:7228",
+   "id": "almacen-r01-estacion-aemet-estacion-calor-est-7228-2026-11-18",
+   "_rank": 22.389
+  },
   {
    "regla": "R01",
    "variante": "estacion_aemet:estacion:calor",
@@ -63,6 +128,66 @@
    "id": "almacen-r01-estacion-aemet-estacion-calor-est-5402-2026-11-19"
   },
   {
+   "regla": "R01",
+   "variante": "estacion_aemet:estacion:noches",
+   "destino": "publicable",
+   "serie": "almacen_r01",
+   "tipo": "puesto_extremo",
+   "indicador": "R01_estacion_aemet_estacion_noches",
+   "territorio": "VALLE DE HECHO, HECHO",
+   "provincia": "Huesca",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-18",
+   "titular": "La estación de AEMET de Valle De Hecho, Hecho: lo que va de otoño, el de noches más cálidas en 42 años (8,25 °C de media de las mínimas; récord anterior 8,18 en 2023)",
+   "dato": "8,3 °C de media de las mínimas · +1,9 °C sobre 1991-2020 · puesto 1 de 42",
+   "clave": {
+    "indicador": "estacion_aemet:estacion:noches",
+    "territorio": "est:9207",
+    "periodo": "el otoño de 2026",
+    "corte": "2026-11-18"
+   },
+   "cifra": {
+    "valor": 8.25,
+    "anomalia": 1.88
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 42,
+    "anterior": [
+     8.18,
+     2023
+    ],
+    "segundo": [
+     8.12,
+     2022
+    ],
+    "periodo": "el otoño de 2026"
+   },
+   "muestra": "42 años con el periodo completo hasta el día 79",
+   "calidad": "validado",
+   "invalidar": "dato validado por AEMET con retraso; cambios de emplazamiento; días que faltan en el periodo",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R01 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 42.0,
+   "fuerza_detalle": {
+    "fuerza": 42.0,
+    "novedad": 0.999,
+    "r_est": 1.037,
+    "r_pob": 1.036,
+    "r_lugar": 1.139,
+    "r_avance": 0.96,
+    "empate": true,
+    "T_anios": 42
+   },
+   "ent_id": "est:9207",
+   "id": "almacen-r01-estacion-aemet-estacion-noches-est-9207-2026-11-18",
+   "_rank": 21.42
+  },
+  {
    "regla": "R03",
    "variante": "estacion_aemet:calor",
    "destino": "publicable",
@@ -115,6 +240,109 @@
    },
    "ent_id": "est:C430E",
    "id": "almacen-r03-estacion-aemet-calor-est-c430e-2026-11-21"
+  },
+  {
+   "regla": "R08",
+   "variante": "estacion_aemet:calor_tardio",
+   "destino": "publicable",
+   "serie": "almacen_r08",
+   "tipo": "primera_vez_desde",
+   "indicador": "R08_estacion_aemet_calor_tardio",
+   "territorio": "ALCANTARILLA, BASE AÉREA",
+   "provincia": "Murcia",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-18",
+   "titular": "La estación de AEMET de Alcantarilla, Base Aérea: el día de 30 °C más tardío de la serie (18 de noviembre, 39 días más tarde que la media)",
+   "dato": "18 de noviembre; media de la serie a 39 días",
+   "clave": {
+    "indicador": "estacion_aemet:calor_tardio",
+    "territorio": "est:7228",
+    "periodo": "temporada 2026",
+    "corte": "2026-11-18"
+   },
+   "cifra": {
+    "fecha": "2026-11-18",
+    "dias_frente_media": 39
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 86,
+    "periodo": "temporada 2026"
+   },
+   "muestra": "86 años",
+   "calidad": "validado",
+   "invalidar": "un día sin dato puede esconder la fecha real; el umbral es fijo (0, 20 y 30 °C)",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R08 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 57.8,
+   "fuerza_detalle": {
+    "fuerza": 57.8,
+    "novedad": 1.147,
+    "r_est": 1.13,
+    "r_pob": 1.0,
+    "r_lugar": 1.014,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 86
+   },
+   "ent_id": "est:7228",
+   "id": "almacen-r08-estacion-aemet-calor-tardio-est-7228-2026-11-18",
+   "_rank": 29.477999999999998
+  },
+  {
+   "regla": "R09",
+   "variante": "estacion_aemet:mes_tmax",
+   "destino": "publicable",
+   "serie": "almacen_r09",
+   "tipo": "record_mes",
+   "indicador": "R09_estacion_aemet_mes_tmax",
+   "territorio": "ALCANTARILLA, BASE AÉREA",
+   "provincia": "Murcia",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-18",
+   "titular": "La estación de AEMET de Alcantarilla, Base Aérea: la máxima más alta de cualquier noviembre en 84 años (31,9 °C)",
+   "dato": "récord del mes",
+   "clave": {
+    "indicador": "estacion_aemet:mes_tmax",
+    "territorio": "est:7228",
+    "periodo": "noviembre",
+    "corte": "2026-11-18"
+   },
+   "cifra": {
+    "valor": 31.9
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 84,
+    "periodo": "noviembre"
+   },
+   "muestra": "84 noviembres",
+   "calidad": "validado",
+   "invalidar": "dato de un solo día: contrastar",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R09 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 35.5,
+   "fuerza_detalle": {
+    "fuerza": 35.5,
+    "novedad": 1.268,
+    "r_est": 1.25,
+    "r_pob": 1.0,
+    "r_lugar": 1.014,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 2520
+   },
+   "ent_id": "est:7228",
+   "id": "almacen-r09-estacion-aemet-mes-tmax-est-7228-2026-11-18",
+   "_rank": 18.105
   },
   {
    "regla": "R09",

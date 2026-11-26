@@ -1,21 +1,27 @@
-# Lo que va de otoño de 2026 es el más cálido registrado en 12 capitales con serie de AEMET de 40 años o más; en Zamora, desde 1931
+# Lo que va de otoño de 2026 es el más cálido registrado en 18 capitales con serie de AEMET de 40 años o más; en Madrid, desde 1923
 
-En 12 de las 44 capitales con estación de AEMET en la propia ciudad, lo que va de otoño de 2026 es el más cálido de su serie, entre las de 40 años o más. La más larga es la de Zamora (94 años, desde 1931): 24,06 °C frente a 23,60 en 2017. Dato validado de AEMET hasta el 17 de noviembre; el periodo no ha terminado. Capitales: Zamora, Burgos, Salamanca, Sevilla, Badajoz, Cuenca, Almería, Ourense, Cáceres, Toledo, Ávila y Huelva.
+En 18 de las 44 capitales con estación de AEMET en la propia ciudad, lo que va de otoño de 2026 es el más cálido de su serie, entre las de 40 años o más. La más larga es la de Madrid, Retiro (101 años, desde 1923): 23,93 °C frente a 23,50 en 1985. Dato validado de AEMET hasta el 20 de noviembre; el periodo no ha terminado. Capitales: Madrid, Zamora, Alicante, Valencia, Burgos, Huesca, Salamanca, Logroño, Sevilla, Badajoz, Cuenca, Ciudad Real, Valladolid, Ourense, Cáceres, Toledo, Ávila y Huelva.
 
 | Lugar | Valor | Referencia |
 |---|---|---|
-| Zamora | 24.06 °C | 23.6013 |
-| Burgos | 21.62 °C | 21.1564 |
-| Salamanca | 24.08 °C | 23.35 |
-| Sevilla | 31.28 °C | 30.1218 |
-| Badajoz | 29.11 °C | 28.8487 |
-| Cuenca | 24.59 °C | 24.1397 |
-| Almería | 27.84 °C | 27.341 |
-| Ourense | 26.36 °C | 26.0103 |
-| Cáceres | 27.38 °C | 26.8449 |
-| Toledo | 27.2 °C | 26.8692 |
-| Ávila | 21.92 °C | 21.7346 |
-| Huelva | 29.74 °C | 28.6115 |
+| Madrid | 23.93 °C | 23.4963 |
+| Zamora | 23.7 °C | 23.2963 |
+| Alicante | 27.64 °C | 27.4481 |
+| Valencia | 26.97 °C | 26.7296 |
+| Burgos | 21.62 °C | 20.863 |
+| Huesca | 24.07 °C | 23.9012 |
+| Salamanca | 24.08 °C | 23.0864 |
+| Logroño | 24.61 °C | 24.4296 |
+| Sevilla | 31.28 °C | 29.8852 |
+| Badajoz | 29.11 °C | 28.442 |
+| Cuenca | 24.59 °C | 23.9309 |
+| Ciudad Real | 25.83 °C | 25.5753 |
+| Valladolid | 23.75 °C | 23.3358 |
+| Ourense | 26.36 °C | 25.516 |
+| Cáceres | 27.38 °C | 26.6185 |
+| Toledo | 27.2 °C | 26.2827 |
+| Ávila | 21.92 °C | 21.0556 |
+| Huelva | 29.74 °C | 28.4025 |
 
 ## Fuente y método
 

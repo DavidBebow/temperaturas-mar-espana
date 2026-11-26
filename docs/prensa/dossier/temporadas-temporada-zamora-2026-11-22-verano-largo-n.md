@@ -1,7 +1,7 @@
 # Zamora: 2026 bate el máximo de su serie en días de 30 °C o más: 102, frente a 81 del máximo anterior
 
-**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 102, frente a 81 del máximo anterior, con datos validados de AEMET hasta el 21 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
-**Fecha del dato:** 21 de noviembre de 2026  
+**Dato:** 2026 bate el máximo de su serie en días de 30 °C o más: 102, frente a 81 del máximo anterior, con datos validados de AEMET hasta el 22 de noviembre de 2026 (serie desde 1961; temporada cerrada).  
+**Fecha del dato:** 22 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Zamora  
 **Citabilidad:** alta · **Exclusivo:** sí
 
