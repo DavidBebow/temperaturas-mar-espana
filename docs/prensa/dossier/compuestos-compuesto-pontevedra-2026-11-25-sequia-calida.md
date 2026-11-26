@@ -1,7 +1,7 @@
 # Sequía cálida en Pontevedra: sequía severa y 1,8 °C más que lo normal en noviembre de 2026
 
-**Dato:** Pontevedra está en «sequía severa» en el Monitor de sequía (SPI-12 de 1,0) y la media de noviembre de 2026 hasta el 24 de noviembre de 2026 es de 13,8 °C, 1,8 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
-**Fecha del dato:** 24 de noviembre de 2026  
+**Dato:** Pontevedra está en «sequía severa» en el Monitor de sequía (SPI-12 de 1,0) y la media de noviembre de 2026 hasta el 25 de noviembre de 2026 es de 13,7 °C, 1,8 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Fecha del dato:** 25 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Pontevedra  
 **Citabilidad:** alta · **Exclusivo:** sí
 
