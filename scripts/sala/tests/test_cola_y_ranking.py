@@ -35,8 +35,16 @@ class Http:
         return r
 
 
+VALIDADO = date(2026, 10, 31)        # el dato validado que suponen estas pruebas; el archivo real avanza cada día, así que se recorta a esta fecha
+
+
 def serie_madrid():
     S = at.cargar_serie("28", HOY)
+    y = 2026 - at.Y0
+    c0 = at.CUM[VALIDADO.month - 1] + VALIDADO.day          # casilla del día siguiente al validado (índice 0 = 1 de enero)
+    for v in ("tmax", "tmin", "prec"):
+        S.mat[v][y, c0:] = float("nan")
+    S.finalizar()
     S.ultima_validada = S.ultima
     return S
 

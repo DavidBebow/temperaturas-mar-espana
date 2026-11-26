@@ -141,22 +141,21 @@ def test_escala_componentes_acotados_y_orden():
     assert em["puertas"]["rareza"]                                  # la emergencia abre aunque no sea récord (decisión 1)
 
 
-def test_dia_real_y_sin_noticia(tmp_path):
-    """Día real (25-11-2026): con lo emitido ayer, ninguna historia es nueva → «sin noticia» con el marco vigente; relanzar el mismo día no cambia nada."""
+def test_dia_real_ya_no_sale_sin_noticia(tmp_path):
+    """Día real (25-11-2026): con lo emitido ayer, ninguna historia es nueva. Desde el 26-11 eso ya no vacía la portada: abre el dato del día
+    (sello «dato del día», no «excepcional»); relanzar el mismo día no cambia nada."""
     raiz = _raiz_tmp(tmp_path)
     ayer = P.generar(date(2026, 11, 24), raiz)             # primer día: el marco de 2026 abre
     assert not ayer["sin_noticia"] and "capitales" in ayer["historia_del_dia"]["titular"]
     hoy = P.generar(date(2026, 11, 25), raiz)
-    assert hoy["sin_noticia"] and hoy["historia_del_dia"] is None
-    assert hoy["sin_noticia_texto"]["titular"].startswith("Hoy no hay nada excepcional en los datos")
-    assert "25 capitales" in hoy["sin_noticia_texto"]["titular"] and hoy["marco_vigente"]["n_primeros"] >= 25
+    assert hoy["sin_noticia"] is False and hoy["dato_del_dia"]["titular"] and hoy["dato_del_dia"]["sello"] == "dato_del_dia"
     assert hoy["retraso_validado_dias"] == 8
     otra = P.generar(date(2026, 11, 25), raiz)              # relanzado el mismo día: igual
-    assert otra["sin_noticia"] and otra["totales"] == hoy["totales"]
+    assert otra["dato_del_dia"]["titular"] == hoy["dato_del_dia"]["titular"] and otra["totales"] == hoy["totales"]
     assert json.load(open(raiz / "docs" / "prensa" / "portada.json"))["fecha"] == "2026-11-25"
     # la rutina está en «Datos del día», no en la portada; sin titulares repetidos por ciudad
     assert hoy["datos_del_dia"] and all(x["puntos"] >= 0 for x in hoy["datos_del_dia"])
-    titulares = [x["titular"] for k in ("mas", "datos_del_dia", "contexto") for x in hoy[k]]
+    titulares = [x["titular"] for k in ("datos_del_dia", "contexto") for x in hoy[k]]
     assert len(titulares) == len(set(titulares))
 
 
@@ -175,11 +174,10 @@ def test_dia_roto_no_cae(tmp_path):
     raiz = _raiz_tmp(tmp_path, hoy_json=False, hallazgos="roto")
     P.generar(date(2026, 11, 24), raiz)
     s = P.generar(date(2026, 11, 25), raiz)
-    assert s["sin_noticia"] and s["sin_noticia_texto"]["titular"].startswith("Hoy no hay nada excepcional")
+    assert s["sin_noticia"] is False and s["dato_del_dia"]["titular"]
     assert any("hallazgos.json" in a for a in s["avisos"]) and any("hoy.json" in a for a in s["avisos"])
-    assert s["datos_del_dia"] == []
     ruta = tmp_path / "docs" / "prensa" / "portada.json"
-    assert json.load(open(ruta))["sin_noticia"] is True
+    assert json.load(open(ruta))["sin_noticia"] is False
 
 
 def test_coherencia_hoy_del_clima_no_es_fecha():

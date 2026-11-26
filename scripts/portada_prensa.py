@@ -30,9 +30,18 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import mesa_redaccion as M      # noqa: E402
 import mesa_repaso as R         # noqa: E402
+import portada_bloques as B     # noqa: E402
 
 RAIZ = M.RAIZ
-VERSION = 1
+VERSION = 2
+HISTORIAL_DIAS = 30                   # cuánto se recuerda de qué abrió cada día
+MAX_SEGUIDOS = 2                      # la misma historia no abre más de 2 días seguidos sin cifra nueva
+SELLOS = {"excepcional": "Excepcional", "dato_del_dia": "Dato del día", "en_seguimiento": "En seguimiento"}
+SELLO_EXPLICA = {
+    "excepcional": "Cumple los cinco criterios de la mesa (alcance, rareza, por qué hoy, una frase, se sostiene) con 55 puntos o más, o es una emergencia.",
+    "dato_del_dia": "Es la pieza con más puntos de hoy; no cumple los cinco criterios y no se presenta como récord.",
+    "en_seguimiento": "Misma historia que ayer con una cifra nueva.",
+}
 CADUCA_HORAS = 36                     # el plugin ignora una portada con más horas
 EMITIDOS_DIAS = 120                   # cuánto se recuerda lo emitido
 MAX_DATOS, MAX_CONTEXTO = 12, 12
@@ -314,6 +323,118 @@ def elemento(c: dict, hoy: date, raiz: Path, completo: bool) -> dict:
 
 
 # ----------------------------------------------------------------------------- estado de lo emitido (novedad frente a ayer)
+# ----------------------------------------------------------------------------- A · dato del día (la mesa pasa a ser un sello)
+RIGOR_PROHIBIDO = re.compile(r"hist[óo]ric", re.I)
+
+
+def rigor_ok(c: dict) -> bool:
+    """Reglas del 25-11: nada de «histórico»; «el más…» solo con primer puesto y sin empate."""
+    t = c.get("titular") or ""
+    if RIGOR_PROHIBIDO.search(t):
+        return False
+    if re.search(r"\b(el|la|los|las) m[áa]s\b", t, re.I):
+        comp = c.get("comparacion") or {}
+        if comp and comp.get("puesto") not in (None, 1):
+            return False
+    return True
+
+
+def _cifra_txt(c: dict) -> str:
+    return json.dumps(c.get("_cifra"), sort_keys=True, default=str)
+
+
+def historial_previo(estado: dict, hoy: date) -> list[dict]:
+    h = (estado.get("portada_diaria") or {}).get("historial") or []
+    return sorted([e for e in h if e.get("fecha") and e["fecha"] < str(hoy)], key=lambda e: e["fecha"])
+
+
+def seguidos(hist: list[dict], clave: str, hoy: date) -> tuple[int, str | None]:
+    """Días seguidos (hasta ayer) en que `clave` abrió la portada y la cifra con que lo hizo el último."""
+    n, cifra, esperado = 0, None, hoy - timedelta(days=1)
+    for e in reversed(hist):
+        if date.fromisoformat(e["fecha"]) != esperado or e.get("clave") != clave:
+            break
+        n += 1
+        cifra = cifra if cifra is not None else e.get("cifra")
+        esperado -= timedelta(days=1)
+    return n, cifra
+
+
+def sello_de(c: dict, hist: list[dict], hoy: date) -> str:
+    p = c["puntuacion"]
+    if (p.get("portada") and p["puntos"] >= 55) or c["rasgos"].get("emergencia"):
+        return "excepcional"
+    n, cifra = seguidos(hist, c.get("_k"), hoy)
+    if n >= 1 and c.get("_cifra") is not None and _cifra_txt(c) != cifra:
+        return "en_seguimiento"
+    return "dato_del_dia"
+
+
+def elegible(c: dict, hist: list[dict], hoy: date, sello: str) -> bool:
+    """La misma historia no abre un tercer día seguido sin cifra nueva ni sello excepcional."""
+    n, cifra = seguidos(hist, c.get("_k"), hoy)
+    if n >= MAX_SEGUIDOS and sello == "dato_del_dia" and _cifra_txt(c) == cifra:
+        return False
+    return True
+
+
+def pieza_de_carrera(r: dict, sello: str = "dato_del_dia") -> dict:
+    unidad = r.get("unidad") or ""
+    cifras = [{"n": f"{str(r['valor_hoy']).replace('.', ',')} {unidad}".strip(), "l": f"valor de hoy; récord {str(r['record']).replace('.', ',')} {unidad} ({r['anio_record']})".strip(), "tono": "calor"}]
+    return {"clave": r["id"], "id": r["id"], "origen": "carrera", "tipo": "carrera", "titular": r["titulo"], "entradilla": r["frase"], "kicker": "Carrera hacia el récord",
+            "cifras": cifras, "corte": r.get("dato_hasta"), "calidad": "validado", "fuente": "AEMET, series diarias validadas, y cálculo propio",
+            "citar": CITAR, "versiones_provinciales": [], "provincias": [], "puntos": None, "emergencia": False, "nota": None, "grafico": None,
+            "sello": sello, "sello_texto": SELLOS[sello], "sello_explica": SELLO_EXPLICA[sello]}
+
+
+def bloque_dato_del_dia(p: dict, pool: list[dict], carreras: dict, hoy: date, raiz: Path, hist: list[dict], escribir: bool) -> tuple[dict, list[dict], dict | None]:
+    """(dato_del_dia, mas_historias, clave_emitida). Nunca vacío: si no queda pieza de la mesa, la mejor carrera del bloque B."""
+    vistos, orden = set(), []
+    cola = ([p["historia_del_dia"]] if p.get("historia_del_dia") else []) + list(p["mas"]) + list(p["datos_del_dia"]) + list(p["contexto"])
+    for c in sorted(cola, key=lambda c: (-int(bool(c["rasgos"].get("emergencia"))), -c["puntuacion"]["puntos"])):
+        k = c.get("_k") or c.get("titular")
+        if k in vistos or not rigor_ok(c) or not c.get("titular"):
+            continue
+        vistos.add(k)
+        orden.append(c)
+    elegidos = []
+    for c in orden:
+        sl = sello_de(c, hist, hoy)
+        if elegible(c, hist, hoy, sl):
+            elegidos.append((c, sl))
+    # primero las excepcionales; dentro de cada grupo, por puntos (ya ordenado)
+    elegidos.sort(key=lambda x: 0 if x[1] == "excepcional" else 1)
+    items = []
+    for c, sl in elegidos[:5]:
+        it = elemento(c, hoy, raiz, escribir)
+        it.update({"sello": sl, "sello_texto": SELLOS[sl], "sello_explica": SELLO_EXPLICA[sl]})
+        items.append((c, it))
+    # relleno con carreras si faltan piezas (la portada nunca se queda sin «Más historias» ni sin dato)
+    piezas_c = carreras.get("piezas") or []
+    usadas = 0
+    while len(items) < 3 and usadas < len(piezas_c):
+        items.append((None, pieza_de_carrera(piezas_c[usadas])))
+        usadas += 1
+    if not items:
+        items.append((None, pieza_de_carrera({"id": "sin-carreras", "titulo": "Dato del día: la serie de AEMET llega hasta " + str(carreras.get("dato_hasta")),
+                                              "frase": "La mesa no ha producido piezas hoy y las carreras no tienen serie con cobertura suficiente.", "valor_hoy": "", "record": "", "anio_record": ""})))
+    cab_c, cab = items[0]
+    emitida = None
+    if cab_c is not None:
+        emitida = {"clave": cab_c.get("_k"), "cifra": _cifra_txt(cab_c), "sello": cab["sello"]}
+    else:
+        emitida = {"clave": cab["clave"], "cifra": str(cab.get("cifras")), "sello": cab["sello"]}
+    return cab, [it for _, it in items[1:5]], emitida
+
+
+def guardar_historial(estado: dict, hoy: date, emitida: dict | None) -> dict:
+    h = [e for e in ((estado.get("portada_diaria") or {}).get("historial") or []) if e.get("fecha") != str(hoy)]
+    if emitida:
+        h.append({"fecha": str(hoy), **emitida})
+    corte = str(hoy - timedelta(days=HISTORIAL_DIAS))
+    return {"historial": sorted([e for e in h if e["fecha"] >= corte], key=lambda e: e["fecha"])}
+
+
 def vista_de_ayer(estado: dict, hoy: date) -> dict:
     """Lo emitido antes de hoy. Relanzar el workflow el mismo día no hace que lo de hoy «ya fuera verdad ayer»."""
     h = str(hoy)
@@ -368,7 +489,7 @@ def sin_noticia(mv: dict | None) -> dict:
 
 
 # ----------------------------------------------------------------------------- generador
-def generar(hoy: date, raiz: Path = RAIZ, escribir: bool = True) -> dict:
+def generar(hoy: date, raiz: Path = RAIZ, escribir: bool = True, hall: dict | None = None, hoy_json: dict | None = None) -> dict:
     avisos, fuentes = [], {}
     cands, marcos = [], []
     lag, hasta = medir_retraso(hoy, raiz)
@@ -382,7 +503,8 @@ def generar(hoy: date, raiz: Path = RAIZ, escribir: bool = True) -> dict:
         fuentes["mesa"] = len(mesa)
     except Exception as e:           # noqa: BLE001
         avisos.append(f"mesa (marcos, récords y rachas): {type(e).__name__}: {str(e)[:120]}")
-    hall = leer_json(raiz / "docs" / "prensa" / "hallazgos.json")
+    if hall is None:
+        hall = leer_json(raiz / "docs" / "prensa" / "hallazgos.json")
     if isinstance(hall, dict) and hall:
         try:
             c = candidatos_hallazgos(hall, hoy)
@@ -392,7 +514,7 @@ def generar(hoy: date, raiz: Path = RAIZ, escribir: bool = True) -> dict:
             avisos.append(f"hallazgos.json: {type(e).__name__}: {str(e)[:120]}")
     else:
         avisos.append("hallazgos.json falta o está roto")
-    hj = leer_json(raiz / "docs" / "prensa" / "noticias" / "hoy.json")
+    hj = hoy_json if hoy_json is not None else leer_json(raiz / "docs" / "prensa" / "noticias" / "hoy.json")
     if isinstance(hj, dict) and hj.get("historias"):
         try:
             c = candidatos_noticias(hj, date.fromisoformat(str(hj.get("fecha") or hoy)[:10]))
@@ -416,22 +538,43 @@ def generar(hoy: date, raiz: Path = RAIZ, escribir: bool = True) -> dict:
         (datos if c.get("origen") == "noticias" and c.get("tipo_mesa") in ("exclusiva", "record") else contexto).append(c)
     datos.sort(key=lambda c: -c["puntuacion"]["puntos"])
 
-    if p["historia_del_dia"] is not None:
-        dia_item = elemento(p["historia_del_dia"], hoy, raiz, True)
-    else:
-        dia_item = None
-    mas = [elemento(c, hoy, raiz, True) for c in p["mas"]]
-    sn = sin_noticia(marco_vigente(marcos, estado, raiz)) if dia_item is None else None
-    nuevo = {k: v for k, v in emitidos.items() if ayer.get(k) != v}
-    est = guardar_estado(estado, nuevo, ayer, hoy)
+    # ---- la portada diaria: seis bloques, ninguno vacío
+    previo = leer_json(raiz / "docs" / "prensa" / "portada.json", {}) or {}
+    hist = historial_previo(estado, hoy)
+    hasta_v = hasta or (hoy - timedelta(days=8))
+    def _bloque(nombre, fn, minimo):
+        try:
+            return fn()
+        except Exception as e:       # noqa: BLE001
+            avisos.append(f"bloque {nombre}: {type(e).__name__}: {str(e)[:120]}")
+            ant = previo.get(nombre)
+            return ant if ant else minimo
+    carreras = _bloque("carreras", lambda: B.bloque_carreras(hasta_v, raiz), {"dato_hasta": str(hasta_v), "piezas": [], "avisos": ["sin cálculo en esta pasada"]})
+    dato, mas_h, emitida = bloque_dato_del_dia(p, cands, carreras, hoy, raiz, hist, escribir)
+    tal = _bloque("tal_dia_como_hoy", lambda: B.bloque_tal_dia(hoy, raiz, hasta_v), {"fecha": str(hoy), "dato_hasta": None, "portada": [], "por_capital": {}, "nota": "sin cálculo en esta pasada"})
+    espana = _bloque("espana_ayer", lambda: B.bloque_espana(hoy, raiz, previo.get("espana_ayer")), {"dato_hasta": None, "cifras": []})
+    carr_mes = {}
+    try:
+        carr_mes = B.carrera_mes(hasta_v, raiz)
+    except Exception as e:           # noqa: BLE001
+        avisos.append(f"carrera del mes: {type(e).__name__}: {str(e)[:100]}")
+    provs = _bloque("provincias", lambda: B.bloque_provincias(hoy, hasta_v, [c for c in cands if c.get("puntuacion")], tal, carr_mes, raiz), {"dato_hasta": None, "n": 0, "por_slug": {}})
+    viene = _bloque("lo_que_viene", lambda: B.bloque_viene(hoy, raiz), {"dato_hasta": str(hoy), "prevision": {"etiqueta": "previsión", "textos": []}, "agenda": B.agenda(hoy)})
+    est = guardar_estado(estado, {k: v for k, v in emitidos.items() if ayer.get(k) != v}, ayer, hoy)
+    est["portada_diaria"] = guardar_historial(estado, hoy, emitida)
 
-    salida = {"version": VERSION, "generado": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "fecha": str(hoy),
+    datos_item = [elemento(c, hoy, raiz, False) for c in datos[:MAX_DATOS]]
+    ctx_item = [elemento(c, hoy, raiz, False) for c in contexto[:MAX_CONTEXTO]]
+    salida = {"version": VERSION, "generado": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "generado_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "fecha": str(hoy),
               "caduca_horas": CADUCA_HORAS, "retraso_validado_dias": lag, "dato_validado_hasta": str(hasta) if hasta else None,
-              "fuentes": fuentes, "avisos": avisos, "sin_noticia": dia_item is None, "sin_noticia_texto": sn,
-              "marco_vigente": (sn or {}).get("marco_vigente") or marco_vigente(marcos, estado, raiz),
-              "historia_del_dia": dia_item, "mas": mas,
-              "datos_del_dia": [elemento(c, hoy, raiz, False) for c in datos[:MAX_DATOS]],
-              "contexto": [elemento(c, hoy, raiz, False) for c in contexto[:MAX_CONTEXTO]],
+              "fuentes": fuentes, "avisos": avisos, "sin_noticia": False, "sin_noticia_texto": None, "marco_vigente": None,
+              "dato_del_dia": dato, "mas_historias": mas_h,
+              "historia_del_dia": dato, "mas": mas_h,                       # nombres anteriores, para el plugin 7.2.x
+              "carreras": carreras, "tal_dia_como_hoy": tal, "espana_ayer": espana, "provincias": provs, "lo_que_viene": viene,
+              "dato_hasta": {"dato_del_dia": dato.get("corte"), "carreras": carreras.get("dato_hasta"), "tal_dia_como_hoy": tal.get("dato_hasta"),
+                             "espana_ayer": espana.get("dato_hasta"), "provincias": provs.get("dato_hasta"), "lo_que_viene": viene.get("dato_hasta")},
+              "datos_del_dia": datos_item, "contexto": ctx_item,
               "totales": {"datos_del_dia": len(datos), "contexto": len(contexto)}}
     if escribir:
         escribir_json(raiz / "docs" / "prensa" / "portada.json", salida, indent=1)
@@ -481,7 +624,7 @@ def main() -> int:
         print(f"portada: ERROR {type(e).__name__}: {e}")
         return 0
     d = s["historia_del_dia"]
-    print(f"portada {s['fecha']}: {'SIN NOTICIA' if s['sin_noticia'] else d['titular'][:110]} · +{len(s['mas'])} · datos {s['totales']['datos_del_dia']} · "
+    print(f"portada {s['fecha']}: {d['titular'][:110]} [{d['sello']}] · +{len(s['mas'])} · datos {s['totales']['datos_del_dia']} · "
           f"contexto {s['totales']['contexto']} · retraso {s['retraso_validado_dias']} d · avisos {s['avisos']}")
     return 0
 
