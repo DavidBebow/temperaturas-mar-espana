@@ -6,8 +6,8 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Granada: 73.2 mm.
-- Días sin lluvia de 1 mm en la capital: 5.
+- Lluvia desde el 1 de octubre en Granada: 73.8 mm.
+- Días sin lluvia de 1 mm en la capital: 6.
 
 ## Fuente y método
 - **Fuente:** AEMET (precipitación de la estación de la capital) y cálculo propio de calentamientoglobal.es
