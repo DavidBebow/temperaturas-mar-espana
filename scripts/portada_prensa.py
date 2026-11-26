@@ -288,6 +288,9 @@ def _versiones(c: dict) -> list[dict]:
     return out
 
 
+_FONDO_HECHO: list[str] = []          # solo la primera noticia completa de la pasada (la que abre) lleva un gráfico por capital
+
+
 def elemento(c: dict, hoy: date, raiz: Path, completo: bool) -> dict:
     p = c["puntuacion"]
     o = c.get("_orig") or {}
@@ -317,6 +320,19 @@ def elemento(c: dict, hoy: date, raiz: Path, completo: bool) -> dict:
     elif completo and (c.get("origen") == "mesa" or c.get("agregada_por_mesa")):
         r = producir_ficheros(c, it["id"], hoy, raiz)
         it["nota"], it["grafico"] = r["nota"], r["grafico"]
+        # 26-11-2026: noticia completa (hechos, serie año a año, método y versión por capital), como las de redaccion_prensa.py
+        try:
+            import portada_fondo as F
+            n = F.noticia_de_mesa(c, hoy, raiz, graficos_provinciales=not _FONDO_HECHO) or F.noticia_agregada(c, it, hoy, raiz)
+            if n:
+                if c.get("tipo_mesa") == "marco_nacional":
+                    _FONDO_HECHO.append(n["id"])
+                it["noticia_id"] = n["id"]
+                it["nota"] = f"prensa/noticias/historias/{n['id']}.json"
+                it["nota_md"] = r["nota"]
+                it["serie"] = n.get("grafico") if (n.get("grafico") or {}).get("svg") != (it.get("grafico") or {}).get("svg") else None
+        except Exception as e:      # la pieza se queda con su nota corta; la portada no se cae por esto
+            print(f"portada_fondo: {type(e).__name__}: {e}", file=sys.stderr)
     if c.get("pagina"):
         it["pagina"] = c["pagina"]
     return it
@@ -492,6 +508,7 @@ def sin_noticia(mv: dict | None) -> dict:
 def generar(hoy: date, raiz: Path = RAIZ, escribir: bool = True, hall: dict | None = None, hoy_json: dict | None = None) -> dict:
     avisos, fuentes = [], {}
     cands, marcos = [], []
+    del _FONDO_HECHO[:]
     lag, hasta = medir_retraso(hoy, raiz)
     if hasta is None:
         avisos.append("no se pudo medir el retraso del dato validado en archivo/aemet_diario: se usan 8 días")
@@ -577,6 +594,11 @@ def generar(hoy: date, raiz: Path = RAIZ, escribir: bool = True, hall: dict | No
               "datos_del_dia": datos_item, "contexto": ctx_item,
               "totales": {"datos_del_dia": len(datos), "contexto": len(contexto)}}
     if escribir:
+        try:
+            import portada_fondo as F
+            F.limpiar(raiz, hoy)
+        except Exception:           # noqa: BLE001
+            pass
         escribir_json(raiz / "docs" / "prensa" / "portada.json", salida, indent=1)
         escribir_json(raiz / "docs" / "prensa" / "mesa_emitidos.json", est, indent=1)
     return salida
