@@ -1,55 +1,39 @@
 {
- "generado": "2026-11-27T09:11:51+00:00",
- "duracion_s": 1.63,
+ "generado": "2026-11-27T19:13:23+00:00",
+ "duracion_s": 2.56,
  "comprobaciones": [
   {
    "id": "clave",
    "descripcion": "Misma clave (indicador+territorio+periodo+corte), mismo valor en todos los JSON",
-   "evaluadas": 216,
+   "evaluadas": 204,
    "fallos": 0
   },
   {
    "id": "agrupadas",
    "descripcion": "Las historias agrupadas: lugares del titular = miembros, y misma clave que cada miembro",
-   "evaluadas": 10,
+   "evaluadas": 7,
    "fallos": 0
   },
   {
    "id": "titular",
    "descripcion": "El número del titular y del dato es el del campo estructurado",
-   "evaluadas": 67,
+   "evaluadas": 62,
    "fallos": 0
   },
   {
    "id": "hoy",
    "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
-   "evaluadas": 179,
+   "evaluadas": 180,
    "fallos": 0
   },
   {
    "id": "niveles",
    "descripcion": "Las listas por nivel solo contienen elementos de su nivel",
-   "evaluadas": 1,
-   "fallos": 1
+   "evaluadas": 0,
+   "fallos": 0
   }
  ],
- "n_fallos": 1,
- "fallos": [
-  {
-   "comprobacion": "niveles",
-   "clave": "Avisos amarillos de AEMET",
-   "valores": [
-    {
-     "ruta": "https://calentamientoglobal.es/el-tiempo/",
-     "valor": "Badajoz: #f2c94c"
-    },
-    {
-     "ruta": "https://calentamientoglobal.es/el-tiempo/",
-     "valor": "Ciudad Real: #f2c94c"
-    }
-   ],
-   "detalle": "«Avisos amarillos de AEMET» contiene elementos de otro nivel"
-  }
- ],
+ "n_fallos": 0,
+ "fallos": [],
  "bloqueados": []
 }
