@@ -1,45 +1,222 @@
 {
- "generado": "2026-11-27T13:11:50Z",
+ "generado": "2026-11-27T15:04:04Z",
  "hoy": "2026-11-27",
- "seleccionados": [],
+ "seleccionados": [
+  "almacen-r09-estacion-aemet-fecha-tmin-alta-agregado-2026-11-17",
+  "almacen-r08-estacion-aemet-tropical-tardia-est-8416-2026-11-18",
+  "almacen-r01-estacion-aemet-estacion-noches-agregado-2026-11-19",
+  "almacen-r08-estacion-aemet-calor-tardio-est-7178i-2026-11-18",
+  "almacen-r01-estacion-aemet-anio-calor-est-7031-2026-11-22"
+ ],
  "hallazgos": [
   {
-   "regla": "R01",
-   "variante": "estacion_aemet:estacion:calor",
+   "regla": "R09",
+   "variante": "capital_era5:fecha_tmin_alta",
    "destino": "publicable",
-   "serie": "almacen_r01",
-   "tipo": "puesto_extremo",
-   "indicador": "R01_estacion_aemet_estacion_calor",
-   "territorio": "ALCANTARILLA, BASE AÉREA",
-   "provincia": "Murcia",
+   "serie": "almacen_r09",
+   "tipo": "record_fecha",
+   "indicador": "R09_capital_era5_fecha_tmin_alta",
+   "territorio": "Palencia",
+   "provincia": "Palencia",
    "ambito": "provincial",
-   "fecha_dato": "2026-11-18",
-   "titular": "La estación de AEMET de Alcantarilla, Base Aérea: lo que va de otoño, el más cálido en 83 años (28,87 °C de media de las máximas; récord anterior 28,87 en 2022)",
-   "dato": "28,9 °C de media de las máximas · +2,3 °C sobre 1991-2020 · puesto 1 de 83",
+   "fecha_dato": "2026-11-17",
+   "titular": "Palencia: la noche más cálida para un 17 de noviembre en 87 años de reanálisis ERA5, 3,2 °C por encima del récord anterior (1995)",
+   "dato": "récord anterior 1995",
    "clave": {
-    "indicador": "estacion_aemet:estacion:calor",
-    "territorio": "est:7228",
-    "periodo": "el otoño de 2026",
-    "corte": "2026-11-18"
+    "indicador": "capital_era5:fecha_tmin_alta",
+    "territorio": "cap:34",
+    "periodo": "2026-11-17",
+    "corte": "2026-11-17"
    },
    "cifra": {
-    "valor": 28.87,
-    "anomalia": 2.31
+    "valor": null,
+    "margen": 3.2
    },
    "comparacion": {
     "puesto": 1,
-    "de": 83,
+    "de": 87,
     "anterior": [
-     28.87,
-     2022
+     10.5,
+     1995
+    ],
+    "periodo": "2026-11-17"
+   },
+   "muestra": "86 años",
+   "calidad": "reanálisis",
+   "invalidar": "nubosidad o viento nocturno puntuales; contrastar con estación vecina",
+   "metodo": "reanálisis ERA5 en la celda de la capital (Copernicus), serie diaria desde 1940. Regla R09 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "media",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 59.3,
+   "fuerza_detalle": {
+    "fuerza": 59.3,
+    "novedad": 1.324,
+    "r_est": 1.132,
+    "r_pob": 0.989,
+    "r_lugar": 1.183,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 87
+   },
+   "ent_id": "cap:34",
+   "id": "almacen-r09-capital-era5-fecha-tmin-alta-cap-34-2026-11-17",
+   "_rank": 21.940999999999992
+  },
+  {
+   "regla": "R09",
+   "variante": "capital_era5:fecha_tmin_alta",
+   "destino": "publicable",
+   "serie": "almacen_r09",
+   "tipo": "record_fecha",
+   "indicador": "R09_capital_era5_fecha_tmin_alta",
+   "territorio": "Oviedo",
+   "provincia": "Asturias",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-17",
+   "titular": "Oviedo: la noche más cálida para un 17 de noviembre en 87 años de reanálisis ERA5, 3,0 °C por encima del récord anterior (1997)",
+   "dato": "récord anterior 1997",
+   "clave": {
+    "indicador": "capital_era5:fecha_tmin_alta",
+    "territorio": "cap:33",
+    "periodo": "2026-11-17",
+    "corte": "2026-11-17"
+   },
+   "cifra": {
+    "valor": null,
+    "margen": 3.0
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 87,
+    "anterior": [
+     14.0,
+     1997
+    ],
+    "periodo": "2026-11-17"
+   },
+   "muestra": "86 años",
+   "calidad": "reanálisis",
+   "invalidar": "nubosidad o viento nocturno puntuales; contrastar con estación vecina",
+   "metodo": "reanálisis ERA5 en la celda de la capital (Copernicus), serie diaria desde 1940. Regla R09 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "media",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 60.5,
+   "fuerza_detalle": {
+    "fuerza": 60.5,
+    "novedad": 1.35,
+    "r_est": 1.132,
+    "r_pob": 1.035,
+    "r_lugar": 1.188,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 87
+   },
+   "ent_id": "cap:33",
+   "id": "almacen-r09-capital-era5-fecha-tmin-alta-cap-33-2026-11-17"
+  },
+  {
+   "regla": "R01",
+   "variante": "estacion_aemet:anio:noches",
+   "destino": "publicable",
+   "serie": "almacen_r01",
+   "tipo": "puesto_extremo",
+   "indicador": "R01_estacion_aemet_anio_noches",
+   "territorio": "MONFORTE DE LEMOS",
+   "provincia": "Lugo",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-18",
+   "titular": "La estación de AEMET de Monforte De Lemos: lo que va de 2026, el de noches más cálidas en 48 años (8,98 °C de media de las mínimas; récord anterior 8,95 en 2001)",
+   "dato": "9,0 °C de media de las mínimas · +1,1 °C sobre 1991-2020 · puesto 1 de 48",
+   "clave": {
+    "indicador": "estacion_aemet:anio:noches",
+    "territorio": "est:1679A",
+    "periodo": "2026",
+    "corte": "2026-11-18"
+   },
+   "cifra": {
+    "valor": 8.98,
+    "anomalia": 1.1
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 48,
+    "anterior": [
+     8.95,
+     2001
     ],
     "segundo": [
-     28.69,
+     8.82,
+     2024
+    ],
+    "periodo": "2026"
+   },
+   "muestra": "48 años con el periodo completo hasta el día 322",
+   "calidad": "validado",
+   "invalidar": "dato validado por AEMET con retraso; cambios de emplazamiento; días que faltan en el periodo",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R01 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 47.5,
+   "fuerza_detalle": {
+    "fuerza": 47.5,
+    "novedad": 1.132,
+    "r_est": 1.054,
+    "r_pob": 1.051,
+    "r_lugar": 1.245,
+    "r_avance": 0.965,
+    "empate": true,
+    "T_anios": 48
+   },
+   "ent_id": "est:1679A",
+   "id": "almacen-r01-estacion-aemet-anio-noches-est-1679a-2026-11-18",
+   "_rank": 20.9
+  },
+  {
+   "regla": "R01",
+   "variante": "estacion_aemet:anio:calor",
+   "destino": "publicable",
+   "serie": "almacen_r01",
+   "tipo": "puesto_extremo",
+   "indicador": "R01_estacion_aemet_anio_calor",
+   "territorio": "SAN JAVIER AEROPUERTO",
+   "provincia": "Murcia",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-22",
+   "titular": "La estación de AEMET de San Javier Aeropuerto: lo que va de 2026, el más cálido en 79 años (24,59 °C de media de las máximas; récord anterior 24,58 en 2025)",
+   "dato": "24,6 °C de media de las máximas · +1,4 °C sobre 1991-2020 · puesto 1 de 79",
+   "clave": {
+    "indicador": "estacion_aemet:anio:calor",
+    "territorio": "est:7031",
+    "periodo": "2026",
+    "corte": "2026-11-22"
+   },
+   "cifra": {
+    "valor": 24.59,
+    "anomalia": 1.44
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 79,
+    "anterior": [
+     24.58,
+     2025
+    ],
+    "segundo": [
+     24.39,
      2023
     ],
-    "periodo": "el otoño de 2026"
+    "periodo": "2026"
    },
-   "muestra": "83 años con el periodo completo hasta el día 79",
+   "muestra": "79 años con el periodo completo hasta el día 326",
    "calidad": "validado",
    "invalidar": "dato validado por AEMET con retraso; cambios de emplazamiento; días que faltan en el periodo",
    "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R01 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
@@ -51,54 +228,55 @@
    "fuerza": 43.9,
    "fuerza_detalle": {
     "fuerza": 43.9,
-    "novedad": 1.044,
-    "r_est": 1.126,
+    "novedad": 1.046,
+    "r_est": 1.119,
     "r_pob": 1.12,
     "r_lugar": 1.014,
-    "r_avance": 0.96,
+    "r_avance": 0.968,
     "empate": true,
-    "T_anios": 83
+    "T_anios": 79
    },
-   "ent_id": "est:7228",
-   "id": "almacen-r01-estacion-aemet-estacion-calor-est-7228-2026-11-18"
+   "ent_id": "est:7031",
+   "id": "almacen-r01-estacion-aemet-anio-calor-est-7031-2026-11-22",
+   "_rank": 31.607999999999997
   },
   {
    "regla": "R01",
-   "variante": "estacion_aemet:estacion:calor",
+   "variante": "estacion_aemet:anio:noches",
    "destino": "publicable",
    "serie": "almacen_r01",
    "tipo": "puesto_extremo",
-   "indicador": "R01_estacion_aemet_estacion_calor",
-   "territorio": "CÓRDOBA AEROPUERTO",
-   "provincia": "Córdoba",
+   "indicador": "R01_estacion_aemet_anio_noches",
+   "territorio": "SAN JAVIER AEROPUERTO",
+   "provincia": "Murcia",
    "ambito": "provincial",
    "fecha_dato": "2026-11-19",
-   "titular": "La estación de AEMET de Córdoba Aeropuerto: lo que va de otoño, el más cálido en 62 años (30,4 °C de media de las máximas; récord anterior 30,3 en 2017)",
-   "dato": "30,4 °C de media de las máximas · +3,7 °C sobre 1991-2020 · puesto 1 de 62",
+   "titular": "La estación de AEMET de San Javier Aeropuerto: lo que va de 2026, el de noches más cálidas en 79 años (15,32 °C de media de las mínimas; récord anterior 15,32 en 2024)",
+   "dato": "15,3 °C de media de las mínimas · +1,2 °C sobre 1991-2020 · puesto 1 de 79",
    "clave": {
-    "indicador": "estacion_aemet:estacion:calor",
-    "territorio": "est:5402",
-    "periodo": "el otoño de 2026",
+    "indicador": "estacion_aemet:anio:noches",
+    "territorio": "est:7031",
+    "periodo": "2026",
     "corte": "2026-11-19"
    },
    "cifra": {
-    "valor": 30.44,
-    "anomalia": 3.74
+    "valor": 15.32,
+    "anomalia": 1.22
    },
    "comparacion": {
     "puesto": 1,
-    "de": 62,
+    "de": 79,
     "anterior": [
-     30.26,
-     2017
+     15.32,
+     2024
     ],
     "segundo": [
-     28.84,
-     1981
+     15.16,
+     2025
     ],
-    "periodo": "el otoño de 2026"
+    "periodo": "2026"
    },
-   "muestra": "62 años con el periodo completo hasta el día 80",
+   "muestra": "79 años con el periodo completo hasta el día 323",
    "calidad": "validado",
    "invalidar": "dato validado por AEMET con retraso; cambios de emplazamiento; días que faltan en el periodo",
    "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R01 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
@@ -107,78 +285,20 @@
    "citabilidad": "alta",
    "exclusivo": false,
    "requiere_revision": false,
-   "fuerza": 48.4,
+   "fuerza": 43.8,
    "fuerza_detalle": {
-    "fuerza": 48.4,
-    "novedad": 1.152,
-    "r_est": 1.088,
-    "r_pob": 1.089,
-    "r_lugar": 1.01,
-    "r_avance": 0.964,
-    "empate": false,
-    "T_anios": 62
-   },
-   "ent_id": "est:5402",
-   "id": "almacen-r01-estacion-aemet-estacion-calor-est-5402-2026-11-19"
-  },
-  {
-   "regla": "R01",
-   "variante": "estacion_aemet:estacion:noches",
-   "destino": "publicable",
-   "serie": "almacen_r01",
-   "tipo": "puesto_extremo",
-   "indicador": "R01_estacion_aemet_estacion_noches",
-   "territorio": "VALLE DE HECHO, HECHO",
-   "provincia": "Huesca",
-   "ambito": "provincial",
-   "fecha_dato": "2026-11-18",
-   "titular": "La estación de AEMET de Valle De Hecho, Hecho: lo que va de otoño, el de noches más cálidas en 42 años (8,25 °C de media de las mínimas; récord anterior 8,18 en 2023)",
-   "dato": "8,3 °C de media de las mínimas · +1,9 °C sobre 1991-2020 · puesto 1 de 42",
-   "clave": {
-    "indicador": "estacion_aemet:estacion:noches",
-    "territorio": "est:9207",
-    "periodo": "el otoño de 2026",
-    "corte": "2026-11-18"
-   },
-   "cifra": {
-    "valor": 8.25,
-    "anomalia": 1.88
-   },
-   "comparacion": {
-    "puesto": 1,
-    "de": 42,
-    "anterior": [
-     8.18,
-     2023
-    ],
-    "segundo": [
-     8.12,
-     2022
-    ],
-    "periodo": "el otoño de 2026"
-   },
-   "muestra": "42 años con el periodo completo hasta el día 79",
-   "calidad": "validado",
-   "invalidar": "dato validado por AEMET con retraso; cambios de emplazamiento; días que faltan en el periodo",
-   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R01 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
-   "limites": [],
-   "contexto": [],
-   "citabilidad": "alta",
-   "exclusivo": false,
-   "requiere_revision": false,
-   "fuerza": 42.0,
-   "fuerza_detalle": {
-    "fuerza": 42.0,
-    "novedad": 0.999,
-    "r_est": 1.037,
-    "r_pob": 1.036,
-    "r_lugar": 1.139,
-    "r_avance": 0.96,
+    "fuerza": 43.8,
+    "novedad": 1.044,
+    "r_est": 1.119,
+    "r_pob": 1.12,
+    "r_lugar": 1.014,
+    "r_avance": 0.965,
     "empate": true,
-    "T_anios": 42
+    "T_anios": 79
    },
-   "ent_id": "est:9207",
-   "id": "almacen-r01-estacion-aemet-estacion-noches-est-9207-2026-11-18"
+   "ent_id": "est:7031",
+   "id": "almacen-r01-estacion-aemet-anio-noches-est-7031-2026-11-19",
+   "_rank": 22.337999999999997
   },
   {
    "regla": "R03",
@@ -286,6 +406,110 @@
    "id": "almacen-r08-estacion-aemet-calor-tardio-est-7228-2026-11-18"
   },
   {
+   "regla": "R08",
+   "variante": "estacion_aemet:tropical_tardia",
+   "destino": "publicable",
+   "serie": "almacen_r08",
+   "tipo": "primera_vez_desde",
+   "indicador": "R08_estacion_aemet_tropical_tardia",
+   "territorio": "VALÈNCIA",
+   "provincia": "València/Valencia",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-18",
+   "titular": "La estación de AEMET de València: la noche tropical más tardía de la serie (18 de noviembre, 52 días más tarde que la media)",
+   "dato": "18 de noviembre; media de la serie a 52 días",
+   "clave": {
+    "indicador": "estacion_aemet:tropical_tardia",
+    "territorio": "est:8416",
+    "periodo": "temporada 2026",
+    "corte": "2026-11-18"
+   },
+   "cifra": {
+    "fecha": "2026-11-18",
+    "dias_frente_media": 52
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 83,
+    "periodo": "temporada 2026"
+   },
+   "muestra": "83 años",
+   "calidad": "validado",
+   "invalidar": "un día sin dato puede esconder la fecha real; el umbral es fijo (0, 20 y 30 °C)",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R08 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 58.9,
+   "fuerza_detalle": {
+    "fuerza": 58.9,
+    "novedad": 1.169,
+    "r_est": 1.126,
+    "r_pob": 1.0,
+    "r_lugar": 1.038,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 83
+   },
+   "ent_id": "est:8416",
+   "id": "almacen-r08-estacion-aemet-tropical-tardia-est-8416-2026-11-18",
+   "_rank": 25.915999999999997
+  },
+  {
+   "regla": "R08",
+   "variante": "estacion_aemet:calor_tardio",
+   "destino": "publicable",
+   "serie": "almacen_r08",
+   "tipo": "primera_vez_desde",
+   "indicador": "R08_estacion_aemet_calor_tardio",
+   "territorio": "MURCIA",
+   "provincia": "Murcia",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-18",
+   "titular": "La estación de AEMET de Murcia: el día de 30 °C más tardío de la serie (18 de noviembre, 35 días más tarde que la media)",
+   "dato": "18 de noviembre; media de la serie a 35 días",
+   "clave": {
+    "indicador": "estacion_aemet:calor_tardio",
+    "territorio": "est:7178I",
+    "periodo": "temporada 2026",
+    "corte": "2026-11-18"
+   },
+   "cifra": {
+    "fecha": "2026-11-18",
+    "dias_frente_media": 35
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 43,
+    "periodo": "temporada 2026"
+   },
+   "muestra": "43 años",
+   "calidad": "validado",
+   "invalidar": "un día sin dato puede esconder la fecha real; el umbral es fijo (0, 20 y 30 °C)",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R08 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 53.2,
+   "fuerza_detalle": {
+    "fuerza": 53.2,
+    "novedad": 1.055,
+    "r_est": 1.04,
+    "r_pob": 1.0,
+    "r_lugar": 1.014,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 43
+   },
+   "ent_id": "est:7178I",
+   "id": "almacen-r08-estacion-aemet-calor-tardio-est-7178i-2026-11-18",
+   "_rank": 23.407999999999998
+  },
+  {
    "regla": "R09",
    "variante": "estacion_aemet:mes_tmax",
    "destino": "publicable",
@@ -337,64 +561,110 @@
   },
   {
    "regla": "R09",
-   "variante": "capital_era5:fecha_tmin_alta",
+   "variante": "estacion_aemet:fecha_tmax",
    "destino": "publicable",
    "serie": "almacen_r09",
    "tipo": "record_fecha",
-   "indicador": "R09_capital_era5_fecha_tmin_alta",
-   "territorio": "España",
-   "provincia": null,
-   "ambito": "nacional",
-   "fecha_dato": "2026-11-17",
-   "titular": "3 lugares a la vez — Oviedo: la noche más cálida para un 17 de noviembre en 87 años de reanálisis ERA5, 3,0 °C por encima del récord anterior (1997) (también Palencia, Teruel)",
-   "dato": "récord anterior 1997",
+   "indicador": "R09_estacion_aemet_fecha_tmax",
+   "territorio": "MURCIA",
+   "provincia": "Murcia",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-18",
+   "titular": "La estación de AEMET de Murcia bate por 5,2 °C su máxima más alta para un 18 de noviembre (32,2 °C)",
+   "dato": "récord anterior 1990",
    "clave": {
-    "indicador": "capital_era5:fecha_tmin_alta",
-    "territorio": "pais:es",
-    "periodo": "2026-11-17",
-    "corte": "2026-11-17"
+    "indicador": "estacion_aemet:fecha_tmax",
+    "territorio": "est:7178I",
+    "periodo": "2026-11-18",
+    "corte": "2026-11-18"
    },
    "cifra": {
-    "valor": null,
-    "margen": 3.0
+    "valor": 32.2,
+    "margen": 5.2
    },
    "comparacion": {
     "puesto": 1,
-    "de": 87,
+    "de": 43,
     "anterior": [
-     14.0,
-     1997
+     27.0,
+     1990
     ],
-    "periodo": "2026-11-17"
+    "periodo": "2026-11-18"
    },
-   "muestra": "86 años",
-   "calidad": "reanálisis",
-   "invalidar": "nubosidad o viento nocturno puntuales; contrastar con estación vecina",
-   "metodo": "reanálisis ERA5 en la celda de la capital (Copernicus), serie diaria desde 1940. Regla R09 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "muestra": "42 años",
+   "calidad": "validado",
+   "invalidar": "un dato erróneo de un día da récords falsos: contrastar con la estación vecina",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R09 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
    "limites": [],
    "contexto": [],
-   "citabilidad": "media",
+   "citabilidad": "alta",
    "exclusivo": false,
    "requiere_revision": false,
-   "fuerza": 66.7,
+   "fuerza": 47.3,
    "fuerza_detalle": {
-    "fuerza": 66.7,
-    "novedad": 1.192,
-    "r_est": 1.132,
-    "r_pob": 1.053,
-    "r_lugar": 1.0,
+    "fuerza": 47.3,
+    "novedad": 1.055,
+    "r_est": 1.04,
+    "r_pob": 1.0,
+    "r_lugar": 1.014,
     "r_avance": 1.0,
     "empate": false,
-    "T_anios": 87
+    "T_anios": 43
    },
-   "ent_id": "cap:33",
-   "id": "almacen-r09-capital-era5-fecha-tmin-alta-agregado-2026-11-17",
-   "miembros": [
-    "cap:33",
-    "cap:34",
-    "cap:44"
-   ],
-   "agregado": true
+   "ent_id": "est:7178I",
+   "id": "almacen-r09-estacion-aemet-fecha-tmax-est-7178i-2026-11-18",
+   "_rank": 20.811999999999998
+  },
+  {
+   "regla": "R09",
+   "variante": "estacion_aemet:mes_tmax",
+   "destino": "publicable",
+   "serie": "almacen_r09",
+   "tipo": "record_mes",
+   "indicador": "R09_estacion_aemet_mes_tmax",
+   "territorio": "MURCIA",
+   "provincia": "Murcia",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-18",
+   "titular": "La estación de AEMET de Murcia: la máxima más alta de cualquier noviembre en 42 años (32,2 °C)",
+   "dato": "récord del mes",
+   "clave": {
+    "indicador": "estacion_aemet:mes_tmax",
+    "territorio": "est:7178I",
+    "periodo": "noviembre",
+    "corte": "2026-11-18"
+   },
+   "cifra": {
+    "valor": 32.2
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 42,
+    "periodo": "noviembre"
+   },
+   "muestra": "42 noviembres",
+   "calidad": "validado",
+   "invalidar": "dato de un solo día: contrastar",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R09 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 35.5,
+   "fuerza_detalle": {
+    "fuerza": 35.5,
+    "novedad": 1.268,
+    "r_est": 1.25,
+    "r_pob": 1.0,
+    "r_lugar": 1.014,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 1260
+   },
+   "ent_id": "est:7178I",
+   "id": "almacen-r09-estacion-aemet-mes-tmax-est-7178i-2026-11-18",
+   "_rank": 15.619999999999997
   },
   {
    "regla": "R07",
@@ -451,6 +721,263 @@
     "cap:39"
    ],
    "agregado": true
+  },
+  {
+   "regla": "R01",
+   "variante": "estacion_aemet:estacion:noches",
+   "destino": "publicable",
+   "serie": "almacen_r01",
+   "tipo": "puesto_extremo",
+   "indicador": "R01_estacion_aemet_estacion_noches",
+   "territorio": "España",
+   "provincia": null,
+   "ambito": "nacional",
+   "fecha_dato": "2026-11-19",
+   "titular": "5 lugares a la vez — La estación de AEMET de Gran Canaria Aeropuerto: lo que va de otoño, el de noches más cálidas en 73 años (22,2 °C de media de las mínimas; récord anterior 21,9 en 2023) (también VALÈNCIA, CUENCA, VALLE DE HECHO, HECHO, HUELVA, RONDA ESTE)",
+   "dato": "22,2 °C de media de las mínimas · +1,8 °C sobre 1991-2020 · puesto 1 de 73",
+   "clave": {
+    "indicador": "estacion_aemet:estacion:noches",
+    "territorio": "pais:es",
+    "periodo": "el otoño de 2026",
+    "corte": "2026-11-19"
+   },
+   "cifra": {
+    "valor": 22.23,
+    "anomalia": 1.76
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 73,
+    "anterior": [
+     21.94,
+     2023
+    ],
+    "segundo": [
+     21.65,
+     2015
+    ],
+    "periodo": "el otoño de 2026"
+   },
+   "muestra": "73 años con el periodo completo hasta el día 80",
+   "calidad": "validado",
+   "invalidar": "dato validado por AEMET con retraso; cambios de emplazamiento; días que faltan en el periodo",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R01 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 56.1,
+   "fuerza_detalle": {
+    "fuerza": 56.1,
+    "novedad": 1.069,
+    "r_est": 1.109,
+    "r_pob": 1.0,
+    "r_lugar": 1.0,
+    "r_avance": 0.964,
+    "empate": false,
+    "T_anios": 73
+   },
+   "ent_id": "est:C649I",
+   "id": "almacen-r01-estacion-aemet-estacion-noches-agregado-2026-11-19",
+   "miembros": [
+    "est:C649I",
+    "est:8416",
+    "est:8096",
+    "est:9207",
+    "est:4642E"
+   ],
+   "agregado": true,
+   "_rank": 28.611
+  },
+  {
+   "regla": "R01",
+   "variante": "estacion_aemet:estacion:calor",
+   "destino": "publicable",
+   "serie": "almacen_r01",
+   "tipo": "puesto_extremo",
+   "indicador": "R01_estacion_aemet_estacion_calor",
+   "territorio": "España",
+   "provincia": null,
+   "ambito": "nacional",
+   "fecha_dato": "2026-11-19",
+   "titular": "5 lugares a la vez — La estación de AEMET de Córdoba Aeropuerto: lo que va de otoño, el más cálido en 62 años (30,4 °C de media de las máximas; récord anterior 30,3 en 2017) (también IBIZA, AEROPUERTO, ALCANTARILLA, BASE AÉREA, CASTELLÓ - ALMASSORA, JAÉN)",
+   "dato": "30,4 °C de media de las máximas · +3,7 °C sobre 1991-2020 · puesto 1 de 62",
+   "clave": {
+    "indicador": "estacion_aemet:estacion:calor",
+    "territorio": "pais:es",
+    "periodo": "el otoño de 2026",
+    "corte": "2026-11-19"
+   },
+   "cifra": {
+    "valor": 30.44,
+    "anomalia": 3.74
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 62,
+    "anterior": [
+     30.26,
+     2017
+    ],
+    "segundo": [
+     28.84,
+     1981
+    ],
+    "periodo": "el otoño de 2026"
+   },
+   "muestra": "62 años con el periodo completo hasta el día 80",
+   "calidad": "validado",
+   "invalidar": "dato validado por AEMET con retraso; cambios de emplazamiento; días que faltan en el periodo",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R01 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 55.0,
+   "fuerza_detalle": {
+    "fuerza": 55.0,
+    "novedad": 1.049,
+    "r_est": 1.088,
+    "r_pob": 1.0,
+    "r_lugar": 1.0,
+    "r_avance": 0.964,
+    "empate": false,
+    "T_anios": 62
+   },
+   "ent_id": "est:5402",
+   "id": "almacen-r01-estacion-aemet-estacion-calor-agregado-2026-11-19",
+   "miembros": [
+    "est:5402",
+    "est:B954",
+    "est:7228",
+    "est:8500A",
+    "est:5270B"
+   ],
+   "agregado": true
+  },
+  {
+   "regla": "R09",
+   "variante": "estacion_aemet:fecha_tmin_alta",
+   "destino": "publicable",
+   "serie": "almacen_r09",
+   "tipo": "record_fecha",
+   "indicador": "R09_estacion_aemet_fecha_tmin_alta",
+   "territorio": "España",
+   "provincia": null,
+   "ambito": "nacional",
+   "fecha_dato": "2026-11-17",
+   "titular": "6 lugares a la vez — La estación de AEMET de Valladolid Aeropuerto tiene la noche más cálida para un 17 de noviembre, 6,2 °C por encima del récord (14,9 °C) (también FORONDA-TXOKIZA, MENORCA, AEROPUERTO, PALMA DE MALLORCA, AEROPUERTO, VALÈNCIA, TERUEL)",
+   "dato": "récord anterior 2012",
+   "clave": {
+    "indicador": "estacion_aemet:fecha_tmin_alta",
+    "territorio": "pais:es",
+    "periodo": "2026-11-17",
+    "corte": "2026-11-17"
+   },
+   "cifra": {
+    "valor": 14.9,
+    "margen": 6.2
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 85,
+    "anterior": [
+     8.7,
+     2012
+    ],
+    "periodo": "2026-11-17"
+   },
+   "muestra": "84 años",
+   "calidad": "validado",
+   "invalidar": "nubosidad o viento nocturno puntuales; contrastar con estación vecina",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R09 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 63.2,
+   "fuerza_detalle": {
+    "fuerza": 63.2,
+    "novedad": 1.129,
+    "r_est": 1.129,
+    "r_pob": 1.0,
+    "r_lugar": 1.0,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 85
+   },
+   "ent_id": "est:2539",
+   "id": "almacen-r09-estacion-aemet-fecha-tmin-alta-agregado-2026-11-17",
+   "miembros": [
+    "est:2539",
+    "est:9091O",
+    "est:B893",
+    "est:B278",
+    "est:8416",
+    "est:8368U"
+   ],
+   "agregado": true,
+   "_rank": 23.383999999999993
+  },
+  {
+   "regla": "R09",
+   "variante": "estacion_aemet:mes_tmin_alta",
+   "destino": "publicable",
+   "serie": "almacen_r09",
+   "tipo": "record_mes",
+   "indicador": "R09_estacion_aemet_mes_tmin_alta",
+   "territorio": "España",
+   "provincia": null,
+   "ambito": "nacional",
+   "fecha_dato": "2026-11-17",
+   "titular": "3 lugares a la vez — La estación de AEMET de Valladolid Aeropuerto: la mínima más alta de cualquier noviembre en 85 años (14,9 °C) (también TERUEL, CIUDAD REAL)",
+   "dato": "récord del mes",
+   "clave": {
+    "indicador": "estacion_aemet:mes_tmin_alta",
+    "territorio": "pais:es",
+    "periodo": "noviembre",
+    "corte": "2026-11-17"
+   },
+   "cifra": {
+    "valor": 14.9
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 85,
+    "periodo": "noviembre"
+   },
+   "muestra": "85 noviembres",
+   "calidad": "validado",
+   "invalidar": "dato de un solo día: contrastar",
+   "metodo": "estación de AEMET, serie diaria validada del archivo. Regla R09 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "alta",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 43.8,
+   "fuerza_detalle": {
+    "fuerza": 43.8,
+    "novedad": 1.25,
+    "r_est": 1.25,
+    "r_pob": 1.0,
+    "r_lugar": 1.0,
+    "r_avance": 1.0,
+    "empate": false,
+    "T_anios": 2550
+   },
+   "ent_id": "est:2539",
+   "id": "almacen-r09-estacion-aemet-mes-tmin-alta-agregado-2026-11-17",
+   "miembros": [
+    "est:2539",
+    "est:8368U",
+    "est:4121"
+   ],
+   "agregado": true,
+   "_rank": 16.205999999999992
   }
  ]
 }
