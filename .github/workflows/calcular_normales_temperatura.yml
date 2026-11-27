@@ -53,6 +53,10 @@ jobs:
           # los flujos horarios que comparten AEMET_API_KEY.
           AEMET_API_KEY: ${{ secrets.AEMET_API_KEY_PREDICCION || secrets.AEMET_API_KEY }}
           CG_TOPE_MIN: ${{ inputs.tope_min || '290' }}
+          # 27-11-2026 (script 2.3): baja 1991-2025 para los municipios NUEVOS y conserva tal cual las normales
+          # 1991-2020 ya publicadas. Donde la estacion no tenga 1991-2020, normal corta (2006-2025). ~850 trozos, ~70-75 min.
+          CG_SOLO_CORTAS: '0'
+          CG_CONSERVAR: '1'
           CG_BASE: privado/municipios_base.json
           CG_MAPA: docs/municipios_mapa.json
           CG_SALIDA: normales_temperatura.json
