@@ -42,4 +42,4 @@ AEMET valida con retraso; cada capital frente a su propia serie (no es un promed
 
 ## Cómo citar
 
-Observatorio climático de calentamientoglobal.es, con datos de AEMET (series diarias validadas) y cálculo propio. Licencia CC BY 4.0. https://calentamientoglobal.es/prensa/ Consultado el 26 de noviembre de 2026.
+Observatorio climático de calentamientoglobal.es, con datos de AEMET (series diarias validadas) y cálculo propio. Licencia CC BY 4.0. https://calentamientoglobal.es/prensa/ Consultado el 27 de noviembre de 2026.
