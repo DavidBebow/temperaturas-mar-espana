@@ -1,4 +1,4 @@
-# Sevilla está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,43, el 88 % de la lluvia normal del año hidrológico, con los embalses al 68.2 %
+# Sevilla está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,43, el 87 % de la lluvia normal del año hidrológico, con los embalses al 68.2 %
 
 **Dato:** Nivel 4 (Sequía extrema); SPI-3 −1,95, SPI-6 −2,43, SPI-12 0,13.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -7,7 +7,7 @@
 
 ## Contexto
 - Lluvia desde el 1 de octubre en Sevilla: 121.5 mm.
-- Días sin lluvia de 1 mm en la capital: 6.
+- Días sin lluvia de 1 mm en la capital: 7.
 - Embalses de la provincia al 68.2 % (hace un año 77.5 %; media de 10 años 54.8 %): el agua embalsada es del año hidrológico anterior, que fue húmedo (SPI a 12 meses 0,13). La sequía meteorológica ha empezado antes de que se note en los pantanos.
 
 ## Fuente y método

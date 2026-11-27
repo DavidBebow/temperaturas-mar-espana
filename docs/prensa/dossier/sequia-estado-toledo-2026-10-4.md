@@ -1,4 +1,4 @@
-# Toledo está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,15, el 129 % de la lluvia normal del año hidrológico
+# Toledo está en sequía extrema a cierre de octubre: SPI a 6 meses de −2,15, el 130 % de la lluvia normal del año hidrológico
 
 **Dato:** Nivel 4 (Sequía extrema); SPI-3 −1,72, SPI-6 −2,15, SPI-12 0,09.  
 **Fecha del dato:** 31 de octubre de 2026  
@@ -6,7 +6,7 @@
 **Citabilidad:** media · **Exclusivo:** sí
 
 ## Contexto
-- Lluvia desde el 1 de octubre en Toledo: 107.8 mm.
+- Lluvia desde el 1 de octubre en Toledo: 109.1 mm.
 - Días sin lluvia de 1 mm en la capital: 1.
 
 ## Fuente y método
