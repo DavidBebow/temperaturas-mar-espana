@@ -1,5 +1,5 @@
 {
- "generado": "2026-11-27T18:03:38Z",
+ "generado": "2026-11-27T21:04:06Z",
  "hoy": "2026-11-27",
  "seleccionados": [
   "almacen-r09-estacion-aemet-fecha-tmin-alta-agregado-2026-11-17",
@@ -9,6 +9,66 @@
   "almacen-r01-estacion-aemet-anio-calor-est-7031-2026-11-22"
  ],
  "hallazgos": [
+  {
+   "regla": "R01",
+   "variante": "capital_era5:mes:noches",
+   "destino": "publicable",
+   "serie": "almacen_r01",
+   "tipo": "puesto_extremo",
+   "indicador": "R01_capital_era5_mes_noches",
+   "territorio": "Teruel",
+   "provincia": "Teruel",
+   "ambito": "provincial",
+   "fecha_dato": "2026-11-21",
+   "titular": "Teruel: lo que va de noviembre es el de noches más cálidas de los 87 años de su serie (+3,3 °C sobre 1991-2020, reanálisis)",
+   "dato": "puesto 1 de 87; anterior: 2024; +3,3 °C sobre 1991-2020",
+   "clave": {
+    "indicador": "capital_era5:mes:noches",
+    "territorio": "cap:44",
+    "periodo": "noviembre de 2026",
+    "corte": "2026-11-21"
+   },
+   "cifra": {
+    "valor": null,
+    "anomalia": 3.29
+   },
+   "comparacion": {
+    "puesto": 1,
+    "de": 87,
+    "anterior": [
+     7.59,
+     2024
+    ],
+    "segundo": [
+     7.37,
+     2011
+    ],
+    "periodo": "noviembre de 2026"
+   },
+   "muestra": "87 años con el periodo completo hasta el día 21",
+   "calidad": "reanálisis",
+   "invalidar": "ERA5 consolida con ~6 días de retraso; una celda de ~25 km no es la estación: puede no ver tormentas locales",
+   "metodo": "reanálisis ERA5 en la celda de la capital (Copernicus), serie diaria desde 1940. Regla R01 del catálogo del almacén (almacen/reglas/), umbral calibrado sobre todo el pasado.",
+   "limites": [],
+   "contexto": [],
+   "citabilidad": "media",
+   "exclusivo": false,
+   "requiere_revision": false,
+   "fuerza": 47.5,
+   "fuerza_detalle": {
+    "fuerza": 47.5,
+    "novedad": 1.132,
+    "r_est": 1.132,
+    "r_pob": 0.956,
+    "r_lugar": 1.149,
+    "r_avance": 0.91,
+    "empate": false,
+    "T_anios": 87
+   },
+   "ent_id": "cap:44",
+   "id": "almacen-r01-capital-era5-mes-noches-cap-44-2026-11-21",
+   "_rank": 30.874999999999996
+  },
   {
    "regla": "R09",
    "variante": "capital_era5:fecha_tmin_alta",
