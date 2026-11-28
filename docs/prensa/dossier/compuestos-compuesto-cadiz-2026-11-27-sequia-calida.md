@@ -1,6 +1,6 @@
-# Sequía cálida en Cádiz: sequía extrema y 1,6 °C más que lo normal en noviembre de 2026
+# Sequía cálida en Cádiz: sequía extrema y 1,8 °C más que lo normal en noviembre de 2026
 
-**Dato:** Cádiz está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,2) y la media de noviembre de 2026 hasta el 27 de noviembre de 2026 es de 18,4 °C, 1,6 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
+**Dato:** Cádiz está en «sequía extrema» en el Monitor de sequía (SPI-12 de 1,2) y la media de noviembre de 2026 hasta el 27 de noviembre de 2026 es de 18,6 °C, 1,8 °C por encima de la media de ese mes en 1996-2025; el cociente de probabilidad frente a 1961-1990 no es significativo.  
 **Fecha del dato:** 27 de noviembre de 2026  
 **Ámbito:** provincial · **Territorio:** Cádiz  
 **Citabilidad:** media · **Exclusivo:** sí
