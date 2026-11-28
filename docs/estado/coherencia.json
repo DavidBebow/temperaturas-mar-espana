@@ -1,39 +1,59 @@
 {
- "generado": "2026-11-27T19:13:23+00:00",
- "duracion_s": 2.56,
+ "generado": "2026-11-28T03:36:24+00:00",
+ "duracion_s": 2.27,
  "comprobaciones": [
   {
    "id": "clave",
    "descripcion": "Misma clave (indicador+territorio+periodo+corte), mismo valor en todos los JSON",
-   "evaluadas": 204,
+   "evaluadas": 188,
    "fallos": 0
   },
   {
    "id": "agrupadas",
    "descripcion": "Las historias agrupadas: lugares del titular = miembros, y misma clave que cada miembro",
-   "evaluadas": 7,
+   "evaluadas": 9,
    "fallos": 0
   },
   {
    "id": "titular",
    "descripcion": "El número del titular y del dato es el del campo estructurado",
-   "evaluadas": 62,
+   "evaluadas": 34,
    "fallos": 0
   },
   {
    "id": "hoy",
    "descripcion": "Ningún bloque «hoy» con fecha_dato anterior a ayer",
-   "evaluadas": 180,
+   "evaluadas": 160,
    "fallos": 0
   },
   {
    "id": "niveles",
    "descripcion": "Las listas por nivel solo contienen elementos de su nivel",
-   "evaluadas": 0,
-   "fallos": 0
+   "evaluadas": 1,
+   "fallos": 1
   }
  ],
- "n_fallos": 0,
- "fallos": [],
+ "n_fallos": 1,
+ "fallos": [
+  {
+   "comprobacion": "niveles",
+   "clave": "Avisos amarillos de AEMET",
+   "valores": [
+    {
+     "ruta": "https://calentamientoglobal.es/el-tiempo/",
+     "valor": "Badajoz: #f2c94c"
+    },
+    {
+     "ruta": "https://calentamientoglobal.es/el-tiempo/",
+     "valor": "Santa Cruz de Tenerife: #f2c94c"
+    },
+    {
+     "ruta": "https://calentamientoglobal.es/el-tiempo/",
+     "valor": "Ciudad Real: #f2c94c"
+    }
+   ],
+   "detalle": "«Avisos amarillos de AEMET» contiene elementos de otro nivel"
+  }
+ ],
  "bloqueados": []
 }
